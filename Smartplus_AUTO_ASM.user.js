@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.7.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.8.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.7.0
-// @description  v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.8.0
+// @description  v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -366,7 +366,7 @@
       name: "BI Dewasa",
       items: [
         { obat: "AMOXICILLIN 500MG TABLET", jumlah: "10", dosis: "500 mg", frekuensi: "3x1", waktu: "", keterangan: "" },
-        { obat: "SANMOL FORTE TABLET 650MG*", jumlah: "10", dosis: "650 mg", frekuensi: "4x1", waktu: "", keterangan: "" },
+        { obat: "SANMOL FORTE TABLET 650MG*", jumlah: "10", dosis: "650 mg", frekuensi: "4–6x1", waktu: "", keterangan: "" },
         { obat: "DOMPERIDON 10MG TAB", jumlah: "6", dosis: "10 mg", frekuensi: "3x1", waktu: "", keterangan: "" }
       ]
     },
@@ -375,7 +375,7 @@
       name: "ISPA Dewasa",
       items: [
         { obat: "AMOXICILLIN 500MG TABLET", jumlah: "10", dosis: "500 mg", frekuensi: "3x1", waktu: "", keterangan: "" },
-        { obat: "SANMOL FORTE TABLET 650MG*", jumlah: "10", dosis: "650 mg", frekuensi: "4x1", waktu: "", keterangan: "" },
+        { obat: "SANMOL FORTE TABLET 650MG*", jumlah: "10", dosis: "650 mg", frekuensi: "4–6x1", waktu: "", keterangan: "" },
         { obat: "AMBROXOL 30MG TAB", jumlah: "6", dosis: "30 mg", frekuensi: "3x1", waktu: "", keterangan: "" },
         { obat: "CTM 4MG TAB", jumlah: "6", dosis: "4 mg", frekuensi: "3x1", waktu: "", keterangan: "" },
         { obat: "DEXAMETHASON 0.5 MG TAB*", jumlah: "6", dosis: "0,5 mg", frekuensi: "3x1", waktu: "", keterangan: "" }
@@ -388,7 +388,7 @@
         { obat: "NEW DIATAB", jumlah: "10", dosis: "2 tab", frekuensi: "setiap BAB cair", waktu: "", keterangan: "2 tab setiap BAB cair" },
         { obat: "OMEPRAZOLE 20 MG CAPSUL", jumlah: "5", dosis: "20 mg", frekuensi: "2x1", waktu: "", keterangan: "" },
         { obat: "DOMPERIDON 10MG TAB", jumlah: "6", dosis: "10 mg", frekuensi: "3x1", waktu: "", keterangan: "" },
-        { obat: "SANMOL FORTE TABLET 650MG*", jumlah: "10", dosis: "650 mg", frekuensi: "4x1", waktu: "", keterangan: "" }
+        { obat: "SANMOL FORTE TABLET 650MG*", jumlah: "10", dosis: "650 mg", frekuensi: "4–6x1", waktu: "", keterangan: "" }
       ]
     },
 
@@ -837,8 +837,8 @@
   // Template khusus Paket Resep per keluhan (tidak bergantung pada paket penyakit lengkap)
   MASTER_RECIPE_TEMPLATES.KELUHAN_NYERI_DEWASA = { name: "Nyeri Dewasa", items: [{ obat: "KETOROLAC TABLET", jumlah: "6", dosis: "1 tablet", frekuensi: "3x1", waktu: "", keterangan: "" }] };
   MASTER_RECIPE_TEMPLATES.KELUHAN_MUAL_MUNTAH_DEWASA = { name: "Mual Muntah Dewasa", items: [
-    { obat: "DOMPERIDON 10MG TAB", jumlah: "6", dosis: "10 mg", frekuensi: "3x1", waktu: "", keterangan: "" },
-    { obat: "OMEPRAZOLE 20 MG CAPSUL", jumlah: "5", dosis: "20 mg", frekuensi: "2x1", waktu: "", keterangan: "" }
+    // v3.8.0: Omeprazole dihapus atas instruksi dokter.
+    { obat: "DOMPERIDON 10MG TAB", jumlah: "6", dosis: "10 mg", frekuensi: "3x1", waktu: "", keterangan: "" }
   ] };
   MASTER_RECIPE_TEMPLATES.KELUHAN_BATUK_PILEK_DEWASA = { name: "Batuk Pilek Dewasa", items: [
     { obat: "AMBROXOL 30MG TAB", jumlah: "6", dosis: "30 mg", frekuensi: "3x1", waktu: "", keterangan: "" },
@@ -864,16 +864,77 @@
   // 2) Umur <=17 tahun: BB >40 kg = Dewasa, BB <40 kg = Anak.
   // 3) BB tepat 40 kg = perlu keputusan manual, tidak diproses otomatis.
   // =========================
+  // =========================
+  // v3.8.0: RESEP ANAK DENGAN PEMBAGIAN BB (disetujui dokter, 2 Okt 2026)
+  // BB <= 15 kg -> sirup (kelompok BB lama s.d. 15 kg)
+  // BB  > 15 kg -> puyer 10 bungkus, 1 tab per 5 kg BB (15–20 = 4 … 45–50 = 10)
+  // Paracetamol: 4-6x sehari. Amoxicillin: 3x sehari.
+  // =========================
+  const ANAK_SIRUP_MAX_KG = 15;
+
+  function sirupGroupsUpTo15(sourceGroups, drugRegex) {
+    return Object.fromEntries(
+      Object.entries(sourceGroups)
+        .filter(([key, group]) => {
+          const m = String(group.label || "").match(/BB\s*([0-9]+(?:[.,][0-9]+)?)\s*[–-]\s*([0-9]+(?:[.,][0-9]+)?)/i);
+          return m && Number(m[2].replace(",", ".")) <= ANAK_SIRUP_MAX_KG;
+        })
+        .map(([key, group]) => [key, {
+          label: group.label,
+          items: group.items.filter((item) => drugRegex.test(item.obat)).map((item) => ({ ...item }))
+        }])
+    );
+  }
+
+  function puyerGroupsOver15({ name, namaRacikan, obat, frekuensi }) {
+    // i = 3..9 -> 15–20 (4 tab) … 45–50 (10 tab)
+    return Object.fromEntries(
+      Array.from({ length: 7 }, (_, n) => {
+        const i = n + 3;
+        const min = i * 5;
+        const max = (i + 1) * 5;
+        return [`${min}_${max}`, {
+          label: `BB ${min}–${max} kg`,
+          name: `${name} ${min}–${max} kg`,
+          namaRacikan,
+          instruksi: "Pulveres",
+          jumlahRacikan: "10",
+          dosis: "1 pulv",
+          frekuensi,
+          waktu: "",
+          items: [{ obat, jumlahPerObat: String(i + 1) }]
+        }];
+      })
+    );
+  }
+
+  MASTER_RECIPE_TEMPLATES.PCT_SIRUP_ANAK_LE15 = {
+    name: "Paracetamol Sirup Anak (BB ≤15 kg)",
+    weightGroups: sirupGroupsUpTo15(MASTER_RECIPE_TEMPLATES.BI_ANAK.weightGroups, /PARACETAMOL 60 CC GEN/i)
+  };
+  MASTER_RECIPE_TEMPLATES.AMOX_SIRUP_ANAK_LE15 = {
+    name: "Amoxicillin Sirup Anak (BB ≤15 kg)",
+    weightGroups: sirupGroupsUpTo15(MASTER_RECIPE_TEMPLATES.BI_ANAK.weightGroups, /AMOXYCILLIN/i)
+  };
+  MASTER_RACIKAN_TEMPLATES.PCT_PUYER_ANAK = {
+    name: "Puyer Paracetamol Anak",
+    weightGroups: puyerGroupsOver15({ name: "Puyer Paracetamol", namaRacikan: "puyer paracetamol", obat: "PARACETAMOL 500 MG TAB", frekuensi: "4-6 X SEHARI" })
+  };
+  MASTER_RACIKAN_TEMPLATES.AMOX_PUYER_ANAK = {
+    name: "Puyer Amoxicillin Anak",
+    weightGroups: puyerGroupsOver15({ name: "Puyer Amoxicillin", namaRacikan: "puyer amoxicillin", obat: "AMOXICILLIN 500MG TABLET", frekuensi: "3 X SEHARI" })
+  };
+
   const COMPLAINT_RECIPE_MAP = {
     DEMAM: {
       label: "🌡️ Demam",
       adult: { kind: "dynamic", sourceKey: "ISPA_DEWASA", drug: "SANMOL FORTE TABLET 650MG*", key: "KELUHAN_DEMAM_DEWASA" },
-      child: { kind: "recipe", key: "DEMAM_ANAK" }
+      child: { kind: "bbSplit", maxSirupKg: 15, sirup: { kind: "recipe", key: "PCT_SIRUP_ANAK_LE15" }, puyer: { kind: "racikan", key: "PCT_PUYER_ANAK" } }
     },
     NYERI: {
       label: "🤕 Nyeri",
       adult: { kind: "recipe", key: "KELUHAN_NYERI_DEWASA" },
-      child: { kind: "recipe", key: "NYERI_ANAK" }
+      child: { kind: "bbSplit", maxSirupKg: 15, sirup: { kind: "recipe", key: "PCT_SIRUP_ANAK_LE15" }, puyer: { kind: "racikan", key: "PCT_PUYER_ANAK" } }
     },
     MUAL_MUNTAH: {
       label: "🤢 Mual / Muntah",
@@ -909,7 +970,7 @@
     INFEKSI_BAKTERI: {
       label: "🦠 Dugaan Infeksi Bakteri",
       adult: { kind: "recipe", key: "KELUHAN_INFEKSI_DEWASA" },
-      child: { kind: "recipe", key: "BI_ANAK" }
+      child: { kind: "bbSplit", maxSirupKg: 15, sirup: { kind: "recipe", key: "AMOX_SIRUP_ANAK_LE15" }, puyer: { kind: "racikan", key: "AMOX_PUYER_ANAK" } }
     },
   };
 
@@ -962,6 +1023,14 @@
 
       const isLast = i === entries.length - 1;
 
+      // v3.8.0: opsi racikan sekarang benar-benar dipakai (sebelumnya diabaikan).
+      // Racikan: batas atas ikut kelompok tsb (BB 10 -> 5–10, BB 20 -> 15–20), sesuai komentar di atas.
+      // Sirup/non-racikan: perilaku lama tidak berubah.
+      if (options.lowerBoundaryForRacikan) {
+        const isFirst = i === 0;
+        if ((weight > min || (isFirst && weight >= min)) && weight <= max) return key;
+        continue;
+      }
       if (weight >= min && (weight < max || (isLast && weight <= max))) return key;
     }
     return null;
@@ -989,7 +1058,11 @@
     if (weight === 40) throw new Error("BB 40 kg berada di batas tengah. Tentukan secara manual apakah menggunakan cabang Anak atau Dewasa sebelum melanjutkan.");
 
     const isAdultByWeight = weight > 40;
-    const branch = isAdultByWeight ? complaint.adult : complaint.child;
+    let branch = isAdultByWeight ? complaint.adult : complaint.child;
+    // v3.8.0: cabang anak yang dibagi berdasarkan BB (sirup <=15 kg, puyer >15 kg).
+    if (branch && branch.kind === "bbSplit") {
+      branch = weight <= (branch.maxSirupKg || 15) ? branch.sirup : branch.puyer;
+    }
     if (!branch) throw new Error(`${complaint.label.replace(/^\S+\s*/, "")} belum memiliki paket untuk ${isAdultByWeight ? "dewasa" : "anak"}.`);
 
     return { complaint, branch, weight, ageYears, adultByAge: false, reason: isAdultByWeight ? "weight-adult" : "weight-child" };
@@ -1756,23 +1829,36 @@
       .map((m) => Number(m[1]));
   }
 
-  async function getLatestGadarDiagnosis() {
-    const noreg = getCurrentIgdNoreg();
+  // v3.8.0: no RM dari alamat halaman (pasien_detail/<noreg>/<norm>/0).
+  function getCurrentIgdNorm() {
+    const m = location.pathname.match(/pasien_detail\/[^/]+\/([^/]+)/i);
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+
+  // v3.8.0: ambil id GADAR TANPA memindahkan tab (pindah tab bisa menghapus draft resep).
+  // 1) dari daftar yang sudah tampil, 2) jika belum ada, GET content_gadar/<noreg>/<norm>
+  //    (alamat yang sama yang dipakai tab Assesment GADAR), hanya dibaca.
+  async function fetchGadarIds() {
     let ids = collectGadarIds();
-
-    // Daftar GADAR belum dimuat -> klik tab Assesment GADAR lalu tunggu.
-    if (!ids.length) {
-      const tab = document.getElementById("new_gadar");
-      if (!tab) return null;
-      tab.click();
-      for (let i = 0; i < 40 && !ids.length; i++) {
-        await recipeSleep(150);
-        ids = collectGadarIds();
-      }
+    if (ids.length) return ids;
+    const noreg = getCurrentIgdNoreg();
+    const normRm = getCurrentIgdNorm();
+    if (!noreg || !normRm) return [];
+    try {
+      const base = location.href.split("/soap_igd/")[0];
+      const html = await fetch(`${base}/soap_igd/content_gadar/${encodeURIComponent(noreg)}/${encodeURIComponent(normRm)}`, { credentials: "same-origin" }).then((r) => r.text());
+      ids = [...html.matchAll(/update_gadar\('(\d+)'\)/g)].map((m) => Number(m[1]));
+    } catch (err) {
+      console.warn("[AUTO GADAR] gagal memuat daftar GADAR", err);
     }
-    if (!ids.length) return null;
+    return ids;
+  }
 
-    // id terbesar = paling baru. Cek beberapa teratas sampai ketemu kunjungan ini.
+  // Data lengkap GADAR terakhir pada KUNJUNGAN INI (id_reg = noreg sekarang), atau null.
+  async function getLatestGadarData() {
+    const noreg = getCurrentIgdNoreg();
+    let ids = await fetchGadarIds();
+    if (!ids.length) return null;
     ids = [...new Set(ids)].sort((a, b) => b - a).slice(0, 5);
     const base = location.href.split("/soap_igd/")[0];
     for (const id of ids) {
@@ -1781,15 +1867,32 @@
         if (!res.ok) continue;
         const data = await res.json();
         if (noreg && data.id_reg && String(data.id_reg) !== noreg) continue;
-        const dx = String(data.diagnosa_banding || data.masalah_kesehatan || "").replace(/\s+/g, " ").trim();
-        if (dx && dx.toLowerCase() !== "null") {
-          return { diagnosis: dx, idGadar: id, tanggal: data.gadar_date || "" };
-        }
+        return { data, idGadar: id };
       } catch (err) {
-        console.warn("[AUTO LAB] gagal membaca GADAR", id, err);
+        console.warn("[AUTO GADAR] gagal membaca GADAR", id, err);
       }
     }
     return null;
+  }
+
+  async function getLatestGadarDiagnosis() {
+    const g = await getLatestGadarData();
+    if (!g) return null;
+    const dx = String(g.data.diagnosa_banding || g.data.masalah_kesehatan || "").replace(/\s+/g, " ").trim();
+    if (!dx || dx.toLowerCase() === "null") return null;
+    return { diagnosis: dx, idGadar: g.idGadar, tanggal: g.data.gadar_date || "" };
+  }
+
+  // v3.8.0: BB (kg) dari kolom "berat" GADAR terakhir kunjungan ini, atau null.
+  async function getLatestGadarWeight() {
+    try {
+      const g = await getLatestGadarData();
+      if (!g) return null;
+      const w = Number(String(g.data.berat ?? "").replace(",", ".").replace(/[^0-9.]/g, ""));
+      return Number.isFinite(w) && w > 0 && w < 300 ? w : null;
+    } catch (_) {
+      return null;
+    }
   }
 
   async function runAutoLabFebris() {
@@ -4532,6 +4635,22 @@
         }
       };
       toggleWeightByAge();
+
+      // v3.8.0: isi BB dari Assesment GADAR terakhir (dokter tetap bisa mengubah).
+      // Pasien dewasa (>17 th) tidak memakai BB -> tidak perlu mengambil BB.
+      const ageForWeight = getPatientAgeYears();
+      if (!(Number.isFinite(ageForWeight) && ageForWeight > 17)) getLatestGadarWeight().then((w) => {
+        const input = menu.querySelector('#sp-package-weight');
+        const help = menu.querySelector('#sp-package-weight-help');
+        if (!input || !document.body.contains(input)) return;
+        if (w && !String(input.value || '').trim()) {
+          input.value = String(w);
+          try { input.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) {}
+          if (help) help.textContent = `BB ${w} kg diambil dari Assesment GADAR terakhir — cek/ubah bila perlu. ` + help.textContent;
+        } else if (!w && help) {
+          help.textContent = 'BB tidak ditemukan di Assesment GADAR, isi manual. ' + help.textContent;
+        }
+      });
     }
 
     // =========================
@@ -5109,6 +5228,18 @@
         return (tpl?.items || []).map(item => `${item.obat} • ${item.jumlah} • ${item.dosis || ""} ${item.frekuensi || ""}`.trim());
       }
 
+      if (branch.kind === "bbSplit") {
+        const sirup = MASTER_RECIPE_TEMPLATES[branch.sirup.key];
+        const puyer = MASTER_RACIKAN_TEMPLATES[branch.puyer.key];
+        const sirupDrug = Object.values(sirup?.weightGroups || {})[0]?.items?.map((it) => it.obat).join(" + ") || "sirup";
+        const pg = Object.values(puyer?.weightGroups || {})[0];
+        const puyerDrug = (pg?.items || []).map((it) => it.obat).join(" + ");
+        return [
+          `BB ≤${branch.maxSirupKg || 15} kg: ${sirupDrug} • dosis sesuai BB`,
+          `BB >${branch.maxSirupKg || 15} kg: puyer ${puyerDrug} • ${pg?.jumlahRacikan || 10} bks • ${pg?.dosis || "1 pulv"} ${pg?.frekuensi || ""}`.trim()
+        ];
+      }
+
       if (branch.kind === "ageRecipe") {
         const a = MASTER_RECIPE_TEMPLATES[branch.key5_15];
         const b = MASTER_RECIPE_TEMPLATES[branch.keyGt15];
@@ -5164,9 +5295,19 @@
         return;
       }
 
+      // v3.8.0: pasien dewasa (>17 th) tidak perlu BB: resep otomatis cabang dewasa.
+      if (Number.isFinite(ageYears) && ageYears > 17) {
+        await runComplaintRecipe(complaintKey, null, { forceAdult: true, age: ageYears, ageYears, ageDisplay, ageMonths });
+        return;
+      }
+
+      // v3.8.0: BB dari Assesment GADAR terakhir diisikan lebih dulu; dokter tetap konfirmasi/ubah.
+      const gadarWeight = await getLatestGadarWeight();
       const rawWeight = window.prompt(
-        `MASTER TEMPLATE RESEP • ${COMPLAINT_RECIPE_MAP[complaintKey]?.label || complaintKey}\n\nMasukkan BB pasien (kg):`,
-        ""
+        `MASTER TEMPLATE RESEP • ${COMPLAINT_RECIPE_MAP[complaintKey]?.label || complaintKey}\n\n` +
+        (gadarWeight ? `BB dari Assesment GADAR terakhir: ${gadarWeight} kg. Tekan OK jika sesuai.\n` : "BB tidak ditemukan di Assesment GADAR.\n") +
+        `Masukkan BB pasien (kg):`,
+        gadarWeight ? String(gadarWeight) : ""
       );
       if (rawWeight === null) return;
 
