@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.5.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.6.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.5.0
-// @description  v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.6.0
+// @description  v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -1876,6 +1876,101 @@
         glukosaSewaktu: needsGlucoseSewaktu
       });
     }
+  }
+
+  // =========================
+  // AUTO RO THORAX (v3.6.0)
+  // =========================
+  // Pola sama dengan AUTO LAB, memakai selector tetap hasil inspeksi DOM e-IGD:
+  // tab #a_radmodal -> TAMBAH indexrad() -> modal #Modalradmod
+  // -> diag (diagnosis GADAR terakhir), indikasi_klinis "dx",
+  //    checkbox value "Thorax PA/AP" -> Save #setsaverad (atas instruksi dokter).
+  const RAD_SELECTORS = {
+    tab: "#a_radmodal",
+    tambah: '#box_radmodal button[onclick*="indexrad"]',
+    modal: "#Modalradmod",
+    save: "#setsaverad"
+  };
+
+  async function waitForVisibleSelector(selector, timeout = 6000, interval = 100) {
+    const started = Date.now();
+    while (Date.now() - started < timeout) {
+      const el = [...document.querySelectorAll(selector)].find(visible);
+      if (el) return el;
+      await recipeSleep(interval);
+    }
+    return null;
+  }
+
+  async function runAutoRoThorax() {
+    toast("AUTO RO THORAX: mengecek diagnosis Assesment GADAR terakhir...");
+    const gadarDx = await getLatestGadarDiagnosis();
+    const radDiagnosis = gadarDx ? gadarDx.diagnosis : "febris";
+    console.log("[AUTO RAD] diagnosis dipakai:", radDiagnosis, gadarDx);
+
+    toast("AUTO RO THORAX: membuka Order Radiologi...");
+    const tab = document.querySelector(RAD_SELECTORS.tab);
+    if (tab && visible(tab)) tab.click();
+    else if (!clickVisibleText(["Order Radiologi"])) {
+      toast("AUTO RO THORAX: tab Order Radiologi tidak ditemukan.");
+      return;
+    }
+
+    const tambah = await waitForVisibleSelector(RAD_SELECTORS.tambah, 5000);
+    if (!tambah) {
+      toast("AUTO RO THORAX: tombol TAMBAH Order Radiologi tidak ditemukan.");
+      return;
+    }
+    tambah.click();
+
+    // Modal dimuat via AJAX; tunggu checkbox Thorax PA/AP tersedia.
+    let modal = null;
+    let thorax = null;
+    const started = Date.now();
+    while (Date.now() - started < 8000 && !thorax) {
+      modal = [...document.querySelectorAll(RAD_SELECTORS.modal)].find(visible) || null;
+      thorax = modal ? modal.querySelector('input[type="checkbox"][value="Thorax PA/AP"]') : null;
+      if (!thorax) await recipeSleep(120);
+    }
+    if (!modal || !thorax) {
+      toast("AUTO RO THORAX: form Radiologi / pilihan Thorax PA/AP tidak ditemukan.");
+      return;
+    }
+
+    const fail = [];
+    const diag = modal.querySelector('#diag, [name="diag"]');
+    if (!(diag && setValue(diag, radDiagnosis))) fail.push("Diagnosa Kerja");
+
+    const indikasi = modal.querySelector('#indikasi_klinis, [name="indikasi_klinis"]');
+    if (!(indikasi && setValue(indikasi, "dx"))) fail.push("Indikasi Klinis");
+
+    if (!thorax.checked) {
+      try { thorax.click(); } catch (_) {}
+      fire(thorax);
+    }
+    if (!thorax.checked) fail.push("Thorax PA/AP");
+
+    const dxNote = gadarDx
+      ? ` Diagnosis dari GADAR terakhir: "${radDiagnosis}".`
+      : ` ⚠️ GADAR kunjungan ini tidak ditemukan, diagnosis memakai "febris".`;
+
+    // Jangan Save jika ada yang gagal, supaya order tidak terkirim setengah jadi.
+    if (fail.length) {
+      toast("AUTO RO THORAX belum disimpan. Cek manual: " + fail.join(", ") + "." + dxNote);
+      console.warn("[AUTO RAD] gagal:", fail);
+      return;
+    }
+
+    await recipeSleep(500);
+    const save = [...modal.querySelectorAll(RAD_SELECTORS.save)].find(visible) ||
+      [...document.querySelectorAll(RAD_SELECTORS.save)].find(visible);
+    if (!save) {
+      toast("AUTO RO THORAX: form terisi, tombol Save tidak ditemukan. Simpan manual." + dxNote);
+      return;
+    }
+    save.click();
+    toast("AUTO RO THORAX selesai: Thorax PA/AP dipilih dan Save ditekan." + dxNote);
+    console.log("[AUTO RAD] selesai", { diagnosis: radDiagnosis, idGadar: gadarDx && gadarDx.idGadar });
   }
 
   function clickVisibleText(phrases) {
@@ -4919,6 +5014,10 @@
           🧪 AUTO LAB – Order Lab Febris
         </button>
 
+        <button type="button" data-auto-rad="THORAX">
+          🩻 AUTO RO THORAX – Order Radiologi
+        </button>
+
         <div class="sp-note">
           ASGADAR PENYAKIT berisi seluruh template penyakit yang sudah tersedia.
           MASTER TEMPLATE RESEP berisi master template resep dewasa, anak, dan tindakan yang sudah tersedia.
@@ -5432,6 +5531,12 @@
       if (actionDirect) {
         closeMenu();
         await fillActionRecipe(actionDirect);
+        return;
+      }
+
+      if (target.dataset?.autoRad === "THORAX") {
+        closeMenu();
+        await runAutoRoThorax();
         return;
       }
 
