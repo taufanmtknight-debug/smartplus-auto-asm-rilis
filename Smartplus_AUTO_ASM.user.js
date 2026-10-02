@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.13.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.14.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.13.0
-// @description  v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.14.0
+// @description  v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -2299,6 +2299,127 @@
   // Nama lama dipertahankan agar kompatibel.
   async function runAutoRoThorax() {
     return runAutoRadOrder("THORAX");
+  }
+
+  // =========================
+  // v3.14.0: RIWAYAT POLI SPESIALIS -> Riwayat Penyakit Sekarang (dipakai semua ASGADAR, termasuk NORMAL)
+  // =========================
+  // Sumber = tab "Riwayat Kunjungan" Smartplus (hanya dibaca, GET):
+  //   history_pasien/history_pasien_list/<norm>  -> baris load_all_hasil_by_reg('noreg','idDokter','sumber','tipe')
+  //   history_pasien/new_history_pasien_byreg/<noreg>/<idDokter>/<tipe> -> SOAP RAJAL (▶ A / ▶ P) + tabel RESEP.
+  // Ambil kunjungan RWJ dokter spesialis (nama dokter memuat "Sp."), SATU kunjungan terbaru per poli.
+  // Terapi = obat yang diserahkan (tabel RESEP); bila kosong -> R/ di SOAP; bila kosong -> isi P (mis. fisioterapi).
+  const SP_RIWAYAT_POLI_HEADER = "Riwayat kontrol poli spesialis:";
+
+  async function spFetchVisitList(base, normRm) {
+    const html = await fetch(`${base}/history_pasien/history_pasien_list/${encodeURIComponent(normRm)}`, { credentials: "same-origin" }).then((r) => r.text());
+    const seen = new Set();
+    return [...spParseHtml(html).querySelectorAll("tr")].map((tr) => {
+      const link = tr.querySelector("[onclick*='load_all_hasil_by_reg']");
+      const m = link && (link.getAttribute("onclick") || "").match(/load_all_hasil_by_reg\('([^']*)'\s*,\s*'([^']*)'\s*,\s*'([^']*)'\s*,\s*'([^']*)'\)/);
+      if (!m || seen.has(m[1])) return null;
+      seen.add(m[1]);
+      const c = [...tr.cells].map((x) => x.textContent.replace(/\s+/g, " ").trim());
+      return { noreg: m[1], idDokter: m[2], sumber: m[3], tipe: m[4], dateText: c[2] || "", dateKey: spParseDateKey(c[2]), unit: c[4] || "", dokter: c[5] || "" };
+    }).filter(Boolean);
+  }
+
+  function spIsSpecialistPoliVisit(v) {
+    return /^RWJ$/i.test(v.tipe) && !/inova/i.test(v.sumber) && !/^#/.test(v.dokter) && /\bSp\.?\s?[A-Z]/.test(v.dokter);
+  }
+
+  function spParseVisitDetail(html) {
+    const doc = spParseHtml(html);
+    const soapBox = doc.getElementById("collapseSoapRajal") || doc;
+    // Sel SOAP = sel terdalam yang memuat "▶ A :" (sel pembungkus luar diabaikan).
+    const hasA = (el) => /▶\s*A\s*:/.test(el.textContent);
+    const cells = [...soapBox.querySelectorAll("td")].filter((td) => hasA(td) && ![...td.querySelectorAll("td")].some(hasA));
+    let dx = "", plan = "";
+    const resep = [];
+    const td0 = cells[cells.length - 1];
+    if (td0) {
+      const td = td0.cloneNode(true);
+      td.querySelectorAll("table").forEach((t) => {
+        if (/RESEP/i.test(t.querySelector("th")?.textContent || "")) {
+          t.querySelectorAll("td").forEach((c) => {
+            c.querySelectorAll("br").forEach((b) => b.replaceWith("\u0001"));
+            c.textContent.split("\u0001").map((s) => s.replace(/\s+/g, " ").trim()).filter(Boolean).forEach((s) => resep.push(s));
+          });
+        }
+        t.remove();
+      });
+      td.querySelectorAll("br").forEach((b) => b.replaceWith("\n"));
+      const txt = td.textContent.replace(/[ \t ]+/g, " ");
+      const grab = (k, next) => {
+        const m = txt.match(new RegExp("▶\\s*" + k + "\\s*:([\\s\\S]*?)(?=▶\\s*(?:" + next + ")\\s*:|$)"));
+        return m ? m[1].split("\n").map((s) => s.trim()).filter(Boolean).join(", ") : "";
+      };
+      dx = grab("A", "P");
+      plan = grab("P", "ZZZ").replace(/^obat\s*,?\s*/i, "").trim();
+    }
+    const given = [...(doc.querySelector("#collapseResep")?.querySelectorAll("tr") || [])]
+      .map((tr) => [...tr.cells].map((c) => c.textContent.replace(/\s+/g, " ").trim()))
+      .filter((c) => c.length >= 5 && c[0] && !/^obat$/i.test(c[0]))
+      .map((c) => ({ name: c[0], freq: c[4] || "" }));
+    return { dx, plan, resep, given };
+  }
+
+  function spFormatTherapy(d) {
+    const cleanName = (s) => s.replace(/\*/g, "").replace(/\s+/g, " ").trim();
+    const cleanFreq = (s) => s.replace(/\s*X\s*/i, "x ").replace(/\s+/g, " ").trim().toLowerCase();
+    const items = d.given.filter((g) => !/^(CAPSUL|KAPSUL|CAPSULE)\s*NO|KERTAS\s*PUYER|^PULV/i.test(g.name));
+    if (items.length) {
+      const single = items.filter((g) => g.freq).map((g) => `${cleanName(g.name)} ${cleanFreq(g.freq)}`);
+      const racik = items.filter((g) => !g.freq).map((g) => cleanName(g.name));
+      return [...single, ...(racik.length ? [`racikan (${racik.join(", ")})`] : [])].join(", ");
+    }
+    if (d.resep.length) return d.resep.map((s) => s.replace(/^R\/\s*/i, "")).join(", ").replace(/:\s*,/g, ":");
+    return d.plan;
+  }
+
+  function spPrettyPoli(unit) {
+    return String(unit || "").replace(/^POLI(KLINIK)?\s+/i, "")
+      .split(/\s+/).filter(Boolean)
+      .map((w) => (/^dan$/i.test(w) ? "dan" : w.length <= 3 ? w.toUpperCase() : w[0].toUpperCase() + w.slice(1).toLowerCase()))
+      .join(" ");
+  }
+
+  // Hasil: { lines: ["- 11-09-2026 Poli Syaraf (dr ...Sp.N): Dx ... Th/ ..."], count }
+  async function spBuildRiwayatPoliLines() {
+    const normRm = getCurrentIgdNorm();
+    if (!normRm) return { lines: [], error: "no RM tidak terbaca" };
+    const base = smartplusBaseUrl();
+    const visits = (await spFetchVisitList(base, normRm)).filter(spIsSpecialistPoliVisit)
+      .sort((a, b) => (b.dateKey || "").localeCompare(a.dateKey || ""));
+    const groups = new Map();
+    for (const v of visits) {
+      const key = (v.unit || v.dokter).toUpperCase();
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(v);
+    }
+    const lines = [];
+    await Promise.all([...groups.values()].map(async (list, gi) => {
+      // Kunjungan terbaru per poli; bila belum ada SOAP/terapi, coba kunjungan sebelumnya (maks 3).
+      for (const v of list.slice(0, 3)) {
+        try {
+          const html = await fetch(`${base}/history_pasien/new_history_pasien_byreg/${encodeURIComponent(v.noreg)}/${encodeURIComponent(v.idDokter)}/${encodeURIComponent(v.tipe)}`, { credentials: "same-origin" }).then((r) => r.text());
+          const d = spParseVisitDetail(html);
+          const th = spFormatTherapy(d);
+          if (!d.dx && !th) continue;
+          lines[gi] = { dateKey: v.dateKey, text: `- ${v.dateText} Poli ${spPrettyPoli(v.unit) || "-"} (${v.dokter}): Dx ${d.dx || "-"}. Th/ ${th || "-"}` };
+          return;
+        } catch (_) {}
+      }
+    }));
+    const out = lines.filter(Boolean).sort((a, b) => b.dateKey.localeCompare(a.dateKey)).map((l) => l.text);
+    return { lines: out, count: out.length };
+  }
+
+  // Tambahkan di bawah isi Riwayat Penyakit Sekarang (isi triase dipertahankan; blok lama diganti bila diulang).
+  function mergeRiwayatPoli(existing, lines) {
+    const base = String(existing || "").split(/\n?Riwayat kontrol poli spesialis:[\s\S]*$/)[0].replace(/\s+$/, "");
+    if (!lines.length) return base;
+    return (base ? base + "\n" : "") + SP_RIWAYAT_POLI_HEADER + "\n" + lines.join("\n");
   }
 
   // =========================
@@ -5918,7 +6039,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.13.0</div>
+        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.14.0</div>
         <div class="sp-note">Pilih modul yang ingin digunakan:</div>
 
         <button type="button" data-disease-menu="1">
@@ -6618,6 +6739,9 @@
     const data = TEMPLATES[key];
     if (!data) return;
 
+    // v3.14.0: riwayat poli spesialis diambil paralel (hanya GET) selama form diisi.
+    const riwayatPoliP = spBuildRiwayatPoliLines().catch((err) => ({ lines: [], error: String(err && err.message || err) }));
+
     // Template penyakit sekarang otomatis membuka Assessment GADAR + + TAMBAH.
     const opened = await openAssessmentGadarForTemplate();
     if (!opened) return;
@@ -6860,7 +6984,25 @@
         setByLabel(root, ["Tindak Lanjut"], data.tindakLanjut, false);
     });
 
-    setTimeout(() => {
+    setTimeout(async () => {
+      // v3.14.0: tambahkan riwayat poli spesialis di bawah isi Riwayat Penyakit Sekarang (isi triase dipertahankan).
+      let riwayatNote = "";
+      try {
+        const rp = await riwayatPoliP;
+        const rpsEl = root.querySelector('[name="riwayat_sakit_now"]') || document.querySelector('#form_gadar [name="riwayat_sakit_now"]');
+        if (rp.error) riwayatNote = " Riwayat poli: gagal dibaca.";
+        else if (!rp.lines.length) riwayatNote = " Riwayat poli spesialis: tidak ada.";
+        else if (!rpsEl) { riwayatNote = " Riwayat poli: kolom Riwayat Penyakit Sekarang tidak ditemukan."; fail.push("Riwayat poli spesialis"); }
+        else {
+          await waitFor(() => rpsEl.value.trim(), 1500);
+          setValue(rpsEl, mergeRiwayatPoli(rpsEl.value, rp.lines));
+          riwayatNote = ` Riwayat poli spesialis: ${rp.lines.length} poli ditambahkan.`;
+        }
+        console.log("[AUTO ASM] Riwayat poli spesialis:", rp);
+      } catch (err) {
+        console.warn("[AUTO ASM] riwayat poli", err);
+      }
+
       setByLabel(root, ["Jam Datang"], "", false);
       setByLabel(root, ["Tinggi", "Tinggi Badan", "TB"], "", false);
       setByLabel(root, ["Berat", "Berat Badan", "BB"], "", false);
@@ -6879,7 +7021,7 @@
         ? `AUTO ASM selesai. TD ${isPediatricUnder14 ? "(kosong)" : randomTD}, Nadi ${randomNadi}. Perlu cek manual: ${fail.join(", ")}`
         : `AUTO ASM ${key} selesai. TD ${randomTD}, GCS ${targetGCS}, nyeri ${data.nyeri}, nadi ${randomNadi}. Review lalu Save.`;
 
-      toast(message);
+      toast(message + riwayatNote);
 
       console.group("[SMARTPLUS IGD v2.39]");
       console.log("Template:", key);
