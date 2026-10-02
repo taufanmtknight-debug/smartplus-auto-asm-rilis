@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.8.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.8.1
 // @namespace    smartplus-auto-asm-v221
-// @version      3.8.0
-// @description  v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.8.1
+// @description  v3.8.1: BB anak juga dibaca dari tulisan 'BB xx kg' di isian GADAR bila kolom Berat kosong. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -1883,13 +1883,29 @@
     return { diagnosis: dx, idGadar: g.idGadar, tanggal: g.data.gadar_date || "" };
   }
 
+  // v3.8.1: BB dari data GADAR. 1) kolom "berat"; 2) jika kosong, cari tulisan
+  // "BB 15 kg" / "BB: 15,5" / "berat badan 15 kg" di isian teks GADAR.
+  function parseGadarWeight(data) {
+    const toKg = (raw) => {
+      const w = Number(String(raw ?? "").replace(",", ".").replace(/[^0-9.]/g, ""));
+      return Number.isFinite(w) && w > 0 && w < 300 ? w : null;
+    };
+    const direct = toKg(data && data.berat);
+    if (direct) return direct;
+    const texts = Object.entries(data || {})
+      .filter(([k, v]) => typeof v === "string" && v.length > 2 && !/^(id_|created|updated|gadar_date|jam_)/i.test(k))
+      .map(([, v]) => v)
+      .join(" | ");
+    const m = texts.match(/(?:\bBB\b|berat\s*badan)\s*[:=]?\s*(\d{1,3}(?:[.,]\d{1,2})?)\s*(?:kg|kilo)?/i);
+    return m ? toKg(m[1]) : null;
+  }
+
   // v3.8.0: BB (kg) dari kolom "berat" GADAR terakhir kunjungan ini, atau null.
   async function getLatestGadarWeight() {
     try {
       const g = await getLatestGadarData();
       if (!g) return null;
-      const w = Number(String(g.data.berat ?? "").replace(",", ".").replace(/[^0-9.]/g, ""));
-      return Number.isFinite(w) && w > 0 && w < 300 ? w : null;
+      return parseGadarWeight(g.data);
     } catch (_) {
       return null;
     }
