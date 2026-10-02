@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.11.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.12.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.11.0
-// @description  v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.12.0
+// @description  v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -2332,13 +2332,43 @@
     return new DOMParser().parseFromString(html, "text/html");
   }
 
-  // Otomatis hanya entri KUNJUNGAN INI (noreg sama). Entri tanggal terbaru dari kunjungan lain
-  // dikembalikan terpisah sebagai pilihan (tidak diambil otomatis agar film lama tidak ikut terkirim).
-  function spPickVisitEntries(entries, noreg) {
-    const own = entries.filter((e) => e.noreg && e.noreg === noreg);
+  // "dd-mm-yyyy hh:mm:ss" -> "yyyy-mm-dd hh:mm:ss" (untuk urut terbaru dulu).
+  function spParseDateTimeKey(text) {
+    const m = String(text || "").match(/(\d{2})-(\d{2})-(\d{4})(?:\D+(\d{1,2}:\d{2}(?::\d{2})?))?/);
+    return m ? `${m[3]}-${m[2]}-${m[1]} ${m[4] || ""}`.trim() : "";
+  }
+
+  // Batas tanggal (yyyy-mm-dd) mundur dari hari ini: { days } atau { months } (bulan kalender).
+  function spCutoffKey({ days = 0, months = 0 } = {}) {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    if (months) {
+      const day = d.getDate();
+      d.setDate(1);
+      d.setMonth(d.getMonth() - months);
+      d.setDate(Math.min(day, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()));
+    }
+    if (days) d.setDate(d.getDate() - days);
+    const p = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  }
+
+  // v3.12.0 (instruksi dokter): ambil SEMUA entri sejak batas tanggal (semua kunjungan), terbaru dulu.
+  // Bila kosong, entri terbaru yang lebih lama dikembalikan terpisah sebagai pilihan (tidak otomatis).
+  const SP_LAB_WINDOW = { days: 7 };     // lab: 1 minggu terakhir
+  const SP_RAD_WINDOW = { months: 1 };   // radiologi: 1 bulan terakhir
+  function spPickRecentEntries(entries, windowSpec) {
+    const cut = spCutoffKey(windowSpec);
+    const byNewest = (a, b) => (b.sortKey || "").localeCompare(a.sortKey || "");
+    const recent = entries.filter((e) => e.dateKey && e.dateKey >= cut).sort(byNewest);
     const latestKey = entries.map((e) => e.dateKey).filter(Boolean).sort().pop();
-    const latestOther = own.length || !latestKey ? [] : entries.filter((e) => e.dateKey === latestKey);
-    return { own, latestOther };
+    const latestOlder = recent.length || !latestKey ? [] : entries.filter((e) => e.dateKey === latestKey).sort(byNewest);
+    return { recent, latestOlder };
+  }
+
+  // USG -> ekspertise saja (tanpa film). CT, rontgen (Thorax dll.) -> film saja.
+  function spIsUsgExam(exam) {
+    return /\bUSG\b|ultra\s*sono/i.test(String(exam || ""));
   }
 
   async function spFetchLabEntries(base, noreg) {
@@ -2346,7 +2376,7 @@
     const doc = spParseHtml(html);
     return [...doc.querySelectorAll("a[onclick*='load_hasil_lab_detail']")].map((a) => {
       const m = (a.getAttribute("onclick") || "").match(/load_hasil_lab_detail\('([^']+)'\s*,\s*'([^']+)'\)/);
-      return m ? { idSample: m[1], noreg: m[2], dateText: a.textContent.trim(), dateKey: spParseDateKey(a.textContent) } : null;
+      return m ? { idSample: m[1], noreg: m[2], dateText: a.textContent.trim(), dateKey: spParseDateKey(a.textContent), sortKey: spParseDateTimeKey(a.textContent) } : null;
     }).filter(Boolean);
   }
 
@@ -2367,6 +2397,7 @@
         idTrx: det ? det[2] : "",
         dateText: cells[0] || "",
         dateKey: spParseDateKey(cells[0]),
+        sortKey: spParseDateTimeKey(cells[0]),
         exam: cells[4] || cells[cells.length - 2] || "Radiologi",
         films
       };
@@ -2465,6 +2496,84 @@
       kLines.forEach((l, i) => ctx.fillText(l, cols.ket, y + i * LH));
       y += Math.max(1, nLines.length, kLines.length) * LH;
     }
+    ctx.font = "12px Arial"; ctx.fillStyle = "#888";
+    ctx.fillText("Disusun AUTO PENUNJANG dari Smartplus untuk keperluan konsul.", PAD, h - PAD - 6);
+    return cv.toDataURL("image/png");
+  }
+
+  // v3.12.0: ekspertise radiologi (dipakai untuk USG) dari hasil_rad/inner_hasil_rad_detail/<noreg>/<idtrx>.
+  function spParseRadExpertise(html) {
+    const doc = spParseHtml(html);
+    const info = {};
+    const infoTable = [...doc.querySelectorAll("table")]
+      .find((t) => !t.querySelector("table") && /Pemeriksaan/i.test(t.textContent) && /Nama/i.test(t.textContent));
+    if (infoTable) {
+      for (const tr of infoTable.rows) {
+        const cells = [...tr.cells].map((c) => c.textContent.replace(/\s+/g, " ").trim());
+        for (let i = 0; i + 1 < cells.length; i += 2) {
+          const val = cells[i + 1].replace(/^:\s*/, "");
+          if (cells[i] && val) info[cells[i]] = val;
+        }
+      }
+    }
+    const p = doc.querySelector("p[style*='color']") || [...doc.querySelectorAll("p")].find((x) => x.textContent.trim().length > 20);
+    let lines = [];
+    if (p) {
+      // Baris hanya dipisah oleh <br> (baris baru di sumber HTML bukan baris baru).
+      p.querySelectorAll("br").forEach((br) => br.replaceWith("\u0001"));
+      lines = p.textContent.split("\u0001").map((l) => l.replace(/\s+/g, " ").trim());
+      lines = lines.filter((l, i, arr) => l || (i > 0 && arr[i - 1]));
+      while (lines.length && !lines[0]) lines.shift();
+      while (lines.length && !lines[lines.length - 1]) lines.pop();
+    }
+    const tds = [...doc.querySelectorAll("td")].map((td) => td.textContent.replace(/\s+/g, " ").trim()).filter(Boolean);
+    const radiolog = tds.find((t) => /Sp\.?\s*Rad/i.test(t) && t.length < 80) || "";
+    const place = tds.find((t) => /^Kota\b.*\d{4}$/i.test(t) && t.length < 60) || "";
+    return { info, lines, radiolog, place };
+  }
+
+  function spRenderRadExpertise(exp) {
+    const W = 1000, PAD = 24, LH = 24, TEXT_W = W - 2 * PAD - 20;
+    const measure = document.createElement("canvas").getContext("2d");
+    measure.font = "bold 16px Arial";
+    // NIK & alamat sengaja tidak ikut.
+    const infoKeys = ["Nama", "No. RM / No. Reg.", "TL / Umr / JK", "Tgl. Periksa", "Pemeriksaan", "Dokter Pengirim", "Poli"];
+    const infoPairs = infoKeys.filter((k) => exp.info[k]).map((k) => [k, exp.info[k]]);
+    let inKesan = false;
+    const body = [];
+    for (const l of exp.lines) {
+      if (!l) { inKesan = false; body.push({ text: "", bold: false }); continue; }
+      if (/^KESAN\b/i.test(l)) inKesan = true;
+      spWrapText(measure, l, TEXT_W).forEach((t) => body.push({ text: t, bold: inKesan }));
+    }
+    const sig = [exp.place, exp.radiolog].filter(Boolean);
+    const h = PAD + 34 + Math.ceil(infoPairs.length / 2) * LH + 24 + body.length * LH + 20 + sig.length * LH + PAD + 24;
+    const cv = document.createElement("canvas");
+    cv.width = W; cv.height = h;
+    const ctx = cv.getContext("2d");
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, h);
+    ctx.fillStyle = "#000"; ctx.textBaseline = "top";
+    let y = PAD;
+    ctx.font = "bold 22px Arial"; ctx.fillText("HASIL PEMERIKSAAN RADIOLOGI", PAD, y); y += 34;
+    ctx.font = "15px Arial";
+    infoPairs.forEach(([k, v], i) => {
+      const x = i % 2 === 0 ? PAD : W / 2 + 10;
+      if (i % 2 === 0 && i) y += LH;
+      ctx.fillStyle = "#555"; ctx.fillText(k, x, y);
+      ctx.fillStyle = "#000"; ctx.fillText(": " + v, x + 140, y);
+    });
+    y += LH + 8;
+    ctx.fillStyle = "#ccc"; ctx.fillRect(PAD, y, W - 2 * PAD, 2); y += 14;
+    ctx.fillStyle = "#000";
+    for (const b of body) {
+      ctx.font = b.bold ? "bold 16px Arial" : "16px Arial";
+      ctx.fillText(b.text, PAD + 10, y);
+      y += LH;
+    }
+    y += 20;
+    ctx.font = "15px Arial"; ctx.textAlign = "right";
+    sig.forEach((t) => { ctx.fillText(t, W - PAD - 20, y); y += LH; });
+    ctx.textAlign = "left";
     ctx.font = "12px Arial"; ctx.fillStyle = "#888";
     ctx.fillText("Disusun AUTO PENUNJANG dari Smartplus untuk keperluan konsul.", PAD, h - PAD - 6);
     return cv.toDataURL("image/png");
@@ -2581,11 +2690,14 @@
         items.push({ caption: `🧪 Lab ${e.dateText}`, dataUrl: spRenderLabSheet(sheet), fileName: `Lab_${spSafeName(e.dateText)}.png` });
       }
     };
+    // Satu study PACS bisa muncul di beberapa baris (mis. FILM ke-2 di baris Thorax = CT hari itu):
+    // dibuka sekali saja (dedup alamat).
+    const seenFilm = new Set();
     const filmsOf = (rads) => rads.flatMap((r) => r.films.map((url, i) => ({
       url,
       caption: `🩻 ${r.exam} ${r.dateText}${r.films.length > 1 ? ` (film ${i + 1})` : ""}`,
       base: `Film_${spSafeName(r.exam)}_${spSafeName(r.dateKey)}${r.films.length > 1 ? "_" + (i + 1) : ""}`
-    })));
+    }))).filter((f) => (seenFilm.has(f.url) ? false : (seenFilm.add(f.url), true)));
     const addFilms = async (films) => {
       for (let i = 0; i < films.length; i++) {
         const f = films[i];
@@ -2593,23 +2705,33 @@
         const res = await spCaptureFilm(f.url, i);
         if (res.blocked) { blockedFilms.push(f); continue; }
         if (!res.ok) { notes.push({ text: `Film ${f.caption}: ${res.error || "gagal"}. Pastikan komputer terhubung ke jaringan RS.` }); continue; }
+        if (res.skipped) { notes.push({ text: `${f.caption}: berisi film USG — dilewati (USG cukup ekspertise).` }); continue; }
+        const cap = res.label ? `${f.caption} — ${res.label}` : f.caption;
         (res.images || []).forEach((src, k) => items.push({
-          caption: `${f.caption}${res.images.length > 1 ? ` — gambar ${k + 1}` : ""}`,
+          caption: `${cap}${res.images.length > 1 ? ` — gambar ${k + 1}` : ""}`,
           dataUrl: src,
           fileName: `${f.base}${res.images.length > 1 ? "_" + (k + 1) : ""}.png`
         }));
       }
     };
+    const addExpertise = async (rads) => {
+      for (const r of rads) {
+        const html = await fetch(`${base}/hasil_rad/hasil_rad/inner_hasil_rad_detail/${encodeURIComponent(r.noreg)}/${encodeURIComponent(r.idTrx)}`, { credentials: "same-origin" }).then((x) => x.text());
+        const exp = spParseRadExpertise(html);
+        if (!exp.lines.length) { notes.push({ text: `Ekspertise ${r.exam} ${r.dateText} belum tersedia.` }); continue; }
+        items.push({ caption: `📝 Ekspertise ${r.exam} ${r.dateText}`, dataUrl: spRenderRadExpertise(exp), fileName: `Ekspertise_${spSafeName(r.exam)}_${spSafeName(r.dateKey)}.png` });
+      }
+    };
 
-    // ---- LAB ----
+    // ---- LAB: semua hasil 1 minggu terakhir ----
     try {
-      const { own, latestOther } = spPickVisitEntries(await spFetchLabEntries(base, noreg), noreg);
-      await addLabs(own);
-      if (!own.length) {
-        notes.push(latestOther.length ? {
-          text: `Belum ada hasil lab kunjungan ini. Hasil terakhir: ${latestOther[0].dateText}.`,
+      const { recent, latestOlder } = spPickRecentEntries(await spFetchLabEntries(base, noreg), SP_LAB_WINDOW);
+      await addLabs(recent);
+      if (!recent.length) {
+        notes.push(latestOlder.length ? {
+          text: `Tidak ada hasil lab dalam 1 minggu terakhir. Hasil terakhir: ${latestOlder[0].dateText}.`,
           button: "Ambil lab terakhir",
-          onClick: async () => { notes = notes.filter((n) => n.button !== "Ambil lab terakhir"); await addLabs(latestOther); render(); }
+          onClick: async () => { notes = notes.filter((n) => n.button !== "Ambil lab terakhir"); await addLabs(latestOlder); render(); }
         } : { text: "Tidak ada hasil laboratorium." });
       }
     } catch (err) {
@@ -2617,18 +2739,23 @@
       notes.push({ text: "Gagal mengambil hasil lab: " + (err.message || err) });
     }
 
-    // ---- RADIOLOGI / FILM ----
+    // ---- RADIOLOGI: semua 1 bulan terakhir. USG = ekspertise saja; CT/rontgen = film saja ----
     try {
-      const { own, latestOther } = spPickVisitEntries(await spFetchRadEntries(base, noreg), noreg);
-      const films = filmsOf(own);
-      if (own.length && !films.length) notes.push({ text: "Hasil radiologi kunjungan ini ada, tetapi tombol FILM belum tersedia." });
+      const { recent, latestOlder } = spPickRecentEntries(await spFetchRadEntries(base, noreg), SP_RAD_WINDOW);
+      const usg = recent.filter((r) => spIsUsgExam(r.exam));
+      const filmRows = recent.filter((r) => !spIsUsgExam(r.exam));
+      await addExpertise(usg);
+      const films = filmsOf(filmRows);
+      const noFilm = filmRows.filter((r) => !r.films.length);
+      if (noFilm.length) notes.push({ text: `Tombol FILM belum tersedia: ${noFilm.map((r) => `${r.exam} ${r.dateText}`).join(", ")}.` });
       if (films.length) await addFilms(films);
-      if (!own.length) {
-        const otherFilms = filmsOf(latestOther);
-        notes.push(otherFilms.length ? {
-          text: `Belum ada radiologi kunjungan ini. Film terakhir: ${latestOther[0].dateText} (${latestOther.map((r) => r.exam).join(", ")}).`,
-          button: "Ambil film terakhir",
-          onClick: async () => { notes = notes.filter((n) => n.button !== "Ambil film terakhir"); await addFilms(otherFilms); render(); }
+      if (!recent.length) {
+        const olderUsg = latestOlder.filter((r) => spIsUsgExam(r.exam));
+        const olderFilms = filmsOf(latestOlder.filter((r) => !spIsUsgExam(r.exam)));
+        notes.push(latestOlder.length ? {
+          text: `Tidak ada radiologi dalam 1 bulan terakhir. Terakhir: ${latestOlder[0].dateText} (${latestOlder.map((r) => r.exam).join(", ")}).`,
+          button: "Ambil radiologi terakhir",
+          onClick: async () => { notes = notes.filter((n) => n.button !== "Ambil radiologi terakhir"); await addExpertise(olderUsg); await addFilms(olderFilms); render(); }
         } : { text: "Tidak ada hasil radiologi." });
       }
     } catch (err) {
@@ -2637,7 +2764,7 @@
     }
 
     render();
-    toast(`AUTO PENUNJANG: ${items.length} gambar siap dikirim.`);
+    toast(`AUTO PENUNJANG: ${items.length} gambar siap dikirim (lab 1 minggu, radiologi 1 bulan).`);
   }
 
   // Dijalankan DI JENDELA VIEWER PACS (Orthanc/Osimis) yang dibuka oleh AUTO PENUNJANG.
@@ -2658,12 +2785,26 @@
         return r;
       };
       const series = await (await get(`/studies/${study}/series`)).json();
+      const isImg = (s) => !/^(SR|PR|KO|DOC|REG|SEG)$/i.test(s.MainDicomTags?.Modality || "");
+      // v3.12.0: film USG tidak diambil (USG cukup ekspertise).
+      const isUs = (s) => /^US$/i.test(s.MainDicomTags?.Modality || "");
+      if (series.some(isImg) && series.filter(isImg).every(isUs)) {
+        send({ ok: true, skipped: "USG", images: [] });
+        setTimeout(() => { try { window.close(); } catch (_) {} }, 800);
+        return;
+      }
+      let label = "";
+      try {
+        const st = await (await get(`/studies/${study}`)).json();
+        const mods = [...new Set(series.filter(isImg).filter((s) => !isUs(s)).map((s) => s.MainDicomTags?.Modality).filter(Boolean))].join("/");
+        label = [mods, st.MainDicomTags?.StudyDescription].filter(Boolean).join(" ").trim();
+      } catch (_) {}
       const usable = series
-        .filter((s) => !/^(SR|PR|KO|DOC|REG|SEG)$/i.test(s.MainDicomTags?.Modality || ""))
+        .filter((s) => isImg(s) && !isUs(s))
         .map((s) => ({ id: s.ID, n: (s.Instances || []).length, num: Number(s.MainDicomTags?.SeriesNumber) || 9999 }))
         .filter((s) => s.n > 0)
         .sort((a, b) => a.num - b.num);
-      // Film/rontgen/USG: seri kecil (<=12 gambar) diambil semua. CT/MRI tanpa seri film:
+      // Film/rontgen: seri kecil (<=12 gambar) diambil semua. CT/MRI tanpa seri film:
       // ambil maks 9 irisan merata dari seri terkecil.
       const small = usable.filter((s) => s.n <= 12);
       const targets = [];
@@ -2685,7 +2826,7 @@
       for (const id of targets.slice(0, 16)) {
         images.push(await blobToDataUrl(await (await get(`/instances/${id}/preview`)).blob()));
       }
-      send({ ok: true, images });
+      send({ ok: true, images, label });
     } catch (err) {
       send({ ok: false, error: String(err && err.message || err) });
     }
@@ -5721,7 +5862,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.11.0</div>
+        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.12.0</div>
         <div class="sp-note">Pilih modul yang ingin digunakan:</div>
 
         <button type="button" data-disease-menu="1">
@@ -5758,7 +5899,7 @@
         </button>
 
         <button type="button" data-auto-penunjang="1">
-          📎 AUTO PENUNJANG – Lab & Film untuk Konsul
+          📎 AUTO PENUNJANG – Lab 1 mgg & Radiologi 1 bln
         </button>
 
         <div class="sp-note">
