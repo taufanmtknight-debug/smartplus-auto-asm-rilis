@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.16.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.17.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.16.0
-// @description  v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.17.0
+// @description  v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -1806,6 +1806,9 @@
 
     const keluhan = soapClean(soapFieldValue(root, ["Keluhan Utama", "Keluhan"]));
     const rps = soapClean(soapFieldValue(root, ["Riwayat Penyakit Sekarang", "RPS"]));
+    // v3.17.0: RPD (Riwayat Penyakit Dahulu, termasuk riwayat poli spesialis) ikut disalin; baris baru dipertahankan.
+    const rpdDirect = root.querySelector?.('[name="riwayat_sakit_old"]')?.value;
+    const rpd = soapClean(rpdDirect != null ? rpdDirect : soapFieldValue(root, ["Riwayat Penyakit Dahulu", "RPD"]));
     const kesadaran = extra.kesadaran || soapClean(soapFieldValue(root, ["Kesadaran"], true));
     const gcs = soapClean(soapFieldValue(root, ["Glasgow Coma Scale", "GCS", "Glosgow Coma"]));
     const td = soapVital(soapFieldValue(root, ["Tekanan Darah", "TD"]), "td");
@@ -1836,6 +1839,7 @@
       "*S :*",
       `Keluhan Utama: ${keluhan || "-"}`,
       `RPS: ${rps || "-"}`,
+      `RPD: ${rpd || "-"}`,
       "",
       "*O :*",
       "*Tanda-tanda vital*",
@@ -2302,7 +2306,8 @@
   }
 
   // =========================
-  // v3.14.0: RIWAYAT POLI SPESIALIS -> Riwayat Penyakit Sekarang (dipakai semua ASGADAR, termasuk NORMAL)
+  // v3.14.0: RIWAYAT POLI SPESIALIS (dipakai semua ASGADAR, termasuk NORMAL).
+  // v3.17.0: ditulis ke kolom Riwayat Penyakit Dahulu (riwayat_sakit_old), bukan Riwayat Penyakit Sekarang.
   // =========================
   // Sumber = tab "Riwayat Kunjungan" Smartplus (hanya dibaca, GET):
   //   history_pasien/history_pasien_list/<norm>  -> baris load_all_hasil_by_reg('noreg','idDokter','sumber','tipe')
@@ -2427,7 +2432,7 @@
     return { lines: out, count: out.length };
   }
 
-  // Tambahkan di bawah isi Riwayat Penyakit Sekarang (isi triase dipertahankan; blok lama diganti bila diulang).
+  // Tambahkan di bawah isi kolom (isi bawaan Smartplus dipertahankan; blok lama diganti bila diulang).
   function mergeRiwayatPoli(existing, lines) {
     const base = String(existing || "").split(/\n?Riwayat kontrol poli spesialis:[\s\S]*$/)[0].replace(/\s+$/, "");
     if (!lines.length) return base;
@@ -6051,7 +6056,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.16.0</div>
+        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.17.0</div>
         <div class="sp-note">Pilih modul yang ingin digunakan:</div>
 
         <button type="button" data-disease-menu="1">
@@ -6997,17 +7002,18 @@
     });
 
     setTimeout(async () => {
-      // v3.14.0: tambahkan riwayat poli spesialis di bawah isi Riwayat Penyakit Sekarang (isi triase dipertahankan).
+      // v3.17.0: riwayat poli spesialis ditambahkan di bawah isi Riwayat Penyakit Dahulu
+      // (isi bawaan Smartplus = diagnosis kunjungan terakhir dipertahankan).
       let riwayatNote = "";
       try {
         const rp = await riwayatPoliP;
-        const rpsEl = root.querySelector('[name="riwayat_sakit_now"]') || document.querySelector('#form_gadar [name="riwayat_sakit_now"]');
+        const rpdEl = root.querySelector('[name="riwayat_sakit_old"]') || document.querySelector('#form_gadar [name="riwayat_sakit_old"]');
         if (rp.error) riwayatNote = " Riwayat poli: gagal dibaca.";
         else if (!rp.lines.length) riwayatNote = " Riwayat poli spesialis: tidak ada.";
-        else if (!rpsEl) { riwayatNote = " Riwayat poli: kolom Riwayat Penyakit Sekarang tidak ditemukan."; fail.push("Riwayat poli spesialis"); }
+        else if (!rpdEl) { riwayatNote = " Riwayat poli: kolom Riwayat Penyakit Dahulu tidak ditemukan."; fail.push("Riwayat poli spesialis"); }
         else {
-          await waitFor(() => rpsEl.value.trim(), 1500);
-          setValue(rpsEl, mergeRiwayatPoli(rpsEl.value, rp.lines));
+          await waitFor(() => rpdEl.value.trim(), 1500);
+          setValue(rpdEl, mergeRiwayatPoli(rpdEl.value, rp.lines));
           riwayatNote = ` Riwayat poli spesialis: ${rp.lines.length} poli ditambahkan.`;
         }
         console.log("[AUTO ASM] Riwayat poli spesialis:", rp);
