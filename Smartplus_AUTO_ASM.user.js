@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.10.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.11.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.10.0
-// @description  v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.11.0
+// @description  v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -28,6 +28,11 @@
       if (/^\s*smart\s*plus\b/i.test(document.title || "")) return true;
     } catch (_) {}
     return false;
+  }
+  // v3.11.0: mode khusus di jendela viewer PACS yang dibuka AUTO PENUNJANG (lihat runOrthancCapture).
+  if (/^spcap\|/.test(window.name || "") && /osimis-viewer|\/app\//i.test(location.pathname)) {
+    runOrthancCapture();
+    return;
   }
   if (!isSmartplusPage()) return;
 
@@ -2294,6 +2299,397 @@
   // Nama lama dipertahankan agar kompatibel.
   async function runAutoRoThorax() {
     return runAutoRadOrder("THORAX");
+  }
+
+  // =========================
+  // v3.11.0: AUTO PENUNJANG (Lab + Film radiologi) untuk konsul
+  // =========================
+  // Lab  : riwayat hasil_lab/riwayat_hasil_lab/<noreg> -> print_hasil_labx_by_id_sample/<idSample>/<noreg>
+  //        -> digambar ulang ke PNG (tanpa NIK & alamat).
+  // Film : tombol [ FILM ] di riwayat hasil_rad membuka viewer PACS (Orthanc/Osimis) di jaringan lokal RS.
+  //        Browser tidak mengizinkan screenshot jendela lain, jadi script membuka viewer dengan
+  //        window.name khusus; di jendela viewer, script (runOrthancCapture) mengambil gambar film
+  //        lewat REST Orthanc (same-origin), mengirimnya ke Smartplus via postMessage, lalu menutup diri.
+  //        Alamat/kata sandi PACS TIDAK ditulis di script; diambil dari tombol FILM di halaman.
+  const SP_FILM_WINDOW_PREFIX = "spcap|";
+
+  function smartplusBaseUrl() {
+    const m = location.href.match(/^(.*?\/smartplus)(?:\/|$)/i);
+    return m ? m[1] : location.origin + "/smartplus";
+  }
+
+  function getCurrentNoregAny() {
+    const m = location.pathname.match(/(?:pasien_detail|main_content)\/([^/]+)/i);
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+
+  function spParseDateKey(text) {
+    const m = String(text || "").match(/(\d{2})-(\d{2})-(\d{4})/);
+    return m ? `${m[3]}-${m[2]}-${m[1]}` : "";
+  }
+
+  function spParseHtml(html) {
+    return new DOMParser().parseFromString(html, "text/html");
+  }
+
+  // Otomatis hanya entri KUNJUNGAN INI (noreg sama). Entri tanggal terbaru dari kunjungan lain
+  // dikembalikan terpisah sebagai pilihan (tidak diambil otomatis agar film lama tidak ikut terkirim).
+  function spPickVisitEntries(entries, noreg) {
+    const own = entries.filter((e) => e.noreg && e.noreg === noreg);
+    const latestKey = entries.map((e) => e.dateKey).filter(Boolean).sort().pop();
+    const latestOther = own.length || !latestKey ? [] : entries.filter((e) => e.dateKey === latestKey);
+    return { own, latestOther };
+  }
+
+  async function spFetchLabEntries(base, noreg) {
+    const html = await fetch(`${base}/hasil_lab/riwayat_hasil_lab/${encodeURIComponent(noreg)}`, { credentials: "same-origin" }).then((r) => r.text());
+    const doc = spParseHtml(html);
+    return [...doc.querySelectorAll("a[onclick*='load_hasil_lab_detail']")].map((a) => {
+      const m = (a.getAttribute("onclick") || "").match(/load_hasil_lab_detail\('([^']+)'\s*,\s*'([^']+)'\)/);
+      return m ? { idSample: m[1], noreg: m[2], dateText: a.textContent.trim(), dateKey: spParseDateKey(a.textContent) } : null;
+    }).filter(Boolean);
+  }
+
+  async function spFetchRadEntries(base, noreg) {
+    const html = await fetch(`${base}/hasil_rad/riwayat_hasil_rad/${encodeURIComponent(noreg)}`, { credentials: "same-origin" }).then((r) => r.text());
+    const doc = spParseHtml(html);
+    const rows = [...doc.querySelectorAll("tr")].filter((tr) => tr.querySelector("[onclick*='load_hasil_rad_detail']"));
+    return rows.map((tr) => {
+      const det = (tr.querySelector("[onclick*='load_hasil_rad_detail']").getAttribute("onclick") || "")
+        .match(/load_hasil_rad_detail\('([^']+)'\s*,\s*'([^']+)'\)/);
+      const cells = [...tr.cells].map((c) => c.textContent.replace(/\s+/g, " ").trim());
+      // Bisa ada lebih dari satu tombol FILM dalam satu baris (mis. Thorax + CT/USG di hari sama).
+      const films = [...tr.querySelectorAll("[onclick*='window.open']")]
+        .map((b) => ((b.getAttribute("onclick") || "").match(/window\.open\('([^']+)'/) || [])[1])
+        .filter(Boolean);
+      return {
+        noreg: det ? det[1] : "",
+        idTrx: det ? det[2] : "",
+        dateText: cells[0] || "",
+        dateKey: spParseDateKey(cells[0]),
+        exam: cells[4] || cells[cells.length - 2] || "Radiologi",
+        films
+      };
+    });
+  }
+
+  function spParseLabSheet(html) {
+    const doc = spParseHtml(html);
+    const tables = [...doc.querySelectorAll("table")].filter((t) => !t.querySelector("table"));
+    const info = {};
+    const infoTable = tables.find((t) => /Nama Pasien/i.test(t.textContent));
+    if (infoTable) {
+      for (const tr of infoTable.rows) {
+        const cells = [...tr.cells].map((c) => c.textContent.replace(/\s+/g, " ").trim());
+        for (let i = 0; i + 1 < cells.length; i += 2) {
+          const key = cells[i];
+          const val = cells[i + 1].replace(/^:\s*/, "");
+          if (key && val) info[key] = val;
+        }
+      }
+    }
+    const rows = [];
+    const resultTable = tables.find((t) => /JENIS PEMERIKSAAN/i.test(t.textContent));
+    if (resultTable) {
+      for (const tr of [...resultTable.rows].slice(1)) {
+        const cells = [...tr.cells];
+        const txt = cells.map((c) => c.textContent.replace(/\s+/g, " ").trim());
+        if (!txt.join("")) continue;
+        if (cells.length === 1 || cells[0].colSpan > 1) { rows.push({ type: "section", name: txt[0] }); continue; }
+        const flagged = /red/i.test(cells[1]?.getAttribute("style") || "");
+        if (!txt[1] && !txt[2] && !txt[3]) { rows.push({ type: "group", name: txt[0] }); continue; }
+        rows.push({ type: "item", name: txt[0], hasil: txt[1] || "", satuan: txt[2] || "", normal: txt[3] || "", ket: txt[4] || "", flagged });
+      }
+    }
+    return { info, rows };
+  }
+
+  function spWrapText(ctx, text, maxWidth) {
+    const words = String(text || "").split(/\s+/).filter(Boolean);
+    const lines = [];
+    let line = "";
+    for (const w of words) {
+      const test = line ? line + " " + w : w;
+      if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = w; } else line = test;
+    }
+    if (line) lines.push(line);
+    return lines.length ? lines : [""];
+  }
+
+  function spRenderLabSheet(sheet) {
+    const W = 1000, PAD = 24, LH = 26;
+    const cols = { name: PAD, hasil: 360, satuan: 500, normal: 630, ket: 800 };
+    const measure = document.createElement("canvas").getContext("2d");
+    measure.font = "16px Arial";
+    const infoKeys = ["No. RM / No. Reg.", "Nama Pasien", "Tgl. Lahir / Umur", "Jenis Kelamin", "Tgl. Terima", "Tgl. Hasil", "Pengirim", "Penjamin"];
+    const infoPairs = infoKeys.filter((k) => sheet.info[k]).map((k) => [k, sheet.info[k]]);
+    let h = PAD + 34 + Math.ceil(infoPairs.length / 2) * LH + 20 + LH + 10;
+    for (const r of sheet.rows) {
+      if (r.type !== "item") { h += LH + 4; continue; }
+      h += Math.max(1, spWrapText(measure, r.ket, W - cols.ket - PAD).length, spWrapText(measure, r.normal, cols.ket - cols.normal - 10).length) * LH;
+    }
+    h += PAD + 24;
+    const cv = document.createElement("canvas");
+    cv.width = W; cv.height = h;
+    const ctx = cv.getContext("2d");
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, h);
+    ctx.fillStyle = "#000"; ctx.textBaseline = "top";
+    let y = PAD;
+    ctx.font = "bold 22px Arial"; ctx.fillText("HASIL PEMERIKSAAN LABORATORIUM", PAD, y); y += 34;
+    ctx.font = "15px Arial";
+    infoPairs.forEach(([k, v], i) => {
+      const x = i % 2 === 0 ? PAD : W / 2 + 10;
+      if (i % 2 === 0 && i) y += LH;
+      ctx.fillStyle = "#555"; ctx.fillText(k, x, y);
+      ctx.fillStyle = "#000"; ctx.fillText(": " + v, x + 140, y);
+    });
+    y += LH + 16;
+    ctx.fillStyle = "#eee"; ctx.fillRect(PAD - 6, y - 4, W - 2 * PAD + 12, LH + 4);
+    ctx.fillStyle = "#000"; ctx.font = "bold 16px Arial";
+    ctx.fillText("JENIS PEMERIKSAAN", cols.name, y); ctx.fillText("HASIL", cols.hasil, y);
+    ctx.fillText("SATUAN", cols.satuan, y); ctx.fillText("NILAI NORMAL", cols.normal, y); ctx.fillText("KETERANGAN", cols.ket, y);
+    y += LH + 10;
+    for (const r of sheet.rows) {
+      if (r.type === "section") { ctx.font = "bold 17px Arial"; ctx.fillStyle = "#000"; ctx.fillText(r.name, cols.name, y); y += LH + 4; continue; }
+      if (r.type === "group") { ctx.font = "italic 16px Arial"; ctx.fillStyle = "#333"; ctx.fillText(r.name, cols.name, y); y += LH + 4; continue; }
+      ctx.font = "16px Arial"; ctx.fillStyle = "#000";
+      ctx.fillText(r.name, cols.name + 10, y);
+      ctx.font = r.flagged ? "bold 16px Arial" : "16px Arial";
+      ctx.fillStyle = r.flagged ? "#d00000" : "#000";
+      ctx.fillText(r.hasil, cols.hasil, y);
+      ctx.font = "16px Arial"; ctx.fillStyle = "#000";
+      ctx.fillText(r.satuan, cols.satuan, y);
+      const nLines = spWrapText(ctx, r.normal, cols.ket - cols.normal - 10);
+      const kLines = spWrapText(ctx, r.ket, W - cols.ket - PAD);
+      nLines.forEach((l, i) => ctx.fillText(l, cols.normal, y + i * LH));
+      kLines.forEach((l, i) => ctx.fillText(l, cols.ket, y + i * LH));
+      y += Math.max(1, nLines.length, kLines.length) * LH;
+    }
+    ctx.font = "12px Arial"; ctx.fillStyle = "#888";
+    ctx.fillText("Disusun AUTO PENUNJANG dari Smartplus untuk keperluan konsul.", PAD, h - PAD - 6);
+    return cv.toDataURL("image/png");
+  }
+
+  // Buka viewer film dengan window.name khusus, tunggu gambar dikirim balik.
+  function spCaptureFilm(url, index) {
+    return new Promise((resolve) => {
+      const nonce = `${Date.now()}_${index}_${Math.random().toString(36).slice(2, 8)}`;
+      const name = SP_FILM_WINDOW_PREFIX + encodeURIComponent(location.origin) + "|" + nonce;
+      let done = false;
+      const finish = (val) => { if (done) return; done = true; window.removeEventListener("message", onMsg); resolve(val); };
+      const onMsg = (ev) => {
+        const d = ev.data;
+        if (!d || d.type !== "sp-film" || d.nonce !== nonce) return;
+        finish(d);
+      };
+      window.addEventListener("message", onMsg);
+      const w = window.open(url, name, "width=900,height=700");
+      if (!w) { finish({ ok: false, blocked: true, url }); return; }
+      setTimeout(() => finish({ ok: false, error: "Waktu habis menunggu film (90 detik)." }), 90000);
+    });
+  }
+
+  function spShowPenunjangPanel(items, notes) {
+    const PANEL_ID = "sp-auto-penunjang-panel";
+    document.getElementById(PANEL_ID)?.remove();
+    const panel = document.createElement("div");
+    panel.id = PANEL_ID;
+    panel.style.cssText = "position:fixed;inset:4vh 50% auto auto;transform:translateX(50%);z-index:2147483647;background:#fff;border:2px solid #e91e63;border-radius:12px;padding:12px;width:min(94vw,760px);max-height:90vh;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,.35);font:14px/1.4 sans-serif;color:#222;";
+    const head = document.createElement("div");
+    head.style.cssText = "display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:sticky;top:-12px;background:#fff;padding:4px 0 8px;";
+    head.innerHTML = `<b style="flex:1;min-width:180px">📎 Penunjang siap dikirim (${items.length})</b>`;
+    const dlAll = document.createElement("button");
+    dlAll.type = "button"; dlAll.textContent = "⬇ Unduh semua";
+    dlAll.style.cssText = "padding:10px 14px;background:#e91e63;color:#fff;border:0;border-radius:8px;";
+    dlAll.addEventListener("click", async () => {
+      for (const it of items) { spDownload(it.dataUrl, it.fileName); await recipeSleep(400); }
+    });
+    const close = document.createElement("button");
+    close.type = "button"; close.textContent = "Tutup";
+    close.style.cssText = "padding:10px 14px;border:1px solid #999;border-radius:8px;background:#f5f5f5;";
+    close.addEventListener("click", () => panel.remove());
+    head.append(dlAll, close);
+    panel.append(head);
+    const tip = document.createElement("div");
+    tip.style.cssText = "font-size:12px;color:#555;margin-bottom:8px;";
+    tip.textContent = "Klik kanan gambar → Salin gambar, lalu Paste di WhatsApp. Di HP: tekan lama gambar. Atau Unduh lalu lampirkan.";
+    panel.append(tip);
+    for (const n of notes || []) {
+      const d = document.createElement("div");
+      d.style.cssText = "background:#fff3cd;border:1px solid #f0c36d;border-radius:6px;padding:6px 8px;margin:4px 0;font-size:13px;";
+      if (n.button) {
+        d.textContent = n.text + " ";
+        const b = document.createElement("button");
+        b.type = "button"; b.textContent = n.button; b.style.cssText = "padding:6px 10px;margin-left:4px;";
+        b.addEventListener("click", n.onClick);
+        d.append(b);
+      } else d.textContent = n.text;
+      panel.append(d);
+    }
+    for (const it of items) {
+      const fig = document.createElement("div");
+      fig.style.cssText = "margin:10px 0;border-top:1px solid #eee;padding-top:8px;";
+      const cap = document.createElement("div");
+      cap.style.cssText = "font-weight:bold;margin-bottom:4px;display:flex;gap:8px;align-items:center;";
+      cap.textContent = it.caption;
+      const dl = document.createElement("a");
+      dl.href = it.dataUrl; dl.download = it.fileName; dl.textContent = "⬇"; dl.title = "Unduh";
+      dl.style.cssText = "text-decoration:none;padding:2px 8px;border:1px solid #ccc;border-radius:6px;";
+      cap.append(dl);
+      const img = document.createElement("img");
+      img.src = it.dataUrl; img.alt = it.caption;
+      img.style.cssText = "max-width:100%;border:1px solid #ddd;";
+      fig.append(cap, img);
+      panel.append(fig);
+    }
+    document.documentElement.appendChild(panel);
+    return panel;
+  }
+
+  function spDownload(dataUrl, fileName) {
+    const a = document.createElement("a");
+    a.href = dataUrl; a.download = fileName;
+    document.documentElement.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  function spSafeName(s) {
+    return String(s || "").replace(/[^A-Za-z0-9_-]+/g, "_").replace(/_+/g, "_").slice(0, 40);
+  }
+
+  async function runAutoPenunjang() {
+    const noreg = getCurrentNoregAny();
+    if (!noreg) { toast("AUTO PENUNJANG: buka halaman pasien (detail IGD / e-Ranap) terlebih dahulu."); return; }
+    const base = smartplusBaseUrl();
+    const items = [];
+    let notes = [];
+    let blockedFilms = [];
+    toast("AUTO PENUNJANG: mengambil hasil lab & radiologi...");
+
+    const render = () => spShowPenunjangPanel(items, blockedFilms.length ? [...notes, {
+      text: `Browser memblokir jendela film (${blockedFilms.length}).`,
+      button: "🩻 Ambil film",
+      onClick: async () => { const again = blockedFilms; blockedFilms = []; await addFilms(again); render(); }
+    }] : notes);
+
+    const addLabs = async (entries) => {
+      for (const e of entries) {
+        const html = await fetch(`${base}/hasil_lab/hasil_lab/print_hasil_labx_by_id_sample/${encodeURIComponent(e.idSample)}/${encodeURIComponent(e.noreg)}`, { credentials: "same-origin" }).then((r) => r.text());
+        const sheet = spParseLabSheet(html);
+        if (!sheet.rows.length) continue;
+        items.push({ caption: `🧪 Lab ${e.dateText}`, dataUrl: spRenderLabSheet(sheet), fileName: `Lab_${spSafeName(e.dateText)}.png` });
+      }
+    };
+    const filmsOf = (rads) => rads.flatMap((r) => r.films.map((url, i) => ({
+      url,
+      caption: `🩻 ${r.exam} ${r.dateText}${r.films.length > 1 ? ` (film ${i + 1})` : ""}`,
+      base: `Film_${spSafeName(r.exam)}_${spSafeName(r.dateKey)}${r.films.length > 1 ? "_" + (i + 1) : ""}`
+    })));
+    const addFilms = async (films) => {
+      for (let i = 0; i < films.length; i++) {
+        const f = films[i];
+        toast(`AUTO PENUNJANG: mengambil film ${i + 1}/${films.length} (${f.caption})...`);
+        const res = await spCaptureFilm(f.url, i);
+        if (res.blocked) { blockedFilms.push(f); continue; }
+        if (!res.ok) { notes.push({ text: `Film ${f.caption}: ${res.error || "gagal"}. Pastikan komputer terhubung ke jaringan RS.` }); continue; }
+        (res.images || []).forEach((src, k) => items.push({
+          caption: `${f.caption}${res.images.length > 1 ? ` — gambar ${k + 1}` : ""}`,
+          dataUrl: src,
+          fileName: `${f.base}${res.images.length > 1 ? "_" + (k + 1) : ""}.png`
+        }));
+      }
+    };
+
+    // ---- LAB ----
+    try {
+      const { own, latestOther } = spPickVisitEntries(await spFetchLabEntries(base, noreg), noreg);
+      await addLabs(own);
+      if (!own.length) {
+        notes.push(latestOther.length ? {
+          text: `Belum ada hasil lab kunjungan ini. Hasil terakhir: ${latestOther[0].dateText}.`,
+          button: "Ambil lab terakhir",
+          onClick: async () => { notes = notes.filter((n) => n.button !== "Ambil lab terakhir"); await addLabs(latestOther); render(); }
+        } : { text: "Tidak ada hasil laboratorium." });
+      }
+    } catch (err) {
+      console.warn("[AUTO PENUNJANG] lab", err);
+      notes.push({ text: "Gagal mengambil hasil lab: " + (err.message || err) });
+    }
+
+    // ---- RADIOLOGI / FILM ----
+    try {
+      const { own, latestOther } = spPickVisitEntries(await spFetchRadEntries(base, noreg), noreg);
+      const films = filmsOf(own);
+      if (own.length && !films.length) notes.push({ text: "Hasil radiologi kunjungan ini ada, tetapi tombol FILM belum tersedia." });
+      if (films.length) await addFilms(films);
+      if (!own.length) {
+        const otherFilms = filmsOf(latestOther);
+        notes.push(otherFilms.length ? {
+          text: `Belum ada radiologi kunjungan ini. Film terakhir: ${latestOther[0].dateText} (${latestOther.map((r) => r.exam).join(", ")}).`,
+          button: "Ambil film terakhir",
+          onClick: async () => { notes = notes.filter((n) => n.button !== "Ambil film terakhir"); await addFilms(otherFilms); render(); }
+        } : { text: "Tidak ada hasil radiologi." });
+      }
+    } catch (err) {
+      console.warn("[AUTO PENUNJANG] rad", err);
+      notes.push({ text: "Gagal mengambil daftar radiologi: " + (err.message || err) });
+    }
+
+    render();
+    toast(`AUTO PENUNJANG: ${items.length} gambar siap dikirim.`);
+  }
+
+  // Dijalankan DI JENDELA VIEWER PACS (Orthanc/Osimis) yang dibuka oleh AUTO PENUNJANG.
+  async function runOrthancCapture() {
+    const parts = String(window.name || "").split("|");
+    const targetOrigin = decodeURIComponent(parts[1] || "");
+    const nonce = parts[2] || "";
+    const send = (payload) => {
+      try { if (window.opener && targetOrigin) window.opener.postMessage({ type: "sp-film", nonce, ...payload }, targetOrigin); } catch (_) {}
+    };
+    const blobToDataUrl = (blob) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(blob); });
+    try {
+      const study = new URLSearchParams(location.search).get("study");
+      if (!study) throw new Error("ID study tidak ada di alamat viewer.");
+      const get = async (path) => {
+        const r = await fetch(location.origin + path, { credentials: "include" });
+        if (!r.ok) throw new Error(`PACS ${r.status} (${path.split("/")[1]})`);
+        return r;
+      };
+      const series = await (await get(`/studies/${study}/series`)).json();
+      const usable = series
+        .filter((s) => !/^(SR|PR|KO|DOC|REG|SEG)$/i.test(s.MainDicomTags?.Modality || ""))
+        .map((s) => ({ id: s.ID, n: (s.Instances || []).length, num: Number(s.MainDicomTags?.SeriesNumber) || 9999 }))
+        .filter((s) => s.n > 0)
+        .sort((a, b) => a.num - b.num);
+      // Film/rontgen/USG: seri kecil (<=12 gambar) diambil semua. CT/MRI tanpa seri film:
+      // ambil maks 9 irisan merata dari seri terkecil.
+      const small = usable.filter((s) => s.n <= 12);
+      const targets = [];
+      if (small.length) {
+        for (const s of small) {
+          const inst = await (await get(`/series/${s.id}/instances`)).json();
+          inst.sort((a, b) => (Number(a.MainDicomTags?.InstanceNumber) || 0) - (Number(b.MainDicomTags?.InstanceNumber) || 0));
+          targets.push(...inst.map((i) => i.ID));
+        }
+      } else if (usable.length) {
+        const s = usable.reduce((a, b) => (a.n <= b.n ? a : b));
+        const inst = await (await get(`/series/${s.id}/instances`)).json();
+        inst.sort((a, b) => (Number(a.MainDicomTags?.InstanceNumber) || 0) - (Number(b.MainDicomTags?.InstanceNumber) || 0));
+        const k = Math.min(9, inst.length);
+        for (let i = 0; i < k; i++) targets.push(inst[Math.floor(((i + 0.5) * inst.length) / k)].ID);
+      }
+      if (!targets.length) throw new Error("Tidak ada gambar di study ini.");
+      const images = [];
+      for (const id of targets.slice(0, 16)) {
+        images.push(await blobToDataUrl(await (await get(`/instances/${id}/preview`)).blob()));
+      }
+      send({ ok: true, images });
+    } catch (err) {
+      send({ ok: false, error: String(err && err.message || err) });
+    }
+    setTimeout(() => { try { window.close(); } catch (_) {} }, 800);
   }
 
   function clickVisibleText(phrases) {
@@ -5325,7 +5721,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.10.0</div>
+        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.11.0</div>
         <div class="sp-note">Pilih modul yang ingin digunakan:</div>
 
         <button type="button" data-disease-menu="1">
@@ -5359,6 +5755,10 @@
 
         <button type="button" data-auto-rad="USG_WHOLE_ABDOMEN">
           🔊 AUTO USG – Whole Abdomen
+        </button>
+
+        <button type="button" data-auto-penunjang="1">
+          📎 AUTO PENUNJANG – Lab & Film untuk Konsul
         </button>
 
         <div class="sp-note">
@@ -5896,6 +6296,12 @@
       if (actionDirect) {
         closeMenu();
         await fillActionRecipe(actionDirect);
+        return;
+      }
+
+      if (target.dataset?.autoPenunjang === "1") {
+        closeMenu();
+        await runAutoPenunjang();
         return;
       }
 
