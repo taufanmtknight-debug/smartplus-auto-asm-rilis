@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.12.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.13.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.12.0
-// @description  v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.13.0
+// @description  v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -2177,7 +2177,7 @@
           ? "AUTO LAB selesai. Hema rutin + Glukosa Sewaktu dipilih (usia >39 tahun), dan Save ditekan." + dxNote
           : "AUTO LAB selesai. Hema rutin dipilih, dan Save ditekan." + dxNote
       );
-      console.log("[AUTO LAB] Febris selesai", {
+      console.log("[AUTO LAB] selesai", {
         age: patientAgeYears,
         glukosaSewaktu: needsGlucoseSewaktu
       });
@@ -2302,7 +2302,7 @@
   }
 
   // =========================
-  // v3.11.0: AUTO PENUNJANG (Lab + Film radiologi) untuk konsul
+  // v3.11.0: AUTO PENUNJANG (Lab + Film radiologi) untuk konsul — v3.13.0 berganti nama menjadi AUTO SCREENSHOT
   // =========================
   // Lab  : riwayat hasil_lab/riwayat_hasil_lab/<noreg> -> print_hasil_labx_by_id_sample/<idSample>/<noreg>
   //        -> digambar ulang ke PNG (tanpa NIK & alamat).
@@ -2497,7 +2497,7 @@
       y += Math.max(1, nLines.length, kLines.length) * LH;
     }
     ctx.font = "12px Arial"; ctx.fillStyle = "#888";
-    ctx.fillText("Disusun AUTO PENUNJANG dari Smartplus untuk keperluan konsul.", PAD, h - PAD - 6);
+    ctx.fillText("Disusun AUTO SCREENSHOT dari Smartplus untuk keperluan konsul.", PAD, h - PAD - 6);
     return cv.toDataURL("image/png");
   }
 
@@ -2575,38 +2575,63 @@
     sig.forEach((t) => { ctx.fillText(t, W - PAD - 20, y); y += LH; });
     ctx.textAlign = "left";
     ctx.font = "12px Arial"; ctx.fillStyle = "#888";
-    ctx.fillText("Disusun AUTO PENUNJANG dari Smartplus untuk keperluan konsul.", PAD, h - PAD - 6);
+    ctx.fillText("Disusun AUTO SCREENSHOT dari Smartplus untuk keperluan konsul.", PAD, h - PAD - 6);
     return cv.toDataURL("image/png");
   }
 
-  // Buka viewer film dengan window.name khusus, tunggu gambar dikirim balik.
-  function spCaptureFilm(url, index) {
+  // Buka viewer film dengan window.name khusus, kumpulkan gambar yang dikirim balik.
+  // v3.13.0: tunggu maks SP_FILM_TIMEOUT_MS (6 detik). Gambar yang sudah masuk tetap dipakai,
+  // lalu jendela ditutup dan lanjut ke penunjang berikutnya.
+  const SP_FILM_TIMEOUT_MS = 6000;
+  function spCaptureFilm(url, index, timeoutMs = SP_FILM_TIMEOUT_MS) {
     return new Promise((resolve) => {
       const nonce = `${Date.now()}_${index}_${Math.random().toString(36).slice(2, 8)}`;
       const name = SP_FILM_WINDOW_PREFIX + encodeURIComponent(location.origin) + "|" + nonce;
+      const got = [];
+      let label = "";
       let done = false;
-      const finish = (val) => { if (done) return; done = true; window.removeEventListener("message", onMsg); resolve(val); };
+      let w = null;
+      const collected = () => got.filter(Boolean);
+      const finish = (val) => {
+        if (done) return;
+        done = true;
+        window.removeEventListener("message", onMsg);
+        try { if (w && !w.closed) w.close(); } catch (_) {}
+        resolve({ label, ...val, images: collected() });
+      };
+      let filmOrigin = "";
+      try { filmOrigin = new URL(url, location.href).origin; } catch (_) {}
       const onMsg = (ev) => {
         const d = ev.data;
         if (!d || d.type !== "sp-film" || d.nonce !== nonce) return;
-        finish(d);
+        if (filmOrigin && ev.origin !== filmOrigin) return; // hanya dari server film itu sendiri
+        if (d.label) label = d.label;
+        if (d.part === "image") { got[d.k] = d.image; return; }
+        if (d.part === "meta") return;
+        if (Array.isArray(d.images)) d.images.forEach((img, k) => { got[k] = img; });
+        finish({ ok: d.ok !== false && (!!collected().length || !!d.skipped), skipped: d.skipped, error: d.error });
       };
       window.addEventListener("message", onMsg);
-      const w = window.open(url, name, "width=900,height=700");
+      w = window.open(url, name, "width=900,height=700");
       if (!w) { finish({ ok: false, blocked: true, url }); return; }
-      setTimeout(() => finish({ ok: false, error: "Waktu habis menunggu film (90 detik)." }), 90000);
+      setTimeout(() => finish({
+        ok: !!collected().length,
+        timedOut: true,
+        error: collected().length ? "" : `film tidak muncul dalam ${Math.round(timeoutMs / 1000)} detik`
+      }), timeoutMs);
     });
   }
 
-  function spShowPenunjangPanel(items, notes) {
+  function spShowPenunjangPanel(items, notes, opts = {}) {
     const PANEL_ID = "sp-auto-penunjang-panel";
+    const prevScroll = document.getElementById(PANEL_ID)?.scrollTop || 0;
     document.getElementById(PANEL_ID)?.remove();
     const panel = document.createElement("div");
     panel.id = PANEL_ID;
     panel.style.cssText = "position:fixed;inset:4vh 50% auto auto;transform:translateX(50%);z-index:2147483647;background:#fff;border:2px solid #e91e63;border-radius:12px;padding:12px;width:min(94vw,760px);max-height:90vh;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,.35);font:14px/1.4 sans-serif;color:#222;";
     const head = document.createElement("div");
     head.style.cssText = "display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:sticky;top:-12px;background:#fff;padding:4px 0 8px;";
-    head.innerHTML = `<b style="flex:1;min-width:180px">📎 Penunjang siap dikirim (${items.length})</b>`;
+    head.innerHTML = `<b style="flex:1;min-width:180px">📸 AUTO SCREENSHOT — siap dikirim (${items.length})</b>`;
     const dlAll = document.createElement("button");
     dlAll.type = "button"; dlAll.textContent = "⬇ Unduh semua";
     dlAll.style.cssText = "padding:10px 14px;background:#e91e63;color:#fff;border:0;border-radius:8px;";
@@ -2616,13 +2641,19 @@
     const close = document.createElement("button");
     close.type = "button"; close.textContent = "Tutup";
     close.style.cssText = "padding:10px 14px;border:1px solid #999;border-radius:8px;background:#f5f5f5;";
-    close.addEventListener("click", () => panel.remove());
+    close.addEventListener("click", () => { panel.remove(); if (opts.onClose) opts.onClose(); });
     head.append(dlAll, close);
     panel.append(head);
     const tip = document.createElement("div");
     tip.style.cssText = "font-size:12px;color:#555;margin-bottom:8px;";
     tip.textContent = "Klik kanan gambar → Salin gambar, lalu Paste di WhatsApp. Di HP: tekan lama gambar. Atau Unduh lalu lampirkan.";
     panel.append(tip);
+    if (opts.status) {
+      const st = document.createElement("div");
+      st.style.cssText = "background:#e3f2fd;border:1px solid #90caf9;border-radius:6px;padding:6px 8px;margin:4px 0;font-size:13px;";
+      st.textContent = opts.status;
+      panel.append(st);
+    }
     for (const n of notes || []) {
       const d = document.createElement("div");
       d.style.cssText = "background:#fff3cd;border:1px solid #f0c36d;border-radius:6px;padding:6px 8px;margin:4px 0;font-size:13px;";
@@ -2652,6 +2683,7 @@
       panel.append(fig);
     }
     document.documentElement.appendChild(panel);
+    panel.scrollTop = prevScroll;
     return panel;
   }
 
@@ -2669,26 +2701,37 @@
 
   async function runAutoPenunjang() {
     const noreg = getCurrentNoregAny();
-    if (!noreg) { toast("AUTO PENUNJANG: buka halaman pasien (detail IGD / e-Ranap) terlebih dahulu."); return; }
+    if (!noreg) { toast("AUTO SCREENSHOT: buka halaman pasien (detail IGD / e-Ranap) terlebih dahulu."); return; }
     const base = smartplusBaseUrl();
     const items = [];
     let notes = [];
     let blockedFilms = [];
-    toast("AUTO PENUNJANG: mengambil hasil lab & radiologi...");
+    let status = "";
+    let closedByUser = false;
+    toast("AUTO SCREENSHOT: mengambil hasil lab 1 minggu...");
+    // Daftar radiologi diambil paralel sejak awal (lab tetap ditampilkan lebih dulu).
+    const radListP = spFetchRadEntries(base, noreg).then((list) => ({ list }), (error) => ({ error }));
 
-    const render = () => spShowPenunjangPanel(items, blockedFilms.length ? [...notes, {
-      text: `Browser memblokir jendela film (${blockedFilms.length}).`,
-      button: "🩻 Ambil film",
-      onClick: async () => { const again = blockedFilms; blockedFilms = []; await addFilms(again); render(); }
-    }] : notes);
+    const render = () => {
+      if (closedByUser) return;
+      spShowPenunjangPanel(items, blockedFilms.length ? [...notes, {
+        text: `Browser memblokir jendela film (${blockedFilms.length}).`,
+        button: "🩻 Ambil film",
+        onClick: async () => { closedByUser = false; const again = blockedFilms; blockedFilms = []; await addFilms(again); status = ""; render(); }
+      }] : notes, { status, onClose: () => { closedByUser = true; } });
+    };
 
     const addLabs = async (entries) => {
-      for (const e of entries) {
-        const html = await fetch(`${base}/hasil_lab/hasil_lab/print_hasil_labx_by_id_sample/${encodeURIComponent(e.idSample)}/${encodeURIComponent(e.noreg)}`, { credentials: "same-origin" }).then((r) => r.text());
-        const sheet = spParseLabSheet(html);
-        if (!sheet.rows.length) continue;
+      // Semua lembar lab diambil bersamaan supaya cepat; urutan tetap terbaru dulu.
+      const sheets = await Promise.all(entries.map((e) =>
+        fetch(`${base}/hasil_lab/hasil_lab/print_hasil_labx_by_id_sample/${encodeURIComponent(e.idSample)}/${encodeURIComponent(e.noreg)}`, { credentials: "same-origin" })
+          .then((r) => r.text()).then(spParseLabSheet).catch(() => null)));
+      entries.forEach((e, i) => {
+        const sheet = sheets[i];
+        if (!sheet) { notes.push({ text: `Lab ${e.dateText}: gagal dimuat.` }); return; }
+        if (!sheet.rows.length) return;
         items.push({ caption: `🧪 Lab ${e.dateText}`, dataUrl: spRenderLabSheet(sheet), fileName: `Lab_${spSafeName(e.dateText)}.png` });
-      }
+      });
     };
     // Satu study PACS bisa muncul di beberapa baris (mis. FILM ke-2 di baris Thorax = CT hari itu):
     // dibuka sekali saja (dedup alamat).
@@ -2701,29 +2744,36 @@
     const addFilms = async (films) => {
       for (let i = 0; i < films.length; i++) {
         const f = films[i];
-        toast(`AUTO PENUNJANG: mengambil film ${i + 1}/${films.length} (${f.caption})...`);
+        status = `⏳ Mengambil film ${i + 1}/${films.length} (${f.caption}), maks ${SP_FILM_TIMEOUT_MS / 1000} detik...`;
+        render();
         const res = await spCaptureFilm(f.url, i);
         if (res.blocked) { blockedFilms.push(f); continue; }
-        if (!res.ok) { notes.push({ text: `Film ${f.caption}: ${res.error || "gagal"}. Pastikan komputer terhubung ke jaringan RS.` }); continue; }
         if (res.skipped) { notes.push({ text: `${f.caption}: berisi film USG — dilewati (USG cukup ekspertise).` }); continue; }
+        const imgs = res.images || [];
+        if (!imgs.length) { notes.push({ text: `${f.caption}: ${res.error || "gagal"} — dilewati.` }); continue; }
+        if (res.timedOut) notes.push({ text: `${f.caption}: baru ${imgs.length} gambar dalam ${SP_FILM_TIMEOUT_MS / 1000} detik — dipakai yang ada.` });
         const cap = res.label ? `${f.caption} — ${res.label}` : f.caption;
-        (res.images || []).forEach((src, k) => items.push({
-          caption: `${cap}${res.images.length > 1 ? ` — gambar ${k + 1}` : ""}`,
+        imgs.forEach((src, k) => items.push({
+          caption: `${cap}${imgs.length > 1 ? ` — gambar ${k + 1}` : ""}`,
           dataUrl: src,
-          fileName: `${f.base}${res.images.length > 1 ? "_" + (k + 1) : ""}.png`
+          fileName: `${f.base}${imgs.length > 1 ? "_" + (k + 1) : ""}.png`
         }));
       }
     };
     const addExpertise = async (rads) => {
       for (const r of rads) {
-        const html = await fetch(`${base}/hasil_rad/hasil_rad/inner_hasil_rad_detail/${encodeURIComponent(r.noreg)}/${encodeURIComponent(r.idTrx)}`, { credentials: "same-origin" }).then((x) => x.text());
-        const exp = spParseRadExpertise(html);
-        if (!exp.lines.length) { notes.push({ text: `Ekspertise ${r.exam} ${r.dateText} belum tersedia.` }); continue; }
-        items.push({ caption: `📝 Ekspertise ${r.exam} ${r.dateText}`, dataUrl: spRenderRadExpertise(exp), fileName: `Ekspertise_${spSafeName(r.exam)}_${spSafeName(r.dateKey)}.png` });
+        try {
+          const html = await fetch(`${base}/hasil_rad/hasil_rad/inner_hasil_rad_detail/${encodeURIComponent(r.noreg)}/${encodeURIComponent(r.idTrx)}`, { credentials: "same-origin" }).then((x) => x.text());
+          const exp = spParseRadExpertise(html);
+          if (!exp.lines.length) { notes.push({ text: `Ekspertise ${r.exam} ${r.dateText} belum tersedia.` }); continue; }
+          items.push({ caption: `📝 Ekspertise ${r.exam} ${r.dateText}`, dataUrl: spRenderRadExpertise(exp), fileName: `Ekspertise_${spSafeName(r.exam)}_${spSafeName(r.dateKey)}.png` });
+        } catch (err) {
+          notes.push({ text: `Ekspertise ${r.exam} ${r.dateText}: gagal dimuat — dilewati.` });
+        }
       }
     };
 
-    // ---- LAB: semua hasil 1 minggu terakhir ----
+    // ---- 1) LAB: semua hasil 1 minggu terakhir, langsung ditampilkan ----
     try {
       const { recent, latestOlder } = spPickRecentEntries(await spFetchLabEntries(base, noreg), SP_LAB_WINDOW);
       await addLabs(recent);
@@ -2735,13 +2785,17 @@
         } : { text: "Tidak ada hasil laboratorium." });
       }
     } catch (err) {
-      console.warn("[AUTO PENUNJANG] lab", err);
+      console.warn("[AUTO SCREENSHOT] lab", err);
       notes.push({ text: "Gagal mengambil hasil lab: " + (err.message || err) });
     }
+    status = "⏳ Mengambil radiologi...";
+    render();
 
-    // ---- RADIOLOGI: semua 1 bulan terakhir. USG = ekspertise saja; CT/rontgen = film saja ----
+    // ---- 2) RADIOLOGI 1 bulan: USG = ekspertise saja (cepat), lalu CT/rontgen = film (maks 6 detik per film) ----
     try {
-      const { recent, latestOlder } = spPickRecentEntries(await spFetchRadEntries(base, noreg), SP_RAD_WINDOW);
+      const radList = await radListP;
+      if (radList.error) throw radList.error;
+      const { recent, latestOlder } = spPickRecentEntries(radList.list, SP_RAD_WINDOW);
       const usg = recent.filter((r) => spIsUsgExam(r.exam));
       const filmRows = recent.filter((r) => !spIsUsgExam(r.exam));
       await addExpertise(usg);
@@ -2755,19 +2809,21 @@
         notes.push(latestOlder.length ? {
           text: `Tidak ada radiologi dalam 1 bulan terakhir. Terakhir: ${latestOlder[0].dateText} (${latestOlder.map((r) => r.exam).join(", ")}).`,
           button: "Ambil radiologi terakhir",
-          onClick: async () => { notes = notes.filter((n) => n.button !== "Ambil radiologi terakhir"); await addExpertise(olderUsg); await addFilms(olderFilms); render(); }
+          onClick: async () => { notes = notes.filter((n) => n.button !== "Ambil radiologi terakhir"); await addExpertise(olderUsg); await addFilms(olderFilms); status = ""; render(); }
         } : { text: "Tidak ada hasil radiologi." });
       }
     } catch (err) {
-      console.warn("[AUTO PENUNJANG] rad", err);
+      console.warn("[AUTO SCREENSHOT] rad", err);
       notes.push({ text: "Gagal mengambil daftar radiologi: " + (err.message || err) });
     }
 
+    status = "";
     render();
-    toast(`AUTO PENUNJANG: ${items.length} gambar siap dikirim (lab 1 minggu, radiologi 1 bulan).`);
+    toast(`AUTO SCREENSHOT: ${items.length} gambar siap dikirim (lab 1 minggu, radiologi 1 bulan).`);
   }
 
-  // Dijalankan DI JENDELA VIEWER PACS (Orthanc/Osimis) yang dibuka oleh AUTO PENUNJANG.
+  // Dijalankan DI JENDELA VIEWER PACS (Orthanc/Osimis) yang dibuka oleh AUTO SCREENSHOT.
+  // v3.13.0: tiap gambar dikirim begitu siap (bukan menunggu semua), karena Smartplus hanya menunggu 6 detik.
   async function runOrthancCapture() {
     const parts = String(window.name || "").split("|");
     const targetOrigin = decodeURIComponent(parts[1] || "");
@@ -2776,6 +2832,7 @@
       try { if (window.opener && targetOrigin) window.opener.postMessage({ type: "sp-film", nonce, ...payload }, targetOrigin); } catch (_) {}
     };
     const blobToDataUrl = (blob) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(blob); });
+    const byInstanceNumber = (a, b) => (Number(a.MainDicomTags?.InstanceNumber) || 0) - (Number(b.MainDicomTags?.InstanceNumber) || 0);
     try {
       const study = new URLSearchParams(location.search).get("study");
       if (!study) throw new Error("ID study tidak ada di alamat viewer.");
@@ -2784,21 +2841,20 @@
         if (!r.ok) throw new Error(`PACS ${r.status} (${path.split("/")[1]})`);
         return r;
       };
+      const studyInfoP = get(`/studies/${study}`).then((r) => r.json()).catch(() => null);
       const series = await (await get(`/studies/${study}/series`)).json();
       const isImg = (s) => !/^(SR|PR|KO|DOC|REG|SEG)$/i.test(s.MainDicomTags?.Modality || "");
       // v3.12.0: film USG tidak diambil (USG cukup ekspertise).
       const isUs = (s) => /^US$/i.test(s.MainDicomTags?.Modality || "");
       if (series.some(isImg) && series.filter(isImg).every(isUs)) {
-        send({ ok: true, skipped: "USG", images: [] });
-        setTimeout(() => { try { window.close(); } catch (_) {} }, 800);
+        send({ part: "done", ok: true, skipped: "USG" });
+        setTimeout(() => { try { window.close(); } catch (_) {} }, 300);
         return;
       }
-      let label = "";
-      try {
-        const st = await (await get(`/studies/${study}`)).json();
-        const mods = [...new Set(series.filter(isImg).filter((s) => !isUs(s)).map((s) => s.MainDicomTags?.Modality).filter(Boolean))].join("/");
-        label = [mods, st.MainDicomTags?.StudyDescription].filter(Boolean).join(" ").trim();
-      } catch (_) {}
+      const st = await studyInfoP;
+      const mods = [...new Set(series.filter(isImg).filter((s) => !isUs(s)).map((s) => s.MainDicomTags?.Modality).filter(Boolean))].join("/");
+      const label = [mods, st?.MainDicomTags?.StudyDescription].filter(Boolean).join(" ").trim();
+      if (label) send({ part: "meta", label });
       const usable = series
         .filter((s) => isImg(s) && !isUs(s))
         .map((s) => ({ id: s.ID, n: (s.Instances || []).length, num: Number(s.MainDicomTags?.SeriesNumber) || 9999 }))
@@ -2809,28 +2865,28 @@
       const small = usable.filter((s) => s.n <= 12);
       const targets = [];
       if (small.length) {
-        for (const s of small) {
-          const inst = await (await get(`/series/${s.id}/instances`)).json();
-          inst.sort((a, b) => (Number(a.MainDicomTags?.InstanceNumber) || 0) - (Number(b.MainDicomTags?.InstanceNumber) || 0));
-          targets.push(...inst.map((i) => i.ID));
-        }
+        const lists = await Promise.all(small.map((s) => get(`/series/${s.id}/instances`).then((r) => r.json())));
+        for (const inst of lists) targets.push(...inst.sort(byInstanceNumber).map((i) => i.ID));
       } else if (usable.length) {
         const s = usable.reduce((a, b) => (a.n <= b.n ? a : b));
-        const inst = await (await get(`/series/${s.id}/instances`)).json();
-        inst.sort((a, b) => (Number(a.MainDicomTags?.InstanceNumber) || 0) - (Number(b.MainDicomTags?.InstanceNumber) || 0));
+        const inst = (await (await get(`/series/${s.id}/instances`)).json()).sort(byInstanceNumber);
         const k = Math.min(9, inst.length);
         for (let i = 0; i < k; i++) targets.push(inst[Math.floor(((i + 0.5) * inst.length) / k)].ID);
       }
       if (!targets.length) throw new Error("Tidak ada gambar di study ini.");
-      const images = [];
-      for (const id of targets.slice(0, 16)) {
-        images.push(await blobToDataUrl(await (await get(`/instances/${id}/preview`)).blob()));
-      }
-      send({ ok: true, images, label });
+      let sent = 0;
+      await Promise.all(targets.slice(0, 16).map(async (id, k) => {
+        try {
+          const image = await blobToDataUrl(await (await get(`/instances/${id}/preview`)).blob());
+          send({ part: "image", k, image, label });
+          sent++;
+        } catch (_) {}
+      }));
+      send(sent ? { part: "done", ok: true, label } : { part: "done", ok: false, error: "Gambar film gagal dimuat." });
     } catch (err) {
-      send({ ok: false, error: String(err && err.message || err) });
+      send({ part: "done", ok: false, error: String(err && err.message || err) });
     }
-    setTimeout(() => { try { window.close(); } catch (_) {} }, 800);
+    setTimeout(() => { try { window.close(); } catch (_) {} }, 300);
   }
 
   function clickVisibleText(phrases) {
@@ -5862,7 +5918,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.12.0</div>
+        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.13.0</div>
         <div class="sp-note">Pilih modul yang ingin digunakan:</div>
 
         <button type="button" data-disease-menu="1">
@@ -5887,7 +5943,7 @@
         </button>
 
         <button type="button" data-auto-lab="FEBRIS">
-          🧪 AUTO LAB – Order Lab Febris
+          🧪 AUTO LAB – Order Lab
         </button>
 
         <button type="button" data-auto-rad="THORAX">
@@ -5899,7 +5955,7 @@
         </button>
 
         <button type="button" data-auto-penunjang="1">
-          📎 AUTO PENUNJANG – Lab 1 mgg & Radiologi 1 bln
+          📸 AUTO SCREENSHOT – Lab 1 mgg & Radiologi 1 bln
         </button>
 
         <div class="sp-note">
