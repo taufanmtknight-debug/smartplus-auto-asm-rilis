@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.9.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.10.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.9.0
-// @description  v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.10.0
+// @description  v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -1440,7 +1440,8 @@
   function soapVital(v, unit) {
     const s = soapClean(v);
     if (!s) return "-";
-    if (unit === "pulse") return s.replace(/\s*x\s*$/i, "");
+    // v3.10.0: buang satuan bawaan ("24 x/menit", "116x/mnt", "30x/m") agar tidak dobel di SOAP.
+    if (unit === "pulse" || unit === "rr") return s.replace(/\s*x\s*(\/\s*(menit|mnt|m))?\s*$/i, "");
     if (unit === "bb") return s.replace(/\s*(kg|kgs?)\s*$/i, "");
     if (unit === "temp") return s.replace(/\s*°?c\s*$/i, "");
     return s;
@@ -1604,8 +1605,193 @@
     }
   }
 
+  // =========================
+  // v3.10.0: TERAPI SEMENTARA (disetujui dokter, 2 Okt 2026)
+  // =========================
+  // Dewasa: RL 20 tpm, Ceftriaxon 1x2 g, Ondan 3x1 amp, Ranitidin 2x1 amp, Sanmol forte/4 jam kp.
+  // Anak (BB): RL tpm makro (aturan dokter), Ceftriaxon 50 mg/kgBB (maks 2 g),
+  //            Ondansetron 1 mg tiap 7 kg (lihat ANAK_ONDAN_MG), PCT IV 14 mg/kgBB / 4 jam (maks 1 g).
+  // Tambahan berdasarkan diagnosis: nebu, NS/12 jam (dewasa), diatab (dewasa) / oralit (anak).
+  const TERAPI_DX = {
+    nebu: /\bBP\b|bronko\s*pneumoni|\bTB\b|tuberkulos|pneumoni|\bPPOK\b|dyspn|dispn|sesak|asma|asthma/i,
+    cairanNS: /\bSNH\b|stroke\s*non\s*hemor|\bCKS\b|\bCKR\b|cedera\s*kepala|penurunan\s*kesadaran|\bpenkes\b|\bDM\b|diabet|hiperglikemi|hipoglikemi/i,
+    diare: /diare|\bGEA\b|gastroenteritis|gastro\s*enteritis/i
+  };
+
+  // Aturan cairan anak dari dokter (tpm makro):
+  //  - 10 kg pertama: 1 tpm per kg (10 kg = 10 tpm)
+  //  - 10 kg kedua: +1 tpm per 2 kg (20 kg = 15 tpm)
+  //  - selanjutnya: +1 tpm per 4 kg; maksimal 20 tpm makro
+  //  - BB < 7 kg: pakai tpm mikro = makro x 3
+  function anakTpmMakro(bb) {
+    const w = Math.max(0, Number(bb) || 0);
+    let tpm;
+    if (w <= 10) tpm = Math.floor(w);
+    else if (w <= 20) tpm = 10 + Math.floor((w - 10) / 2);
+    else tpm = 15 + Math.floor((w - 20) / 4);
+    return Math.max(1, Math.min(20, tpm));
+  }
+
+  // Ondansetron anak: 1 mg tiap 7 kg (dibulatkan ke bawah), minimal 1 mg, maksimal 4 mg.
+  function anakOndanMg(bb) {
+    return Math.max(1, Math.min(4, Math.floor((Number(bb) || 0) / 7)));
+  }
+
+  function roundTo(value, step) {
+    return Math.round(value / step) * step;
+  }
+
+  function buildTerapiSementara({ isAdult, bb, diagnosis }) {
+    const dx = String(diagnosis || "");
+    const lines = [];
+    if (isAdult) {
+      lines.push(TERAPI_DX.cairanNS.test(dx) ? "NS / 12 jam" : "RL 20 tpm");
+      lines.push("Ceftriaxon 1x2 gram iv");
+      lines.push("Ondan 3x1 amp");
+      lines.push("Ranitidin 2x1 amp");
+      lines.push("Sanmol forte / 4 jam kp");
+      if (TERAPI_DX.nebu.test(dx)) lines.push("Nebu combivent 3x1");
+      if (TERAPI_DX.diare.test(dx)) lines.push("Diatab 2 tab setiap BAB cair");
+    } else {
+      const makro = anakTpmMakro(bb);
+      lines.push(bb < 7 ? `RL ${makro * 3} tpm mikro` : `RL ${makro} tpm makro`);
+      lines.push(`Ceftriaxon 1x${Math.min(2000, roundTo(50 * bb, 50))} mg iv`);
+      lines.push(`Ondansetron 2x${anakOndanMg(bb)} mg iv`);
+      lines.push(`Paracetamol ${Math.min(1000, roundTo(14 * bb, 10))} mg iv / 4 jam`);
+      if (TERAPI_DX.nebu.test(dx)) lines.push("Nebu combivent 3x1");
+      if (TERAPI_DX.diare.test(dx)) lines.push("Oralit setiap BAB cair");
+    }
+    return lines;
+  }
+
+  // Tulis blok "Terapi sementara:" ke kolom Rencana. Isi lama dipertahankan;
+  // jika blok sudah ada (AUTO SOAP diklik ulang), blok lama diganti, tidak dobel.
+  function mergeTerapiSementara(existing, lines) {
+    const header = "Terapi sementara:";
+    const base = String(existing || "").split(/\n?Terapi sementara:[\s\S]*$/)[0].replace(/\s+$/, "");
+    return (base ? base + "\n" : "") + header + "\n" + lines.join("\n");
+  }
+
+  async function waitFor(fn, timeout = 8000, interval = 120) {
+    const started = Date.now();
+    while (Date.now() - started < timeout) {
+      try { const v = fn(); if (v) return v; } catch (_) {}
+      await recipeSleep(interval);
+    }
+    return null;
+  }
+
+  // Buka GADAR terakhir kunjungan ini dalam mode edit (fungsi bawaan Smartplus update_gadar).
+  async function openLatestGadarForEdit() {
+    const g = await getLatestGadarData();
+    if (!g) return null;
+    const id = String(g.idGadar);
+    if (typeof window.update_gadar === "function") {
+      window.update_gadar(id);
+    } else {
+      const tab = document.getElementById("new_gadar");
+      if (tab) tab.click();
+      const link = await waitFor(() => [...document.querySelectorAll("#box_gadar a")]
+        .find((a) => (a.getAttribute("onclick") || a.getAttribute("href") || "").includes(`update_gadar('${id}')`)), 6000);
+      if (!link) return null;
+      link.click();
+    }
+    // Tunggu modal terbuka DAN terisi data GADAR yang benar.
+    const ok = await waitFor(() => {
+      const m = document.getElementById("modal_form_gadar");
+      const idField = document.querySelector('#form_gadar [name="id_gadar"]');
+      return m && visible(m) && idField && String(idField.value) === id;
+    }, 8000);
+    if (!ok) return null;
+    await recipeSleep(300);
+    return g;
+  }
+
+  // Panel cadangan bila clipboard ditolak browser (halaman HTTP / jeda terlalu lama).
+  function showSoapCopyPanel(text) {
+    const PANEL_ID = "sp-auto-soap-copy-panel";
+    document.getElementById(PANEL_ID)?.remove();
+    const panel = document.createElement("div");
+    panel.id = PANEL_ID;
+    panel.style.cssText = "position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2147483647;background:#fff;border:2px solid #e91e63;border-radius:12px;padding:12px;width:min(92vw,520px);max-height:85vh;box-shadow:0 8px 30px rgba(0,0,0,.35);font:14px/1.4 sans-serif;color:#222;display:flex;flex-direction:column;gap:8px;";
+    const title = document.createElement("div");
+    title.textContent = "📝 SOAP siap — tekan SALIN";
+    title.style.cssText = "font-weight:bold;";
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.readOnly = true;
+    ta.style.cssText = "width:100%;height:45vh;box-sizing:border-box;font:13px/1.35 monospace;";
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex;gap:8px;";
+    const copyBtn = document.createElement("button");
+    copyBtn.type = "button";
+    copyBtn.textContent = "📋 SALIN SOAP";
+    copyBtn.style.cssText = "flex:1;padding:12px;font-size:15px;background:#e91e63;color:#fff;border:0;border-radius:8px;";
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.textContent = "Tutup";
+    closeBtn.style.cssText = "padding:12px;border-radius:8px;border:1px solid #999;background:#f5f5f5;";
+    copyBtn.addEventListener("click", async () => {
+      const ok = await copySoapText(text);
+      if (!ok) { ta.focus(); ta.select(); }
+      copyBtn.textContent = ok ? "✅ Tersalin — silakan Paste" : "Pilih teks lalu salin manual";
+    });
+    closeBtn.addEventListener("click", () => panel.remove());
+    row.append(copyBtn, closeBtn);
+    panel.append(title, ta, row);
+    document.documentElement.appendChild(panel);
+  }
+
   async function runAutoSoap() {
-    const root = modalRoot();
+    // v3.10.0: buka GADAR terakhir -> isi Terapi sementara di Rencana -> susun SOAP -> salin.
+    toast("AUTO SOAP: membuka Assesment GADAR terakhir...");
+    const g = await openLatestGadarForEdit();
+    if (!g) {
+      toast("AUTO SOAP: Assesment GADAR kunjungan ini tidak ditemukan / gagal dibuka.");
+      return;
+    }
+    const form = document.getElementById("form_gadar");
+    const ageYears = getPatientAgeYears();
+    const isAdult = Number.isFinite(ageYears) ? ageYears > 17 : true;
+    const diagnosis = String(form.querySelector('[name="diagnosa_banding"]')?.value || g.data.diagnosa_banding || "");
+
+    let bb = null;
+    if (!isAdult) {
+      bb = parseGadarWeight({ berat: form.querySelector('[name="berat"]')?.value || g.data.berat });
+      if (!bb) {
+        const raw = window.prompt("AUTO SOAP • Pasien anak\nKolom Berat di GADAR kosong.\nMasukkan BB pasien (kg):", "");
+        if (raw === null) return;
+        bb = parseGadarWeight({ berat: raw });
+        if (!bb) { toast("AUTO SOAP: BB tidak valid."); return; }
+      }
+    }
+
+    const terapi = buildTerapiSementara({ isAdult, bb, diagnosis });
+    const rencanaEl = form.querySelector('[name="rencana_tindakan"]');
+    if (rencanaEl) {
+      setValue(rencanaEl, mergeTerapiSementara(rencanaEl.value, terapi));
+    } else {
+      toast("AUTO SOAP: kolom Rencana tidak ditemukan; terapi hanya dimasukkan ke SOAP.");
+    }
+    console.log("[AUTO SOAP] terapi sementara", { isAdult, bb, diagnosis, terapi });
+
+    // v3.10.0: kesadaran dari radio yang tercentang, atau dari data GADAR (1=CM ... 5=Koma).
+    const KESADARAN = { 1: "Compos mentis", 2: "Apatis", 3: "Somnolen", 4: "Sopor", 5: "Koma" };
+    const kesChecked = form.querySelector('[name="kesadaran"]:checked');
+    const kesadaran = kesChecked
+      ? ((kesChecked.closest("label") || kesChecked.parentElement)?.innerText || "").trim() || KESADARAN[kesChecked.value] || ""
+      : KESADARAN[String(g.data.kesadaran || "").trim()] || "";
+
+    const root = document.getElementById("modal_form_gadar") || modalRoot();
+    await buildAndCopySoap(root, {
+      kesadaran,
+      plan: rencanaEl ? null : terapi.join("\n"),
+      bb: bb,
+      note: `${isAdult ? "Dewasa" : `Anak, BB ${bb} kg`} • terapi sementara diisi di Rencana. GADAR BELUM disimpan — tekan Simpan bila ingin disimpan.`
+    });
+  }
+
+  async function buildAndCopySoap(root, extra = {}) {
     if (!root || root === document.body) {
       toast("AUTO SOAP: buka Assessment Gawat Darurat terlebih dahulu.");
       return;
@@ -1615,20 +1801,24 @@
 
     const keluhan = soapClean(soapFieldValue(root, ["Keluhan Utama", "Keluhan"]));
     const rps = soapClean(soapFieldValue(root, ["Riwayat Penyakit Sekarang", "RPS"]));
-    const kesadaran = soapClean(soapFieldValue(root, ["Kesadaran"], true));
+    const kesadaran = extra.kesadaran || soapClean(soapFieldValue(root, ["Kesadaran"], true));
     const gcs = soapClean(soapFieldValue(root, ["Glasgow Coma Scale", "GCS", "Glosgow Coma"]));
     const td = soapVital(soapFieldValue(root, ["Tekanan Darah", "TD"]), "td");
     const nadi = soapVital(soapFieldValue(root, ["Nadi"]), "pulse");
     const napas = soapVital(soapFieldValue(root, ["Pernafasan", "Pernapasan", "Napas", "RR", "Frekuensi Napas"]), "rr");
     const suhu = soapVital(soapFieldValue(root, ["Suhu", "Temperature"]), "temp");
-    const bb = soapVital(soapFieldValue(root, ["Berat", "Berat Badan", "BB"]), "bb");
+    const bb = extra.bb ? String(extra.bb) : soapVital(soapFieldValue(root, ["Berat", "Berat Badan", "BB"]), "bb");
     const fisik = soapClean(soapRawPhysicalExam(root));
     const diagnosis = soapClean(soapFieldValue(root, [
       "Diagnosis Kerja dan Diagnosis Banding", "Diagnosis", "Diagnosa"
     ]));
-    const plan = soapClean(soapFieldValue(root, [
-      "Rencana (Tindakan, Terapi, dll)", "Rencana", "Terapi", "Penatalaksanaan"
-    ]));
+    // v3.10.0: baca kolom Rencana langsung lewat name (pertahankan baris baru), cadangan label lama.
+    const rencanaDirect = root.querySelector?.('[name="rencana_tindakan"]')?.value;
+    const plan = extra.plan || (rencanaDirect != null && String(rencanaDirect).trim()
+      ? String(rencanaDirect).trim()
+      : soapClean(soapFieldValue(root, [
+        "Rencana (Tindakan, Terapi, dll)", "Rencana", "Terapi", "Penatalaksanaan"
+      ])));
 
     const identity = `${p.name}${p.title ? `, ${p.title}` : ""}${p.sex ? ` ( ${p.sex})` : ""}`;
     const dob = p.dob ? ` / ${p.dob}` : "";
@@ -1647,8 +1837,8 @@
       `Kesadaran: ${kesadaran || "-"}`,
       `GCS: ${gcs || "-"}`,
       `TD: ${td} mmHg`,
-      `Nadi: ${nadi} x/menit`,
-      `Napas: ${napas} x/menit`,
+      `Nadi: ${/x\s*\//i.test(nadi) ? nadi : nadi + " x/menit"}`,
+      `Napas: ${/x\s*\//i.test(napas) ? napas : napas + " x/menit"}`,
       `Suhu: ${suhu} °C`,
       `BB: ${bb} kg`,
       "",
@@ -1665,11 +1855,14 @@
     ].join("\n");
 
     const copied = await copySoapText(soap);
+    window.__spLastSoap = soap;
     if (copied) {
-      toast("AUTO SOAP berhasil dicopy. Silakan Paste di WhatsApp/Chat/EMR.");
+      toast("AUTO SOAP berhasil dicopy. Silakan Paste di WhatsApp/Chat/EMR." + (extra.note ? " " + extra.note : ""));
       console.log("[AUTO SOAP] copied:\n" + soap);
     } else {
-      toast("AUTO SOAP terbentuk tetapi gagal dicopy. Cek console.");
+      // v3.10.0: clipboard ditolak (mis. halaman HTTP / jeda lama) -> tampilkan panel dengan tombol SALIN.
+      showSoapCopyPanel(soap);
+      toast("AUTO SOAP siap. Tekan tombol 📋 SALIN SOAP." + (extra.note ? " " + extra.note : ""));
       console.log("[AUTO SOAP] text:\n" + soap);
     }
   }
@@ -5132,7 +5325,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.9.0</div>
+        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.10.0</div>
         <div class="sp-note">Pilih modul yang ingin digunakan:</div>
 
         <button type="button" data-disease-menu="1">
