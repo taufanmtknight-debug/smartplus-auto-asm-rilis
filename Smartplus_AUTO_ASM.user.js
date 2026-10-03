@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.26.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.27.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.26.0
-// @description  v3.26.0: tombol kecilkan (—) & tutup (✕) di pojok kanan atas tiap kotak; AUTO PENUNJANG + Lab Severe (Kreatinin, Elektrolit, AGD; Save manual); ekspertise CT whole abdomen & echocardiography (Kesan/Kesimpulan). v3.25.0: ekspertise radiologi dianggap ada hanya bila memuat "KESAN"; KOMBINASI RESEP menampilkan anamnesis (keluhan utama, RPS, alergi) dari Assesment GADAR. v3.24.0: judul "Riwayat kontrol poli spesialis" dihapus dari Riwayat Penyakit Dahulu; ASGADAR untuk pasien belum terdaftar diisikan ke + BUAT DRAF ASSESMENT GAWAT DARURAT (daftar pasien IGD); PAKET KONSUL: film CT tidak diambil, ekspertise rontgen & CT ikut bila sudah ada. v3.23.0: tombol AUTO SOAP & AUTO SCREENSHOT dihapus dari menu (sudah tercakup PAKET KONSUL). v3.22.0: semua kotak AUTO ASM (menu, KOMBINASI RESEP, AUTO SCREENSHOT/PAKET KONSUL, salin SOAP) bisa digeser dan dikecilkan. v3.21.0: tombol 🔄 Update (SOAP disusun ulang dari GADAR + penunjang baru ditambahkan); semua AUTO kembali ke tab E-RAWAT DARURAT dulu sehingga tidak macet saat tab Riwayat/Hasil terbuka. v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.27.0
+// @description  v3.27.0: Lab Severe tidak memesan ulang kreatinin/elektrolit/AGD yang sudah ada dalam 1 minggu lalu Save otomatis; tombol Tutup lain dihapus (pakai ✕), tombol panel dirapikan. v3.26.0: tombol kecilkan (—) & tutup (✕) di pojok kanan atas tiap kotak; AUTO PENUNJANG + Lab Severe (Kreatinin, Elektrolit, AGD; Save manual); ekspertise CT whole abdomen & echocardiography (Kesan/Kesimpulan). v3.25.0: ekspertise radiologi dianggap ada hanya bila memuat "KESAN"; KOMBINASI RESEP menampilkan anamnesis (keluhan utama, RPS, alergi) dari Assesment GADAR. v3.24.0: judul "Riwayat kontrol poli spesialis" dihapus dari Riwayat Penyakit Dahulu; ASGADAR untuk pasien belum terdaftar diisikan ke + BUAT DRAF ASSESMENT GAWAT DARURAT (daftar pasien IGD); PAKET KONSUL: film CT tidak diambil, ekspertise rontgen & CT ikut bila sudah ada. v3.23.0: tombol AUTO SOAP & AUTO SCREENSHOT dihapus dari menu (sudah tercakup PAKET KONSUL). v3.22.0: semua kotak AUTO ASM (menu, KOMBINASI RESEP, AUTO SCREENSHOT/PAKET KONSUL, salin SOAP) bisa digeser dan dikecilkan. v3.21.0: tombol 🔄 Update (SOAP disusun ulang dari GADAR + penunjang baru ditambahkan); semua AUTO kembali ke tab E-RAWAT DARURAT dulu sehingga tidak macet saat tab Riwayat/Hasil terbuka. v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -1783,22 +1783,17 @@
     const copyBtn = document.createElement("button");
     copyBtn.type = "button";
     copyBtn.textContent = "📋 SALIN SOAP";
-    copyBtn.style.cssText = "flex:1;padding:12px;font-size:15px;background:#e91e63;color:#fff;border:0;border-radius:8px;";
-    const closeBtn = document.createElement("button");
-    closeBtn.type = "button";
-    closeBtn.textContent = "Tutup";
-    closeBtn.style.cssText = "padding:12px;border-radius:8px;border:1px solid #999;background:#f5f5f5;";
+    copyBtn.style.cssText = "flex:1;padding:11px;font:600 15px Arial,sans-serif;background:#e91e63;color:#fff;border:0;border-radius:8px;cursor:pointer;";
     copyBtn.addEventListener("click", async () => {
       const ok = await copySoapText(text);
       if (!ok) { ta.focus(); ta.select(); }
       copyBtn.textContent = ok ? "✅ Tersalin — silakan Paste" : "Pilih teks lalu salin manual";
     });
-    closeBtn.addEventListener("click", () => panel.remove());
-    row.append(copyBtn, closeBtn);
+    row.append(copyBtn);
     panel.append(title, ta, row);
     document.documentElement.appendChild(panel);
     spMakeDraggable(panel, PANEL_ID, (t) => !!t.closest(".sp-panel-head"));
-    spWindowControls(panel, PANEL_ID, ".sp-panel-head", title, () => closeBtn.click());
+    spWindowControls(panel, PANEL_ID, ".sp-panel-head", title, () => panel.remove());
   }
 
   async function runAutoSoap(opts = {}) {
@@ -2305,13 +2300,61 @@
   // =========================
   // v3.26.0 (instruksi dokter): AUTO LAB SEVERE = Kreatinin + Elektrolit (NA / K / CI) + Analisa gas darah,
   // untuk pasien sakit berat. Checkbox dipilih berdasarkan value yang PERSIS (bukan "Kreatinin Clereance" /
-  // "Elektrolit urin"). Diagnosis dari GADAR terakhir. TIDAK menekan Save (belum ada izin) -> dokter cek lalu Save.
+  // "Elektrolit urin"). Diagnosis dari GADAR terakhir.
+  // v3.27.0 (instruksi dokter): cek lab 1 minggu terakhir (riwayat hasil lab, termasuk yang hasilnya belum keluar);
+  // pemeriksaan yang SUDAH ada tidak dipesan lagi, lalu Save otomatis. Bila riwayat lab gagal dibaca -> tidak Save.
   // =========================
-  const SP_LAB_SEVERE = ["Kreatinin", "NA / K / CI", "Analisa gas darah"];
+  const SP_LAB_SEVERE = [
+    { key: "kreatinin", value: "Kreatinin", label: "Kreatinin" },
+    { key: "elektrolit", value: "NA / K / CI", label: "Elektrolit (Na/K/Cl)" },
+    { key: "agd", value: "Analisa gas darah", label: "Analisa gas darah" }
+  ];
+
+  // Nama baris/kelompok hasil lab -> kunci pemeriksaan severe (konteks urin diabaikan).
+  function spSevereKeyOf(name, context) {
+    const n = String(name || ""), ctx = String(context || "");
+    if (/urin/i.test(n) || /urin/i.test(ctx)) return null;
+    if (/^kreatinin\b/i.test(n) && !/cle?a?rance|clereance/i.test(n)) return "kreatinin";
+    if (/natrium|kalium|klorida|chlorid|sodium|potassium|elektrolit|^na\b|^k\b|^cl\b|^na\s*\/\s*k/i.test(n)) return "elektrolit";
+    if (/gas\s*darah|\bAGD\b|\bBGA\b|pco2|p\s*co2|po2|p\s*o2|hco3|sao2|base\s*excess|^be\b/i.test(n)) return "agd";
+    return null;
+  }
+
+  async function spSevereLabsDoneLastWeek() {
+    const base = smartplusBaseUrl();
+    const noreg = getCurrentNoregAny();
+    if (!noreg) throw new Error("No. registrasi tidak terbaca");
+    const { recent } = spPickRecentEntries(await spFetchLabEntries(base, noreg), SP_LAB_WINDOW);
+    const done = {};
+    const sheets = await Promise.all(recent.map((e) =>
+      fetch(`${base}/hasil_lab/hasil_lab/print_hasil_labx_by_id_sample/${encodeURIComponent(e.idSample)}/${encodeURIComponent(e.noreg)}`, { credentials: "same-origin" })
+        .then((r) => { if (!r.ok) throw new Error("lab " + r.status); return r.text(); }).then(spParseLabSheet)));
+    recent.forEach((e, i) => {
+      let section = "", group = "";
+      for (const r of sheets[i].rows) {
+        if (r.type === "section") { section = r.name; group = ""; }
+        else if (r.type === "group") group = r.name;
+        const k = spSevereKeyOf(r.name, section + " " + (r.type === "item" ? group : ""));
+        if (k && !done[k]) done[k] = e.dateText;
+      }
+    });
+    return done;
+  }
 
   async function runAutoLabSevere() {
-    toast("AUTO LAB SEVERE: mengecek diagnosis Assesment GADAR terakhir...");
-    const gadarDx = await getLatestGadarDiagnosis();
+    toast("AUTO LAB SEVERE: mengecek lab 1 minggu terakhir & diagnosis GADAR...");
+    let done = null;
+    const [doneRes, gadarDx] = await Promise.all([
+      spSevereLabsDoneLastWeek().then((d) => d, (err) => { console.warn("[AUTO LAB SEVERE] riwayat lab", err); return null; }),
+      getLatestGadarDiagnosis()
+    ]);
+    done = doneRes;
+    const todo = done ? SP_LAB_SEVERE.filter((t) => !done[t.key]) : SP_LAB_SEVERE;
+    const skipped = done ? SP_LAB_SEVERE.filter((t) => done[t.key]).map((t) => `${t.label} (${done[t.key]})`) : [];
+    if (done && !todo.length) {
+      toast("AUTO LAB SEVERE: semua sudah diperiksa dalam 1 minggu terakhir — tidak ada order. " + skipped.join(", "));
+      return;
+    }
     const labDiagnosis = gadarDx ? gadarDx.diagnosis : "";
     toast("AUTO LAB SEVERE: membuka Order Lab...");
     await ensureMainEmrTab();
@@ -2336,16 +2379,26 @@
       if (!setLabFieldByNearbyText(root, ["Diagnosis / Keterangan Klinis", "Diagnosis", "Keterangan Klinis"], labDiagnosis)) fail.push("Diagnosis");
     } else fail.push("Diagnosis (GADAR kunjungan ini tidak ditemukan)");
     if (!setLabFieldByNearbyText(root, ["Indikasi Klinis", "Indikasi"], "dx")) fail.push("Indikasi Klinis");
-    for (const v of SP_LAB_SEVERE) {
-      const cb = [...root.querySelectorAll('input[type="checkbox"]')].find((c) => String(c.value).trim().toLowerCase() === v.toLowerCase());
-      if (!cb) { fail.push(v); continue; }
+    for (const t of todo) {
+      const cb = [...root.querySelectorAll('input[type="checkbox"]')].find((c) => String(c.value).trim().toLowerCase() === t.value.toLowerCase());
+      if (!cb) { fail.push(t.label); continue; }
       if (!cb.checked) { try { cb.click(); } catch (_) {} fire(cb); }
-      if (!cb.checked) fail.push(v);
+      if (!cb.checked) fail.push(t.label);
     }
-    const dxNote = gadarDx ? ` Diagnosis dari GADAR: "${labDiagnosis}".` : "";
-    toast((fail.length ? "AUTO LAB SEVERE sebagian. Cek manual: " + fail.join(", ") + "." : "AUTO LAB SEVERE: Kreatinin, Elektrolit (Na/K/Cl), Analisa gas darah dipilih.") +
-      dxNote + " Belum disimpan — cek lalu tekan Save.");
-    console.log("[AUTO LAB SEVERE]", { labDiagnosis, fail });
+    const ordered = todo.map((t) => t.label).join(", ");
+    const skipNote = skipped.length ? ` Tidak dipesan (sudah ada ≤1 minggu): ${skipped.join(", ")}.` : "";
+    const dxNote = gadarDx ? ` Diagnosis: "${labDiagnosis}".` : "";
+    // Save hanya bila riwayat lab berhasil dicek dan semua isian berhasil.
+    if (!done) {
+      toast(`AUTO LAB SEVERE: ${ordered} dipilih.${dxNote} ⚠️ Riwayat lab 1 minggu gagal dibaca — BELUM disimpan, cek lalu Save manual.`);
+    } else if (fail.length) {
+      toast(`AUTO LAB SEVERE sebagian. Cek manual: ${fail.join(", ")}.${skipNote}${dxNote} BELUM disimpan.`);
+    } else {
+      await recipeSleep(500);
+      const saved = clickVisibleTextWithin(root, ["Save"]);
+      toast(`AUTO LAB SEVERE: ${ordered}${saved ? " dipesan, Save ditekan." : " dipilih, tombol Save tidak ditemukan — Save manual."}${skipNote}${dxNote}`);
+    }
+    console.log("[AUTO LAB SEVERE]", { labDiagnosis, done, todo: todo.map((t) => t.key), fail });
   }
 
   // =========================
@@ -2970,26 +3023,25 @@
     panel.id = PANEL_ID;
     panel.style.cssText = "position:fixed;inset:4vh 50% auto auto;transform:translateX(50%);z-index:2147483647;background:#fff;border:2px solid #e91e63;border-radius:12px;padding:12px;width:min(94vw,760px);max-height:90vh;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,.35);font:14px/1.4 sans-serif;color:#222;";
     const head = document.createElement("div");
-    head.style.cssText = "display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:sticky;top:-12px;background:#fff;padding:4px 0 8px;";
-    head.innerHTML = `<b style="flex:1;min-width:180px"><span style="color:#999">⠿</span> 📸 AUTO SCREENSHOT — siap dikirim (${items.length})</b>`;
+    // v3.27.0: judul satu baris (tombol — ✕ di kanan atas), di bawahnya deretan tombol aksi yang seragam.
+    head.style.cssText = "display:flex;gap:6px;align-items:center;flex-wrap:wrap;position:sticky;top:-12px;background:#fff;padding:6px 0 8px;border-bottom:1px solid #eee;margin-bottom:8px;z-index:1;";
+    head.innerHTML = `<b style="flex:1 1 100%;font-size:15px;line-height:28px"><span style="color:#999">⠿</span> 📸 AUTO SCREENSHOT — siap dikirim (${items.length})</b>`;
+    const btnCss = (bg, fg) => `padding:7px 12px;font:600 13px Arial,sans-serif;background:${bg};color:${fg};border:0;border-radius:6px;cursor:pointer;`;
     spStyleHandle(head);
     const dlAll = document.createElement("button");
     dlAll.type = "button"; dlAll.textContent = "⬇ Unduh semua (PDF)";
-    dlAll.style.cssText = "padding:10px 14px;background:#e91e63;color:#fff;border:0;border-radius:8px;";
+    dlAll.style.cssText = btnCss("#e91e63", "#fff");
     dlAll.addEventListener("click", async () => {
       dlAll.disabled = true;
       try { await spDownloadAllPdf(items); } catch (err) { console.warn("[AUTO SCREENSHOT] pdf", err); toast("AUTO SCREENSHOT: gagal membuat PDF — " + (err.message || err)); }
       finally { dlAll.disabled = false; }
     });
-    const close = document.createElement("button");
-    close.type = "button"; close.textContent = "Tutup";
-    close.style.cssText = "padding:10px 14px;border:1px solid #999;border-radius:8px;background:#f5f5f5;";
-    close.addEventListener("click", () => { panel.remove(); if (opts.onClose) opts.onClose(); });
+    const closePanel = () => { panel.remove(); if (opts.onClose) opts.onClose(); };
     if (opts.soapText) {
       const cp = document.createElement("button");
       cp.type = "button";
       cp.textContent = opts.soapCopied ? "✅ SOAP tersalin (salin lagi)" : "📋 Salin SOAP";
-      cp.style.cssText = "padding:10px 14px;background:#1976d2;color:#fff;border:0;border-radius:8px;";
+      cp.style.cssText = btnCss("#1976d2", "#fff");
       cp.addEventListener("click", async () => {
         const ok = await copySoapText(opts.soapText);
         cp.textContent = ok ? "✅ SOAP tersalin" : "Gagal salin — pakai AUTO SOAP";
@@ -3002,11 +3054,11 @@
       up.textContent = opts.status ? "⏳" : "🔄 Update";
       up.title = "Susun ulang SOAP dari Assesment GADAR (revisi ikut) dan tambahkan hasil penunjang baru";
       up.disabled = !!opts.status;
-      up.style.cssText = "padding:10px 14px;background:#2e7d32;color:#fff;border:0;border-radius:8px;";
+      up.style.cssText = btnCss("#2e7d32", "#fff");
       up.addEventListener("click", () => opts.onUpdate());
       head.append(up);
     }
-    head.append(dlAll, close);
+    head.append(dlAll);
     head.classList.add("sp-panel-head");
     panel.append(head);
     const tip = document.createElement("div");
@@ -3069,7 +3121,7 @@
     document.documentElement.appendChild(panel);
     panel.scrollTop = prevScroll;
     spMakeDraggable(panel, PANEL_ID, (t) => !!t.closest(".sp-panel-head"));
-    spWindowControls(panel, PANEL_ID, ".sp-panel-head", head, () => close.click());
+    spWindowControls(panel, PANEL_ID, ".sp-panel-head", head, closePanel);
     return panel;
   }
 
@@ -6085,7 +6137,7 @@
 
         <div class="sp-package-buttons">
           <button type="button" class="sp-primary" data-package-submit="1">▶ INPUT KOMBINASI RESEP</button>
-          <button type="button" class="sp-back" data-back="main">Tutup</button>
+          <button type="button" class="sp-back" data-back="main">← Kembali</button>
         </div>
 
         <div class="sp-note">
@@ -6628,7 +6680,7 @@
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
         <div class="sp-title">🧾 AUTO PENUNJANG</div>
-        <div class="sp-note">Order otomatis; diagnosis dari GADAR terakhir, lalu Save. Lab Severe: dipilih saja, Save manual.</div>
+        <div class="sp-note">Order otomatis; diagnosis dari GADAR terakhir, lalu Save. Lab Severe tidak memesan ulang pemeriksaan yang sudah ada dalam 1 minggu.</div>
 
         <button type="button" data-auto-lab="FEBRIS">🧪 Lab</button>
         <button type="button" data-auto-lab="SEVERE">🚨 Lab Severe (Kreatinin, Elektrolit, AGD)</button>
@@ -6643,7 +6695,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.26.0</div>
+        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.27.0</div>
         <div class="sp-note">Pilih modul yang ingin digunakan:</div>
 
         <button type="button" data-disease-menu="1">
