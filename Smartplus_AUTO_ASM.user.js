@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.19.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.20.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.19.0
-// @description  v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.20.0
+// @description  v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -1585,28 +1585,36 @@
     return { name: "", title: "", sex: "", dob: "", age: "" };
   }
 
+  // v3.20.0: salin teks yang benar-benar masuk clipboard.
+  // Smartplus memakai HTTP -> navigator.clipboard tidak tersedia; cara lama (textarea di <body> + execCommand)
+  // gagal diam-diam saat modal GADAR (Bootstrap) terbuka: fokus direbut modal, yang tersalin KOSONG tapi melapor berhasil.
+  // Sekarang isi clipboard ditulis langsung lewat event "copy" (tidak bergantung fokus/seleksi) dan hanya
+  // dianggap berhasil bila event itu benar-benar terjadi. Perlu klik pengguna (aturan browser).
   async function copySoapText(text) {
+    if (window.isSecureContext && navigator.clipboard && navigator.clipboard.writeText) {
+      try { await navigator.clipboard.writeText(text); return true; } catch (_) {}
+    }
+    let wrote = false;
+    const onCopy = (e) => {
+      try { e.clipboardData.setData("text/plain", text); e.preventDefault(); wrote = true; } catch (_) {}
+    };
+    document.addEventListener("copy", onCopy, true);
+    const ta = document.createElement("textarea");
     try {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } catch (_) {
-      try {
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        ta.setAttribute("readonly", "");
-        ta.style.position = "fixed";
-        ta.style.left = "-9999px";
-        ta.style.top = "0";
-        document.body.appendChild(ta);
-        ta.focus();
-        ta.select();
-        const ok = document.execCommand("copy");
-        ta.remove();
-        return ok;
-      } catch (e) {
-        console.warn("[AUTO SOAP] Clipboard gagal", e);
-        return false;
-      }
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.cssText = "position:fixed;left:-9999px;top:0;opacity:0;";
+      (document.querySelector(".modal.show") || document.body).appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok = document.execCommand("copy");
+      return !!(ok && wrote);
+    } catch (e) {
+      console.warn("[AUTO SOAP] Clipboard gagal", e);
+      return false;
+    } finally {
+      ta.remove();
+      document.removeEventListener("copy", onCopy, true);
     }
   }
 
@@ -2821,8 +2829,22 @@
     panel.append(head);
     const tip = document.createElement("div");
     tip.style.cssText = "font-size:12px;color:#555;margin-bottom:8px;";
-    tip.textContent = "⬇ Unduh semua (PDF) = 1 file berisi semua penunjang, siap dilampirkan saat konsul. Bisa juga klik kanan gambar → Salin gambar.";
+    tip.textContent = "Gambar: klik kanan → Salin gambar, lalu Paste di WhatsApp — atau seret gambar ke WhatsApp. ⬇ Unduh semua (PDF) = 1 file berisi semua penunjang.";
     panel.append(tip);
+    if (opts.soapText) {
+      const box = document.createElement("div");
+      box.style.cssText = "border:1px solid #90caf9;border-radius:8px;padding:8px;margin:6px 0;background:#f5faff;";
+      const hd = document.createElement("div");
+      hd.style.cssText = "font-weight:bold;margin-bottom:4px;";
+      hd.textContent = "📝 SOAP (teks) — tekan 📋 Salin SOAP lalu Paste di WhatsApp";
+      const ta = document.createElement("textarea");
+      ta.readOnly = true;
+      ta.value = opts.soapText;
+      ta.style.cssText = "width:100%;height:160px;box-sizing:border-box;font:12px/1.35 monospace;";
+      ta.addEventListener("focus", () => ta.select());
+      box.append(hd, ta);
+      panel.append(box);
+    }
     if (opts.status) {
       const st = document.createElement("div");
       st.style.cssText = "background:#e3f2fd;border:1px solid #90caf9;border-radius:6px;padding:6px 8px;margin:4px 0;font-size:13px;";
@@ -2853,7 +2875,12 @@
       cap.append(dl);
       const img = document.createElement("img");
       img.src = it.dataUrl; img.alt = it.caption;
-      img.style.cssText = "max-width:100%;border:1px solid #ddd;";
+      img.style.cssText = "max-width:100%;border:1px solid #ddd;cursor:grab;";
+      // v3.20.0: seret gambar ke WhatsApp Web/Desktop -> dikirim sebagai file gambar.
+      img.draggable = true;
+      img.addEventListener("dragstart", (e) => {
+        try { e.dataTransfer.items.add(spDataUrlToFile(it.dataUrl, it.fileName)); } catch (_) {}
+      });
       fig.append(cap, img);
       panel.append(fig);
     }
@@ -2927,6 +2954,15 @@
     toast(`AUTO SCREENSHOT: ${name} (${pages.length} halaman) diunduh.`);
   }
 
+  function spDataUrlToFile(dataUrl, fileName) {
+    const [head, b64] = String(dataUrl).split(",");
+    const type = (head.match(/data:([^;]+)/) || [])[1] || "image/png";
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let k = 0; k < bin.length; k++) bytes[k] = bin.charCodeAt(k);
+    return new File([bytes], fileName || "gambar.png", { type });
+  }
+
   function spDownload(dataUrl, fileName) {
     const a = document.createElement("a");
     a.href = dataUrl; a.download = fileName;
@@ -2939,38 +2975,9 @@
     return String(s || "").replace(/[^A-Za-z0-9_-]+/g, "_").replace(/_+/g, "_").slice(0, 40);
   }
 
-  // v3.19.0: teks (SOAP) digambar sebagai halaman untuk PDF. Baris "*judul*" (gaya WhatsApp) ditulis tebal.
-  function spRenderTextPage(title, text) {
-    const W = 1000, PAD = 28, LH = 24, TEXT_W = W - 2 * PAD;
-    const measure = document.createElement("canvas").getContext("2d");
-    measure.font = "bold 16px Arial";
-    const body = [];
-    for (const raw of String(text || "").split("\n")) {
-      const bold = /^\*[^*]+\*$/.test(raw.trim());
-      const line = raw.replace(/\*/g, "");
-      if (!line.trim()) { body.push({ text: "", bold: false }); continue; }
-      const indent = (line.match(/^\s*/) || [""])[0].length * 6;
-      spWrapText(measure, line.trim(), TEXT_W - indent).forEach((t) => body.push({ text: t, bold, indent }));
-    }
-    const h = PAD + 36 + body.length * LH + PAD + 24;
-    const cv = document.createElement("canvas");
-    cv.width = W; cv.height = h;
-    const ctx = cv.getContext("2d");
-    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, h);
-    ctx.fillStyle = "#000"; ctx.textBaseline = "top";
-    ctx.font = "bold 22px Arial"; ctx.fillText(title, PAD, PAD);
-    let y = PAD + 36;
-    for (const b of body) {
-      ctx.font = b.bold ? "bold 16px Arial" : "16px Arial";
-      ctx.fillText(b.text, PAD + (b.indent || 0), y);
-      y += LH;
-    }
-    ctx.font = "12px Arial"; ctx.fillStyle = "#888";
-    ctx.fillText("Disusun AUTO ASM dari Smartplus untuk keperluan konsul.", PAD, h - PAD - 6);
-    return cv.toDataURL("image/png");
-  }
-
-  // v3.19.0: PAKET KONSUL = AUTO SOAP (teks disalin) + AUTO SCREENSHOT (SOAP jadi halaman 1) + PDF otomatis diunduh.
+  // v3.19.0: PAKET KONSUL = AUTO SOAP + AUTO SCREENSHOT dalam satu panel.
+  // v3.20.0 (instruksi dokter): TIDAK langsung unduh PDF; SOAP ditampilkan sebagai TEKS (Salin -> Paste ke WhatsApp),
+  // bukan gambar; penunjang tetap gambar (klik kanan Salin gambar / seret ke WhatsApp; PDF hanya bila tombol ditekan).
   async function runPaketKonsul() {
     toast("PAKET KONSUL: menyusun SOAP...");
     let soap = null;
@@ -2978,21 +2985,19 @@
     let copied = false;
     if (soap) {
       copied = await copySoapText(soap).catch(() => false);
-      toast(copied ? "PAKET KONSUL: SOAP tersalin. Mengambil penunjang..." : "PAKET KONSUL: SOAP siap (tekan 📋 Salin SOAP di panel). Mengambil penunjang...");
+      toast(copied ? "PAKET KONSUL: SOAP tersalin. Mengambil penunjang..." : "PAKET KONSUL: SOAP siap — tekan 📋 Salin SOAP di panel. Mengambil penunjang...");
     } else {
       toast("PAKET KONSUL: SOAP tidak bisa disusun (GADAR kunjungan ini tidak ditemukan). Lanjut penunjang saja.");
     }
-    await runAutoPenunjang({ soapText: soap || "", autoPdf: true, soapCopied: copied });
+    await runAutoPenunjang({ soapText: soap || "", soapCopied: copied });
   }
 
-  // opts (v3.19.0, dari PAKET KONSUL): soapText -> halaman SOAP di urutan pertama + tombol Salin SOAP;
-  // autoPdf -> setelah selesai PDF langsung diunduh.
+  // opts (dari PAKET KONSUL): soapText -> kotak teks SOAP + tombol Salin SOAP di panel.
   async function runAutoPenunjang(opts = {}) {
     const noreg = getCurrentNoregAny();
     if (!noreg) { toast("AUTO SCREENSHOT: buka halaman pasien (detail IGD / e-Ranap) terlebih dahulu."); return; }
     const base = smartplusBaseUrl();
     const items = [];
-    if (opts.soapText) items.push({ caption: "📝 SOAP", dataUrl: spRenderTextPage("SOAP KONSUL IGD", opts.soapText), fileName: "SOAP.png" });
     let notes = [];
     let blockedFilms = [];
     let status = "";
@@ -3109,9 +3114,6 @@
     status = "";
     render();
     toast(`AUTO SCREENSHOT: ${items.length} gambar siap dikirim (lab 1 minggu, radiologi 1 bulan).`);
-    if (opts.autoPdf && items.length) {
-      try { await spDownloadAllPdf(items); } catch (err) { console.warn("[PAKET KONSUL] pdf", err); toast("PAKET KONSUL: PDF gagal dibuat, tekan ⬇ Unduh semua (PDF)."); }
-    }
   }
 
   // Dijalankan DI JENDELA VIEWER PACS (Orthanc/Osimis) yang dibuka oleh AUTO SCREENSHOT.
@@ -6226,7 +6228,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.19.0</div>
+        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.20.0</div>
         <div class="sp-note">Pilih modul yang ingin digunakan:</div>
 
         <button type="button" data-disease-menu="1">
