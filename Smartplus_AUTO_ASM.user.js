@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.20.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.21.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.20.0
-// @description  v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.21.0
+// @description  v3.21.0: tombol 🔄 Update (SOAP disusun ulang dari GADAR + penunjang baru ditambahkan); semua AUTO kembali ke tab E-RAWAT DARURAT dulu sehingga tidak macet saat tab Riwayat/Hasil terbuka. v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -1694,6 +1694,46 @@
     return null;
   }
 
+  // v3.21.0: semua AUTO dimulai dari tab utama. Di halaman pasien, "Riwayat Kunjungan", "Hasil Laboratorium",
+  // "Hasil Radiologi", "Riwayat Resep" adalah tab SEJAJAR dengan "E-RAWAT DARURAT" (IGD) / "E-RANAP" (href #planning).
+  // Bila salah satunya terbuka, sub-tab Assesment GADAR / Resep Online / Order Lab / Order Radiologi tersembunyi
+  // sehingga AUTO macet. Tab #planning hanya tab Bootstrap (tidak memuat ulang isi), aman diklik.
+  async function ensureMainEmrTab() {
+    const link = [...document.querySelectorAll('a[href="#planning"]')].find((a) => a.closest(".nav"));
+    if (!link) return false;
+    const pane = document.getElementById("planning");
+    const shown = () => (pane ? visible(pane) : link.classList.contains("active"));
+    if (shown()) return true;
+    link.click();
+    await waitFor(shown, 3000, 80);
+    await recipeSleep(250);
+    return shown();
+  }
+
+  // v3.21.0: modal GADAR berada DI DALAM panel sub-tab "Assesment GADAR". Bila sub-tab lain aktif (mis. Resep Online),
+  // panel itu display:none -> modal "terbuka" tapi berukuran 0 (tak terlihat) dan AUTO SOAP/PAKET KONSUL gagal.
+  // Pindah sub-tab TIDAK dipakai karena kembali ke Resep Online memuat ulang panel dan menghapus draft resep.
+  // Solusi: panel pembungkus ditampilkan setinggi 0 (isinya tetap tersembunyi; modal position:fixed tetap tampil)
+  // selama modal terbuka, lalu dikembalikan saat modal ditutup.
+  function spRevealModalHost(modal) {
+    if (!modal) return 0;
+    const hidden = [];
+    for (let el = modal.parentElement; el && el !== document.body && el !== document.documentElement; el = el.parentElement) {
+      if (getComputedStyle(el).display === "none") hidden.push(el);
+    }
+    hidden.forEach((el) => {
+      if (el.dataset.spPrevStyle === undefined) el.dataset.spPrevStyle = el.getAttribute("style") || "";
+      el.style.cssText += ";display:block !important;height:0 !important;min-height:0 !important;overflow:hidden !important;padding:0 !important;margin:0 !important;border:0 !important;";
+    });
+    if (hidden.length && window.jQuery) {
+      window.jQuery(modal).one("hidden.bs.modal", () => hidden.forEach((el) => {
+        el.setAttribute("style", el.dataset.spPrevStyle || "");
+        delete el.dataset.spPrevStyle;
+      }));
+    }
+    return hidden.length;
+  }
+
   // Buka GADAR terakhir kunjungan ini dalam mode edit (fungsi bawaan Smartplus update_gadar).
   async function openLatestGadarForEdit() {
     const g = await getLatestGadarData();
@@ -1701,6 +1741,7 @@
     const id = String(g.idGadar);
     if (typeof window.update_gadar === "function") {
       window.update_gadar(id);
+      spRevealModalHost(document.getElementById("modal_form_gadar"));
     } else {
       const tab = document.getElementById("new_gadar");
       if (tab) tab.click();
@@ -1712,6 +1753,7 @@
     // Tunggu modal terbuka DAN terisi data GADAR yang benar.
     const ok = await waitFor(() => {
       const m = document.getElementById("modal_form_gadar");
+      if (m && m.classList.contains("show") && !visible(m)) spRevealModalHost(m);
       const idField = document.querySelector('#form_gadar [name="id_gadar"]');
       return m && visible(m) && idField && String(idField.value) === id;
     }, 8000);
@@ -1758,8 +1800,20 @@
   async function runAutoSoap(opts = {}) {
     // v3.10.0: buka GADAR terakhir -> isi Terapi sementara di Rencana -> susun SOAP -> salin.
     // v3.19.0: opts.returnOnly -> kembalikan teks SOAP tanpa menyalin (dipakai PAKET KONSUL).
-    toast("AUTO SOAP: membuka Assesment GADAR terakhir...");
-    const g = await openLatestGadarForEdit();
+    // v3.21.0: opts.refresh (tombol Update PAKET KONSUL): bila form GADAR masih terbuka, pakai isinya apa adanya
+    // (termasuk revisi yang belum disimpan) dan JANGAN menimpa blok "Terapi sementara" yang sudah ada.
+    await ensureMainEmrTab();
+    const openModal = document.getElementById("modal_form_gadar");
+    if (openModal && openModal.classList.contains("show") && !visible(openModal)) spRevealModalHost(openModal);
+    const openId = document.querySelector('#form_gadar [name="id_gadar"]')?.value;
+    let g = null;
+    if (opts.refresh && openModal && visible(openModal) && openId) {
+      toast("AUTO SOAP: memperbarui dari form GADAR yang sedang terbuka...");
+      g = { data: {}, idGadar: openId };
+    } else {
+      toast("AUTO SOAP: membuka Assesment GADAR terakhir...");
+      g = await openLatestGadarForEdit();
+    }
     if (!g) {
       toast("AUTO SOAP: Assesment GADAR kunjungan ini tidak ditemukan / gagal dibuka.");
       return;
@@ -1768,9 +1822,13 @@
     const ageYears = getPatientAgeYears();
     const isAdult = Number.isFinite(ageYears) ? ageYears > 17 : true;
     const diagnosis = String(form.querySelector('[name="diagnosa_banding"]')?.value || g.data.diagnosa_banding || "");
+    const rencanaNow = form.querySelector('[name="rencana_tindakan"]');
+    const keepTerapi = !!(opts.refresh && rencanaNow && /Terapi sementara:/.test(rencanaNow.value));
 
     let bb = null;
-    if (!isAdult) {
+    if (!isAdult && keepTerapi) {
+      bb = parseGadarWeight({ berat: form.querySelector('[name="berat"]')?.value || g.data.berat });
+    } else if (!isAdult) {
       bb = parseGadarWeight({ berat: form.querySelector('[name="berat"]')?.value || g.data.berat });
       if (!bb) {
         const raw = window.prompt("AUTO SOAP • Pasien anak\nKolom Berat di GADAR kosong.\nMasukkan BB pasien (kg):", "");
@@ -1782,7 +1840,9 @@
 
     const terapi = buildTerapiSementara({ isAdult, bb, diagnosis });
     const rencanaEl = form.querySelector('[name="rencana_tindakan"]');
-    if (rencanaEl) {
+    if (rencanaEl && keepTerapi) {
+      // Terapi sementara sudah ada (mungkin sudah direvisi dokter) -> dibiarkan.
+    } else if (rencanaEl) {
       setValue(rencanaEl, mergeTerapiSementara(rencanaEl.value, terapi));
     } else {
       toast("AUTO SOAP: kolom Rencana tidak ditemukan; terapi hanya dimasukkan ke SOAP.");
@@ -2122,6 +2182,7 @@
     console.log("[AUTO LAB] diagnosis dipakai:", labDiagnosis, gadarDx);
 
     toast("AUTO LAB: membuka Order Lab...");
+    await ensureMainEmrTab();
 
     const labTab = document.getElementById("a_labmodal");
     if (labTab && visible(labTab)) labTab.click();
@@ -2256,6 +2317,7 @@
     console.log("[AUTO RAD]", order.label, "diagnosis dipakai:", radDiagnosis, gadarDx);
 
     toast(`${T}: membuka Order Radiologi...`);
+    await ensureMainEmrTab();
     const tab = document.querySelector(RAD_SELECTORS.tab);
     if (tab && visible(tab)) tab.click();
     else if (!clickVisibleText(["Order Radiologi"])) {
@@ -2825,6 +2887,16 @@
       });
       head.append(cp);
     }
+    if (opts.onUpdate) {
+      const up = document.createElement("button");
+      up.type = "button";
+      up.textContent = opts.status ? "⏳" : "🔄 Update";
+      up.title = "Susun ulang SOAP dari Assesment GADAR (revisi ikut) dan tambahkan hasil penunjang baru";
+      up.disabled = !!opts.status;
+      up.style.cssText = "padding:10px 14px;background:#2e7d32;color:#fff;border:0;border-radius:8px;";
+      up.addEventListener("click", () => opts.onUpdate());
+      head.append(up);
+    }
     head.append(dlAll, close);
     panel.append(head);
     const tip = document.createElement("div");
@@ -2989,7 +3061,14 @@
     } else {
       toast("PAKET KONSUL: SOAP tidak bisa disusun (GADAR kunjungan ini tidak ditemukan). Lanjut penunjang saja.");
     }
-    await runAutoPenunjang({ soapText: soap || "", soapCopied: copied });
+    await runAutoPenunjang({
+      soapText: soap || "",
+      soapCopied: copied,
+      // v3.21.0: tombol 🔄 Update -> SOAP disusun ulang dari GADAR (revisi ikut), penunjang baru ditambahkan.
+      refreshSoap: async () => {
+        try { return await runAutoSoap({ returnOnly: true, refresh: true }); } catch (err) { console.warn("[PAKET KONSUL] update soap", err); return null; }
+      }
+    });
   }
 
   // opts (dari PAKET KONSUL): soapText -> kotak teks SOAP + tombol Salin SOAP di panel.
@@ -3002,6 +3081,8 @@
     let blockedFilms = [];
     let status = "";
     let closedByUser = false;
+    let newMark = "";
+    let update = null;
     toast("AUTO SCREENSHOT: mengambil hasil lab 1 minggu...");
     // Daftar radiologi diambil paralel sejak awal (lab tetap ditampilkan lebih dulu).
     const radListP = spFetchRadEntries(base, noreg).then((list) => ({ list }), (error) => ({ error }));
@@ -3012,10 +3093,13 @@
         text: `Browser memblokir jendela film (${blockedFilms.length}).`,
         button: "🩻 Ambil film",
         onClick: async () => { closedByUser = false; const again = blockedFilms; blockedFilms = []; await addFilms(again); status = ""; render(); }
-      }] : notes, { status, soapText: opts.soapText, soapCopied: opts.soapCopied, onClose: () => { closedByUser = true; } });
+      }] : notes, { status, soapText: opts.soapText, soapCopied: opts.soapCopied, onUpdate: update, onClose: () => { closedByUser = true; } });
     };
 
-    const addLabs = async (entries) => {
+    const seenLab = new Set();
+    const addLabs = async (all) => {
+      // v3.21.0: lab yang sudah tampil tidak diambil ulang (tombol Update).
+      const entries = all.filter((e) => !seenLab.has(`${e.idSample}|${e.noreg}`));
       // Semua lembar lab diambil bersamaan supaya cepat; urutan tetap terbaru dulu.
       const sheets = await Promise.all(entries.map((e) =>
         fetch(`${base}/hasil_lab/hasil_lab/print_hasil_labx_by_id_sample/${encodeURIComponent(e.idSample)}/${encodeURIComponent(e.noreg)}`, { credentials: "same-origin" })
@@ -3024,20 +3108,25 @@
         const sheet = sheets[i];
         if (!sheet) { notes.push({ text: `Lab ${e.dateText}: gagal dimuat.` }); return; }
         if (!sheet.rows.length) return;
-        items.push({ caption: `🧪 Lab ${e.dateText}`, dataUrl: spRenderLabSheet(sheet), fileName: `Lab_${spSafeName(e.dateText)}.png` });
+        seenLab.add(`${e.idSample}|${e.noreg}`);
+        items.push({ caption: `${newMark}🧪 Lab ${e.dateText}`, dataUrl: spRenderLabSheet(sheet), fileName: `Lab_${spSafeName(e.dateText)}.png` });
       });
     };
     // Satu study PACS bisa muncul di beberapa baris (mis. FILM ke-2 di baris Thorax = CT hari itu):
-    // dibuka sekali saja (dedup alamat).
+    // dibuka sekali saja (dedup alamat). v3.21.0: seenFilm = sudah diproses (dipakai juga oleh tombol Update).
     const seenFilm = new Set();
-    const filmsOf = (rads) => rads.flatMap((r) => r.films.map((url, i) => ({
-      url,
-      caption: `🩻 ${r.exam} ${r.dateText}${r.films.length > 1 ? ` (film ${i + 1})` : ""}`,
-      base: `Film_${spSafeName(r.exam)}_${spSafeName(r.dateKey)}${r.films.length > 1 ? "_" + (i + 1) : ""}`
-    }))).filter((f) => (seenFilm.has(f.url) ? false : (seenFilm.add(f.url), true)));
+    const filmsOf = (rads) => {
+      const inList = new Set();
+      return rads.flatMap((r) => r.films.map((url, i) => ({
+        url,
+        caption: `${newMark}🩻 ${r.exam} ${r.dateText}${r.films.length > 1 ? ` (film ${i + 1})` : ""}`,
+        base: `Film_${spSafeName(r.exam)}_${spSafeName(r.dateKey)}${r.films.length > 1 ? "_" + (i + 1) : ""}`
+      }))).filter((f) => !seenFilm.has(f.url) && (inList.has(f.url) ? false : (inList.add(f.url), true)));
+    };
     const addFilms = async (films) => {
       for (let i = 0; i < films.length; i++) {
         const f = films[i];
+        seenFilm.add(f.url);
         status = `⏳ Mengambil film ${i + 1}/${films.length} (${f.caption}), maks ${SP_FILM_TIMEOUT_MS / 1000} detik...`;
         render();
         const res = await spCaptureFilm(f.url, i);
@@ -3054,19 +3143,24 @@
         }));
       }
     };
+    const seenExp = new Set();
     const addExpertise = async (rads) => {
-      for (const r of rads) {
+      for (const r of rads.filter((x) => !seenExp.has(`${x.noreg}|${x.idTrx}`))) {
         try {
           const html = await fetch(`${base}/hasil_rad/hasil_rad/inner_hasil_rad_detail/${encodeURIComponent(r.noreg)}/${encodeURIComponent(r.idTrx)}`, { credentials: "same-origin" }).then((x) => x.text());
           const exp = spParseRadExpertise(html);
+          // Ekspertise belum ada -> tidak ditandai, supaya tombol Update bisa mengambilnya nanti.
           if (!exp.lines.length) { notes.push({ text: `Ekspertise ${r.exam} ${r.dateText} belum tersedia.` }); continue; }
-          items.push({ caption: `📝 Ekspertise ${r.exam} ${r.dateText}`, dataUrl: spRenderRadExpertise(exp), fileName: `Ekspertise_${spSafeName(r.exam)}_${spSafeName(r.dateKey)}.png` });
+          seenExp.add(`${r.noreg}|${r.idTrx}`);
+          items.push({ caption: `${newMark}📝 Ekspertise ${r.exam} ${r.dateText}`, dataUrl: spRenderRadExpertise(exp), fileName: `Ekspertise_${spSafeName(r.exam)}_${spSafeName(r.dateKey)}.png` });
         } catch (err) {
           notes.push({ text: `Ekspertise ${r.exam} ${r.dateText}: gagal dimuat — dilewati.` });
         }
       }
     };
 
+    // v3.21.0: pengumpulan dibuat ulang-pakai; tombol 🔄 Update hanya menambahkan hasil yang BELUM ada.
+    const collect = async (radListPromise) => {
     // ---- 1) LAB: semua hasil 1 minggu terakhir, langsung ditampilkan ----
     try {
       const { recent, latestOlder } = spPickRecentEntries(await spFetchLabEntries(base, noreg), SP_LAB_WINDOW);
@@ -3087,7 +3181,7 @@
 
     // ---- 2) RADIOLOGI 1 bulan: USG = ekspertise saja (cepat), lalu CT/rontgen = film (maks 6 detik per film) ----
     try {
-      const radList = await radListP;
+      const radList = await radListPromise;
       if (radList.error) throw radList.error;
       const { recent, latestOlder } = spPickRecentEntries(radList.list, SP_RAD_WINDOW);
       const usg = recent.filter((r) => spIsUsgExam(r.exam));
@@ -3099,17 +3193,48 @@
       if (films.length) await addFilms(films);
       if (!recent.length) {
         const olderUsg = latestOlder.filter((r) => spIsUsgExam(r.exam));
-        const olderFilms = filmsOf(latestOlder.filter((r) => !spIsUsgExam(r.exam)));
+        const olderRows = latestOlder.filter((r) => !spIsUsgExam(r.exam));
         notes.push(latestOlder.length ? {
           text: `Tidak ada radiologi dalam 1 bulan terakhir. Terakhir: ${latestOlder[0].dateText} (${latestOlder.map((r) => r.exam).join(", ")}).`,
           button: "Ambil radiologi terakhir",
-          onClick: async () => { notes = notes.filter((n) => n.button !== "Ambil radiologi terakhir"); await addExpertise(olderUsg); await addFilms(olderFilms); status = ""; render(); }
+          onClick: async () => { notes = notes.filter((n) => n.button !== "Ambil radiologi terakhir"); await addExpertise(olderUsg); await addFilms(filmsOf(olderRows)); status = ""; render(); }
         } : { text: "Tidak ada hasil radiologi." });
       }
     } catch (err) {
       console.warn("[AUTO SCREENSHOT] rad", err);
       notes.push({ text: "Gagal mengambil daftar radiologi: " + (err.message || err) });
     }
+    };
+
+    let busy = false;
+    update = async () => {
+      if (busy) return;
+      busy = true;
+      closedByUser = false;
+      try {
+        let soapNote = "";
+        if (opts.refreshSoap) {
+          status = "⏳ Memperbarui SOAP dari Assesment GADAR...";
+          render();
+          const fresh = await opts.refreshSoap();
+          if (fresh) { opts.soapText = fresh; opts.soapCopied = false; soapNote = ", SOAP diperbarui"; }
+          else soapNote = ", SOAP gagal diperbarui";
+        }
+        const before = items.length;
+        notes = [];
+        newMark = "🆕 ";
+        status = "⏳ Mencari hasil penunjang baru...";
+        render();
+        await collect(spFetchRadEntries(base, noreg).then((list) => ({ list }), (error) => ({ error })));
+        status = "";
+        render();
+        toast(`UPDATE: ${items.length - before} gambar penunjang baru${soapNote}.`);
+      } finally {
+        busy = false;
+      }
+    };
+
+    await collect(radListP);
 
     status = "";
     render();
@@ -3689,6 +3814,8 @@
   // Gunakan mekanisme yang SAMA persis dengan AUTO LAB untuk membuka menu.
   // AUTO LAB sudah terbukti dapat membuka "Order Lab" pada Smartplus ini.
   async function openRecipeTab() {
+    // v3.21.0: kembali ke tab E-RAWAT DARURAT dulu (draft Resep Online yang sudah ada tetap utuh).
+    await ensureMainEmrTab();
     // Jangan klik ulang Resep Online bila form/draft sudah terbuka.
     // Pada Smartplus, klik ulang tab dapat merender ulang panel dan menghapus
     // draft yang sudah dimasukkan. Pilihan paket berikutnya harus ADDITIVE.
@@ -6228,7 +6355,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.20.0</div>
+        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.21.0</div>
         <div class="sp-note">Pilih modul yang ingin digunakan:</div>
 
         <button type="button" data-disease-menu="1">
@@ -6903,6 +7030,7 @@
 
   async function openAssessmentGadarForTemplate() {
     toast('AUTO ASGADAR: membuka Assesment GADAR...');
+    await ensureMainEmrTab();
 
     // Sama seperti AUTO LAB -> clickVisibleText(["Order Lab"]).
     // Ejaan tombol pada Smartplus screenshot: "Assesment GADAR".
