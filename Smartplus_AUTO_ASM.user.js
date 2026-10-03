@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.22.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.23.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.22.0
-// @description  v3.22.0: semua kotak AUTO ASM (menu, KOMBINASI RESEP, AUTO SCREENSHOT/PAKET KONSUL, salin SOAP) bisa digeser dan dikecilkan. v3.21.0: tombol 🔄 Update (SOAP disusun ulang dari GADAR + penunjang baru ditambahkan); semua AUTO kembali ke tab E-RAWAT DARURAT dulu sehingga tidak macet saat tab Riwayat/Hasil terbuka. v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.23.0
+// @description  v3.23.0: tombol AUTO SOAP & AUTO SCREENSHOT dihapus dari menu (sudah tercakup PAKET KONSUL). v3.22.0: semua kotak AUTO ASM (menu, KOMBINASI RESEP, AUTO SCREENSHOT/PAKET KONSUL, salin SOAP) bisa digeser dan dikecilkan. v3.21.0: tombol 🔄 Update (SOAP disusun ulang dari GADAR + penunjang baru ditambahkan); semua AUTO kembali ke tab E-RAWAT DARURAT dulu sehingga tidak macet saat tab Riwayat/Hasil terbuka. v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -6492,7 +6492,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.22.0</div>
+        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.23.0</div>
         <div class="sp-note">Pilih modul yang ingin digunakan:</div>
 
         <button type="button" data-disease-menu="1">
@@ -6512,9 +6512,8 @@
 
         <div class="sp-divider"></div>
 
-        <button type="button" data-auto-soap="1">
-          📝 AUTO SOAP - Copy Konsul
-        </button>
+        <!-- v3.23.0: AUTO SOAP & AUTO SCREENSHOT disembunyikan dari menu (sudah tercakup PAKET KONSUL, permintaan dokter).
+             Fungsinya tetap ada karena dipakai PAKET KONSUL; tampilkan lagi tombolnya bila diperlukan. -->
 
         <button type="button" data-paket-konsul="1">
           📨 PAKET KONSUL – SOAP + PDF Penunjang
@@ -6522,10 +6521,6 @@
 
         <button type="button" data-penunjang-menu="1">
           🧾 AUTO PENUNJANG ▶
-        </button>
-
-        <button type="button" data-auto-penunjang="1">
-          📸 AUTO SCREENSHOT – Lab 1 mgg & Radiologi 1 bln
         </button>
 
         <div class="sp-note">
