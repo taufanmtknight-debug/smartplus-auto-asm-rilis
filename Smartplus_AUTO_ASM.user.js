@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.23.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.24.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.23.0
-// @description  v3.23.0: tombol AUTO SOAP & AUTO SCREENSHOT dihapus dari menu (sudah tercakup PAKET KONSUL). v3.22.0: semua kotak AUTO ASM (menu, KOMBINASI RESEP, AUTO SCREENSHOT/PAKET KONSUL, salin SOAP) bisa digeser dan dikecilkan. v3.21.0: tombol 🔄 Update (SOAP disusun ulang dari GADAR + penunjang baru ditambahkan); semua AUTO kembali ke tab E-RAWAT DARURAT dulu sehingga tidak macet saat tab Riwayat/Hasil terbuka. v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.24.0
+// @description  v3.24.0: judul "Riwayat kontrol poli spesialis" dihapus dari Riwayat Penyakit Dahulu; ASGADAR untuk pasien belum terdaftar diisikan ke + BUAT DRAF ASSESMENT GAWAT DARURAT (daftar pasien IGD); PAKET KONSUL: film CT tidak diambil, ekspertise rontgen & CT ikut bila sudah ada. v3.23.0: tombol AUTO SOAP & AUTO SCREENSHOT dihapus dari menu (sudah tercakup PAKET KONSUL). v3.22.0: semua kotak AUTO ASM (menu, KOMBINASI RESEP, AUTO SCREENSHOT/PAKET KONSUL, salin SOAP) bisa digeser dan dikecilkan. v3.21.0: tombol 🔄 Update (SOAP disusun ulang dari GADAR + penunjang baru ditambahkan); semua AUTO kembali ke tab E-RAWAT DARURAT dulu sehingga tidak macet saat tab Riwayat/Hasil terbuka. v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -2410,7 +2410,6 @@
   // Ambil kunjungan RWJ dokter spesialis (nama dokter memuat "Sp."), tanpa batas waktu (v3.16.0),
   // SATU kunjungan terbaru per spesialisasi (v3.15.0; sebelumnya per poli).
   // Terapi = obat yang diserahkan (tabel RESEP); bila kosong -> R/ di SOAP; bila kosong -> isi P (mis. fisioterapi).
-  const SP_RIWAYAT_POLI_HEADER = "Riwayat kontrol poli spesialis:";
 
   async function spFetchVisitList(base, normRm) {
     const html = await fetch(`${base}/history_pasien/history_pasien_list/${encodeURIComponent(normRm)}`, { credentials: "same-origin" }).then((r) => r.text());
@@ -2534,10 +2533,23 @@
   }
 
   // Tambahkan di bawah isi kolom (isi bawaan Smartplus dipertahankan; blok lama diganti bila diulang).
+  // v3.24.0 (instruksi dokter): tanpa judul "Riwayat kontrol poli spesialis:". Blok lama dikenali dari bentuk barisnya
+  // ("- dd-mm-yyyy dr ...: Dx ...", "  Th/", "  • obat", "     - racikan"); judul versi lama juga ikut dibersihkan.
+  const SP_RIWAYAT_POLI_LINE_RE = /^- \d{2}-\d{2}-\d{4}\b.*: Dx /;
+  const SP_RIWAYAT_POLI_CONT_RE = /^(?:\s+Th\/.*|\s+•.*|\s{3,}- .*)$/;
   function mergeRiwayatPoli(existing, lines) {
-    const base = String(existing || "").split(/\n?Riwayat kontrol poli spesialis:[\s\S]*$/)[0].replace(/\s+$/, "");
+    let rows = String(existing || "").split(/\r?\n/);
+    const oldHead = rows.findIndex((r) => /^Riwayat kontrol poli spesialis:\s*$/i.test(r.trim()));
+    if (oldHead >= 0) rows = rows.slice(0, oldHead);
+    else {
+      const start = rows.findIndex((r) => SP_RIWAYAT_POLI_LINE_RE.test(r));
+      if (start >= 0 && rows.slice(start).every((r) => !r.trim() || SP_RIWAYAT_POLI_LINE_RE.test(r) || SP_RIWAYAT_POLI_CONT_RE.test(r))) {
+        rows = rows.slice(0, start);
+      }
+    }
+    const base = rows.join("\n").replace(/\s+$/, "");
     if (!lines.length) return base;
-    return (base ? base + "\n" : "") + SP_RIWAYAT_POLI_HEADER + "\n" + lines.join("\n");
+    return (base ? base + "\n" : "") + lines.join("\n");
   }
 
   // =========================
@@ -2606,8 +2618,16 @@
   }
 
   // USG -> ekspertise saja (tanpa film). CT, rontgen (Thorax dll.) -> film saja.
+  // v3.24.0 (instruksi dokter): CT -> ekspertise saja (film CT tidak cocok untuk screenshot);
+  // rontgen -> film + ekspertise. Ekspertise yang belum ada tidak diambil.
   function spIsUsgExam(exam) {
     return /\bUSG\b|ultra\s*sono/i.test(String(exam || ""));
+  }
+  function spIsCtExam(exam) {
+    return /\bCT\b|\bCT[-\s]?scan|\bMSCT\b|computed\s*tomography/i.test(String(exam || ""));
+  }
+  function spNoFilmExam(exam) {
+    return spIsUsgExam(exam) || spIsCtExam(exam);
   }
 
   async function spFetchLabEntries(base, noreg) {
@@ -2740,7 +2760,7 @@
     return cv.toDataURL("image/png");
   }
 
-  // v3.12.0: ekspertise radiologi (dipakai untuk USG) dari hasil_rad/inner_hasil_rad_detail/<noreg>/<idtrx>.
+  // v3.12.0: ekspertise radiologi (USG; v3.24.0 juga rontgen & CT) dari hasil_rad/inner_hasil_rad_detail/<noreg>/<idtrx>.
   function spParseRadExpertise(html) {
     const doc = spParseHtml(html);
     const info = {};
@@ -3142,7 +3162,7 @@
         render();
         const res = await spCaptureFilm(f.url, i);
         if (res.blocked) { blockedFilms.push(f); continue; }
-        if (res.skipped) { notes.push({ text: `${f.caption}: berisi film USG — dilewati (USG cukup ekspertise).` }); continue; }
+        if (res.skipped) { notes.push({ text: `${f.caption}: berisi film ${res.skipped} — dilewati (cukup ekspertise).` }); continue; }
         const imgs = res.images || [];
         if (!imgs.length) { notes.push({ text: `${f.caption}: ${res.error || "gagal"} — dilewati.` }); continue; }
         if (res.timedOut) notes.push({ text: `${f.caption}: baru ${imgs.length} gambar dalam ${SP_FILM_TIMEOUT_MS / 1000} detik — dipakai yang ada.` });
@@ -3190,25 +3210,24 @@
     status = "⏳ Mengambil radiologi...";
     render();
 
-    // ---- 2) RADIOLOGI 1 bulan: USG = ekspertise saja (cepat), lalu CT/rontgen = film (maks 6 detik per film) ----
+    // ---- 2) RADIOLOGI 1 bulan: ekspertise semua pemeriksaan (bila sudah ada) lebih dulu, lalu film rontgen
+    //         (maks 6 detik per film). v3.24.0: USG & CT tanpa film. ----
     try {
       const radList = await radListPromise;
       if (radList.error) throw radList.error;
       const { recent, latestOlder } = spPickRecentEntries(radList.list, SP_RAD_WINDOW);
-      const usg = recent.filter((r) => spIsUsgExam(r.exam));
-      const filmRows = recent.filter((r) => !spIsUsgExam(r.exam));
-      await addExpertise(usg);
+      const filmRows = recent.filter((r) => !spNoFilmExam(r.exam));
+      await addExpertise(recent);
       const films = filmsOf(filmRows);
       const noFilm = filmRows.filter((r) => !r.films.length);
       if (noFilm.length) notes.push({ text: `Tombol FILM belum tersedia: ${noFilm.map((r) => `${r.exam} ${r.dateText}`).join(", ")}.` });
       if (films.length) await addFilms(films);
       if (!recent.length) {
-        const olderUsg = latestOlder.filter((r) => spIsUsgExam(r.exam));
-        const olderRows = latestOlder.filter((r) => !spIsUsgExam(r.exam));
+        const olderRows = latestOlder.filter((r) => !spNoFilmExam(r.exam));
         notes.push(latestOlder.length ? {
           text: `Tidak ada radiologi dalam 1 bulan terakhir. Terakhir: ${latestOlder[0].dateText} (${latestOlder.map((r) => r.exam).join(", ")}).`,
           button: "Ambil radiologi terakhir",
-          onClick: async () => { notes = notes.filter((n) => n.button !== "Ambil radiologi terakhir"); await addExpertise(olderUsg); await addFilms(filmsOf(olderRows)); status = ""; render(); }
+          onClick: async () => { notes = notes.filter((n) => n.button !== "Ambil radiologi terakhir"); await addExpertise(latestOlder); await addFilms(filmsOf(olderRows)); status = ""; render(); }
         } : { text: "Tidak ada hasil radiologi." });
       }
     } catch (err) {
@@ -3274,10 +3293,11 @@
       const studyInfoP = get(`/studies/${study}`).then((r) => r.json()).catch(() => null);
       const series = await (await get(`/studies/${study}/series`)).json();
       const isImg = (s) => !/^(SR|PR|KO|DOC|REG|SEG)$/i.test(s.MainDicomTags?.Modality || "");
-      // v3.12.0: film USG tidak diambil (USG cukup ekspertise).
-      const isUs = (s) => /^US$/i.test(s.MainDicomTags?.Modality || "");
+      // v3.12.0: film USG tidak diambil (USG cukup ekspertise). v3.24.0: CT/MRI juga tidak (cukup ekspertise).
+      const isUs = (s) => /^(US|CT|MR)$/i.test(s.MainDicomTags?.Modality || "");
       if (series.some(isImg) && series.filter(isImg).every(isUs)) {
-        send({ part: "done", ok: true, skipped: "USG" });
+        const m = series.filter(isImg).map((x) => String(x.MainDicomTags?.Modality || "").toUpperCase());
+        send({ part: "done", ok: true, skipped: m.includes("CT") ? "CT" : m.includes("MR") ? "MRI" : "USG" });
         setTimeout(() => { try { window.close(); } catch (_) {} }, 300);
         return;
       }
@@ -6492,7 +6512,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.23.0</div>
+        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.24.0</div>
         <div class="sp-note">Pilih modul yang ingin digunakan:</div>
 
         <button type="button" data-disease-menu="1">
@@ -7161,7 +7181,30 @@
     });
   }
 
+  // v3.24.0 (instruksi dokter): pasien belum mendaftar (belum ada di daftar pasien IGD) -> template diisikan ke
+  // "+ BUAT DRAF ASSESMENT GAWAT DARURAT" di halaman daftar pasien IGD. draft_gadar() Smartplus hanya mengosongkan
+  // form #form_gadar_draft lalu membuka modal (tidak menyimpan). Simpan draf tetap manual oleh dokter.
+  function spIsDraftGadarPage() {
+    return !document.getElementById("form_gadar") && !!document.getElementById("form_gadar_draft") &&
+      !!document.querySelector('button[onclick*="draft_gadar()"]');
+  }
+
+  async function openDraftGadarForTemplate() {
+    const modal = document.getElementById("modal_form_gadar_draft");
+    if (!(modal && modal.classList.contains("show") && visible(modal))) {
+      toast("AUTO ASGADAR: membuka + BUAT DRAF ASSESMENT GAWAT DARURAT...");
+      const btn = document.querySelector('button[onclick*="draft_gadar()"]');
+      if (!btn) { toast("AUTO ASGADAR: tombol BUAT DRAF ASSESMENT GAWAT DARURAT tidak ditemukan."); return false; }
+      btn.click();
+    }
+    const ok = await waitFor(() => modal && modal.classList.contains("show") && visible(modal), 8000);
+    if (!ok) { toast("AUTO ASGADAR: form draf Assesment Gawat Darurat belum muncul."); return false; }
+    await recipeSleep(400);
+    return true;
+  }
+
   async function openAssessmentGadarForTemplate() {
+    if (spIsDraftGadarPage()) return openDraftGadarForTemplate();
     toast('AUTO ASGADAR: membuka Assesment GADAR...');
     await ensureMainEmrTab();
 
@@ -7197,13 +7240,17 @@
     if (!data) return;
 
     // v3.14.0: riwayat poli spesialis diambil paralel (hanya GET) selama form diisi.
-    const riwayatPoliP = spBuildRiwayatPoliLines().catch((err) => ({ lines: [], error: String(err && err.message || err) }));
+    // v3.24.0: pasien belum terdaftar (draf) -> belum ada No. RM, riwayat poli tidak diambil.
+    const isDraft = spIsDraftGadarPage();
+    const riwayatPoliP = isDraft
+      ? Promise.resolve({ lines: [], draft: true })
+      : spBuildRiwayatPoliLines().catch((err) => ({ lines: [], error: String(err && err.message || err) }));
 
     // Template penyakit sekarang otomatis membuka Assessment GADAR + + TAMBAH.
     const opened = await openAssessmentGadarForTemplate();
     if (!opened) return;
 
-    const root = modalRoot();
+    const root = isDraft ? (document.querySelector("#modal_form_gadar_draft .modal-content") || document.getElementById("modal_form_gadar_draft")) : modalRoot();
 
     if (!root || root === document.body) {
       toast("Buka formulir Assesment Gawat Darurat terlebih dahulu.");
@@ -7448,7 +7495,8 @@
       try {
         const rp = await riwayatPoliP;
         const rpdEl = root.querySelector('[name="riwayat_sakit_old"]') || document.querySelector('#form_gadar [name="riwayat_sakit_old"]');
-        if (rp.error) riwayatNote = " Riwayat poli: gagal dibaca.";
+        if (rp.draft) riwayatNote = " Draf (pasien belum terdaftar): isi Nama Pasien lalu Save manual.";
+        else if (rp.error) riwayatNote = " Riwayat poli: gagal dibaca.";
         else if (!rp.lines.length) riwayatNote = " Riwayat poli spesialis: tidak ada.";
         else if (!rpdEl) { riwayatNote = " Riwayat poli: kolom Riwayat Penyakit Dahulu tidak ditemukan."; fail.push("Riwayat poli spesialis"); }
         else {
