@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.21.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.22.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.21.0
-// @description  v3.21.0: tombol 🔄 Update (SOAP disusun ulang dari GADAR + penunjang baru ditambahkan); semua AUTO kembali ke tab E-RAWAT DARURAT dulu sehingga tidak macet saat tab Riwayat/Hasil terbuka. v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.22.0
+// @description  v3.22.0: semua kotak AUTO ASM (menu, KOMBINASI RESEP, AUTO SCREENSHOT/PAKET KONSUL, salin SOAP) bisa digeser dan dikecilkan. v3.21.0: tombol 🔄 Update (SOAP disusun ulang dari GADAR + penunjang baru ditambahkan); semua AUTO kembali ke tab E-RAWAT DARURAT dulu sehingga tidak macet saat tab Riwayat/Hasil terbuka. v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -1770,8 +1770,10 @@
     panel.id = PANEL_ID;
     panel.style.cssText = "position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2147483647;background:#fff;border:2px solid #e91e63;border-radius:12px;padding:12px;width:min(92vw,520px);max-height:85vh;box-shadow:0 8px 30px rgba(0,0,0,.35);font:14px/1.4 sans-serif;color:#222;display:flex;flex-direction:column;gap:8px;";
     const title = document.createElement("div");
-    title.textContent = "📝 SOAP siap — tekan SALIN";
-    title.style.cssText = "font-weight:bold;";
+    title.textContent = "⠿ 📝 SOAP siap — tekan SALIN";
+    title.style.cssText = "font-weight:bold;display:flex;align-items:center;gap:6px;";
+    title.className = "sp-panel-head";
+    spStyleHandle(title);
     const ta = document.createElement("textarea");
     ta.value = text;
     ta.readOnly = true;
@@ -1793,8 +1795,13 @@
     });
     closeBtn.addEventListener("click", () => panel.remove());
     row.append(copyBtn, closeBtn);
+    const spacer = document.createElement("span");
+    spacer.style.cssText = "flex:1;";
+    title.append(spacer, spMinButton(panel, PANEL_ID, ".sp-panel-head"));
     panel.append(title, ta, row);
     document.documentElement.appendChild(panel);
+    spMakeDraggable(panel, PANEL_ID, (t) => !!t.closest(".sp-panel-head"));
+    spApplyMinimized(panel, PANEL_ID, ".sp-panel-head");
   }
 
   async function runAutoSoap(opts = {}) {
@@ -2863,7 +2870,8 @@
     panel.style.cssText = "position:fixed;inset:4vh 50% auto auto;transform:translateX(50%);z-index:2147483647;background:#fff;border:2px solid #e91e63;border-radius:12px;padding:12px;width:min(94vw,760px);max-height:90vh;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,.35);font:14px/1.4 sans-serif;color:#222;";
     const head = document.createElement("div");
     head.style.cssText = "display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:sticky;top:-12px;background:#fff;padding:4px 0 8px;";
-    head.innerHTML = `<b style="flex:1;min-width:180px">📸 AUTO SCREENSHOT — siap dikirim (${items.length})</b>`;
+    head.innerHTML = `<b style="flex:1;min-width:180px"><span style="color:#999">⠿</span> 📸 AUTO SCREENSHOT — siap dikirim (${items.length})</b>`;
+    spStyleHandle(head);
     const dlAll = document.createElement("button");
     dlAll.type = "button"; dlAll.textContent = "⬇ Unduh semua (PDF)";
     dlAll.style.cssText = "padding:10px 14px;background:#e91e63;color:#fff;border:0;border-radius:8px;";
@@ -2897,7 +2905,8 @@
       up.addEventListener("click", () => opts.onUpdate());
       head.append(up);
     }
-    head.append(dlAll, close);
+    head.append(dlAll, close, spMinButton(panel, PANEL_ID, ".sp-panel-head"));
+    head.classList.add("sp-panel-head");
     panel.append(head);
     const tip = document.createElement("div");
     tip.style.cssText = "font-size:12px;color:#555;margin-bottom:8px;";
@@ -2958,6 +2967,8 @@
     }
     document.documentElement.appendChild(panel);
     panel.scrollTop = prevScroll;
+    spMakeDraggable(panel, PANEL_ID, (t) => !!t.closest(".sp-panel-head"));
+    spApplyMinimized(panel, PANEL_ID, ".sp-panel-head");
     return panel;
   }
 
@@ -5438,6 +5449,132 @@
     }, 5000);
   }
 
+  // =========================
+  // v3.22.0: kotak AUTO ASM bisa DIGESER (mouse & sentuh) dan DIKECILKAN (▁), supaya layar pasien di
+  // belakangnya tetap bisa dilihat/dipakai. Posisi & status kecil diingat selama halaman terbuka
+  // (dipakai lagi saat kotak dibuat ulang, mis. panel AUTO SCREENSHOT yang dirender ulang tiap langkah).
+  // =========================
+  const spPanelState = {};
+  const spKeyOf = (key) => (typeof key === "function" ? key() : key);
+
+  function spApplyPanelPos(el, key) {
+    const st = spPanelState[spKeyOf(key)];
+    if (!st || st.left == null) {
+      // Belum pernah digeser: pakai posisi bawaan kotak. Hanya hapus properti yang dulu dipasang oleh fungsi ini
+      // (mis. menu berpindah ke tampilan KOMBINASI yang punya posisi sendiri).
+      if (el.dataset.spPosSet) {
+        ["left", "top", "right", "bottom", "transform"].forEach((p) => el.style.removeProperty(p));
+        delete el.dataset.spPosSet;
+      }
+      return;
+    }
+    el.dataset.spPosSet = "1";
+    // Kotak tetap utuh di dalam lebar layar (tombol di kanan judul tidak keluar layar); judul tetap terlihat.
+    const r = el.getBoundingClientRect();
+    const w = Math.min(r.width || 200, window.innerWidth);
+    const left = Math.min(Math.max(0, st.left), Math.max(0, window.innerWidth - w));
+    const top = Math.min(Math.max(0, st.top), Math.max(0, window.innerHeight - 48));
+    el.style.setProperty("left", left + "px", "important");
+    el.style.setProperty("top", top + "px", "important");
+    el.style.setProperty("right", "auto", "important");
+    el.style.setProperty("bottom", "auto", "important");
+    el.style.setProperty("transform", "none", "important");
+  }
+
+  // isHandle(target) -> true bila titik tekan berada di bagian judul (tombol/isian tidak memulai geser).
+  function spMakeDraggable(el, key, isHandle) {
+    el.addEventListener("pointerdown", (e) => {
+      if (e.button !== undefined && e.button !== 0) return;
+      const t = e.target;
+      if (!t || !isHandle(t) || t.closest("button, a, input, textarea, select, img, label")) return;
+      const r = el.getBoundingClientRect();
+      const dx = e.clientX - r.left;
+      const dy = e.clientY - r.top;
+      e.preventDefault();
+      const move = (ev) => {
+        const k = spKeyOf(key);
+        spPanelState[k] = Object.assign({}, spPanelState[k], { left: ev.clientX - dx, top: ev.clientY - dy });
+        spApplyPanelPos(el, key);
+      };
+      const end = () => {
+        document.removeEventListener("pointermove", move, true);
+        document.removeEventListener("pointerup", end, true);
+        document.removeEventListener("pointercancel", end, true);
+      };
+      document.addEventListener("pointermove", move, true);
+      document.addEventListener("pointerup", end, true);
+      document.addEventListener("pointercancel", end, true);
+    });
+    spApplyPanelPos(el, key);
+  }
+
+  // Sembunyikan/tampilkan semua isi kotak kecuali bagian judul (keepSel).
+  function spApplyMinimized(el, key, keepSel) {
+    const min = !!(spPanelState[spKeyOf(key)] || {}).min;
+    // keepSel dicocokkan pada anak langsung kotak (Element.matches), jadi tanpa ":scope >".
+    const sel = String(keepSel).replace(/^\s*:scope\s*>\s*/, "");
+    [...el.children].forEach((c) => {
+      if (c.matches(sel)) return;
+      if (min) { if (c.style.display !== "none") { c.dataset.spHid = "1"; c.style.display = "none"; } }
+      else if (c.dataset.spHid) { c.style.display = ""; delete c.dataset.spHid; }
+    });
+    el.querySelectorAll(".sp-min-btn").forEach((b) => {
+      b.textContent = min ? "▢" : "▁";
+      b.title = min ? "Tampilkan lagi" : "Kecilkan kotak";
+    });
+  }
+
+  function spMinButton(el, key, keepSel) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "sp-min-btn";
+    [["width", "auto"], ["display", "inline-block"], ["margin", "0 0 0 6px"], ["padding", "6px 10px"],
+      ["background", "#eceff1"], ["color", "#333"], ["border", "1px solid #bbb"], ["border-radius", "6px"],
+      ["font", "700 13px Arial,sans-serif"], ["cursor", "pointer"], ["float", "none"], ["line-height", "1"]]
+      .forEach(([k, v]) => b.style.setProperty(k, v, "important"));
+    b.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      const k = spKeyOf(key);
+      spPanelState[k] = Object.assign({}, spPanelState[k], { min: !(spPanelState[k] || {}).min });
+      spApplyMinimized(el, key, keepSel);
+    });
+    return b;
+  }
+
+  function spStyleHandle(h) {
+    h.style.setProperty("cursor", "move", "important");
+    h.style.setProperty("touch-action", "none", "important");
+    h.style.setProperty("user-select", "none", "important");
+    if (!h.title) h.title = "Tahan & geser untuk memindahkan kotak";
+  }
+
+  // Menu AUTO ASM: isinya diganti tiap pindah menu (innerHTML), jadi judul dihias ulang setiap kali berubah.
+  function spSetupMenuBox(menu) {
+    const key = () => MENU_ID + (menu.classList.contains("sp-package-modal") ? ":pkg" : "");
+    const decorate = () => {
+      const title = menu.querySelector(":scope > .sp-title");
+      if (title && !title.querySelector(".sp-min-btn")) {
+        spStyleHandle(title);
+        title.style.setProperty("display", "flex", "important");
+        title.style.setProperty("align-items", "center", "important");
+        title.style.setProperty("gap", "6px", "important");
+        const grip = document.createElement("span");
+        grip.textContent = "⠿";
+        grip.style.cssText = "color:#999;margin-right:2px;";
+        title.prepend(grip);
+        const spacer = document.createElement("span");
+        spacer.style.cssText = "flex:1;";
+        title.append(spacer, spMinButton(menu, key, ".sp-title"));
+      }
+      spApplyMinimized(menu, key, ".sp-title");
+      spApplyPanelPos(menu, key);
+    };
+    spMakeDraggable(menu, key, (t) => !!t.closest(".sp-title"));
+    decorate();
+    new MutationObserver(decorate).observe(menu, { childList: true, attributes: true, attributeFilter: ["class"] });
+  }
+
   function closeMenu() {
     document.getElementById(MENU_ID)?.remove();
   }
@@ -6355,7 +6492,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.21.0</div>
+        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.22.0</div>
         <div class="sp-note">Pilih modul yang ingin digunakan:</div>
 
         <button type="button" data-disease-menu="1">
@@ -6971,6 +7108,7 @@
     });
 
     document.documentElement.appendChild(menu);
+    spSetupMenuBox(menu);
   }
 
   function ensureButton() {
