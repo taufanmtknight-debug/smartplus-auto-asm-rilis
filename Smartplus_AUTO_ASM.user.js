@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.17.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.18.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.17.0
-// @description  v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.18.0
+// @description  v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -2350,6 +2350,7 @@
     const hasA = (el) => /▶\s*A\s*:/.test(el.textContent);
     const cells = [...soapBox.querySelectorAll("td")].filter((td) => hasA(td) && ![...td.querySelectorAll("td")].some(hasA));
     let dx = "", plan = "";
+    let planLines = [];
     const resep = [];
     const td0 = cells[cells.length - 1];
     if (td0) {
@@ -2365,31 +2366,35 @@
       });
       td.querySelectorAll("br").forEach((b) => b.replaceWith("\n"));
       const txt = td.textContent.replace(/[ \t ]+/g, " ");
-      const grab = (k, next) => {
+      const grabLines = (k, next) => {
         const m = txt.match(new RegExp("▶\\s*" + k + "\\s*:([\\s\\S]*?)(?=▶\\s*(?:" + next + ")\\s*:|$)"));
-        return m ? m[1].split("\n").map((s) => s.trim()).filter(Boolean).join(", ") : "";
+        return m ? m[1].split("\n").map((s) => s.trim()).filter(Boolean) : [];
       };
-      dx = grab("A", "P");
-      plan = grab("P", "ZZZ").replace(/^obat\s*,?\s*/i, "").trim();
+      dx = grabLines("A", "P").join(", ");
+      planLines = grabLines("P", "ZZZ").filter((l) => !/^obat$/i.test(l));
+      plan = planLines.join(", ");
     }
     const given = [...(doc.querySelector("#collapseResep")?.querySelectorAll("tr") || [])]
       .map((tr) => [...tr.cells].map((c) => c.textContent.replace(/\s+/g, " ").trim()))
       .filter((c) => c.length >= 5 && c[0] && !/^obat$/i.test(c[0]))
       .map((c) => ({ name: c[0], freq: c[4] || "" }));
-    return { dx, plan, resep, given };
+    return { dx, plan, planLines, resep, given };
   }
 
+  // v3.18.0: terapi dikembalikan sebagai DAFTAR baris (ditulis ke bawah), bukan satu kalimat.
   function spFormatTherapy(d) {
     const cleanName = (s) => s.replace(/\*/g, "").replace(/\s+/g, " ").trim();
     const cleanFreq = (s) => s.replace(/\s*X\s*/i, "x ").replace(/\s+/g, " ").trim().toLowerCase();
     const items = d.given.filter((g) => !/^(CAPSUL|KAPSUL|CAPSULE)\s*NO|KERTAS\s*PUYER|^PULV/i.test(g.name));
     if (items.length) {
-      const single = items.filter((g) => g.freq).map((g) => `${cleanName(g.name)} ${cleanFreq(g.freq)}`);
-      const racik = items.filter((g) => !g.freq).map((g) => cleanName(g.name));
-      return [...single, ...(racik.length ? [`racikan (${racik.join(", ")})`] : [])].join(", ");
+      const single = items.filter((g) => g.freq).map((g) => `  • ${cleanName(g.name)} ${cleanFreq(g.freq)}`);
+      const racik = items.filter((g) => !g.freq).map((g) => `     - ${cleanName(g.name)}`);
+      return [...single, ...(racik.length ? ["  • Racikan:", ...racik] : [])];
     }
-    if (d.resep.length) return d.resep.map((s) => s.replace(/^R\/\s*/i, "")).join(", ").replace(/:\s*,/g, ":");
-    return d.plan;
+    if (d.resep.length) {
+      return d.resep.map((s) => (/^-\s*/.test(s) ? `     ${s}` : `  • ${s.replace(/^R\/\s*/i, "")}`));
+    }
+    return (d.planLines || (d.plan ? [d.plan] : [])).map((l) => `  • ${l}`);
   }
 
   function spPrettyPoli(unit) {
@@ -2399,7 +2404,7 @@
       .join(" ");
   }
 
-  // Hasil: { lines: ["- 11-09-2026 Poli Syaraf (dr ...Sp.N): Dx ... Th/ ..."], count }
+  // Hasil: { lines: ["- 11-09-2026 dr ... Sp.N: Dx ...\n  Th/\n  • obat 1\n  • obat 2"], count }
   async function spBuildRiwayatPoliLines() {
     const normRm = getCurrentIgdNorm();
     if (!normRm) return { lines: [], error: "no RM tidak terbaca" };
@@ -2422,8 +2427,9 @@
           const html = await fetch(`${base}/history_pasien/new_history_pasien_byreg/${encodeURIComponent(v.noreg)}/${encodeURIComponent(v.idDokter)}/${encodeURIComponent(v.tipe)}`, { credentials: "same-origin" }).then((r) => r.text());
           const d = spParseVisitDetail(html);
           const th = spFormatTherapy(d);
-          if (!d.dx && !th) continue;
-          lines[gi] = { dateKey: v.dateKey, text: `- ${v.dateText} Poli ${spPrettyPoli(v.unit) || "-"} (${v.dokter}): Dx ${d.dx || "-"}. Th/ ${th || "-"}` };
+          if (!d.dx && !th.length) continue;
+          // v3.18.0: nama poli tidak ditulis (sudah jelas dari gelar spesialis); terapi ke bawah.
+          lines[gi] = { dateKey: v.dateKey, text: [`- ${v.dateText} ${v.dokter}: Dx ${d.dx || "-"}`, `  Th/${th.length ? "" : " -"}`, ...th].join("\n") };
           return;
         } catch (_) {}
       }
@@ -2771,10 +2777,12 @@
     head.style.cssText = "display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:sticky;top:-12px;background:#fff;padding:4px 0 8px;";
     head.innerHTML = `<b style="flex:1;min-width:180px">📸 AUTO SCREENSHOT — siap dikirim (${items.length})</b>`;
     const dlAll = document.createElement("button");
-    dlAll.type = "button"; dlAll.textContent = "⬇ Unduh semua";
+    dlAll.type = "button"; dlAll.textContent = "⬇ Unduh semua (PDF)";
     dlAll.style.cssText = "padding:10px 14px;background:#e91e63;color:#fff;border:0;border-radius:8px;";
     dlAll.addEventListener("click", async () => {
-      for (const it of items) { spDownload(it.dataUrl, it.fileName); await recipeSleep(400); }
+      dlAll.disabled = true;
+      try { await spDownloadAllPdf(items); } catch (err) { console.warn("[AUTO SCREENSHOT] pdf", err); toast("AUTO SCREENSHOT: gagal membuat PDF — " + (err.message || err)); }
+      finally { dlAll.disabled = false; }
     });
     const close = document.createElement("button");
     close.type = "button"; close.textContent = "Tutup";
@@ -2784,7 +2792,7 @@
     panel.append(head);
     const tip = document.createElement("div");
     tip.style.cssText = "font-size:12px;color:#555;margin-bottom:8px;";
-    tip.textContent = "Klik kanan gambar → Salin gambar, lalu Paste di WhatsApp. Di HP: tekan lama gambar. Atau Unduh lalu lampirkan.";
+    tip.textContent = "⬇ Unduh semua (PDF) = 1 file berisi semua penunjang, siap dilampirkan saat konsul. Bisa juga klik kanan gambar → Salin gambar.";
     panel.append(tip);
     if (opts.status) {
       const st = document.createElement("div");
@@ -2823,6 +2831,71 @@
     document.documentElement.appendChild(panel);
     panel.scrollTop = prevScroll;
     return panel;
+  }
+
+  // v3.18.0: "Unduh semua" = SATU file PDF (1 gambar per halaman, keterangan di atas).
+  // Penulis PDF sederhana tanpa pustaka luar (gambar JPEG/DCTDecode + font Helvetica bawaan PDF).
+  function spBuildPdfFromJpegs(pages) {
+    const enc = new TextEncoder();
+    const parts = [];
+    const offsets = [];
+    let len = 0;
+    const push = (x) => { const b = typeof x === "string" ? enc.encode(x) : x; parts.push(b); len += b.length; };
+    const obj = (num, body) => { offsets[num] = len; push(`${num} 0 obj\n`); body(); push("\nendobj\n"); };
+    const pdfText = (s) => String(s || "").replace(/[\u2013\u2014]/g, "-").replace(/[^\x20-\x7E]/g, "").replace(/\s+/g, " ").trim().replace(/[\\()]/g, (c) => "\\" + c);
+    const n = pages.length;
+    push("%PDF-1.4\n%âãÏÓ\n");
+    obj(1, () => push("<< /Type /Catalog /Pages 2 0 R >>"));
+    obj(2, () => push(`<< /Type /Pages /Count ${n} /Kids [${pages.map((_, i) => `${3 + 3 * i} 0 R`).join(" ")}] >>`));
+    pages.forEach((pg, i) => {
+      const BAND = 26;
+      let W = 595;
+      let H = Math.round((pg.h * W / pg.w) * 100) / 100;
+      if (H + BAND > 14000) { const k = (14000 - BAND) / H; W = Math.round(W * k * 100) / 100; H = 14000 - BAND; }
+      const pn = 3 + 3 * i;
+      obj(pn, () => push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H + BAND}] /Resources << /XObject << /Im${i} ${pn + 2} 0 R >> /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> /Contents ${pn + 1} 0 R >>`));
+      const content = `BT /F1 10 Tf 12 ${H + 9} Td (${pdfText(pg.caption)}) Tj ET\nq ${W} 0 0 ${H} 0 0 cm /Im${i} Do Q`;
+      obj(pn + 1, () => push(`<< /Length ${enc.encode(content).length} >>\nstream\n${content}\nendstream`));
+      obj(pn + 2, () => {
+        push(`<< /Type /XObject /Subtype /Image /Width ${pg.w} /Height ${pg.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${pg.bytes.length} >>\nstream\n`);
+        push(pg.bytes);
+        push("\nendstream");
+      });
+    });
+    const total = 3 + 3 * n;
+    const xref = len;
+    let x = `xref\n0 ${total}\n0000000000 65535 f \n`;
+    for (let k = 1; k < total; k++) x += String(offsets[k]).padStart(10, "0") + " 00000 n \n";
+    push(x + `trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+    return new Blob(parts, { type: "application/pdf" });
+  }
+
+  async function spImageToJpeg(dataUrl) {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = dataUrl; });
+    const cv = document.createElement("canvas");
+    cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+    const ctx = cv.getContext("2d");
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.drawImage(img, 0, 0);
+    const bin = atob(cv.toDataURL("image/jpeg", 0.9).split(",")[1]);
+    const bytes = new Uint8Array(bin.length);
+    for (let k = 0; k < bin.length; k++) bytes[k] = bin.charCodeAt(k);
+    return { bytes, w: cv.width, h: cv.height };
+  }
+
+  async function spDownloadAllPdf(items) {
+    if (!items.length) { toast("AUTO SCREENSHOT: belum ada gambar."); return; }
+    toast("AUTO SCREENSHOT: menyusun PDF...");
+    const pages = [];
+    for (const it of items) pages.push({ ...(await spImageToJpeg(it.dataUrl)), caption: it.caption });
+    const blob = spBuildPdfFromJpegs(pages);
+    const d = new Date();
+    const p2 = (v) => String(v).padStart(2, "0");
+    const name = `Penunjang_${spSafeName(getCurrentNoregAny() || "pasien")}_${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}.pdf`;
+    const url = URL.createObjectURL(blob);
+    spDownload(url, name);
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    toast(`AUTO SCREENSHOT: ${name} (${pages.length} halaman) diunduh.`);
   }
 
   function spDownload(dataUrl, fileName) {
@@ -6056,7 +6129,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.17.0</div>
+        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.18.0</div>
         <div class="sp-note">Pilih modul yang ingin digunakan:</div>
 
         <button type="button" data-disease-menu="1">
