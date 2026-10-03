@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.33.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.34.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.33.0
-// @description  v3.33.0: menu dirapikan — RAWAT INAP (CPPT Normal, CPPT Rencana Pulang, Paket Konsul, Advis Spesialis); label tanpa "PDF"/"dari WA"; hasil advis tanpa "via WA". v3.32.1: ADVIS — pencarian pasien lebih cepat (hasil muncul bertahap, tanpa dobel). v3.32.0: ADVIS SPESIALIS — cari & pilih pasien IGD (48 jam) dengan mengetik nama, advis disimpan ke GADAR pasien itu tanpa membuka halamannya. v3.31.0: ADVIS SPESIALIS — tempel chat advis dari WhatsApp Web, otomatis dirapikan lalu ditambahkan di paling bawah Rencana GADAR (Save manual). v3.30.1: REVIEW GADAR — catatan "Darah rutin dihapus" hanya bila memang ada. v3.30.0: REVIEW GADAR — isian otomatis di paling atas; obat suntik non-oral di luar daftar (Inj. X), nebulisasi + nama obat, lidocain/tetagam, IVFD, IV line, O2 ikut ditulis (antibiotik drip tidak). v3.29.0: REVIEW GADAR — perbaikan gagal simpan (baris baru \\r\\n), GADAR dokter lain tetap diubah, usulan bisa diedit, tindakan yang sudah tertulis ditampilkan. v3.28.1: REVIEW GADAR — "dr" (nama dokter) tidak lagi dianggap "darah rutin". v3.28.0: REVIEW GADAR 24 JAM — laporan pasien DONE dokter login (tindakan dari daftar resep tindakan + order lab/radiologi yang belum tertulis), semua dicentang, simpan massal ke Rencana & Pemeriksaan Penunjang GADAR terakhir. v3.27.0: Lab Severe tidak memesan ulang kreatinin/elektrolit/AGD yang sudah ada dalam 1 minggu lalu Save otomatis; tombol Tutup lain dihapus (pakai ✕), tombol panel dirapikan. v3.26.0: tombol kecilkan (—) & tutup (✕) di pojok kanan atas tiap kotak; AUTO PENUNJANG + Lab Severe (Kreatinin, Elektrolit, AGD; Save manual); ekspertise CT whole abdomen & echocardiography (Kesan/Kesimpulan). v3.25.0: ekspertise radiologi dianggap ada hanya bila memuat "KESAN"; KOMBINASI RESEP menampilkan anamnesis (keluhan utama, RPS, alergi) dari Assesment GADAR. v3.24.0: judul "Riwayat kontrol poli spesialis" dihapus dari Riwayat Penyakit Dahulu; ASGADAR untuk pasien belum terdaftar diisikan ke + BUAT DRAF ASSESMENT GAWAT DARURAT (daftar pasien IGD); PAKET KONSUL: film CT tidak diambil, ekspertise rontgen & CT ikut bila sudah ada. v3.23.0: tombol AUTO SOAP & AUTO SCREENSHOT dihapus dari menu (sudah tercakup PAKET KONSUL). v3.22.0: semua kotak AUTO ASM (menu, KOMBINASI RESEP, AUTO SCREENSHOT/PAKET KONSUL, salin SOAP) bisa digeser dan dikecilkan. v3.21.0: tombol 🔄 Update (SOAP disusun ulang dari GADAR + penunjang baru ditambahkan); semua AUTO kembali ke tab E-RAWAT DARURAT dulu sehingga tidak macet saat tab Riwayat/Hasil terbuka. v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.34.0
+// @description  v3.34.0: ADVIS SPESIALIS = cari pasien lalu satu kotak berisi Rencana GADAR saat ini, tambahkan advis bebas, Simpan; tempelan chat WA dirapikan otomatis. RAWAT INAP hanya CPPT. v3.33.0: menu dirapikan — RAWAT INAP (CPPT Normal, CPPT Rencana Pulang, Paket Konsul, Advis Spesialis); label tanpa "PDF"/"dari WA"; hasil advis tanpa "via WA". v3.32.1: ADVIS — pencarian pasien lebih cepat (hasil muncul bertahap, tanpa dobel). v3.32.0: ADVIS SPESIALIS — cari & pilih pasien IGD (48 jam) dengan mengetik nama, advis disimpan ke GADAR pasien itu tanpa membuka halamannya. v3.31.0: ADVIS SPESIALIS — tempel chat advis dari WhatsApp Web, otomatis dirapikan lalu ditambahkan di paling bawah Rencana GADAR (Save manual). v3.30.1: REVIEW GADAR — catatan "Darah rutin dihapus" hanya bila memang ada. v3.30.0: REVIEW GADAR — isian otomatis di paling atas; obat suntik non-oral di luar daftar (Inj. X), nebulisasi + nama obat, lidocain/tetagam, IVFD, IV line, O2 ikut ditulis (antibiotik drip tidak). v3.29.0: REVIEW GADAR — perbaikan gagal simpan (baris baru \\r\\n), GADAR dokter lain tetap diubah, usulan bisa diedit, tindakan yang sudah tertulis ditampilkan. v3.28.1: REVIEW GADAR — "dr" (nama dokter) tidak lagi dianggap "darah rutin". v3.28.0: REVIEW GADAR 24 JAM — laporan pasien DONE dokter login (tindakan dari daftar resep tindakan + order lab/radiologi yang belum tertulis), semua dicentang, simpan massal ke Rencana & Pemeriksaan Penunjang GADAR terakhir. v3.27.0: Lab Severe tidak memesan ulang kreatinin/elektrolit/AGD yang sudah ada dalam 1 minggu lalu Save otomatis; tombol Tutup lain dihapus (pakai ✕), tombol panel dirapikan. v3.26.0: tombol kecilkan (—) & tutup (✕) di pojok kanan atas tiap kotak; AUTO PENUNJANG + Lab Severe (Kreatinin, Elektrolit, AGD; Save manual); ekspertise CT whole abdomen & echocardiography (Kesan/Kesimpulan). v3.25.0: ekspertise radiologi dianggap ada hanya bila memuat "KESAN"; KOMBINASI RESEP menampilkan anamnesis (keluhan utama, RPS, alergi) dari Assesment GADAR. v3.24.0: judul "Riwayat kontrol poli spesialis" dihapus dari Riwayat Penyakit Dahulu; ASGADAR untuk pasien belum terdaftar diisikan ke + BUAT DRAF ASSESMENT GAWAT DARURAT (daftar pasien IGD); PAKET KONSUL: film CT tidak diambil, ekspertise rontgen & CT ikut bila sudah ada. v3.23.0: tombol AUTO SOAP & AUTO SCREENSHOT dihapus dari menu (sudah tercakup PAKET KONSUL). v3.22.0: semua kotak AUTO ASM (menu, KOMBINASI RESEP, AUTO SCREENSHOT/PAKET KONSUL, salin SOAP) bisa digeser dan dikecilkan. v3.21.0: tombol 🔄 Update (SOAP disusun ulang dari GADAR + penunjang baru ditambahkan); semua AUTO kembali ke tab E-RAWAT DARURAT dulu sehingga tidak macet saat tab Riwayat/Hasil terbuka. v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -2815,72 +2815,70 @@
     return null;
   }
 
+  // v3.34.0 (instruksi dokter): cari pasien -> SATU kotak berisi isi "Rencana (Tindakan, Terapi, dll)" GADAR terakhir saat ini;
+  // dokter bebas menambahkan advis dari berbagai spesialis / tambahan lain, lalu Simpan (lewat form GADAR Smartplus).
+  // Menempel chat WhatsApp Web ("[00.12, 4/10/2026] dr X SpY: ...") ke kotak otomatis dirapikan menjadi "Advis dr. X SpY (00.12):".
   async function runAdvisSpesialis() {
     const PANEL_ID = "sp-advis-panel";
     document.getElementById(PANEL_ID)?.remove();
     const panel = document.createElement("div");
     panel.id = PANEL_ID;
-    panel.style.cssText = "position:fixed;right:16px;top:8vh;z-index:2147483647;background:#fff;border:2px solid #e91e63;border-radius:12px;padding:12px;width:min(94vw,520px);max-height:86vh;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,.35);font:13px/1.45 Arial,sans-serif;color:#222;";
+    panel.style.cssText = "position:fixed;right:16px;top:6vh;z-index:2147483647;background:#fff;border:2px solid #e91e63;border-radius:12px;padding:12px;width:min(94vw,560px);max-height:88vh;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,.35);font:13px/1.45 Arial,sans-serif;color:#222;";
     const head = document.createElement("div");
     head.className = "sp-panel-head";
     head.style.cssText = "padding:4px 0 8px;border-bottom:1px solid #eee;margin-bottom:8px;";
     head.innerHTML = `<b style="font-size:15px;line-height:28px"><span style="color:#999">⠿</span> 📝 ADVIS SPESIALIS</b>`;
     spStyleHandle(head);
-    const ta = "width:100%;box-sizing:border-box;font:12px/1.4 Arial,sans-serif;border:1px solid #ccc;border-radius:6px;padding:6px;resize:vertical;";
+    const ta = "width:100%;box-sizing:border-box;font:13px/1.45 Arial,sans-serif;border:1px solid #ccc;border-radius:6px;padding:7px;resize:vertical;";
     const body = document.createElement("div");
     body.innerHTML = `
-      <div style="font-weight:600">1. Pasien</div>
       <input class="sp-adv-pq" placeholder="Ketik nama pasien / No. RM..." autocomplete="off" style="${ta}">
-      <div class="sp-adv-plist" style="max-height:180px;overflow:auto;border:1px solid #eee;border-radius:6px;margin-top:3px;display:none"></div>
-      <div class="sp-adv-psel" style="margin:4px 0 8px;color:#1565c0;font-weight:600"></div>
-      <div style="font-weight:600">2. Advis</div>
-      <div style="color:#555;margin-bottom:4px">Di WhatsApp Web: blok pesan advis → klik kanan <b>Salin</b> (Ctrl+C), lalu tempel (Ctrl+V) di sini.</div>
-      <textarea class="sp-adv-raw" rows="6" placeholder="Tempel chat advis di sini..." style="${ta}"></textarea>
-      <div style="font-weight:600;margin-top:6px">3. Dokter spesialis</div>
-      <input class="sp-adv-name" list="sp-adv-names" placeholder="mis. dr. Indri, Sp.N" style="${ta}">
-      <datalist id="sp-adv-names">${spAdvisRecentNames().map((n) => `<option value="${n.replace(/"/g, "&quot;")}">`).join("")}</datalist>
-      <div style="font-weight:600;margin-top:6px">Hasil (bisa diedit) — ditambahkan di paling bawah Rencana</div>
-      <textarea class="sp-adv-out" rows="7" style="${ta}"></textarea>
-      <button type="button" class="sp-adv-go" style="margin-top:8px;width:100%;padding:10px;font:600 14px Arial,sans-serif;background:#e91e63;color:#fff;border:0;border-radius:6px;cursor:pointer">💾 Simpan advis ke GADAR pasien</button>
+      <div class="sp-adv-plist" style="max-height:200px;overflow:auto;border:1px solid #eee;border-radius:6px;margin-top:3px;display:none"></div>
+      <div class="sp-adv-psel" style="margin:6px 0;color:#1565c0;font-weight:600"></div>
+      <div class="sp-adv-box" style="display:none">
+        <div style="font-weight:600">Rencana (Tindakan, Terapi, dll) :</div>
+        <div style="color:#777;font-size:11px;margin-bottom:3px">Tambahkan advis / catatan di bawah isi yang ada. Tempelan chat WhatsApp otomatis dirapikan.</div>
+        <textarea class="sp-adv-ren" rows="16" style="${ta}"></textarea>
+        <button type="button" class="sp-adv-go" style="margin-top:8px;width:100%;padding:10px;font:600 14px Arial,sans-serif;background:#e91e63;color:#fff;border:0;border-radius:6px;cursor:pointer">💾 Simpan Rencana</button>
+      </div>
       <div class="sp-adv-msg" style="margin-top:6px;color:#555"></div>`;
     panel.append(head, body);
     document.documentElement.appendChild(panel);
     spMakeDraggable(panel, PANEL_ID, (t) => !!t.closest(".sp-panel-head"));
     spWindowControls(panel, PANEL_ID, ".sp-panel-head", head, () => panel.remove());
-    const raw = body.querySelector(".sp-adv-raw"), nameEl = body.querySelector(".sp-adv-name"), outEl = body.querySelector(".sp-adv-out"), msg = body.querySelector(".sp-adv-msg");
-    let parsed = { sender: "", time: "", lines: [] }, outEdited = false, nameEdited = false;
-    const rebuild = () => { if (!outEdited) outEl.value = parsed.lines.length ? spFormatAdvis(nameEl.value, parsed.time, parsed.lines) : ""; };
-    raw.addEventListener("input", () => {
-      parsed = spParseWaAdvis(raw.value);
-      if (!nameEdited && parsed.sender) nameEl.value = parsed.sender;
-      outEdited = false;
-      rebuild();
-    });
-    nameEl.addEventListener("input", () => { nameEdited = true; rebuild(); });
-    outEl.addEventListener("input", () => { outEdited = true; });
-    // --- Pencarian pasien (live) ---
     const pq = body.querySelector(".sp-adv-pq"), plist = body.querySelector(".sp-adv-plist"), psel = body.querySelector(".sp-adv-psel");
-    const goBtn = body.querySelector(".sp-adv-go");
-    let patients = null, chosen = null;
-    const curNoreg = getCurrentNoregAny();
+    const box = body.querySelector(".sp-adv-box"), ren = body.querySelector(".sp-adv-ren"), goBtn = body.querySelector(".sp-adv-go"), msg = body.querySelector(".sp-adv-msg");
     const base = smartplusBaseUrl();
-    let loading = true;
-    const loadP = spAdvisLoadPatients(base, (part) => { patients = part; if (pq.value && !chosen) showList(); })
-      .then((r) => { patients = r; loading = false; if (pq.value && !chosen) showList(); return r; })
-      .catch(() => { patients = patients || []; loading = false; });
-    const choose = (p) => {
-      chosen = p;
+    const curNoreg = getCurrentNoregAny();
+    let patients = null, loading = true, chosen = null, gadarInfo = null, loadSeq = 0;
+
+    const choose = async (p) => {
+      chosen = p; gadarInfo = null;
       plist.style.display = "none";
       pq.value = p.nama;
-      psel.textContent = `✔ ${p.nama} — ${p.noreg} (${p.reg})${p.dok ? " · " + p.dok : ""}`;
-      goBtn.textContent = curNoreg === p.noreg ? "➕ Masukkan ke Rencana (form GADAR, Save manual)" : "💾 Simpan advis ke GADAR pasien ini";
-      raw.focus();
+      psel.textContent = `✔ ${p.nama} — ${p.reg}${p.dok ? " · " + p.dok : ""}`;
+      box.style.display = "none";
+      msg.textContent = "⏳ Membaca Assesment GADAR terakhir...";
+      const seq = ++loadSeq;
+      try {
+        const g = await spAdvisLatestGadar(base, p);
+        if (seq !== loadSeq) return;
+        if (!g) { msg.textContent = "❌ Pasien ini belum punya Assesment GADAR di kunjungan ini."; return; }
+        gadarInfo = g;
+        ren.value = spNl(g.gadar.rencana_tindakan || "").replace(/\s+$/, "") + (String(g.gadar.rencana_tindakan || "").trim() ? "\n\n" : "");
+        box.style.display = "block";
+        msg.textContent = curNoreg === p.noreg ? "ℹ️ Halaman pasien ini sedang terbuka: tutup form GADAR yang belum disimpan supaya tidak tertimpa." : "";
+        ren.focus();
+        ren.setSelectionRange(ren.value.length, ren.value.length);
+        ren.scrollTop = ren.scrollHeight;
+      } catch (err) {
+        if (seq === loadSeq) msg.textContent = "❌ Gagal membaca GADAR: " + (err.message || err);
+      }
     };
     function showList() {
       const q = pq.value.trim().toLowerCase();
-      if (!q) { plist.style.display = "none"; return; }
-      if (!patients) { plist.style.display = "block"; plist.innerHTML = `<div style="padding:6px;color:#777">⏳ Memuat daftar pasien IGD 48 jam...</div>`; return; }
-      const hit = patients.filter((p) => (p.nama + " " + p.noreg).toLowerCase().includes(q)).slice(0, 12);
+      if (!q || chosen) { plist.style.display = "none"; return; }
+      const hit = (patients || []).filter((p) => (p.nama + " " + p.noreg).toLowerCase().includes(q)).slice(0, 12);
       plist.style.display = "block";
       plist.innerHTML = hit.length ? "" : `<div style="padding:6px;color:#777">${loading ? "⏳ Mencari..." : "Tidak ditemukan di daftar IGD 48 jam terakhir."}</div>`;
       hit.forEach((p) => {
@@ -2895,46 +2893,42 @@
         plist.appendChild(d);
       });
     }
-    pq.addEventListener("input", () => { chosen = null; psel.textContent = ""; showList(); });
-    // Halaman pasien sedang terbuka -> langsung terpilih.
-    if (curNoreg) loadP.then(() => { const p = (patients || []).find((x) => x.noreg === curNoreg); if (p && !chosen) choose(p); });
+    pq.addEventListener("input", () => { chosen = null; gadarInfo = null; loadSeq++; psel.textContent = ""; box.style.display = "none"; msg.textContent = ""; showList(); });
+    spAdvisLoadPatients(base, (part) => { patients = part; showList(); })
+      .then((r) => { patients = r; loading = false; showList(); if (curNoreg && !chosen) { const p = r.find((x) => x.noreg === curNoreg); if (p) choose(p); } })
+      .catch(() => { patients = patients || []; loading = false; showList(); });
     setTimeout(() => pq.focus(), 50);
+
+    // Tempelan chat WhatsApp Web -> dirapikan otomatis di posisi kursor.
+    ren.addEventListener("paste", (e) => {
+      const t = (e.clipboardData || window.clipboardData)?.getData("text") || "";
+      if (!/^\s*\[\d{1,2}[.:]\d{2}[^\]]*\][^:\n]{1,60}:/m.test(t)) return;
+      const p = spParseWaAdvis(t);
+      if (!p.lines.length) return;
+      e.preventDefault();
+      const ins = spFormatAdvis(p.sender, p.time, p.lines);
+      const a0 = ren.selectionStart, a1 = ren.selectionEnd, v = ren.value;
+      const pre = v.slice(0, a0), sep = pre && !/\n\s*$/.test(pre) ? "\n" : "";
+      ren.value = pre + sep + ins + "\n" + v.slice(a1);
+      const pos = (pre + sep + ins + "\n").length;
+      ren.setSelectionRange(pos, pos);
+    });
+
     goBtn.addEventListener("click", async () => {
-      const text = outEl.value.trim();
-      if (!chosen) { msg.textContent = "Pilih pasien dulu."; pq.focus(); return; }
-      if (!text) { msg.textContent = "Tempel chat advis dulu."; raw.focus(); return; }
+      if (!chosen || !gadarInfo) { msg.textContent = "Pilih pasien dulu."; return; }
+      const newRen = spNl(ren.value).replace(/\s+$/, "");
+      if (spSameText(newRen, gadarInfo.gadar.rencana_tindakan || "")) { msg.textContent = "Tidak ada perubahan."; return; }
       goBtn.disabled = true;
+      msg.textContent = `⏳ Menyimpan Rencana ${chosen.nama}...`;
       try {
-        if (curNoreg === chosen.noreg) {
-          // Halaman pasien ini terbuka: masukkan ke form GADAR, dokter menekan Save sendiri.
-          msg.textContent = "⏳ Membuka Assesment GADAR...";
-          let field = null;
-          const modal = document.getElementById("modal_form_gadar");
-          const openField = document.querySelector('#form_gadar [name="rencana_tindakan"]');
-          if (modal && modal.classList.contains("show") && openField && document.querySelector('#form_gadar [name="id_gadar"]')?.value) field = openField;
-          else { await ensureMainEmrTab(); if (await openLatestGadarForEdit()) field = document.querySelector('#form_gadar [name="rencana_tindakan"]'); }
-          if (!field) { msg.textContent = "❌ Assesment GADAR kunjungan ini tidak ditemukan / tidak bisa dibuka."; return; }
-          const cur = String(field.value || "").replace(/\s+$/, "");
-          setValue(field, (cur ? cur + "\n\n" : "") + text);
-          try { field.scrollTop = field.scrollHeight; } catch (_) {}
-          msg.innerHTML = "✅ Advis ditambahkan di paling bawah Rencana. <b>Cek lalu tekan Save</b> di form GADAR.";
-        } else {
-          // Pasien lain: simpan langsung ke GADAR terakhir kunjungannya lewat form Smartplus (iframe tersembunyi).
-          msg.textContent = `⏳ Membaca GADAR ${chosen.nama}...`;
-          const g = await spAdvisLatestGadar(base, chosen);
-          if (!g) { msg.textContent = "❌ Pasien ini belum punya Assesment GADAR di kunjungan ini."; return; }
-          const cur = spNl(g.gadar.rencana_tindakan || "").replace(/\s+$/, "");
-          const r = { ...chosen, gadar: g.gadar, idGadar: g.idGadar, newRencana: (cur ? cur + "\n\n" : "") + text, newPen: spNl(g.gadar.penunjang || "") };
-          msg.textContent = `⏳ Menyimpan advis ke GADAR ${chosen.nama}...`;
-          const sres = await spReviewSave(base, r);
-          msg.innerHTML = `✅ Advis tersimpan di paling bawah Rencana GADAR <b></b>.` + (sres.changed.length ? ` (perhatian: kolom berubah: ${sres.changed.join(", ")})` : "");
-          msg.querySelector("b").textContent = chosen.nama;
-          raw.value = ""; outEl.value = ""; outEdited = false; parsed = { sender: "", time: "", lines: [] };
-        }
-        if (nameEl.value.trim()) spAdvisRememberName(nameEl.value.trim());
-        toast("ADVIS SPESIALIS: " + msg.textContent.replace(/^✅\s*/, ""));
+        const r = { ...chosen, gadar: gadarInfo.gadar, idGadar: gadarInfo.idGadar, newRencana: newRen, newPen: spNl(gadarInfo.gadar.penunjang || "") };
+        const sres = await spReviewSave(base, r);
+        gadarInfo = { ...gadarInfo, gadar: { ...gadarInfo.gadar, rencana_tindakan: newRen } };
+        msg.innerHTML = "✅ Rencana tersimpan untuk <b></b>." + (sres.changed.length ? ` (perhatian: kolom berubah: ${sres.changed.join(", ")})` : "");
+        msg.querySelector("b").textContent = chosen.nama;
+        toast("ADVIS SPESIALIS: Rencana tersimpan — " + chosen.nama);
       } catch (err) {
-        msg.textContent = "❌ Gagal: " + (err.message || err);
+        msg.textContent = "❌ Gagal menyimpan: " + (err.message || err) + (/termuat/.test(String(err.message)) ? " (GADAR mungkin baru diubah orang lain — pilih ulang pasien)" : "");
       } finally {
         goBtn.disabled = false;
       }
@@ -7203,14 +7197,6 @@
           🏠 CPPT RENCANA PULANG
         </button>
 
-        <button type="button" data-paket-konsul="1">
-          📨 PAKET KONSUL – SOAP + Penunjang
-        </button>
-
-        <button type="button" data-advis="1">
-          📝 ADVIS SPESIALIS
-        </button>
-
         <button type="button" class="sp-back" data-back="main">
           ← Kembali ke menu utama
         </button>
@@ -7243,7 +7229,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.33.0</div>
+        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.34.0</div>
         <div class="sp-note">Pilih modul yang ingin digunakan:</div>
 
         <button type="button" data-disease-menu="1">
