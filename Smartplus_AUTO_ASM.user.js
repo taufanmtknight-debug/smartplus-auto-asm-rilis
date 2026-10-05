@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.43.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.44.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.43.0
-// @description  v3.43.0: KOMBINASI RESEP + Amlodipine 10 mg, Captopril 12,5 mg; tindakan baru Suntik Asam Traneksamat 500 mg iv dan Infus (RL, infus set, tegaderm, vasofix; ket. igd). v3.42.0: KOMBINASI RESEP tanpa kotak cari obat, tindakan selalu terbuka, warna kalem (tiap golongan kartu berwarna lembut dengan garis kiri, latar panel lavender) agar batas bagian jelas. v3.41.0: tampilan KOMBINASI RESEP lebih ringkas & jelas — obat berupa tombol per golongan, kotak cari obat, anamnesis ringkas, tindakan dilipat, daftar terpilih (hapus dengan ×) dan tombol ACC selalu terlihat di bawah. v3.40.0: KOMBINASI RESEP — jumlah tablet dewasa maks 6 (antibiotik 3 hari, obat DM/hipertensi 5 hari); kamus keluhan diperluas sehingga lebih banyak obat tercentang otomatis (alergi, vertigo, GERD, ulkus, ISK/tifoid, infeksi kulit, asma, LBP/nyeri otot, hipertensi, DM, perdarahan, muntah hebat, batuk kering, dll). v3.39.0: KOMBINASI RESEP + obat oral pulang IGD (dewasa: Paracetamol 500, Ibuprofen, Na diklofenak, Omeprazole, Sukralfat, Antasida suspensi, Ondansetron, Lodia, Cetirizine, Loratadine, Methylprednisolon, OBH, Cefadroxil, Cefixime, Betahistine, Flunarizine, Antimo, Amlodipine, Captopril, Metformin, Glimepiride, Asam traneksamat; anak: sirup Ibuprofen, Cetirizine 0,2 mg/kg, Ambroxol, Cefadroxil, Cefixime per BB, Interzinc, Lacto-B 3 sachet); jumlah R/ ditampilkan, penolakan Smartplus 'Jumlah R Sudah Melebihi Batas' dilaporkan gagal. v3.38.0: CPPT VISIT pemeriksaan fisik selalu template CPPT Normal (diedit dokter bila perlu); KOMBINASI RESEP tanpa kolom aturan pakai, obat dikelompokkan per golongan dalam kotak centang. v3.37.0: RAWAT INAP + CPPT VISIT (keluhan dari CPPT dokter terakhir / keluhan masuk IGD, vital & pemfis mengikuti CPPT sebelumnya atau template normal, instruksi Terapi dpjp lanjut; simpan manual); KOMBINASI RESEP memilih per NAMA OBAT dalam tabel, obat yang sesuai keluhan Assesment GADAR otomatis dicentang sebagai saran lalu ACC. v3.36.0: REVIEW GADAR — simpan lebih tahan gagal di komputer IGD (iframe di layar, cadangan simpan langsung, cek perubahan orang lain). v3.35.0: ADVIS SPESIALIS tetap tersimpan walau GADAR diubah orang lain / form tidak termuat (baca ulang GADAR terbaru, tambahan disambung di bawah, 4 percobaan termasuk simpan langsung). v3.34.0: ADVIS SPESIALIS = cari pasien lalu satu kotak berisi Rencana GADAR saat ini, tambahkan advis bebas, Simpan; tempelan chat WA dirapikan otomatis. RAWAT INAP hanya CPPT. v3.33.0: menu dirapikan — RAWAT INAP (CPPT Normal, CPPT Rencana Pulang, Paket Konsul, Advis Spesialis); label tanpa "PDF"/"dari WA"; hasil advis tanpa "via WA". v3.32.1: ADVIS — pencarian pasien lebih cepat (hasil muncul bertahap, tanpa dobel). v3.32.0: ADVIS SPESIALIS — cari & pilih pasien IGD (48 jam) dengan mengetik nama, advis disimpan ke GADAR pasien itu tanpa membuka halamannya. v3.31.0: ADVIS SPESIALIS — tempel chat advis dari WhatsApp Web, otomatis dirapikan lalu ditambahkan di paling bawah Rencana GADAR (Save manual). v3.30.1: REVIEW GADAR — catatan "Darah rutin dihapus" hanya bila memang ada. v3.30.0: REVIEW GADAR — isian otomatis di paling atas; obat suntik non-oral di luar daftar (Inj. X), nebulisasi + nama obat, lidocain/tetagam, IVFD, IV line, O2 ikut ditulis (antibiotik drip tidak). v3.29.0: REVIEW GADAR — perbaikan gagal simpan (baris baru \\r\\n), GADAR dokter lain tetap diubah, usulan bisa diedit, tindakan yang sudah tertulis ditampilkan. v3.28.1: REVIEW GADAR — "dr" (nama dokter) tidak lagi dianggap "darah rutin". v3.28.0: REVIEW GADAR 24 JAM — laporan pasien DONE dokter login (tindakan dari daftar resep tindakan + order lab/radiologi yang belum tertulis), semua dicentang, simpan massal ke Rencana & Pemeriksaan Penunjang GADAR terakhir. v3.27.0: Lab Severe tidak memesan ulang kreatinin/elektrolit/AGD yang sudah ada dalam 1 minggu lalu Save otomatis; tombol Tutup lain dihapus (pakai ✕), tombol panel dirapikan. v3.26.0: tombol kecilkan (—) & tutup (✕) di pojok kanan atas tiap kotak; AUTO PENUNJANG + Lab Severe (Kreatinin, Elektrolit, AGD; Save manual); ekspertise CT whole abdomen & echocardiography (Kesan/Kesimpulan). v3.25.0: ekspertise radiologi dianggap ada hanya bila memuat "KESAN"; KOMBINASI RESEP menampilkan anamnesis (keluhan utama, RPS, alergi) dari Assesment GADAR. v3.24.0: judul "Riwayat kontrol poli spesialis" dihapus dari Riwayat Penyakit Dahulu; ASGADAR untuk pasien belum terdaftar diisikan ke + BUAT DRAF ASSESMENT GAWAT DARURAT (daftar pasien IGD); PAKET KONSUL: film CT tidak diambil, ekspertise rontgen & CT ikut bila sudah ada. v3.23.0: tombol AUTO SOAP & AUTO SCREENSHOT dihapus dari menu (sudah tercakup PAKET KONSUL). v3.22.0: semua kotak AUTO ASM (menu, KOMBINASI RESEP, AUTO SCREENSHOT/PAKET KONSUL, salin SOAP) bisa digeser dan dikecilkan. v3.21.0: tombol 🔄 Update (SOAP disusun ulang dari GADAR + penunjang baru ditambahkan); semua AUTO kembali ke tab E-RAWAT DARURAT dulu sehingga tidak macet saat tab Riwayat/Hasil terbuka. v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.44.0
+// @description  v3.44.0: RAWAT INAP tanpa tombol CPPT NORMAL; CPPT VISIT — keluhan dibuat singkat (kata keluhan + status, bukan salinan), pemeriksaan fisik = template normal dengan sedikit bagian positif dari pemeriksaan dokter sebelumnya / diagnosis. v3.43.0: KOMBINASI RESEP + Amlodipine 10 mg, Captopril 12,5 mg; tindakan baru Suntik Asam Traneksamat 500 mg iv dan Infus (RL, infus set, tegaderm, vasofix; ket. igd). v3.42.0: KOMBINASI RESEP tanpa kotak cari obat, tindakan selalu terbuka, warna kalem (tiap golongan kartu berwarna lembut dengan garis kiri, latar panel lavender) agar batas bagian jelas. v3.41.0: tampilan KOMBINASI RESEP lebih ringkas & jelas — obat berupa tombol per golongan, kotak cari obat, anamnesis ringkas, tindakan dilipat, daftar terpilih (hapus dengan ×) dan tombol ACC selalu terlihat di bawah. v3.40.0: KOMBINASI RESEP — jumlah tablet dewasa maks 6 (antibiotik 3 hari, obat DM/hipertensi 5 hari); kamus keluhan diperluas sehingga lebih banyak obat tercentang otomatis (alergi, vertigo, GERD, ulkus, ISK/tifoid, infeksi kulit, asma, LBP/nyeri otot, hipertensi, DM, perdarahan, muntah hebat, batuk kering, dll). v3.39.0: KOMBINASI RESEP + obat oral pulang IGD (dewasa: Paracetamol 500, Ibuprofen, Na diklofenak, Omeprazole, Sukralfat, Antasida suspensi, Ondansetron, Lodia, Cetirizine, Loratadine, Methylprednisolon, OBH, Cefadroxil, Cefixime, Betahistine, Flunarizine, Antimo, Amlodipine, Captopril, Metformin, Glimepiride, Asam traneksamat; anak: sirup Ibuprofen, Cetirizine 0,2 mg/kg, Ambroxol, Cefadroxil, Cefixime per BB, Interzinc, Lacto-B 3 sachet); jumlah R/ ditampilkan, penolakan Smartplus 'Jumlah R Sudah Melebihi Batas' dilaporkan gagal. v3.38.0: CPPT VISIT pemeriksaan fisik selalu template CPPT Normal (diedit dokter bila perlu); KOMBINASI RESEP tanpa kolom aturan pakai, obat dikelompokkan per golongan dalam kotak centang. v3.37.0: RAWAT INAP + CPPT VISIT (keluhan dari CPPT dokter terakhir / keluhan masuk IGD, vital & pemfis mengikuti CPPT sebelumnya atau template normal, instruksi Terapi dpjp lanjut; simpan manual); KOMBINASI RESEP memilih per NAMA OBAT dalam tabel, obat yang sesuai keluhan Assesment GADAR otomatis dicentang sebagai saran lalu ACC. v3.36.0: REVIEW GADAR — simpan lebih tahan gagal di komputer IGD (iframe di layar, cadangan simpan langsung, cek perubahan orang lain). v3.35.0: ADVIS SPESIALIS tetap tersimpan walau GADAR diubah orang lain / form tidak termuat (baca ulang GADAR terbaru, tambahan disambung di bawah, 4 percobaan termasuk simpan langsung). v3.34.0: ADVIS SPESIALIS = cari pasien lalu satu kotak berisi Rencana GADAR saat ini, tambahkan advis bebas, Simpan; tempelan chat WA dirapikan otomatis. RAWAT INAP hanya CPPT. v3.33.0: menu dirapikan — RAWAT INAP (CPPT Normal, CPPT Rencana Pulang, Paket Konsul, Advis Spesialis); label tanpa "PDF"/"dari WA"; hasil advis tanpa "via WA". v3.32.1: ADVIS — pencarian pasien lebih cepat (hasil muncul bertahap, tanpa dobel). v3.32.0: ADVIS SPESIALIS — cari & pilih pasien IGD (48 jam) dengan mengetik nama, advis disimpan ke GADAR pasien itu tanpa membuka halamannya. v3.31.0: ADVIS SPESIALIS — tempel chat advis dari WhatsApp Web, otomatis dirapikan lalu ditambahkan di paling bawah Rencana GADAR (Save manual). v3.30.1: REVIEW GADAR — catatan "Darah rutin dihapus" hanya bila memang ada. v3.30.0: REVIEW GADAR — isian otomatis di paling atas; obat suntik non-oral di luar daftar (Inj. X), nebulisasi + nama obat, lidocain/tetagam, IVFD, IV line, O2 ikut ditulis (antibiotik drip tidak). v3.29.0: REVIEW GADAR — perbaikan gagal simpan (baris baru \\r\\n), GADAR dokter lain tetap diubah, usulan bisa diedit, tindakan yang sudah tertulis ditampilkan. v3.28.1: REVIEW GADAR — "dr" (nama dokter) tidak lagi dianggap "darah rutin". v3.28.0: REVIEW GADAR 24 JAM — laporan pasien DONE dokter login (tindakan dari daftar resep tindakan + order lab/radiologi yang belum tertulis), semua dicentang, simpan massal ke Rencana & Pemeriksaan Penunjang GADAR terakhir. v3.27.0: Lab Severe tidak memesan ulang kreatinin/elektrolit/AGD yang sudah ada dalam 1 minggu lalu Save otomatis; tombol Tutup lain dihapus (pakai ✕), tombol panel dirapikan. v3.26.0: tombol kecilkan (—) & tutup (✕) di pojok kanan atas tiap kotak; AUTO PENUNJANG + Lab Severe (Kreatinin, Elektrolit, AGD; Save manual); ekspertise CT whole abdomen & echocardiography (Kesan/Kesimpulan). v3.25.0: ekspertise radiologi dianggap ada hanya bila memuat "KESAN"; KOMBINASI RESEP menampilkan anamnesis (keluhan utama, RPS, alergi) dari Assesment GADAR. v3.24.0: judul "Riwayat kontrol poli spesialis" dihapus dari Riwayat Penyakit Dahulu; ASGADAR untuk pasien belum terdaftar diisikan ke + BUAT DRAF ASSESMENT GAWAT DARURAT (daftar pasien IGD); PAKET KONSUL: film CT tidak diambil, ekspertise rontgen & CT ikut bila sudah ada. v3.23.0: tombol AUTO SOAP & AUTO SCREENSHOT dihapus dari menu (sudah tercakup PAKET KONSUL). v3.22.0: semua kotak AUTO ASM (menu, KOMBINASI RESEP, AUTO SCREENSHOT/PAKET KONSUL, salin SOAP) bisa digeser dan dikecilkan. v3.21.0: tombol 🔄 Update (SOAP disusun ulang dari GADAR + penunjang baru ditambahkan); semua AUTO kembali ke tab E-RAWAT DARURAT dulu sehingga tidak macet saat tab Riwayat/Hasil terbuka. v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -2580,9 +2580,11 @@
         });
       }
       const oText = txt(sec.O);
+      // v3.44.0: diagnosis (bagian A, "Diagnosa Medis dan Diagnosa Banding : J18.0 | BRONCHOPNEUMONIA;;;;").
+      const diagnosis = txt(sec.A).replace(/diagnosa medis dan diagnosa banding\s*:/i, "").replace(/;+/g, "; ").replace(/(;\s*)+$/, "").trim();
       rows.push({
         time: spParseIdDate(head), timeText: head.replace(/\s*(CPPT|ASM AWAL)\s*$/i, ""), type, ppa,
-        isDoctor: spIsDoctorPpa(ppa), keluhan, objective, oText, fields
+        isDoctor: spIsDoctorPpa(ppa), keluhan, objective, oText, fields, diagnosis
       });
     }
     rows.sort((a, b) => (b.time || 0) - (a.time || 0));
@@ -2616,6 +2618,154 @@
     plan.hasDoctorCppt = rows.some((r) => r.isDoctor);
     return plan;
   }
+
+  // v3.44.0 (instruksi dokter 5 Okt 2026): keluhan CPPT VISIT dibuat SINGKAT (tidak terlihat salin-tempel):
+  // ambil kata keluhan + statusnya saja ("Batuk berkurang, demam (-)"). fromAdmission = keluhan saat masuk IGD
+  // (status "tidak ada" dibuang, hanya keluhan yang ada). strict = kembalikan "" bila tidak ada kata keluhan.
+  const SP_KELUHAN_LEX = [
+    [/nyeri ulu hati|epigastri\w*/, "nyeri ulu hati"],
+    [/(nyeri|sakit) perut|perut (sakit|nyeri)|kolik/, "nyeri perut"],
+    [/(nyeri|sakit) dada|dada (sakit|nyeri)/, "nyeri dada"],
+    [/(nyeri|sakit) kepala|kepala (sakit|nyeri)|pusing|cephal\w*|sefal\w*/, "pusing"],
+    [/(nyeri|sakit) (tenggorok\w*|menelan|telan)/, "nyeri tenggorokan"],
+    [/(nyeri|sakit) (pinggang|punggung)/, "nyeri pinggang"],
+    [/(nyeri|sakit) (sendi|lutut)/, "nyeri sendi"],
+    [/(nyeri|sakit) (saat )?(bak|kencing)|anyang\w*/, "nyeri BAK"],
+    [/(nyeri|sakit) (luka|bekas operasi|post op\w*)/, "nyeri luka"],
+    [/muntaber/, "muntaber"],
+    [/demam|panas badan|badan panas|febris|meriang/, "demam"],
+    [/batuk/, "batuk"], [/pilek/, "pilek"], [/sesak( napas| nafas)?/, "sesak"],
+    [/mual/, "mual"], [/muntah/, "muntah"],
+    [/bab cair|diare|mencret|bab encer/, "BAB cair"],
+    [/lemas|lemah|letih/, "lemas"], [/kembung|begah/, "kembung"],
+    [/bengkak/, "bengkak"], [/gatal/, "gatal"], [/kejang/, "kejang"], [/mimisan|epistaksis/, "mimisan"],
+    [/(nafsu makan|makan minum) (turun|menurun|berkurang|kurang)|tidak mau makan|sulit makan|susah makan/, "nafsu makan kurang"],
+    [/nyeri|sakit/, "nyeri"]
+  ];
+  const SP_NEG_AFTER = /^\s*([a-z\/]+\s+)?(\(\s*-\s*\)|-(?!\s*\/)|tidak ada|tdk ada|tak ada|gak ada|ga ada|sudah tidak|sdh tidak|sudah hilang|hilang|negatif|\(neg)/;
+
+  function spShortKeluhan(text, fromAdmission = false, strict = false) {
+    const raw = String(text || "").replace(/\r/g, "").replace(/^\s*kel(uhan)?( utama)?\s*:\s*/i, "");
+    const t = raw.toLowerCase();
+    // 1) semua kata keluhan (yang lebih spesifik dulu; tidak tumpang tindih), 2) status = teks sesudahnya
+    //    sampai pemisah klausa ATAU kata keluhan berikutnya (supaya "demam tak ada batuk ada" tidak tertukar).
+    const hits = [];
+    SP_KELUHAN_LEX.forEach(([re, name]) => {
+      const g = new RegExp(re.source, "g");
+      let m;
+      while ((m = g.exec(t))) {
+        const a = m.index, b = a + m[0].length;
+        if (hits.some((h) => a < h.b && b > h.a)) continue;
+        hits.push({ a, b, name });
+      }
+    });
+    hits.sort((x, y) => x.a - y.a);
+    hits.forEach((h, i) => {
+      const next = i + 1 < hits.length ? hits[i + 1].a : t.length;
+      // "naik turun" (pola demam) bukan "turun/berkurang".
+      const after = t.slice(h.b, Math.min(next, h.b + 28)).split(/[\n,.;]|\bdan\b|\bserta\b/)[0].replace(/naik[\s-]*turun/g, "fluktuatif");
+      const prevEnd = i > 0 ? hits[i - 1].b : 0;
+      const before = t.slice(Math.max(prevEnd, h.a - 12), h.a);
+      let st = "";
+      if (/(tidak|tdk|tak|tanpa|bukan)\s*$/.test(before) || SP_NEG_AFTER.test(after)) st = "(-)";
+      else if (/^\s*masih/.test(after)) st = "masih";
+      else if (/berkurang|membaik|mendingan|reda|lebih baik|jarang|sedikit|turun/.test(after)) st = "berkurang";
+      else if (/bertambah|memberat|makin|semakin|meningkat|sering/.test(after)) st = "bertambah";
+      else if (/masih|\(\s*\+\s*\)|^\s*\+|^\s*ada/.test(after)) st = "masih";
+      h.st = st;
+    });
+    // Keluhan berdempetan ("batuk pilek tidak ada", "mual/muntah (-)") memakai status keluhan sesudahnya.
+    for (let i = hits.length - 2; i >= 0; i--) {
+      if (!hits[i].st && /^\s*(\/|dan|&)?\s*$/.test(t.slice(hits[i].b, hits[i + 1].a))) hits[i].st = hits[i + 1].st;
+    }
+    const seen = new Set();
+    let items = hits.filter((h) => !seen.has(h.name) && seen.add(h.name));
+    if (fromAdmission) items = items.filter((h) => h.st !== "(-)").map((h) => ({ ...h, st: "" }));
+    items = [...items.filter((h) => h.st !== "(-)"), ...items.filter((h) => h.st === "(-)")].slice(0, 4);
+    let out = items.map((h) => (h.st ? `${h.name} ${h.st}` : h.name)).join(", ");
+    if (!out && strict) return "";
+    if (!out) out = raw.split(/[\n.;]/).map((x) => x.trim()).filter(Boolean)[0] || "";
+    if (out.length > 60) out = out.slice(0, 60).replace(/[\s,]+\S*$/, "");
+    return out ? out.charAt(0).toUpperCase() + out.slice(1) : "";
+  }
+
+  // v3.44.0 (instruksi dokter 5 Okt 2026): pemeriksaan fisik CPPT VISIT = template CPPT Normal, hanya bagian yang
+  // kemungkinan positif diubah (sedikit, tidak selengkap pemeriksaan spesialis). Sumber, urut prioritas:
+  // 1) pemeriksaan dokter sebelumnya (CPPT dokter terbaru dulu, lalu GADAR IGD) — bila tanda ditulis +/− itu yang dipakai;
+  // 2) diagnosis (CPPT dokter / GADAR) bila tanda belum pernah ditulis.
+  // exam = kata kunci di teks pemeriksaan; bare = kata yang berarti POSITIF walau tanpa tanda +/- ("crackles", "faring
+  // hiperemis", "konjungtiva anemis"); dx = diagnosis yang menyiratkan tanda positif.
+  const SP_PEMFIS_SIGNS = {
+    ANEMIA: { exam: /konjungtiva anemis|\banemis\b|\bca\b/, bare: /anemis/, dx: /anemia|anemis/, label: "konjungtiva anemis" },
+    IKTERIK: { exam: /sklera ikterik|\bikterik\b|\bsi\b/, bare: /ikterik/, dx: /hepatitis|ikterus|ikterik|kolestasis|kolangitis|koledokolitiasis|sirosis/, label: "sklera ikterik" },
+    FARING: { exam: /faring hiperemis|faring\s*:\s*hiperemis/, bare: /hiperemis/, dx: /faringit|tonsilit|tonsilofaringit/, label: "faring hiperemis" },
+    RONKI: { exam: /\b(rh|rhonki|ronki|ronkhi|ro|rod|crackles|carckles|crakles|krepitasi|slem)\b|(paru|pulmo|thorax|th)\s*:?\s*lendir/, bare: /crackles|carckles|crakles|krepitasi/, dx: /pneumoni|\bbp\b|bronko?pneumoni|bronchopneumonia|bronkitis|bronchitis|tb paru|tuberkulosis|edema paru|\bchf\b|gagal jantung|decomp/, label: "ronki" },
+    WHEEZING: { exam: /\b(wh|wheezing|wheez)\b/, dx: /asma|asthma|\bppok\b|\bcopd\b|bronkiolitis|bronchiolitis|wheez/, label: "wheezing" },
+    RETRAKSI: { exam: /\bretraksi\b/, dx: null, label: "retraksi" },
+    BU_UP: { exam: /(bu|bising usus)\s*(\+\s*)?(meningkat|meningka|↑|naik)/, dx: /\bgea\b|gastroenteritis|diare|disentri|muntaber/, label: "BU meningkat", examPositiveOnly: true },
+    NTE: { exam: /\bnte\b|nyeri tekan epigastri\w*|\bnt epigastri\w*|\bny(eri)? epigastri\w*/, bare: /epigastri/, dx: /dispepsia|dyspepsia|gastritis|\bgerd\b|ulkus peptik|tukak|epigastri/, label: "nyeri tekan epigastrium" },
+    MCBURNEY: { exam: /ma?c ?burney/, dx: /apendisitis|appendicitis|appendisitis/, label: "nyeri tekan McBurney" },
+    CVA: { exam: /(nyeri ketok cva|\bnk cva\b|\bcva\b)/, dx: /pielonefritis|pyelonephritis|nefrolitiasis|urolitiasis|batu (ginjal|ureter)|kolik renal|hidronefrosis/, label: "nyeri ketok CVA" },
+    EDEMA: { exam: /\b(edema|oedem\w*)\b(?!\s*paru)/, dx: /\bchf\b|gagal jantung|\bckd\b|gagal ginjal|sindrom nefrotik|nephrotic|anasarka|hipoalbumin/, label: "edema" },
+    LOKAL: { exam: /hiperemis lokal|fluktuasi/, bare: /hiperemis lokal|fluktuasi/, dx: /selulitis|cellulitis|abses|erisipelas/, label: "hiperemis & edema lokal" }
+  };
+
+  // Nilai tanda setelah kata kunci: {pos:true/false, side:"+/+"} atau null bila tidak ditulis.
+  function spSignValue(text, a, b) {
+    const before = text.slice(Math.max(0, a - 14), a);
+    const after = text.slice(b, b + 16);
+    if (/(tak|tidak|tdk|tanpa)(\s+ada)?\s*$/.test(before)) return { pos: false };
+    if (/^\s*(d?an|&|\/)\s*(wh|wheez\w*)\s*-/.test(after)) return { pos: false }; // "ro dan wh-"
+    let m = after.match(/^\s*[:=]?\s*\(?\s*([+-])\s*\/\s*([+-])/);
+    if (m) return { pos: m[1] === "+" || m[2] === "+", side: `${m[1]}/${m[2]}` };
+    if (/^\s*[:=]?\s*\(?\s*\+/.test(after)) return { pos: true };
+    if (/^\s*[:=]?\s*\(?\s*-/.test(after)) return { pos: false };
+    if (/^\s*[:=]?\s*(ada|positif|basah|kasar|halus|minimal|bilateral|\(\+\))/.test(after)) return { pos: true };
+    if (/^\s*[:=]?\s*(tak|tidak|tdk|negatif|\(-\))/.test(after)) return { pos: false };
+    return null;
+  }
+
+  function spPemfisFromContext({ exams = [], dx = "" } = {}, template) {
+    const found = {};
+    const why = [];
+    const dxText = String(dx || "").toLowerCase();
+    for (const [key, sg] of Object.entries(SP_PEMFIS_SIGNS)) {
+      let val = null;
+      for (const ex of exams) {
+        const t = String(ex || "").toLowerCase();
+        const re = new RegExp(sg.exam.source, "g");
+        let m, v = null;
+        while ((m = re.exec(t))) {
+          v = sg.examPositiveOnly ? { pos: true } : spSignValue(t, m.index, m.index + m[0].length);
+          if (!v && sg.bare && sg.bare.test(m[0])) v = { pos: true };
+          if (v) break;
+        }
+        if (v) { val = { ...v, from: "pemeriksaan sebelumnya" }; break; }
+      }
+      if (!val && sg.dx && sg.dx.test(dxText)) val = { pos: true, from: "diagnosis" };
+      if (val && val.pos) { found[key] = val; why.push(`${sg.label} (${val.from})`); }
+    }
+    const side = (k, d = "+/+") => (found[k] && found[k].side && found[k].side.includes("+") ? found[k].side : d);
+    let t = String(template || "");
+    if (found.ANEMIA) t = t.replace(/\bca\s*[-+]\s*\/\s*[-+]/, `ca ${side("ANEMIA")}`);
+    if (found.IKTERIK) t = t.replace(/\bsi\s*[-+]\s*\/\s*[-+]/, `si ${side("IKTERIK")}`);
+    if (found.FARING) t = t.replace(/^(Kep:[^\n]*)/m, "$1, faring hiperemis +");
+    if (found.RONKI) t = t.replace(/\brh\s*[-+]\s*\/\s*[-+]/, `rh ${side("RONKI")}`);
+    if (found.WHEEZING) t = t.replace(/\bwh\s*[-+]\s*\/\s*[-+]/, `wh ${side("WHEEZING")}`);
+    if (found.RETRAKSI) t = t.replace(/\bretraksi\s*-/, "retraksi +");
+    if (found.BU_UP) t = t.replace(/\bbu\s*\+(?!\s*meningkat)/, "bu + meningkat");
+    if (found.NTE) t = t.replace(/\bnte\s*-/, "nte +");
+    if (found.MCBURNEY) t = t.replace(/^(Abd:[^\n]*)/m, "$1, nt McBurney +");
+    if (found.CVA) t = t.replace(/^(Abd:[^\n]*)/m, "$1, nyeri ketok CVA +");
+    if (found.EDEMA) t = t.replace(/^(Ext:[^\n]*)/m, `$1, edema ${side("EDEMA")}`);
+    if (found.LOKAL) t = t.replace(/^(Ext:[^\n]*)/m, "$1, hiperemis & edema lokal +");
+    return { text: t, positives: why };
+  }
+
+  // Template pemfis CPPT Normal (sama dengan CPPT_NORMAL_TEMPLATE.objective di menu).
+  const CPPT_NORMAL_TEMPLATE_FISIK = (TEMPLATES.NORMAL && TEMPLATES.NORMAL.fisik)
+    ? TEMPLATES.NORMAL.fisik
+    : "Kep: ca -/-, si -/-\nTh: rh -/-, wh -/-, retraksi -, murmur -\nAbd: bu +, soefl, nte -\nExt: akral hangat, crt 2 detik";
 
   function spRanapContext() {
     const noreg = (location.pathname.match(/main_content\/([^/?#]+)/i) || [])[1] || null;
@@ -2667,20 +2817,37 @@
     const html = await fetch(`${ctx.base}/nurse_station/eranap/cppt_viewer/${encodeURIComponent(ctx.noreg)}`, { credentials: "same-origin" }).then((r) => r.text());
     const rows = spParseCpptViewer(html);
     const plan = spPlanCpptVisitFromRows(rows);
-    // v3.38.0 (instruksi dokter 5 Okt 2026): pemeriksaan fisik CPPT VISIT selalu template CPPT Normal (dokter mengedit
-    // sendiri bila perlu); pemfis CPPT/GADAR sebelumnya tidak lagi disalin.
-    plan.objective = null;
-    plan.objectiveFrom = "";
+    // GADAR IGD saat masuk: keluhan (pasien baru), pemeriksaan fisik & diagnosis awal (bahan pemfis v3.44.0).
     let gadar = null;
-    if (!plan.keluhan) {
-      try { gadar = await spFetchAdmissionGadar(ctx); } catch (err) { console.warn("[CPPT VISIT] GADAR", err); }
-    }
+    try { gadar = await spFetchAdmissionGadar(ctx); } catch (err) { console.warn("[CPPT VISIT] GADAR", err); }
+    let fromAdmission = false;
+    // v3.44.0: pakai CPPT dokter terakhir yang benar-benar berisi kata keluhan (lewati isian seperti "menulis advis DPJP").
+    const junkKeluhan = plan.keluhan;
+    const drKel = rows.find((r) => r.isDoctor && r.keluhan && spShortKeluhan(r.keluhan, false, true));
+    if (drKel) { plan.keluhan = drKel.keluhan; plan.keluhanFrom = `${drKel.type} ${drKel.timeText} (${drKel.ppa})`; }
+    else plan.keluhan = null;
     if (!plan.keluhan) {
       const ku = gadar ? spCleanGadarText(gadar.data.kel_utama) : "";
       const nurseAsm = rows.find((r) => r.type === "ASM AWAL" && r.keluhan);
-      if (ku) { plan.keluhan = ku; plan.keluhanFrom = `Assesment GADAR IGD ${spCleanGadarText(gadar.data.gadar_date)}`; }
-      else if (nurseAsm) { plan.keluhan = nurseAsm.keluhan; plan.keluhanFrom = `ASM AWAL ${nurseAsm.timeText} (${nurseAsm.ppa})`; }
+      if (ku) { plan.keluhan = ku; plan.keluhanFrom = `Assesment GADAR IGD ${spCleanGadarText(gadar.data.gadar_date)}`; fromAdmission = true; }
+      else if (nurseAsm) { plan.keluhan = nurseAsm.keluhan; plan.keluhanFrom = `ASM AWAL ${nurseAsm.timeText} (${nurseAsm.ppa})`; fromAdmission = true; }
+      else if (junkKeluhan) plan.keluhan = junkKeluhan;
     }
+    // v3.44.0: keluhan dipersingkat (kata keluhan + status), bukan salinan utuh.
+    if (plan.keluhan) {
+      plan.keluhanAsli = plan.keluhan;
+      plan.keluhan = spShortKeluhan(plan.keluhan, fromAdmission) || plan.keluhan;
+    }
+    // v3.44.0: pemfis = template CPPT Normal + bagian positif dari pemeriksaan dokter sebelumnya / diagnosis.
+    const drRows = rows.filter((r) => r.isDoctor);
+    const exams = drRows.slice(0, 3).map((r) => r.objective).filter(Boolean);
+    if (gadar) exams.push(spCleanGadarText(gadar.data.cek_fisik));
+    const dx = [...drRows.slice(0, 3).map((r) => r.diagnosis), gadar ? spCleanGadarText(gadar.data.diagnosa_banding) : ""]
+      .filter(Boolean).join("; ");
+    const pf = spPemfisFromContext({ exams, dx }, CPPT_NORMAL_TEMPLATE_FISIK);
+    plan.objective = pf.text;
+    plan.objectiveFrom = pf.positives.length ? `normal + ${pf.positives.join(", ")}` : "template normal";
+    plan.dx = dx;
     plan.rowCount = rows.length;
     return plan;
   }
@@ -7813,7 +7980,8 @@
           v[k] = plan.vitals[k] || normalV[k];
           if (!plan.vitals[k] && normalV[k]) fromNormal.push(k);
         });
-        const objective = CPPT_NORMAL_TEMPLATE.objective; // v3.38.0: selalu template CPPT Normal
+        // v3.44.0: template CPPT Normal + bagian positif (spPemfisFromContext); cadangan template normal.
+        const objective = plan.objective || CPPT_NORMAL_TEMPLATE.objective;
         const keluhan = plan.keluhan || "";
         const instruksi = CPPT_NORMAL_TEMPLATE.instruksi;
         const fail = [];
@@ -7836,7 +8004,7 @@
         }, 300);
         const parts = [
           keluhan ? `Keluhan dari ${plan.keluhanFrom}` : "⚠️ Keluhan tidak ditemukan (isi manual)",
-          "Pemfis template CPPT Normal",
+          `Pemfis ${plan.objectiveFrom || "template normal"}`,
           fromNormal.length ? `Vital normal (${ageInfo.label}): ${fromNormal.join(", ")}` : "Vital dari CPPT sebelumnya"
         ];
         if (fail.length) parts.push(`Cek manual: ${fail.join(", ")}`);
@@ -7860,9 +8028,7 @@
           🩺 CPPT VISIT
         </button>
 
-        <button type="button" data-cppt-normal="1">
-          📋 CPPT NORMAL
-        </button>
+        <!-- v3.44.0: tombol CPPT NORMAL dihapus dari menu (permintaan dokter); fungsinya tetap ada. -->
 
         <button type="button" data-cppt-pulang="1">
           🏠 CPPT RENCANA PULANG
@@ -7873,10 +8039,10 @@
         </button>
 
         <div class="sp-note">
-          CPPT VISIT: keluhan dari CPPT dokter terakhir (pasien baru: keluhan masuk IGD); vital &amp; pemeriksaan fisik
-          mengikuti CPPT sebelumnya (dokter/perawat), bila tidak ada memakai template normal; instruksi "Terapi dpjp lanjut".
-          Keluhan CPPT Normal dibiarkan kosong. CPPT Rencana Pulang diisi "Keluhan perbaikan".
-          Objective, tanda vital, dan Keadaan Umum mengikuti template normal.
+          CPPT VISIT: keluhan singkat dari CPPT dokter terakhir (pasien baru: keluhan masuk IGD); vital mengikuti CPPT
+          sebelumnya (dokter/perawat); pemeriksaan fisik = template normal, hanya bagian yang kemungkinan positif diubah
+          (dari pemeriksaan dokter sebelumnya / diagnosis); instruksi "Terapi dpjp lanjut".
+          CPPT Rencana Pulang diisi "Keluhan perbaikan", objective & vital template normal.
           Nadi/RR menyesuaikan usia pasien; TD hanya diisi untuk dewasa (≥ 18 thn). Review lalu simpan manual.
         </div>
       `;
@@ -7902,7 +8068,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.43.0</div>
+        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.44.0</div>
         <div class="sp-note">Pilih modul yang ingin digunakan:</div>
 
         <button type="button" data-disease-menu="1">
