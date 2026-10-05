@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.36.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.37.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.36.0
-// @description  v3.36.0: REVIEW GADAR — simpan lebih tahan gagal di komputer IGD (iframe di layar, cadangan simpan langsung, cek perubahan orang lain). v3.35.0: ADVIS SPESIALIS tetap tersimpan walau GADAR diubah orang lain / form tidak termuat (baca ulang GADAR terbaru, tambahan disambung di bawah, 4 percobaan termasuk simpan langsung). v3.34.0: ADVIS SPESIALIS = cari pasien lalu satu kotak berisi Rencana GADAR saat ini, tambahkan advis bebas, Simpan; tempelan chat WA dirapikan otomatis. RAWAT INAP hanya CPPT. v3.33.0: menu dirapikan — RAWAT INAP (CPPT Normal, CPPT Rencana Pulang, Paket Konsul, Advis Spesialis); label tanpa "PDF"/"dari WA"; hasil advis tanpa "via WA". v3.32.1: ADVIS — pencarian pasien lebih cepat (hasil muncul bertahap, tanpa dobel). v3.32.0: ADVIS SPESIALIS — cari & pilih pasien IGD (48 jam) dengan mengetik nama, advis disimpan ke GADAR pasien itu tanpa membuka halamannya. v3.31.0: ADVIS SPESIALIS — tempel chat advis dari WhatsApp Web, otomatis dirapikan lalu ditambahkan di paling bawah Rencana GADAR (Save manual). v3.30.1: REVIEW GADAR — catatan "Darah rutin dihapus" hanya bila memang ada. v3.30.0: REVIEW GADAR — isian otomatis di paling atas; obat suntik non-oral di luar daftar (Inj. X), nebulisasi + nama obat, lidocain/tetagam, IVFD, IV line, O2 ikut ditulis (antibiotik drip tidak). v3.29.0: REVIEW GADAR — perbaikan gagal simpan (baris baru \\r\\n), GADAR dokter lain tetap diubah, usulan bisa diedit, tindakan yang sudah tertulis ditampilkan. v3.28.1: REVIEW GADAR — "dr" (nama dokter) tidak lagi dianggap "darah rutin". v3.28.0: REVIEW GADAR 24 JAM — laporan pasien DONE dokter login (tindakan dari daftar resep tindakan + order lab/radiologi yang belum tertulis), semua dicentang, simpan massal ke Rencana & Pemeriksaan Penunjang GADAR terakhir. v3.27.0: Lab Severe tidak memesan ulang kreatinin/elektrolit/AGD yang sudah ada dalam 1 minggu lalu Save otomatis; tombol Tutup lain dihapus (pakai ✕), tombol panel dirapikan. v3.26.0: tombol kecilkan (—) & tutup (✕) di pojok kanan atas tiap kotak; AUTO PENUNJANG + Lab Severe (Kreatinin, Elektrolit, AGD; Save manual); ekspertise CT whole abdomen & echocardiography (Kesan/Kesimpulan). v3.25.0: ekspertise radiologi dianggap ada hanya bila memuat "KESAN"; KOMBINASI RESEP menampilkan anamnesis (keluhan utama, RPS, alergi) dari Assesment GADAR. v3.24.0: judul "Riwayat kontrol poli spesialis" dihapus dari Riwayat Penyakit Dahulu; ASGADAR untuk pasien belum terdaftar diisikan ke + BUAT DRAF ASSESMENT GAWAT DARURAT (daftar pasien IGD); PAKET KONSUL: film CT tidak diambil, ekspertise rontgen & CT ikut bila sudah ada. v3.23.0: tombol AUTO SOAP & AUTO SCREENSHOT dihapus dari menu (sudah tercakup PAKET KONSUL). v3.22.0: semua kotak AUTO ASM (menu, KOMBINASI RESEP, AUTO SCREENSHOT/PAKET KONSUL, salin SOAP) bisa digeser dan dikecilkan. v3.21.0: tombol 🔄 Update (SOAP disusun ulang dari GADAR + penunjang baru ditambahkan); semua AUTO kembali ke tab E-RAWAT DARURAT dulu sehingga tidak macet saat tab Riwayat/Hasil terbuka. v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.37.0
+// @description  v3.37.0: RAWAT INAP + CPPT VISIT (keluhan dari CPPT dokter terakhir / keluhan masuk IGD, vital & pemfis mengikuti CPPT sebelumnya atau template normal, instruksi Terapi dpjp lanjut; simpan manual); KOMBINASI RESEP memilih per NAMA OBAT dalam tabel, obat yang sesuai keluhan Assesment GADAR otomatis dicentang sebagai saran lalu ACC. v3.36.0: REVIEW GADAR — simpan lebih tahan gagal di komputer IGD (iframe di layar, cadangan simpan langsung, cek perubahan orang lain). v3.35.0: ADVIS SPESIALIS tetap tersimpan walau GADAR diubah orang lain / form tidak termuat (baca ulang GADAR terbaru, tambahan disambung di bawah, 4 percobaan termasuk simpan langsung). v3.34.0: ADVIS SPESIALIS = cari pasien lalu satu kotak berisi Rencana GADAR saat ini, tambahkan advis bebas, Simpan; tempelan chat WA dirapikan otomatis. RAWAT INAP hanya CPPT. v3.33.0: menu dirapikan — RAWAT INAP (CPPT Normal, CPPT Rencana Pulang, Paket Konsul, Advis Spesialis); label tanpa "PDF"/"dari WA"; hasil advis tanpa "via WA". v3.32.1: ADVIS — pencarian pasien lebih cepat (hasil muncul bertahap, tanpa dobel). v3.32.0: ADVIS SPESIALIS — cari & pilih pasien IGD (48 jam) dengan mengetik nama, advis disimpan ke GADAR pasien itu tanpa membuka halamannya. v3.31.0: ADVIS SPESIALIS — tempel chat advis dari WhatsApp Web, otomatis dirapikan lalu ditambahkan di paling bawah Rencana GADAR (Save manual). v3.30.1: REVIEW GADAR — catatan "Darah rutin dihapus" hanya bila memang ada. v3.30.0: REVIEW GADAR — isian otomatis di paling atas; obat suntik non-oral di luar daftar (Inj. X), nebulisasi + nama obat, lidocain/tetagam, IVFD, IV line, O2 ikut ditulis (antibiotik drip tidak). v3.29.0: REVIEW GADAR — perbaikan gagal simpan (baris baru \\r\\n), GADAR dokter lain tetap diubah, usulan bisa diedit, tindakan yang sudah tertulis ditampilkan. v3.28.1: REVIEW GADAR — "dr" (nama dokter) tidak lagi dianggap "darah rutin". v3.28.0: REVIEW GADAR 24 JAM — laporan pasien DONE dokter login (tindakan dari daftar resep tindakan + order lab/radiologi yang belum tertulis), semua dicentang, simpan massal ke Rencana & Pemeriksaan Penunjang GADAR terakhir. v3.27.0: Lab Severe tidak memesan ulang kreatinin/elektrolit/AGD yang sudah ada dalam 1 minggu lalu Save otomatis; tombol Tutup lain dihapus (pakai ✕), tombol panel dirapikan. v3.26.0: tombol kecilkan (—) & tutup (✕) di pojok kanan atas tiap kotak; AUTO PENUNJANG + Lab Severe (Kreatinin, Elektrolit, AGD; Save manual); ekspertise CT whole abdomen & echocardiography (Kesan/Kesimpulan). v3.25.0: ekspertise radiologi dianggap ada hanya bila memuat "KESAN"; KOMBINASI RESEP menampilkan anamnesis (keluhan utama, RPS, alergi) dari Assesment GADAR. v3.24.0: judul "Riwayat kontrol poli spesialis" dihapus dari Riwayat Penyakit Dahulu; ASGADAR untuk pasien belum terdaftar diisikan ke + BUAT DRAF ASSESMENT GAWAT DARURAT (daftar pasien IGD); PAKET KONSUL: film CT tidak diambil, ekspertise rontgen & CT ikut bila sudah ada. v3.23.0: tombol AUTO SOAP & AUTO SCREENSHOT dihapus dari menu (sudah tercakup PAKET KONSUL). v3.22.0: semua kotak AUTO ASM (menu, KOMBINASI RESEP, AUTO SCREENSHOT/PAKET KONSUL, salin SOAP) bisa digeser dan dikecilkan. v3.21.0: tombol 🔄 Update (SOAP disusun ulang dari GADAR + penunjang baru ditambahkan); semua AUTO kembali ke tab E-RAWAT DARURAT dulu sehingga tidak macet saat tab Riwayat/Hasil terbuka. v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -1206,6 +1206,24 @@
       }
     }
 
+    const res = await runRecipePlan(regularItems, racikanJobs, { ...options, seenSet });
+    const { success, skipped, errors } = res;
+
+    const totalProblems = errors.length + skippedComplaints.length;
+    if (totalProblems) {
+      toast(`KOMBINASI RESEP: ${success} obat berhasil masuk, ${skipped} duplikat dilewati, ${skippedComplaints.length} keluhan dilewati, ${errors.length} obat/tindakan gagal. Keluhan lain tetap diproses.`);
+      console.warn("[KOMBINASI RESEP] Keluhan yang dilewati:", skippedComplaints);
+    } else {
+      toast(`KOMBINASI RESEP: ${success} obat berhasil masuk, ${skipped} duplikat dilewati. Tetap sebagai draft.`);
+    }
+
+    return { details, seenSet, success, skipped, errors, skippedComplaints };
+  }
+
+  // v3.37.0: mesin input bersama (dipisah dari runCombinedComplaintRecipes, isi tidak berubah):
+  // obat non-racikan (dedup terhadap draft) lalu racikan, ke Resep Online sebagai draft. Tidak menekan Simpan.
+  async function runRecipePlan(regularItems, racikanJobs, options = {}) {
+    const seenSet = options.seenSet || getExistingRecipeDrugSet();
     // Buka/pertahankan Resep Online SEKALI, sama seperti resep tunggal.
     if (regularItems.length || racikanJobs.length) {
       const opened = await openRecipeTab();
@@ -1259,15 +1277,138 @@
       }
     }
 
-    const totalProblems = errors.length + skippedComplaints.length;
-    if (totalProblems) {
-      toast(`KOMBINASI RESEP: ${success} obat berhasil masuk, ${plan.skipped.length} duplikat dilewati, ${skippedComplaints.length} keluhan dilewati, ${errors.length} obat/tindakan gagal. Keluhan lain tetap diproses.`);
-      console.warn("[KOMBINASI RESEP] Keluhan yang dilewati:", skippedComplaints);
-    } else {
-      toast(`KOMBINASI RESEP: ${success} obat berhasil masuk, ${plan.skipped.length} duplikat dilewati. Tetap sebagai draft.`);
-    }
+    return { seenSet, success, skipped: plan.skipped.length, skippedItems: plan.skipped, errors };
+  }
 
-    return { details, seenSet, success, skipped: plan.skipped.length, errors, skippedComplaints };
+  // =========================
+  // v3.37.0: KOMBINASI RESEP PER OBAT (instruksi dokter 5 Okt 2026)
+  // Pilihan = nama obat (bukan keluhan). Dosis/jumlah TIDAK baru: diambil dari template yang sama dengan resep keluhan.
+  // `why` = keluhan yang menyarankan obat ini (dibaca dari Assesment GADAR, lihat spSuggestComplaints).
+  // =========================
+  const DRUG_OPTIONS = {
+    adult: [
+      { key: "PCT", label: "Paracetamol (Sanmol Forte 650 mg)", why: ["DEMAM"], src: { kind: "item", tpl: "ISPA_DEWASA", obat: "SANMOL FORTE TABLET 650MG*" } },
+      { key: "KETOROLAC", label: "Ketorolac tablet", why: ["NYERI"], src: { kind: "recipe", key: "KELUHAN_NYERI_DEWASA" } },
+      { key: "DOMPERIDON", label: "Domperidon 10 mg", why: ["MUAL_MUNTAH"], src: { kind: "recipe", key: "KELUHAN_MUAL_MUNTAH_DEWASA" } },
+      { key: "AMBROXOL", label: "Ambroxol 30 mg", why: ["BATUK_PILEK"], src: { kind: "item", tpl: "KELUHAN_BATUK_PILEK_DEWASA", obat: "AMBROXOL 30MG TAB" } },
+      { key: "CTM", label: "CTM 4 mg", why: ["BATUK_PILEK", "RADANG_BENGKAK"], src: { kind: "item", tpl: "KELUHAN_BATUK_PILEK_DEWASA", obat: "CTM 4MG TAB" } },
+      { key: "DEXA", label: "Dexamethason 0,5 mg", why: ["BATUK_PILEK", "RADANG_BENGKAK"], src: { kind: "item", tpl: "KELUHAN_BATUK_PILEK_DEWASA", obat: "DEXAMETHASON 0.5 MG TAB*" } },
+      { key: "DIATAB", label: "New Diatab", why: ["DIARE"], src: { kind: "recipe", key: "KELUHAN_DIARE_DEWASA" } },
+      { key: "RANITIDIN", label: "Ranitidin 150 mg", why: ["NYERI_ULU_HATI"], src: { kind: "recipe", key: "NYERI_ULU_HATI_DEWASA" } },
+      { key: "ANTASIDA", label: "Antasida tablet", why: ["KEMBUNG"], src: { kind: "recipe", key: "KEMBUNG_DEWASA" } },
+      { key: "AMOX", label: "Amoxicillin 500 mg", why: ["INFEKSI_BAKTERI"], src: { kind: "recipe", key: "KELUHAN_INFEKSI_DEWASA" } }
+    ],
+    child: [
+      { key: "PCT", label: "Paracetamol", why: ["DEMAM", "NYERI"], src: COMPLAINT_RECIPE_MAP.DEMAM.child },
+      { key: "DOMPERIDON", label: "Domperidone sirup", why: ["MUAL_MUNTAH"], src: COMPLAINT_RECIPE_MAP.MUAL_MUNTAH.child },
+      { key: "BAPIL", label: "Puyer Dexamethason + CTM + Ambroxol", why: ["BATUK_PILEK"], src: { kind: "racikan", key: "BAPIL_ANAK" } },
+      { key: "RADANG", label: "Puyer Dexamethason + CTM", why: ["RADANG_BENGKAK"], notWith: "BAPIL", src: { kind: "racikan", key: "RADANG_BENGKAK_ANAK" } },
+      { key: "ZINC", label: "Zinc", why: ["DIARE"], src: { kind: "recipe", key: "KELUHAN_DIARE_ANAK", only: /^ZINc TABLET$/i } },
+      { key: "ORALIT", label: "Oralit", why: ["DIARE"], src: { kind: "recipe", key: "KELUHAN_DIARE_ANAK", only: /^ORALIT$/i } },
+      { key: "RANITIDIN", label: "Puyer Ranitidin", why: ["NYERI_ULU_HATI"], src: { kind: "racikan", key: "NYERI_ULU_HATI_ANAK" } },
+      { key: "ANTASIDA", label: "Antasida (usia ≥5 th)", why: ["KEMBUNG"], src: COMPLAINT_RECIPE_MAP.KEMBUNG.child },
+      { key: "AMOX", label: "Amoxicillin", why: ["INFEKSI_BAKTERI"], src: COMPLAINT_RECIPE_MAP.INFEKSI_BAKTERI.child }
+    ]
+  };
+
+  // Kata kunci keluhan di Assesment GADAR (keluhan utama, RPS, diagnosis). Kata yang dinegasikan
+  // ("demam (-)", "tidak demam", "demam disangkal") tidak dihitung.
+  const SP_COMPLAINT_KEYWORDS = {
+    DEMAM: /demam|febris|panas badan|badan panas|meriang|hiperpireksia|\bfever/gi,
+    NYERI: /nyeri|sakit kepala|pusing|cephal|sefal|myalgia|ngilu|linu|kolik|vulnus|luka/gi,
+    MUAL_MUNTAH: /mual|muntah|vomit|nausea|emesis/gi,
+    BATUK_PILEK: /batuk|pilek|\bflu\b|ispa|rhinit|rinit|common cold|bersin|hidung tersumbat|commond cold/gi,
+    RADANG_BENGKAK: /bengkak|radang|tonsil|faringit|urtikaria|biduran|gatal|edema|dermatitis/gi,
+    DIARE: /diare|mencret|bab cair|\bgea\b|gastroenteritis|disentri|dysentri/gi,
+    NYERI_ULU_HATI: /ulu hati|epigastri|dispepsia|gastritis|maag|perih/gi,
+    KEMBUNG: /kembung|begah|flatulen/gi,
+    INFEKSI_BAKTERI: /\bBP\b|bronko?pneumoni|ispa|faringit|tonsil|\bisk\b|infeksi saluran kemih|abses|selulit|otitis|sinusit|vulnus|bronkit|pneumoni|infeksi bakteri|tifoid|typhoid/gi
+  };
+
+  function spSuggestComplaints(text) {
+    // "Nyeri ulu hati/perut ulu hati" tidak dihitung sebagai Nyeri umum (Ketorolac).
+    const raw = String(text || "").replace(/\s+/g, " ");
+    const out = {};
+    for (const [key, re0] of Object.entries(SP_COMPLAINT_KEYWORDS)) {
+      const src = key === "NYERI" ? raw.replace(/nyeri\s+(perut\s+)?(ulu hati|epigastri\w*)/gi, " ") : raw;
+      const re = new RegExp(re0.source, "gi");
+      let m;
+      while ((m = re.exec(src))) {
+        const before = src.slice(Math.max(0, m.index - 12), m.index);
+        const after = src.slice(m.index + m[0].length, m.index + m[0].length + 26);
+        if (/(tidak|tdk|tanpa|tak|bukan|ø|negatif)\s*(ada\s*)?$/i.test(before)) continue;
+        // "batuk pilek tidak ada": satu kata di antara kata kunci dan negasi masih dihitung.
+        if (/^\s*([\w\/]+[\s,]*)?(\(\s*-\s*\)|-(?![\w>])|disangkal|tidak ada|tdk ada|negatif|neg\b)/i.test(after)) continue;
+        out[key] = m[0].trim();
+        break;
+      }
+    }
+    return out; // { DEMAM: "demam", ... } kata yang ditemukan
+  }
+
+  // Obat yang disarankan (key) untuk cabang tertentu dari keluhan yang ditemukan.
+  function spSuggestDrugKeys(branchKey, complaintHits) {
+    const list = DRUG_OPTIONS[branchKey] || [];
+    const keys = list.filter((o) => o.why.some((w) => complaintHits[w])).map((o) => o.key);
+    return keys.filter((k) => {
+      const o = list.find((x) => x.key === k);
+      return !(o.notWith && keys.includes(o.notWith));
+    });
+  }
+
+  // Satu pilihan obat -> item resep / racikan untuk pasien ini. ctx: { branch:'adult'|'child', weight, ageYears, ageMonths }.
+  function spResolveDrugOption(opt, ctx) {
+    let src = opt.src;
+    const weight = Number(ctx.weight);
+    const res = { items: [], racikan: [], text: "", error: "" };
+    try {
+      if (src.kind === "bbSplit") {
+        if (!Number.isFinite(weight) || weight <= 0) throw new Error("isi BB");
+        src = weight <= (src.maxSirupKg || 15) ? src.sirup : src.puyer;
+      }
+      if (src.kind === "item") {
+        const it = (MASTER_RECIPE_TEMPLATES[src.tpl]?.items || []).find((i) => norm(i.obat) === norm(src.obat));
+        if (!it) throw new Error("obat tidak ada di template");
+        res.items.push({ ...it });
+      } else if (src.kind === "recipe") {
+        const tpl = MASTER_RECIPE_TEMPLATES[src.key];
+        if (!tpl) throw new Error("template tidak ada");
+        let items;
+        if (tpl.weightGroups) {
+          if (!Number.isFinite(weight) || weight <= 0) throw new Error("isi BB");
+          const wk = findWeightKeyForValue(src.key, weight);
+          if (!wk) throw new Error(`BB ${weight} kg belum ada di template`);
+          items = tpl.weightGroups[wk].items;
+        } else items = tpl.items || [];
+        items = items.filter((i) => !src.only || src.only.test(i.obat)).map((i) => ({ ...i }));
+        if (opt.key === "ZINC" && Number.isFinite(Number(ctx.ageMonths)) && Number(ctx.ageMonths) < 6) {
+          items = items.map((i) => ({ ...i, dosis: "1/2 tab", frekuensi: "1x1" }));
+        }
+        if (!items.length) throw new Error("tidak ada obat untuk BB ini");
+        res.items.push(...items);
+      } else if (src.kind === "ageRecipe") {
+        const age = Number(ctx.ageYears);
+        if (!Number.isFinite(age) || age < 5) throw new Error("hanya usia ≥5 th");
+        const tpl = MASTER_RECIPE_TEMPLATES[age <= 15 ? src.key5_15 : src.keyGt15];
+        res.items.push(...(tpl?.items || []).map((i) => ({ ...i })));
+      } else if (src.kind === "racikan") {
+        if (!Number.isFinite(weight) || weight <= 0) throw new Error("isi BB");
+        const wk = findWeightKeyForValue(src.key, weight, { lowerBoundaryForRacikan: true });
+        const tpl = MASTER_RACIKAN_TEMPLATES[src.key];
+        const g = tpl?.weightGroups?.[wk];
+        if (!g) throw new Error(`BB ${weight} kg belum ada di template racikan`);
+        res.racikan.push({ key: src.key, weightKey: wk, label: opt.label });
+        const bahan = (g.items || []).map((i) => `${i.obat.replace(/\*$/, "")} ×${i.jumlahPerObat || i.jumlah || 1}`).join(" + ");
+        res.text = `Puyer ${g.jumlahRacikan || 10} bks: ${bahan} • ${g.dosis || "1 pulv"} ${g.frekuensi || ""}`.trim();
+      }
+      if (!res.text) {
+        res.text = res.items.map((i) => [i.obat.replace(/\*$/, ""), i.dosis, i.frekuensi, i.jumlah ? `jml ${i.jumlah}` : ""]
+          .filter(Boolean).join(" • ")).join(" | ");
+      }
+    } catch (err) {
+      res.error = err.message || String(err);
+    }
+    return res;
   }
 
   const recipeSleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -2165,16 +2306,18 @@
       const modal = document.getElementById("modal_form_gadar");
       const val = (n) => form?.querySelector(`[name="${n}"]`)?.value || "";
       if (form && modal && modal.classList.contains("show") && (val("kel_utama") || val("riwayat_sakit_now"))) {
-        src = { kel_utama: val("kel_utama"), riwayat_sakit_now: val("riwayat_sakit_now"), alergi_note: val("alergi_note") };
+        src = { kel_utama: val("kel_utama"), riwayat_sakit_now: val("riwayat_sakit_now"), alergi_note: val("alergi_note"),
+          diagnosa_banding: val("diagnosa_banding"), masalah_kesehatan: val("masalah_kesehatan") };
         from = "form GADAR yang sedang terbuka";
       } else {
         const g = await getLatestGadarData();
         if (g) { src = g.data; from = `GADAR ${clean(g.data.gadar_date) || "terakhir"}`; }
       }
     } catch (err) { console.warn("[KOMBINASI] anamnesis", err); }
-    if (!box.isConnected) return;
-    if (!src) { box.textContent = "Assesment GADAR kunjungan ini belum ada / belum terbaca."; return; }
+    if (!box.isConnected) return null;
+    if (!src) { box.textContent = "Assesment GADAR kunjungan ini belum ada / belum terbaca."; return null; }
     const ku = clean(src.kel_utama), rps = clean(src.riwayat_sakit_now), alergi = clean(src.alergi_note);
+    const dx = clean(src.diagnosa_banding);
     box.innerHTML = "";
     const add = (label, text) => {
       if (!text) return;
@@ -2186,11 +2329,14 @@
     };
     add("Keluhan utama", ku);
     add("RPS", rps || "-");
+    add("Diagnosis", dx);
     add("⚠️ Alergi", alergi);
     const f = document.createElement("div");
     f.style.cssText = "font-size:11px;color:#777;";
     f.textContent = "Sumber: " + from;
     box.appendChild(f);
+    // v3.37.0: teks untuk saran obat KOMBINASI RESEP.
+    return [ku, rps, dx, clean(src.masalah_kesehatan)].filter(Boolean).join("\n");
   }
 
   // v3.8.2: BB hanya dari kolom "berat" GADAR (instruksi dokter), mis. "17 kg" -> 17.
@@ -2208,6 +2354,214 @@
     } catch (_) {
       return null;
     }
+  }
+
+  // =========================
+  // v3.37.0: CPPT VISIT RAWAT INAP (instruksi dokter 5 Okt 2026) — hanya membaca (GET), tidak menyimpan.
+  // Sumber: daftar CPPT `nurse_station/eranap/cppt_viewer/<noreg>` (terbaru di atas; baris CPPT / ASM AWAL,
+  // PPA dokter atau perawat), GADAR kunjungan IGD (`soap_igd/content_gadar` + `soap_gadar_edit`), riwayat kunjungan.
+  // =========================
+  const SP_MONTHS = { january: 0, februari: 1, february: 1, maret: 2, march: 2, april: 3, mei: 4, may: 4,
+    juni: 5, june: 5, juli: 6, july: 6, agustus: 7, august: 7, september: 8, oktober: 9, october: 9,
+    november: 10, desember: 11, december: 11, januari: 0 };
+
+  // "05 October 2026 14:16:39" / "04-10-2026" -> ms (NaN bila tidak terbaca).
+  function spParseIdDate(text) {
+    const s = String(text || "");
+    let m = s.match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+    if (m && SP_MONTHS[m[2].toLowerCase()] != null) {
+      return new Date(+m[3], SP_MONTHS[m[2].toLowerCase()], +m[1], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0)).getTime();
+    }
+    m = s.match(/(\d{1,2})-(\d{1,2})-(\d{4})/);
+    return m ? new Date(+m[3], +m[2] - 1, +m[1]).getTime() : NaN;
+  }
+
+  function spIsDoctorPpa(ppa) {
+    const p = String(ppa || "");
+    if (/amd\.?\s*ke[bp]|s\.?\s*kep|\bns\.|bidan|perawat|s\.?\s*farm|apt\.|gizi|fisio/i.test(p)) return false;
+    return /(^|[\s,])dr\.?(\s|,|$)|\bdr\.|\bsp\.?\s?[a-z]/i.test(p);
+  }
+
+  // Tanda vital dari teks bebas (CPPT perawat: "N 100x/menit, S 36,6C, RR 22", "suhu: 36,9 nadi 102", "TD 120/80").
+  function spParseFreeVitals(text) {
+    const t = String(text || "").replace(/\s+/g, " ");
+    const out = {};
+    let m = t.match(/\b(?:TD|tensi|tekanan darah)\s*[:=]?\s*(\d{2,3}\s*\/\s*\d{2,3})/i);
+    if (m) out.td = m[1].replace(/\s+/g, "");
+    m = t.match(/\b(?:nadi|HR|N)\s*[:=]?\s*(\d{2,3})(?!\s*[\/.,]\s*\d)/i);
+    if (m && +m[1] >= 30 && +m[1] <= 250) out.nadi = m[1];
+    m = t.match(/\b(?:suhu|temp|S|T)\s*[:=]?\s*(\d{2}(?:[.,]\d{1,2})?)\s*(?:°|C\b|\b)/i);
+    if (m && +m[1].replace(",", ".") >= 34 && +m[1].replace(",", ".") <= 42.5) out.suhu = m[1].replace(".", ",");
+    m = t.match(/\b(?:RR|nafas|napas|pernafasan|pernapasan|respirasi)\s*[:=]?\s*(\d{1,2})(?!\d)/i);
+    if (m && +m[1] >= 6 && +m[1] <= 90) out.nafas = m[1];
+    m = t.match(/\bGCS\s*[:=]?\s*(\d{1,2}\b|E\s*\d\s*V\s*\d\s*M\s*\d)/i);
+    if (m) out.gcs = m[1].replace(/\s+/g, "");
+    return out;
+  }
+
+  // Satu nilai kolom terstruktur ("* Nadi : 110x/m") -> nilai kolom form CPPT.
+  function spCpptFieldValue(key, raw) {
+    const v = String(raw || "").replace(/\s+/g, " ").trim();
+    if (!v || /^[-.]$/.test(v)) return "";
+    if (key === "nadi" || key === "nafas") { const n = v.match(/\d{1,3}/); return n ? n[0] : ""; }
+    if (key === "suhu") { const n = v.match(/\d{2}(?:[.,]\d{1,2})?/); return n ? n[0].replace(".", ",") : ""; }
+    if (key === "td") { const n = v.match(/\d{2,3}\s*\/\s*\d{2,3}/); return n ? n[0].replace(/\s+/g, "") : ""; }
+    if (key === "kesadaran" && /^(cm|compos ?mentis)$/i.test(v)) return "Compos Mentis";
+    return v;
+  }
+
+  const SP_CPPT_LABEL_KEY = [
+    [/^kesadaran/i, "kesadaran"], [/^keadaan umum/i, "keadaan_umum"], [/^(tekanan darah|td)$/i, "td"],
+    [/^gcs/i, "gcs"], [/^nadi/i, "nadi"], [/^suhu/i, "suhu"], [/^(pernafasan|pernapasan|respirasi|rr)$/i, "nafas"],
+    [/^reaksi cahaya/i, "reaksi_cahaya"]
+  ];
+
+  // HTML cppt_viewer -> baris [{time, type, ppa, isDoctor, keluhan, objective, oText, fields}], terbaru dulu.
+  function spParseCpptViewer(html) {
+    const d = new DOMParser().parseFromString(String(html || ""), "text/html");
+    const rows = [];
+    for (const tr of d.querySelectorAll("table tbody tr")) {
+      const tds = tr.children;
+      if (tds.length < 3) continue;
+      const head = (tds[0].textContent || "").replace(/\s+/g, " ").trim();
+      const type = /ASM AWAL/i.test(head) ? "ASM AWAL" : /\bCPPT\b/i.test(head) ? "CPPT" : "";
+      if (!type) continue; // baris obat/BHP dll. diabaikan
+      const ppa = (tds[1].textContent || "").replace(/\s+/g, " ").trim();
+      const sec = {};
+      tds[2].querySelectorAll("h4").forEach((h) => {
+        const k = (h.textContent || "").trim().toUpperCase();
+        if (/^[SOAP]$/.test(k) && h.nextElementSibling) sec[k] = h.nextElementSibling;
+      });
+      const txt = (el) => (el ? (el.innerText || el.textContent || "") : "").replace(/\r/g, "").replace(/[ \t]+/g, " ")
+        .split("\n").map((x) => x.trim()).filter(Boolean).join("\n").trim();
+      let keluhan = "";
+      if (sec.S) {
+        const kids = [...sec.S.children];
+        const i = kids.findIndex((c) => /^\s*keluhan utama\s*:?\s*$/i.test(c.textContent || ""));
+        if (i >= 0 && kids[i + 1]) keluhan = txt(kids[i + 1]);
+        if (!keluhan) {
+          const m = txt(sec.S).match(/keluhan utama\s*:\s*([\s\S]*?)(?:\n?\s*riwayat penyakit sekarang\s*:|$)/i);
+          if (m) keluhan = m[1].trim();
+        }
+      }
+      const fields = {};
+      let objective = "";
+      if (sec.O) {
+        [...sec.O.children].forEach((c) => {
+          const t = txt(c);
+          const m = t.match(/^\*\s*([^:]+?)\s*:\s*([\s\S]*)$/);
+          if (m) {
+            const hit = SP_CPPT_LABEL_KEY.find(([re]) => re.test(m[1].trim()));
+            if (hit) { const v = spCpptFieldValue(hit[1], m[2]); if (v) fields[hit[1]] = v; }
+          } else if (c.classList.contains("col-md-12") && t && !objective) {
+            objective = t;
+          }
+        });
+      }
+      const oText = txt(sec.O);
+      rows.push({
+        time: spParseIdDate(head), timeText: head.replace(/\s*(CPPT|ASM AWAL)\s*$/i, ""), type, ppa,
+        isDoctor: spIsDoctorPpa(ppa), keluhan, objective, oText, fields
+      });
+    }
+    rows.sort((a, b) => (b.time || 0) - (a.time || 0));
+    return rows;
+  }
+
+  // Pemeriksaan fisik dokter yang layak disalin (bukan isian asal seperti satu kata "pemfissqa").
+  function spUsableObjective(text) {
+    const t = String(text || "").trim();
+    if (t.length < 8) return false;
+    return /[:+\/]/.test(t) || t.split(/\s+/).length >= 3;
+  }
+
+  // Rencana CPPT VISIT dari daftar CPPT (fungsi murni, diuji di node).
+  // keluhan: CPPT dokter terakhir yang berisi keluhan; vital: per kolom dari CPPT terakhir (dokter/perawat) yang memuatnya;
+  // objective: pemeriksaan fisik CPPT dokter terakhir. Yang tidak ada -> null (diisi cadangan oleh pemanggil).
+  function spPlanCpptVisitFromRows(rows) {
+    const plan = { keluhan: null, keluhanFrom: "", objective: null, objectiveFrom: "", vitals: {}, vitalsFrom: {} };
+    const label = (r) => `${r.type} ${r.timeText} (${r.ppa})`;
+    const drKel = rows.find((r) => r.isDoctor && r.keluhan);
+    if (drKel) { plan.keluhan = drKel.keluhan; plan.keluhanFrom = label(drKel); }
+    const drObj = rows.find((r) => r.isDoctor && spUsableObjective(r.objective));
+    if (drObj) { plan.objective = drObj.objective; plan.objectiveFrom = label(drObj); }
+    for (const key of ["td", "nadi", "suhu", "nafas", "gcs", "kesadaran", "keadaan_umum", "reaksi_cahaya"]) {
+      for (const r of rows) {
+        const free = ["td", "nadi", "suhu", "nafas", "gcs"].includes(key) ? spParseFreeVitals(r.oText) : {};
+        const v = r.fields[key] || free[key];
+        if (v) { plan.vitals[key] = v; plan.vitalsFrom[key] = label(r); break; }
+      }
+    }
+    plan.hasDoctorCppt = rows.some((r) => r.isDoctor);
+    return plan;
+  }
+
+  function spRanapContext() {
+    const noreg = (location.pathname.match(/main_content\/([^/?#]+)/i) || [])[1] || null;
+    const base = location.href.split("/erm_ranap/")[0];
+    const html = document.documentElement.innerHTML;
+    const normRm = (html.match(/history_pasien_list\/(\w+)/) || html.match(/soap_eresep\/add_new\/[^/]+\/(\w+)/) || [])[1] || null;
+    return { noreg: noreg && decodeURIComponent(noreg), normRm, base };
+  }
+
+  function spCleanGadarText(v) {
+    const t = String(v ?? "").replace(/\r/g, "").replace(/^\s*kel(uhan)?\s*:\s*/i, "").trim();
+    return /^(null|undefined|-)$/i.test(t) ? "" : t;
+  }
+
+  // GADAR kunjungan IGD pasien rawat inap: No.Reg sama (IGD -> ranap), bila tidak ada -> kunjungan UGD terakhir
+  // di riwayat kunjungan maks. 3 hari sebelum masuk. null bila tidak ada.
+  async function spFetchAdmissionGadar(ctx) {
+    if (!ctx.noreg || !ctx.normRm) return null;
+    const get = (u) => fetch(ctx.base + u, { credentials: "same-origin" });
+    const listHtml = await get(`/soap_igd/content_gadar/${encodeURIComponent(ctx.noreg)}/${encodeURIComponent(ctx.normRm)}`).then((r) => r.text());
+    const ids = [...new Set([...listHtml.matchAll(/update_gadar\('(\d+)'\)/g)].map((m) => Number(m[1])))].sort((a, b) => b - a).slice(0, 8);
+    if (!ids.length) return null;
+    const wanted = [ctx.noreg];
+    try {
+      const h = await get(`/history_pasien/history_pasien_list/${encodeURIComponent(ctx.normRm)}`).then((r) => r.text());
+      const d = new DOMParser().parseFromString(h, "text/html");
+      const visits = [...d.querySelectorAll("tbody tr")].map((tr) => [...tr.children].map((td) => (td.textContent || "").trim()))
+        .filter((c) => c.length >= 4);
+      const admit = visits.find((c) => c[1] === ctx.noreg);
+      const admitTime = admit ? spParseIdDate(admit[2]) : NaN;
+      visits.filter((c) => /UGD|IGD/i.test(c[3]) && c[1] !== ctx.noreg).forEach((c) => {
+        const t = spParseIdDate(c[2]);
+        if (Number.isFinite(admitTime) && Number.isFinite(t) && t <= admitTime && admitTime - t <= 3 * 864e5) wanted.push(c[1]);
+      });
+    } catch (err) { console.warn("[CPPT VISIT] riwayat kunjungan", err); }
+    for (const id of ids) {
+      try {
+        const data = await get(`/soap_igd/soap_gadar_edit/${id}`).then((r) => r.json());
+        if (data && wanted.includes(String(data.id_reg))) return { data, idGadar: id };
+      } catch (_) {}
+    }
+    return null;
+  }
+
+  // Rencana lengkap CPPT VISIT (keluhan, objective, vital + sumbernya). Tidak menyentuh form.
+  async function spBuildCpptVisitPlan() {
+    const ctx = spRanapContext();
+    if (!ctx.noreg) throw new Error("No. registrasi rawat inap tidak terbaca dari alamat halaman.");
+    const html = await fetch(`${ctx.base}/nurse_station/eranap/cppt_viewer/${encodeURIComponent(ctx.noreg)}`, { credentials: "same-origin" }).then((r) => r.text());
+    const rows = spParseCpptViewer(html);
+    const plan = spPlanCpptVisitFromRows(rows);
+    let gadar = null;
+    if (!plan.keluhan || !plan.objective) {
+      try { gadar = await spFetchAdmissionGadar(ctx); } catch (err) { console.warn("[CPPT VISIT] GADAR", err); }
+    }
+    if (!plan.keluhan) {
+      const ku = gadar ? spCleanGadarText(gadar.data.kel_utama) : "";
+      const nurseAsm = rows.find((r) => r.type === "ASM AWAL" && r.keluhan);
+      if (ku) { plan.keluhan = ku; plan.keluhanFrom = `Assesment GADAR IGD ${spCleanGadarText(gadar.data.gadar_date)}`; }
+      else if (nurseAsm) { plan.keluhan = nurseAsm.keluhan; plan.keluhanFrom = `ASM AWAL ${nurseAsm.timeText} (${nurseAsm.ppa})`; }
+    }
+    if (!plan.objective && gadar && !plan.hasDoctorCppt) {
+      const fisik = spCleanGadarText(gadar.data.cek_fisik);
+      if (spUsableObjective(fisik)) { plan.objective = fisik; plan.objectiveFrom = `Assesment GADAR IGD ${spCleanGadarText(gadar.data.gadar_date)}`; }
+    }
+    plan.rowCount = rows.length;
+    return plan;
   }
 
   async function runAutoLabFebris() {
@@ -6276,6 +6630,40 @@
       #${MENU_ID} .sp-package-buttons{display:flex;gap:7px;margin:8px 4px;}
       #${MENU_ID} .sp-package-buttons .sp-primary{background:#7a4bd9;color:#fff;border:0;border-radius:7px;padding:10px 12px;font-weight:800;cursor:pointer;flex:1;}
       #${MENU_ID} .sp-package-buttons .sp-back{background:#e9ecef!important;color:#333!important;}
+      /* v3.37.0: KOMBINASI RESEP per obat */
+      #${MENU_ID}.sp-package-modal{overflow-x:hidden!important;}
+      #${MENU_ID} .sp-pkg-top{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:8px;align-items:start;}
+      #${MENU_ID} .sp-pkg-top .sp-section-title{margin:4px 2px 3px!important;}
+      #${MENU_ID} .sp-drug-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin:10px 2px 0;flex-wrap:wrap;}
+      #${MENU_ID} .sp-drug-tools{display:flex;gap:5px;}
+      #${MENU_ID} .sp-drug-tools button{width:auto!important;margin:0!important;padding:5px 9px!important;font-size:11px!important;border-radius:6px!important;background:#eef2ff!important;color:#3730a3!important;}
+      #${MENU_ID} .sp-drug-tools button[data-drug-clear]{background:#f1f3f5!important;color:#555!important;}
+      #${MENU_ID} #sp-drug-branch{font-weight:700;color:#7a4bd9;}
+      #${MENU_ID} .sp-drug-table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;margin:4px 0 6px;border:1px solid #e3e7eb;border-radius:9px;overflow:hidden;}
+      #${MENU_ID} .sp-drug-table th{background:#f4f1fb;color:#5b3aa8;text-align:left;font-size:10.5px;letter-spacing:.3px;padding:6px 8px;border-bottom:1px solid #e3e7eb;}
+      #${MENU_ID} .sp-drug-table td{padding:7px 8px;border-bottom:1px solid #f0f0f0;vertical-align:middle;line-height:1.3;}
+      #${MENU_ID} .sp-drug-table tr:last-child td{border-bottom:0;}
+      #${MENU_ID} .sp-drug-row{cursor:pointer;background:#fff;}
+      #${MENU_ID} .sp-drug-row:hover td{background:#f8f7fd;}
+      #${MENU_ID} .sp-drug-row.is-on td{background:#ecfdf3;}
+      #${MENU_ID} .sp-drug-row.is-on .sp-drug-name b{color:#166534;}
+      #${MENU_ID} .sp-drug-chk{width:30px;text-align:center;}
+      #${MENU_ID} .sp-drug-chk input{width:17px;height:17px;margin:0;pointer-events:none;accent-color:#16a34a;}
+      #${MENU_ID} .sp-drug-name{width:38%;}
+      #${MENU_ID} .sp-drug-badge{display:inline-block;margin:3px 0 0;padding:1px 6px;border-radius:9px;background:#fff4d6;color:#8a5a00;border:1px solid #ffe08a;font-size:10px;font-weight:700;}
+      #${MENU_ID} .sp-drug-name .sp-drug-badge{display:table;}
+      #${MENU_ID} .sp-drug-dose{color:#444;font-size:11.5px;overflow-wrap:anywhere;}
+      #${MENU_ID} .sp-drug-err{color:#b45309;font-weight:700;}
+      #${MENU_ID} .sp-drug-empty{padding:12px;text-align:center;color:#8a5a00;background:#fff8e6;border-radius:8px;margin:4px 0;}
+      @media(max-width:600px){
+        #${MENU_ID} .sp-pkg-top{grid-template-columns:1fr;}
+        #${MENU_ID} .sp-drug-table thead{display:none;}
+        #${MENU_ID} .sp-drug-table tr{display:grid;grid-template-columns:30px 1fr;}
+        #${MENU_ID} .sp-drug-table td{border-bottom:0;}
+        #${MENU_ID} .sp-drug-chk{grid-row:span 2;}
+        #${MENU_ID} .sp-drug-name{width:auto;padding-bottom:0!important;}
+        #${MENU_ID} .sp-drug-dose{padding-top:2px!important;border-bottom:1px solid #f0f0f0!important;}
+      }
       .sp-preview-overlay-compact{position:fixed!important;inset:0!important;z-index:21474836470!important;background:rgba(0,0,0,.28)!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:12px!important;box-sizing:border-box!important;}
       .sp-preview-card-compact{width:min(780px,calc(100vw - 32px))!important;max-height:calc(100vh - 32px)!important;overflow:hidden!important;background:#fff!important;color:#222!important;border-radius:12px!important;box-shadow:0 10px 36px rgba(0,0,0,.4)!important;padding:12px!important;box-sizing:border-box!important;font:13px Arial,sans-serif!important;line-height:1.3!important;}
       .sp-preview-card-compact .sp-preview-grid-compact{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;}
@@ -6493,270 +6881,111 @@
     const menu = document.createElement("div");
     menu.id = MENU_ID;
 
-    async function buildPackagePreview({ complaints, actions, branch, weight, ageDisplay, ageYears, ageMonths, seenSet }) {
-      const workingSeen = new Set(seenSet || []);
-      const lines = [];
-      const skipped = [];
-      const errors = [];
-      const racikanEntries = [];
+    // =========================
+    // v3.37.0: KOMBINASI RESEP PER OBAT + SARAN DARI ASGADAR (instruksi dokter 5 Okt 2026)
+    // Tabel obat (nama obat, aturan pakai dari template). Obat yang cocok dengan keluhan di Assesment GADAR
+    // otomatis tercentang (💡 saran); dokter menambah/mengurangi lalu ACC. Tindakan tetap seperti sebelumnya.
+    // =========================
+    let spPkg = null; // { selected:Set, touched:bool, hits:{}, branch }
 
-      lines.push(`CABANG: ${branch}${ageDisplay ? ` • Umur ${ageDisplay}` : ''}${branch === 'Anak' && Number.isFinite(Number(weight)) ? ` • BB ${weight} kg` : ''}`);
-      lines.push('');
+    const spEsc = (value) => String(value ?? '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 
-      // Tindakan diproses lebih dulu pada eksekusi sebenarnya, jadi preview juga mengikuti urutan ini.
-      if (actions.length) {
-        lines.push('TINDAKAN:');
-        for (const actionKey of actions) {
-          const action = MASTER_RECIPE_TEMPLATES.TINDAKAN?.children?.[actionKey];
-          if (!action) {
-            errors.push(`Tindakan ${actionKey} tidak ditemukan`);
-            continue;
-          }
-          const plan = uniqueRecipeItems(action.items || [], workingSeen);
-          lines.push(`• ${action.name || actionKey}`);
-          if (plan.unique.length) {
-            plan.unique.forEach(item => {
-              const detail = [item.obat, item.jumlah ? `jml ${item.jumlah}` : '', item.dosis, item.frekuensi].filter(Boolean).join(' • ');
-              lines.push(`  - ${detail}`);
-              workingSeen.add(norm(item.obat));
-            });
-          } else {
-            lines.push('  - semua item sudah ada → dilewati');
-            skipped.push(`Tindakan ${action.name || actionKey}`);
-          }
-        }
-        lines.push('');
-      }
+    // Teks umur tanpa kata ganda ("3 Thn Thn" -> "3 Thn").
+    const spAgeText = () => String(getPatientAgeDisplay() || '').replace(/\b(\w+)(\s+\1\b)+/gi, '$1');
 
-      const regularItems = [];
-      if (complaints.length) {
-        lines.push('KELUHAN:');
-        for (const complaintKey of complaints) {
-          try {
-            const resolved = await resolveComplaintRecipe(complaintKey, branch === 'Dewasa' ? null : weight, {
-              forceAdult: branch === 'Dewasa',
-              age: ageYears,
-              ageYears,
-              ageDisplay,
-              ageMonths
-            });
-            const { complaint, branch: cBranch } = resolved;
-            lines.push(`• ${complaint.label}`);
+    function spPkgContext() {
+      const ageYears = getPatientAgeYears();
+      const adultByAge = Number.isFinite(ageYears) && ageYears > 17;
+      const weight = Number(String(menu.querySelector('#sp-package-weight')?.value || '').replace(',', '.'));
+      let branch = 'child', note = '';
+      if (adultByAge) branch = 'adult';
+      else if (!Number.isFinite(weight) || weight <= 0) note = 'Isi BB untuk menghitung dosis anak.';
+      else if (weight === 40) { branch = null; note = 'BB 40 kg: tentukan manual Dewasa/Anak (ubah BB).'; }
+      else if (weight > 40) branch = 'adult';
+      return {
+        ageYears, adultByAge, branch, note, weight: adultByAge ? null : weight,
+        ageMonths: getPatientAgeMonths(), ageDisplay: spAgeText()
+      };
+    }
 
-            if (cBranch.note) {
-              lines.push(`  ! ${cBranch.note}`);
-            }
+    function spPkgApplySuggestions() {
+      if (!spPkg || spPkg.touched) return;
+      const ctx = spPkgContext();
+      spPkg.selected = new Set(ctx.branch ? spSuggestDrugKeys(ctx.branch, spPkg.hits) : []);
+    }
 
-            if (cBranch.kind === 'dynamic') {
-              const key = ensureDynamicComplaintTemplate(cBranch);
-              const tpl = key ? MASTER_RECIPE_TEMPLATES[key] : null;
-              if (!tpl?.items?.length) throw new Error(`Template obat ${complaint.label} tidak ditemukan.`);
-              regularItems.push(...tpl.items.map(item => ({ ...item })));
-            } else if (cBranch.kind === 'recipe') {
-              const tpl = MASTER_RECIPE_TEMPLATES[cBranch.key];
-              if (!tpl) throw new Error(`Template ${complaint.label} tidak ditemukan.`);
-              if (tpl.weightGroups) {
-                const weightKey = findWeightKeyForValue(cBranch.key, weight);
-                if (!weightKey) throw new Error(`BB ${weight} kg belum tersedia.`);
-                const group = tpl.weightGroups[weightKey];
-                let items = (group?.items || []).map(item => ({ ...item }));
-                if (complaintKey === 'DIARE' && weight < 40 && Number.isFinite(Number(ageMonths)) && Number(ageMonths) < 6) {
-                  items = items.map(item => /^(ZINc TABLET)$/i.test(item.obat) ? ({ ...item, dosis: '1/2 tab', frekuensi: '1x1' }) : item);
-                }
-                regularItems.push(...items);
-              } else {
-                regularItems.push(...(tpl.items || []).map(item => ({ ...item })));
-              }
-            } else if (cBranch.kind === 'ageRecipe') {
-              // Kembung Anak: pilih template berdasarkan umur pasien.
-              const ay = Number(ageYears);
-              const key = Number.isFinite(ay) && ay > 15 ? cBranch.keyGt15 : cBranch.key5_15;
-              const tpl = MASTER_RECIPE_TEMPLATES[key];
-              if (!tpl?.items?.length) throw new Error(`Template ${complaint.label} sesuai umur tidak ditemukan.`);
-              regularItems.push(...tpl.items.map(item => ({ ...item })));
-            } else if (cBranch.kind === 'racikan') {
-              const weightKey = findWeightKeyForValue(cBranch.key, weight, { lowerBoundaryForRacikan: true });
-              if (!weightKey) throw new Error(`BB ${weight} kg belum tersedia untuk racikan.`);
-              const tpl = MASTER_RACIKAN_TEMPLATES[cBranch.key];
-              const group = tpl?.weightGroups?.[weightKey];
-              if (!group) throw new Error(`Kelompok BB racikan tidak ditemukan.`);
-              racikanEntries.push({ label: complaint.label, tpl, group, weightKey });
-              lines.push(`  - Racikan: ${(group.namaRacikan || tpl.name || complaint.label)} • ${(group.jumlahRacikan || '10')} puyer • ${(group.dosis || '1 pulv')} • ${(group.frekuensi || '')}`.replace(/ • $/, ''));
-              const components = (group.items || []).map(item => `${item.obat} × ${item.jumlahPerObat || item.jumlah || 1}`).join(' + ');
-              if (components) lines.push(`  - Bahan: ${components}`);
-            }
-          } catch (err) {
-            errors.push(`${complaintKey}: ${err.message || err}`);
-          }
-        }
+    function spPkgRenderDrugs() {
+      const box = menu.querySelector('#sp-drug-table-box');
+      if (!box || !spPkg) return;
+      const ctx = spPkgContext();
+      const branchLabel = ctx.branch === 'adult' ? 'DEWASA' : ctx.branch === 'child' ? 'ANAK' : '—';
+      const info = menu.querySelector('#sp-drug-branch');
+      if (info) info.textContent = `${branchLabel}${ctx.ageDisplay ? ' • ' + ctx.ageDisplay : ''}${!ctx.adultByAge && ctx.weight > 0 ? ' • BB ' + ctx.weight + ' kg' : ''}${ctx.note ? ' • ' + ctx.note : ''}`;
+      if (!ctx.branch) { box.innerHTML = `<div class="sp-drug-empty">${spEsc(ctx.note)}</div>`; spPkgSummary(); return; }
+      const rows = DRUG_OPTIONS[ctx.branch].map((opt) => {
+        const res = spResolveDrugOption(opt, ctx);
+        const on = spPkg.selected.has(opt.key);
+        const why = opt.why.filter((w) => spPkg.hits[w]).map((w) => spPkg.hits[w]);
+        return `<tr class="sp-drug-row${on ? ' is-on' : ''}${why.length ? ' is-sug' : ''}" data-drug="${opt.key}">
+          <td class="sp-drug-chk"><input type="checkbox" tabindex="-1" ${on ? 'checked' : ''}></td>
+          <td class="sp-drug-name"><b>${spEsc(opt.label)}</b>${why.length ? `<span class="sp-drug-badge" title="Disarankan dari Assesment GADAR">💡 ${spEsc([...new Set(why)].join(', '))}</span>` : ''}</td>
+          <td class="sp-drug-dose">${res.error ? `<span class="sp-drug-err">⚠ ${spEsc(res.error)}</span>` : spEsc(res.text)}</td>
+        </tr>`;
+      }).join('');
+      box.innerHTML = `<table class="sp-drug-table"><thead><tr><th></th><th>Obat</th><th>Aturan pakai (template)</th></tr></thead><tbody>${rows}</tbody></table>`;
+      spPkgSummary();
+    }
 
-        const plan = uniqueRecipeItems(regularItems, workingSeen);
-        lines.push('');
-        lines.push(`OBAT NON-RACIKAN YANG AKAN DITAMBAHKAN: ${plan.unique.length}`);
-        plan.unique.forEach(item => {
-          const detail = [item.obat, item.jumlah ? `jml ${item.jumlah}` : '', item.dosis, item.frekuensi].filter(Boolean).join(' • ');
-          lines.push(`• ${detail}`);
-          workingSeen.add(norm(item.obat));
-        });
-        if (plan.skipped?.length) {
-          skipped.push(...plan.skipped.map(item => item.obat));
-        }
-      }
-
-      if (racikanEntries.length) {
-        lines.push('');
-        lines.push(`RACIKAN YANG AKAN DIPROSES: ${racikanEntries.length}`);
-        racikanEntries.forEach((entry, idx) => {
-          lines.push(`${idx + 1}. ${entry.label} • BB ${weight} kg → ${entry.group.label || entry.weightKey}`);
-        });
-      }
-
-      if (skipped.length) {
-        lines.push('');
-        lines.push(`DILEWATI KARENA SUDAH ADA/TERINPUT: ${skipped.length}`);
-        skipped.slice(0, 15).forEach(item => lines.push(`• ${item}`));
-        if (skipped.length > 15) lines.push(`• dan ${skipped.length - 15} lainnya`);
-      }
-
-      if (errors.length) {
-        lines.push('');
-        lines.push(`⚠ BAGIAN YANG TIDAK BISA DIPREVIEW: ${errors.length}`);
-        errors.forEach(err => lines.push(`• ${err}`));
-      }
-
-      return { text: lines.join('\n'), errors, racikanEntries };
+    function spPkgSummary() {
+      const target = menu.querySelector('#sp-package-summary');
+      if (!target || !spPkg) return;
+      const ctx = spPkgContext();
+      const names = ctx.branch ? DRUG_OPTIONS[ctx.branch].filter((o) => spPkg.selected.has(o.key)).map((o) => o.label) : [];
+      const acts = [...menu.querySelectorAll('input[name="sp-package-action"]:checked')]
+        .map((el) => MASTER_RECIPE_TEMPLATES.TINDAKAN?.children?.[el.value]?.name || el.value);
+      target.innerHTML = names.length || acts.length
+        ? `<b>Akan dimasukkan:</b> ${spEsc(names.join(', ') || '-')}${acts.length ? `<br><b>Tindakan:</b> ${spEsc(acts.join(', '))}` : ''}`
+        : 'Belum ada obat atau tindakan dipilih';
     }
 
     async function runPackageRecipe() {
-      const weightInput = menu.querySelector('#sp-package-weight');
-      const ageYears = getPatientAgeYears();
-      const ageDisplay = getPatientAgeDisplay();
-      const adultByAge = Number.isFinite(ageYears) && ageYears > 17;
-      const weight = adultByAge ? null : Number(String(weightInput?.value || '').replace(',', '.'));
-      const complaints = [...menu.querySelectorAll('input[name="sp-package-complaint"]:checked')]
-        .map((el) => el.value)
-        .filter(Boolean);
-      const actions = [...menu.querySelectorAll('input[name="sp-package-action"]:checked')]
-        .map((el) => el.value)
-        .filter(Boolean);
+      if (!spPkg) return;
+      const ctx = spPkgContext();
+      if (!ctx.branch) { toast(`KOMBINASI RESEP: ${ctx.note}`); return; }
+      if (ctx.branch === 'child' && !(ctx.weight > 0)) { toast('KOMBINASI RESEP: untuk pasien ≤17 tahun, masukkan BB pasien terlebih dahulu.'); return; }
+      const drugs = DRUG_OPTIONS[ctx.branch].filter((o) => spPkg.selected.has(o.key));
+      const actions = [...menu.querySelectorAll('input[name="sp-package-action"]:checked')].map((el) => el.value).filter(Boolean);
+      if (!drugs.length && !actions.length) { toast('KOMBINASI RESEP: pilih minimal satu obat atau satu tindakan.'); return; }
 
-      if (!adultByAge && (!Number.isFinite(weight) || weight <= 0)) {
-        toast('KOMBINASI RESEP: untuk pasien ≤17 tahun, masukkan BB pasien terlebih dahulu.');
-        return;
-      }
-      if (!adultByAge && weight === 40) {
-        toast('KOMBINASI RESEP: BB 40 kg belum ditentukan masuk Dewasa atau Anak.');
-        return;
-      }
-      if (!complaints.length && !actions.length) {
-        toast('KOMBINASI RESEP: pilih minimal satu keluhan atau satu tindakan.');
-        return;
-      }
+      const regularItems = [];
+      const racikanJobs = [];
+      const problems = [];
+      drugs.forEach((opt) => {
+        const res = spResolveDrugOption(opt, ctx);
+        if (res.error) { problems.push(`${opt.label}: ${res.error}`); return; }
+        regularItems.push(...res.items);
+        racikanJobs.push(...res.racikan);
+      });
+      if (problems.length && !window.confirm(`Obat berikut tidak bisa dimasukkan:\n\n${problems.map((p) => '• ' + p).join('\n')}\n\nLanjutkan tanpa obat tersebut?`)) return;
 
-      const branch = adultByAge ? 'Dewasa' : (weight > 40 ? 'Dewasa' : 'Anak');
-      const ageInfo = ageDisplay ? ` | Umur ${ageDisplay}` : '';
-
-      // Deduplikasi global selama satu paket. Mulai dari obat yang sudah
-      // tampil pada draft agar preview dan eksekusi menggunakan dasar yang sama.
+      const branchName = ctx.branch === 'adult' ? 'Dewasa' : 'Anak';
       const seenSet = getExistingRecipeDrugSet();
-
-      // PRIORITAS 3: tampilkan preview final sebelum ada input ke Resep Online.
-      // User dapat membatalkan tanpa mengubah draft.
-      try {
-        const preview = await buildPackagePreview({
-          complaints, actions, branch, weight, ageDisplay, ageYears, ageMonths: getPatientAgeMonths(), seenSet
-        });
-
-        const escapeHtml = (value) => String(value ?? '')
-          .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-          .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-        const lines = preview.text.split('\n');
-        let mode='';
-        const medicineLines=[]; const actionLines=[]; const racikanLines=[];
-        for (const line of lines) {
-          if (line === 'TINDAKAN:') { mode='action'; continue; }
-          if (line.startsWith('KELUHAN:')) { mode='complaint'; continue; }
-          if (line.startsWith('OBAT NON-RACIKAN YANG AKAN DITAMBAHKAN:')) { mode='medicine'; continue; }
-          if (line.startsWith('RACIKAN YANG AKAN DIPROSES:')) { mode='racikan'; continue; }
-          if (line.startsWith('DILEWATI KARENA SUDAH ADA/TERINPUT:') || line.startsWith('⚠ BAGIAN YANG TIDAK BISA DIPREVIEW:')) { mode=''; continue; }
-          if (!line.trim()) continue;
-          if (mode==='medicine' && /^• /.test(line)) medicineLines.push(line.slice(2));
-          else if (mode==='action' && /^• /.test(line)) actionLines.push(line.slice(2));
-        }
-        if (Array.isArray(preview.racikanEntries)) {
-          preview.racikanEntries.forEach((r) => {
-            const g=r.group||{};
-            const parts=[g.namaRacikan||r.tpl?.name||r.label, g.jumlahRacikan?`${g.jumlahRacikan} puyer`:'', g.dosis||'', g.frekuensi||''].filter(Boolean);
-            const bahan=(g.items||[]).map(it=>`${it.obat||''} × ${it.jumlahPerObat||it.jumlah||1}`).join(' + ');
-            if (bahan) parts.push(`Bahan: ${bahan}`);
-            racikanLines.push(parts.join(' • '));
-          });
-        }
-
-        const overlay=document.createElement('div');
-        overlay.className='sp-preview-overlay-compact';
-        overlay.innerHTML=`
-          <div class="sp-preview-card-compact">
-            <div style="font-size:15px;font-weight:800;">👁 PREVIEW KOMBINASI RESEP</div>
-            <div class="sp-preview-meta-compact">${escapeHtml(branch)}${ageDisplay?` • Umur ${escapeHtml(ageDisplay)}`:''}${!adultByAge&&Number.isFinite(weight)?` • BB ${escapeHtml(weight)} kg`:''}</div>
-            <div class="sp-preview-grid-compact">
-              <div class="sp-preview-box-compact"><div class="sp-preview-head-compact">KELUHAN</div><div class="sp-preview-list-compact">${complaints.map((k,i)=>`<div class="sp-preview-item-compact">${i+1}. ${escapeHtml(COMPLAINT_RECIPE_MAP[k]?.label||k)}</div>`).join('')||'<div class="sp-preview-item-compact">Tidak ada</div>'}</div></div>
-              <div class="sp-preview-box-compact"><div class="sp-preview-head-compact">TINDAKAN</div><div class="sp-preview-list-compact">${actionLines.map(x=>`<div class="sp-preview-item-compact">• ${escapeHtml(x)}</div>`).join('')||'<div class="sp-preview-item-compact">Tidak ada</div>'}</div></div>
-              <div class="sp-preview-box-compact"><div class="sp-preview-head-compact">OBAT NON-RACIKAN</div><div class="sp-preview-list-compact">${medicineLines.map(x=>`<div class="sp-preview-item-compact">• ${escapeHtml(x)}</div>`).join('')||'<div class="sp-preview-item-compact">Tidak ada</div>'}</div></div>
-              <div class="sp-preview-box-compact"><div class="sp-preview-head-compact">RACIKAN</div><div class="sp-preview-list-compact">${racikanLines.map(x=>`<div class="sp-preview-item-compact">• ${escapeHtml(x)}</div>`).join('')||'<div class="sp-preview-item-compact">Tidak ada</div>'}</div></div>
-            </div>
-            ${preview.errors.length?`<div class="sp-preview-warning-compact">⚠ ${preview.errors.length} bagian perlu diperiksa.</div>`:''}
-            <div style="font-size:10px;color:#666;margin-top:6px;">Belum ada input ke Resep Online. Periksa kembali sebelum melanjutkan.</div>
-            <div class="sp-preview-actions-compact"><button type="button" data-preview-cancel="1">Batal</button><button type="button" class="sp-primary" data-preview-continue="1">✓ Lanjutkan Input</button></div>
-          </div>`;
-        // Sembunyikan sementara modal KOMBINASI RESEP saat preview dibuka.
-        // Ini mencegah stacking-context/portal CSS Smartplus menempatkan modal keluhan
-        // di atas preview pada Chrome maupun Firefox. Modal dikembalikan setelah preview selesai.
-        const previousMenuVisibility = menu.style.visibility;
-        menu.style.visibility = 'hidden';
-        document.body.appendChild(overlay);
-
-        await new Promise((resolve)=>{
-          overlay.querySelector('[data-preview-cancel]').addEventListener('click',()=>{ overlay.remove(); menu.style.visibility = previousMenuVisibility; resolve(false); });
-          overlay.querySelector('[data-preview-continue]').addEventListener('click',()=>{ overlay.remove(); menu.style.visibility = previousMenuVisibility; resolve(true); });
-        }).then(async proceed=>{
-          if (!proceed) throw new Error('__PREVIEW_CANCELLED__');
-          if (preview.errors.length) {
-            const ok=window.confirm(`Preview menemukan ${preview.errors.length} bagian yang belum dapat dipastikan.\n\n${preview.errors.map(e=>'• '+e).join('\n')}\n\nTetap lanjutkan?`);
-            if (!ok) throw new Error('__PREVIEW_CANCELLED__');
-          }
-        });
-      } catch (previewErr) {
-        try { menu.style.visibility = ''; } catch (_) {}
-        if (previewErr?.message === '__PREVIEW_CANCELLED__') {
-          recipeStatus('KOMBINASI RESEP dibatalkan setelah preview.');
-          return;
-        }
-        console.error('[KOMBINASI RESEP PREVIEW]', previewErr);
-        const ok = window.confirm(`Preview gagal dibuat sempurna: ${previewErr.message || previewErr}\n\nTetap lanjutkan proses?`);
-        if (!ok) return;
-      }
-
       closeMenu();
       recipeStopRequested = false;
-      recipeStatus(`KOMBINASI RESEP ${branch}${adultByAge ? ' • Umur ' + ageDisplay : ' • BB ' + weight + ' kg' + ageInfo}`);
+      recipeStatus(`KOMBINASI RESEP ${branchName}${ctx.adultByAge ? ' • Umur ' + ctx.ageDisplay : ' • BB ' + ctx.weight + ' kg'}`);
 
       const errors = [];
       let actionDone = 0;
-      let complaintDone = 0;
-      let skipped = 0;
-
-      // 1) TINDAKAN DAHULU. Setiap tindakan diselesaikan dan langsung
-      // disimpan sebelum lanjut ke tindakan berikutnya.
+      // 1) TINDAKAN DAHULU: tiap tindakan diselesaikan lalu disimpan (#butt_simpan_resep, izin dokter v3.3.0).
       for (let actionIndex = 0; actionIndex < actions.length; actionIndex++) {
         if (isRecipeStopRequested()) break;
         const actionKey = actions[actionIndex];
-        const before = new Set(seenSet);
         updateRecipeProgress(`KOMBINASI RESEP: tindakan ${actionIndex + 1}/${actions.length}`, actionIndex, actions.length, MASTER_RECIPE_TEMPLATES.TINDAKAN?.children?.[actionKey]?.name || actionKey);
         try {
           await fillActionRecipe(actionKey, { autoSave: true, seenSet, internalPackage: true });
           actionDone++;
-          skipped += [...seenSet].filter((x) => !before.has(x)).length === 0 ? 0 : 0;
         } catch (err) {
           console.error('[KOMBINASI RESEP] tindakan', actionKey, err);
           errors.push(`Tindakan ${actionKey}: ${err.message || err}`);
@@ -6764,157 +6993,145 @@
         await recipeSleep(500);
       }
 
-      // 2) Setelah seluruh tindakan selesai, masukkan SEMUA kombinasi keluhan
-      // sebagai satu rangkaian obat non-racikan yang sudah dideduplikasi.
-      // Bagian keluhan TIDAK menekan Simpan.
-      if (complaints.length) {
+      // 2) OBAT terpilih sebagai draft (tanpa Simpan).
+      let res = { success: 0, skipped: 0, errors: [] };
+      if (!isRecipeStopRequested() && (regularItems.length || racikanJobs.length)) {
         try {
-          const result = await runCombinedComplaintRecipes(complaints, weight, { seenSet, age: ageYears, ageYears, ageDisplay, ageMonths: getPatientAgeMonths(), forceAdult: adultByAge, internalPackage: true });
-          complaintDone = result.details.length;
+          res = await runRecipePlan(regularItems, racikanJobs, {
+            seenSet, age: ctx.ageYears, ageYears: ctx.ageYears, ageDisplay: ctx.ageDisplay, ageMonths: ctx.ageMonths,
+            forceAdult: ctx.branch === 'adult', internalPackage: true
+          });
         } catch (err) {
-          console.error('[KOMBINASI RESEP] kombinasi keluhan', err);
-          errors.push(`Kombinasi keluhan: ${err.message || err}`);
+          console.error('[KOMBINASI RESEP] obat', err);
+          errors.push(`Obat: ${err.message || err}`);
         }
       }
+      errors.push(...res.errors, ...problems);
 
-      if (isRecipeStopRequested()) {
-        clearRecipeProgress(`⛔ KOMBINASI RESEP dihentikan. ${actionDone} tindakan disimpan + ${complaintDone} keluhan diproses. Review draft saat ini.`);
-      } else if (errors.length) {
-        clearRecipeProgress(`KOMBINASI RESEP selesai sebagian: ${actionDone} tindakan disimpan + ${complaintDone} keluhan diproses. Cek ${errors.length} bagian.`);
-      } else {
-        clearRecipeProgress(`KOMBINASI RESEP selesai: ${actionDone} tindakan sudah disimpan, lalu ${complaintDone} kombinasi keluhan ditambahkan sebagai draft. Review lalu Simpan manual.`);
-      }
-
-      console.group('[KOMBINASI RESEP v2.90]');
-      console.log('BB:', weight);
-      console.log('Umur:', ageDisplay);
-      console.log('Cabang:', branch);
-      console.log('Keluhan:', complaints);
-      console.log('Tindakan:', actions);
-      console.log('Obat yang sudah terdeteksi/ditambah:', [...seenSet]);
-      console.log('Tindakan selesai:', actionDone);
-      console.log('Keluhan selesai:', complaintDone);
-      console.log('Gagal:', errors);
-      console.groupEnd();
+      const done = `${actionDone} tindakan disimpan, ${res.success} obat + ${racikanJobs.length} racikan ke draft, ${res.skipped} duplikat dilewati`;
+      if (isRecipeStopRequested()) clearRecipeProgress(`⛔ KOMBINASI RESEP dihentikan. ${done}. Review draft saat ini.`);
+      else if (errors.length) clearRecipeProgress(`KOMBINASI RESEP selesai sebagian: ${done}. Cek ${errors.length} bagian (lihat console).`);
+      else clearRecipeProgress(`KOMBINASI RESEP selesai: ${done}. Review lalu Simpan manual.`);
+      console.log('[KOMBINASI RESEP v3.37]', { ctx, obat: drugs.map((o) => o.key), tindakan: actions, regularItems, racikanJobs, errors });
       recipeStopRequested = false;
     }
 
     function renderPackageRecipeMenu() {
       menu.classList.add("sp-package-modal");
-      const ageDisplay = getPatientAgeDisplay();
-      const complaintEntries = Object.entries(COMPLAINT_RECIPE_MAP);
+      const ageDisplay = spAgeText();
       const actionEntries = Object.entries(MASTER_RECIPE_TEMPLATES.TINDAKAN?.children || {});
+      spPkg = { selected: new Set(), touched: false, hits: {} };
 
       menu.innerHTML = `
-        <div class="sp-title">📦 KOMBINASI RESEP + TINDAKAN</div>
-        <div class="sp-note">Semua pilihan di sini membaca MASTER TEMPLATE RESEP yang sama dengan MASTER TEMPLATE RESEP. Satu pasien dapat mengalami beberapa keluhan. Semua paket yang dipilih akan diproses berurutan dan ditambahkan ke draft.</div>
+        <div class="sp-title">📦 KOMBINASI RESEP</div>
 
-        <div class="sp-section-title">1. UMUR PASIEN (OTOMATIS DARI IDENTITAS)</div>
-        <div class="sp-age-box">${ageDisplay ? `Umur dari identitas: <b>${ageDisplay}</b>` : 'Umur dari identitas belum terbaca'}</div>
-
-        <div class="sp-section-title">ANAMNESIS (ASSESMENT GADAR TERAKHIR)</div>
-        <div id="sp-package-anamnesis" class="sp-age-box" style="white-space:pre-wrap!important;text-align:left!important;max-height:180px;overflow:auto">⏳ Membaca Assesment GADAR...</div>
-
-        <div class="sp-package-form">
-          <div id="sp-package-weight-section" class="sp-section-title">2. BERAT BADAN PASIEN</div>
-          <div id="sp-package-weight-card" class="sp-package-input-card">
+        <div class="sp-pkg-top">
+          <div class="sp-pkg-anam">
+            <div class="sp-section-title">ANAMNESIS (ASSESMENT GADAR TERAKHIR)</div>
+            <div id="sp-package-anamnesis" class="sp-age-box" style="white-space:pre-wrap!important;text-align:left!important;max-height:130px;overflow:auto">⏳ Membaca Assesment GADAR...</div>
+          </div>
+          <div class="sp-pkg-patient">
+            <div class="sp-section-title">PASIEN</div>
+            <div class="sp-age-box">${ageDisplay ? `Umur <b>${spEsc(ageDisplay)}</b>` : 'Umur belum terbaca'}</div>
             <div id="sp-package-weight-row" class="sp-field-row">
               <label>BB (kg)</label>
-              <input id="sp-package-weight" type="text" inputmode="decimal" autocomplete="off" placeholder="Masukkan BB (kg)" title="Ketik berat badan secara manual, contoh: 10 atau 10.5">
+              <input id="sp-package-weight" type="text" inputmode="decimal" autocomplete="off" placeholder="BB anak">
             </div>
-            <div id="sp-package-weight-help" class="sp-help">BB &gt;40 kg = Dewasa • BB &lt;40 kg = Anak • BB 40 kg perlu dipilih manual.</div>
-            <div id="sp-package-adult-note" class="sp-age-box" style="display:none">Umur &gt;17 tahun → otomatis menggunakan resep dewasa. BB tidak diperlukan.</div>
+            <div id="sp-package-weight-help" class="sp-help">BB &gt;40 kg = Dewasa • &lt;40 kg = Anak.</div>
           </div>
         </div>
 
-        <div class="sp-section-title">3. PILIH SATU ATAU BEBERAPA KELUHAN</div>
-        <div class="sp-check-grid">
-          ${complaintEntries.map(([key, item]) => `
-            <label class="sp-check-card">
-              <input type="checkbox" name="sp-package-complaint" value="${key}">
-              <span>${item.label}</span>
-            </label>
-          `).join('')}
+        <div class="sp-drug-head">
+          <div class="sp-section-title" style="margin:0!important">OBAT • <span id="sp-drug-branch"></span></div>
+          <div class="sp-drug-tools">
+            <button type="button" data-drug-suggest="1" title="Centang sesuai saran Assesment GADAR">💡 Saran</button>
+            <button type="button" data-drug-clear="1" title="Hapus semua centang obat">✕ Kosongkan</button>
+          </div>
         </div>
+        <div id="sp-drug-suggest-note" class="sp-help" style="margin-top:4px!important">⏳ Mencari saran obat dari keluhan di Assesment GADAR...</div>
+        <div id="sp-drug-table-box"></div>
 
-        <div class="sp-section-title">4. PILIH TINDAKAN (OPSIONAL, BISA LEBIH DARI SATU)</div>
+        <div class="sp-section-title">TINDAKAN (OPSIONAL — langsung disimpan per tindakan)</div>
         <div class="sp-check-grid">
           ${actionEntries.map(([key, item]) => `
             <label class="sp-check-card sp-action-card">
               <input type="checkbox" name="sp-package-action" value="${key}">
-              <span>${item.name}</span>
+              <span>${spEsc(item.name)}</span>
             </label>
           `).join('')}
         </div>
 
-        <div id="sp-package-summary" class="sp-summary">Belum ada keluhan atau tindakan dipilih</div>
+        <div id="sp-package-summary" class="sp-summary">Belum ada obat atau tindakan dipilih</div>
 
         <div class="sp-package-buttons">
-          <button type="button" class="sp-primary" data-package-submit="1">▶ INPUT KOMBINASI RESEP</button>
+          <button type="button" class="sp-primary" data-package-submit="1">✓ ACC – MASUKKAN KE RESEP</button>
           <button type="button" class="sp-back" data-back="main">← Kembali</button>
         </div>
-
-        <div class="sp-note">
-          Data umur hanya dibaca dari identitas pasien pada halaman Smartplus. BB dimasukkan manual. Tindakan diproses satu per satu dan disimpan setelah masing-masing selesai. Setelah semua tindakan selesai, kombinasi obat berdasarkan keluhan ditambahkan sebagai draft tanpa Simpan akhir; dokter tetap melakukan review sebelum menyimpan.
-        </div>
+        <div class="sp-note">Dosis & jumlah mengikuti template yang sudah ada. Obat masuk sebagai draft (obat yang sudah ada di draft dilewati); review lalu Simpan manual.</div>
       `;
 
-      const updateSummary = () => {
-        const c = [...menu.querySelectorAll('input[name="sp-package-complaint"]:checked')]
-          .map((el) => COMPLAINT_RECIPE_MAP[el.value]?.label || el.value);
-        const a = [...menu.querySelectorAll('input[name="sp-package-action"]:checked')]
-          .map((el) => MASTER_RECIPE_TEMPLATES.TINDAKAN?.children?.[el.value]?.name || el.value);
-        const target = menu.querySelector('#sp-package-summary');
-        if (!target) return;
-        target.textContent = c.length || a.length
-          ? `Dipilih: ${c.length} keluhan${a.length ? ` + ${a.length} tindakan` : ''}`
-          : 'Belum ada keluhan atau tindakan dipilih';
-      };
-      menu.querySelectorAll('input[type="checkbox"]').forEach((el) => el.addEventListener('change', updateSummary));
-
-      const toggleWeightByAge = () => {
-        const age = getPatientAgeYears();
-        const adult = Number.isFinite(age) && age > 17;
-        const section = menu.querySelector('#sp-package-weight-section');
-        const row = menu.querySelector('#sp-package-weight-row');
-        const card = menu.querySelector('#sp-package-weight-card');
-        const help = menu.querySelector('#sp-package-weight-help');
-        const note = menu.querySelector('#sp-package-adult-note');
-        if (adult) {
-          if (section) section.style.display = 'none';
-          if (row) row.style.display = 'none';
-          if (card) card.style.display = '';
-          if (help) help.style.display = 'none';
-          if (note) note.style.display = '';
-        } else {
-          if (section) section.style.display = '';
-          if (row) row.style.display = '';
-          if (card) card.style.display = '';
-          if (help) help.style.display = '';
-          if (note) note.style.display = 'none';
-        }
-      };
-      toggleWeightByAge();
-
-      // v3.25.0 (instruksi dokter): tampilkan anamnesis (keluhan utama + riwayat penyakit sekarang, alergi bila ada)
-      // supaya obat bisa dipilih tanpa membuka Assesment GADAR. Hanya dibaca (GET soap_gadar_edit); bila form GADAR
-      // sedang terbuka, isi form yang dipakai (revisi yang belum disimpan ikut).
-      spLoadAnamnesisInto(menu.querySelector('#sp-package-anamnesis'));
-
-      // v3.8.0: isi BB dari Assesment GADAR terakhir (dokter tetap bisa mengubah).
-      // Pasien dewasa (>17 th) tidak memakai BB -> tidak perlu mengambil BB.
+      const weightInput = menu.querySelector('#sp-package-weight');
       const ageForWeight = getPatientAgeYears();
-      if (!(Number.isFinite(ageForWeight) && ageForWeight > 17)) getLatestGadarWeight().then((w) => {
-        const input = menu.querySelector('#sp-package-weight');
+      const adult = Number.isFinite(ageForWeight) && ageForWeight > 17;
+      if (adult) {
+        menu.querySelector('#sp-package-weight-row').style.display = 'none';
+        menu.querySelector('#sp-package-weight-help').textContent = 'Umur >17 tahun → resep dewasa, BB tidak diperlukan.';
+      }
+      weightInput.addEventListener('input', () => { spPkgApplySuggestions(); spPkgRenderDrugs(); });
+
+      // Klik di mana saja pada baris obat = centang / hapus centang.
+      menu.querySelector('#sp-drug-table-box').addEventListener('click', (e) => {
+        const row = e.target.closest('tr[data-drug]');
+        if (!row) return;
+        e.preventDefault();
+        spPkg.touched = true;
+        const k = row.dataset.drug;
+        if (spPkg.selected.has(k)) spPkg.selected.delete(k); else spPkg.selected.add(k);
+        spPkgRenderDrugs();
+      });
+      menu.querySelectorAll('input[name="sp-package-action"]').forEach((el) => el.addEventListener('change', spPkgSummary));
+      menu.querySelector('[data-drug-suggest]').addEventListener('click', () => {
+        spPkg.touched = false;
+        spPkgApplySuggestions();
+        spPkgRenderDrugs();
+      });
+      menu.querySelector('[data-drug-clear]').addEventListener('click', () => {
+        spPkg.touched = true;
+        spPkg.selected.clear();
+        spPkgRenderDrugs();
+      });
+      spPkgRenderDrugs();
+
+      const showSuggestNote = (text) => {
+        const note = menu.querySelector('#sp-drug-suggest-note');
+        if (!note || !note.isConnected) return;
+        const words = Object.values(spPkg.hits);
+        note.textContent = text != null ? text : words.length
+          ? `💡 Keluhan terbaca: ${[...new Set(words)].join(', ')} → obat yang sesuai sudah dicentang. Tambah/kurangi lalu ACC.`
+          : 'Tidak ada keluhan yang cocok dengan daftar obat — pilih obat manual.';
+      };
+
+      // Anamnesis + saran. Bila form GADAR sedang terbuka, isi form yang dipakai (revisi ikut).
+      const anamBox = menu.querySelector('#sp-package-anamnesis');
+      spLoadAnamnesisInto(anamBox).then((text) => {
+        if (!anamBox.isConnected || !spPkg) return;
+        if (!text) { showSuggestNote('Assesment GADAR belum ada — pilih obat manual.'); return; }
+        spPkg.hits = spSuggestComplaints(text);
+        spPkgApplySuggestions();
+        spPkgRenderDrugs();
+        showSuggestNote();
+      }).catch(() => showSuggestNote('Saran tidak tersedia — pilih obat manual.'));
+
+      // v3.8.0: BB anak dari kolom berat Assesment GADAR terakhir (dokter tetap bisa mengubah).
+      if (!adult) getLatestGadarWeight().then((w) => {
         const help = menu.querySelector('#sp-package-weight-help');
-        // v3.8.3: menu dipasang di <html> (bukan <body>), jadi pakai isConnected.
-        if (!input || !input.isConnected) return;
-        if (w && !String(input.value || '').trim()) {
-          input.value = String(w);
-          try { input.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) {}
-          if (help) help.textContent = `BB ${w} kg diambil dari Assesment GADAR terakhir — cek/ubah bila perlu. ` + help.textContent;
+        if (!weightInput.isConnected) return;
+        if (w && !String(weightInput.value || '').trim()) {
+          weightInput.value = String(w);
+          weightInput.dispatchEvent(new Event('input', { bubbles: true }));
+          if (help) help.textContent = `BB ${w} kg dari Assesment GADAR — cek/ubah bila perlu. BB >40 kg = Dewasa.`;
         } else if (!w && help) {
-          help.textContent = 'BB tidak ditemukan di Assesment GADAR, isi manual. ' + help.textContent;
+          help.textContent = 'BB tidak ada di Assesment GADAR, isi manual. BB >40 kg = Dewasa.';
         }
       });
     }
@@ -7363,11 +7580,76 @@
       });
     }
 
+    // v3.37.0: CPPT VISIT (instruksi dokter 5 Okt 2026). Keluhan = CPPT dokter terakhir; pasien baru (belum ada CPPT dokter)
+    // -> keluhan saat masuk IGD (GADAR kunjungan, dari riwayat kunjungan). Vital & pemeriksaan fisik mengikuti CPPT sebelumnya
+    // (dokter/perawat); yang tidak ada -> template normal sesuai usia. Instruksi "Terapi dpjp lanjut". TIDAK disimpan.
+    async function runCpptVisit() {
+      if (spCpptBusy) { toast("AUTO CPPT sedang berjalan, tunggu sampai selesai."); return; }
+      spCpptBusy = true;
+      try {
+        closeMenu();
+        toast("CPPT VISIT: membaca CPPT sebelumnya...");
+        const plan = await spBuildCpptVisitPlan();
+        const root = await openCpptDoctorForm();
+        if (!root) return;
+        const ageInfo = getCpptAgeInfo();
+        const normal = getNormalCpptVitals(ageInfo);
+        const normalV = {
+          td: normal.td, nadi: String(normal.pulse), suhu: normal.temp, nafas: String(normal.rr), gcs: "15",
+          kesadaran: "Compos Mentis", keadaan_umum: "Tampak sakit sedang", reaksi_cahaya: "+/+"
+        };
+        const v = {};
+        const fromNormal = [];
+        Object.keys(normalV).forEach((k) => {
+          v[k] = plan.vitals[k] || normalV[k];
+          if (!plan.vitals[k] && normalV[k]) fromNormal.push(k);
+        });
+        const objective = plan.objective || CPPT_NORMAL_TEMPLATE.objective;
+        const keluhan = plan.keluhan || "";
+        const instruksi = CPPT_NORMAL_TEMPLATE.instruksi;
+        const fail = [];
+        const set = (id, labels, val, name) => { if (val && !setCpptField(root, id, labels, val)) fail.push(name); };
+        set("keluhan_utama", ["Keluhan Utama", "Keluhan"], keluhan, "Keluhan");
+        set("objective", ["Objective"], objective, "Objective");
+        set("kesadaran", ["Kesadaran"], v.kesadaran, "Kesadaran");
+        set("keadaan_umum", ["Keadaan Umum"], v.keadaan_umum, "Keadaan Umum");
+        set("td", ["Tekanan Darah", "TD"], v.td, "Tekanan Darah");
+        set("nadi", ["Nadi"], v.nadi, "Nadi");
+        set("suhu", ["Suhu"], v.suhu, "Suhu");
+        set("gcs", ["GCS"], v.gcs, "GCS");
+        set("nafas", ["Pernafasan", "Pernapasan", "RR"], v.nafas, "Pernafasan");
+        set("reaksi_cahaya", ["Reaksi Cahaya", "Refleks Cahaya"], v.reaksi_cahaya, "Reaksi Cahaya");
+        set("p_instruksi", ["Instruksi"], instruksi, "Instruksi");
+        setTimeout(() => {
+          if (keluhan) setCpptField(root, "keluhan_utama", ["Keluhan Utama", "Keluhan"], keluhan);
+          setCpptField(root, "objective", ["Objective"], objective);
+          setCpptField(root, "p_instruksi", ["Instruksi"], instruksi);
+        }, 300);
+        const parts = [
+          keluhan ? `Keluhan dari ${plan.keluhanFrom}` : "⚠️ Keluhan tidak ditemukan (isi manual)",
+          plan.objective ? `Pemfis dari ${plan.objectiveFrom}` : "Pemfis template normal",
+          fromNormal.length ? `Vital normal (${ageInfo.label}): ${fromNormal.join(", ")}` : "Vital dari CPPT sebelumnya"
+        ];
+        if (fail.length) parts.push(`Cek manual: ${fail.join(", ")}`);
+        toast(`CPPT VISIT terisi. ${parts.join(" • ")}. TD ${v.td || "-"}, N ${v.nadi}, RR ${v.nafas}, S ${v.suhu}. Review lalu simpan manual.`);
+        console.log("[CPPT VISIT]", { plan, isian: { keluhan, objective, ...v, instruksi }, fromNormal, fail });
+      } catch (err) {
+        console.error("[CPPT VISIT] error:", err);
+        toast(`CPPT VISIT gagal: ${err && err.message ? err.message : err}`);
+      } finally {
+        spCpptBusy = false;
+      }
+    }
+
     function renderCpptMenu() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
         <div class="sp-title">🛏️ RAWAT INAP</div>
         <div class="sp-note">Pilih fitur yang ingin dijalankan:</div>
+
+        <button type="button" data-cppt-visit="1">
+          🩺 CPPT VISIT
+        </button>
 
         <button type="button" data-cppt-normal="1">
           📋 CPPT NORMAL
@@ -7382,6 +7664,8 @@
         </button>
 
         <div class="sp-note">
+          CPPT VISIT: keluhan dari CPPT dokter terakhir (pasien baru: keluhan masuk IGD); vital &amp; pemeriksaan fisik
+          mengikuti CPPT sebelumnya (dokter/perawat), bila tidak ada memakai template normal; instruksi "Terapi dpjp lanjut".
           Keluhan CPPT Normal dibiarkan kosong. CPPT Rencana Pulang diisi "Keluhan perbaikan".
           Objective, tanda vital, dan Keadaan Umum mengikuti template normal.
           Nadi/RR menyesuaikan usia pasien; TD hanya diisi untuk dewasa (≥ 18 thn). Review lalu simpan manual.
@@ -7409,7 +7693,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.36.0</div>
+        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.37.0</div>
         <div class="sp-note">Pilih modul yang ingin digunakan:</div>
 
         <button type="button" data-disease-menu="1">
@@ -7450,7 +7734,7 @@
 
         <div class="sp-note">
           ASGADAR PENYAKIT berisi seluruh template penyakit yang sudah tersedia.
-          KOMBINASI RESEP berisi resep per keluhan (dewasa/anak, BB anak dari GADAR) dan resep tindakan.
+          KOMBINASI RESEP berisi tabel obat (saran otomatis dari keluhan Assesment GADAR, BB anak dari GADAR) dan resep tindakan.
           Resep keluhan masuk sebagai draft; review lalu Simpan manual.
         </div>
       `;
@@ -7896,6 +8180,11 @@
       if (target.dataset?.paketKonsul === "1") {
         closeMenu();
         await runPaketKonsul();
+        return;
+      }
+
+      if (target.dataset?.cpptVisit === "1") {
+        await runCpptVisit();
         return;
       }
 
