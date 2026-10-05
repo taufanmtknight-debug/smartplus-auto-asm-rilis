@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.52.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.53.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.52.0
-// @description  v3.52.0: audit stabilitas — sesi login Smartplus yang habis kini dilaporkan jelas (dulu dibaca sebagai data kosong); REVIEW GADAR tidak bisa tersimpan ganda saat kotak lain dicentang/diedit selama menyimpan dan tidak berjalan bersamaan dengan tugas lain; AUTO ASGADAR membuka tab & tombol TAMBAH milik Assesment GADAR (bukan TAMBAH Lab/Rad); petunjuk izinkan pop-up bila film diblokir. v3.51.0: PAKET KONSUL RANAP lebih lengkap — bagian RIWAYAT MASUK dari IGD (keluhan, RPS, RPD, riwayat pengobatan, alergi, TTV & pemeriksaan fisik saat masuk, penunjang & diagnosis IGD, tatalaksana IGD, obat e-resep IGD; pasien poli dari ASM AWAL), lalu S/O kondisi saat ini dari CPPT; lab awal masuk ikut sebagai pembanding; obat dari e-resep CPPT dokter (cadangan riwayat e-resep R.Inap, tanpa resep anestesi & alat); jam tanpa detik. v3.50.0: RAWAT INAP + PAKET KONSUL RANAP — teks konsul lengkap (identitas, ruang, DPJP, hari rawat; keluhan saat ini & saat masuk, RPS, RPD, alergi; tanda vital & pemeriksaan fisik terakhir; lab selama dirawat (nilai di luar normal) & kesan radiologi; diagnosis; terapi DPJP & obat e-resep 48 jam) bisa diedit lalu disalin, plus gambar lab/film/ekspertise; bisa dari halaman pasien atau pilih dari daftar; hanya membaca. v3.49.3: AUTO/KOMBINASI/MASTER RESEP memastikan obat benar-benar masuk draft (tidak lagi dianggap berhasil bila draft tidak berubah). v3.49.2: singkatan 'bapil' dibaca sebagai batuk pilek (saran obat KOMBINASI & keluhan CPPT VISIT). v3.49.1: perbaikan rilis (contoh No. RM di komentar kode dihapus sehingga pemeriksaan keamanan rilis lolos). v3.49.0: RESEP PULANG bisa dimulai dari daftar pasien e-Ranap (cari & pilih pasien, halaman pasien dibuka lalu input dilanjutkan otomatis); nama pasien tampil di panel; tombol Masukkan saja (biru) & Simpan (merah) sama besar. v3.48.0: RESEP PULANG — cari SEMUA obat oral di master Smartplus, klik langsung masuk preview yang bisa diedit; dosis bawaan = dosis tersering dari 3.293 riwayat resep; anak = dosis per kg BB (sirup/drop); tombol Simpan resep pulang langsung (dicek di riwayat resep) atau Masukkan saja. v3.47.0: RAWAT INAP + RESEP PULANG — pilih obat dari database obat pulang (73 obat dari resep poli spesialis, 💡 obat rutin pasien), preview bisa diedit (jumlah otomatis 7 hari, bisa diubah), lalu masuk ke e-resep form CPPT + centang resep pulang hari ini/besok; Simpan resep manual. v3.46.0: audit stabilitas — script tidak berjalan ganda, semua permintaan ke Smartplus diberi batas waktu (tidak macet), satu tugas otomatis pada satu waktu (cegah order/CPPT dobel), AUTO LAB menunggu daftar pemeriksaan dan tidak Save bila gagal, MULTIPLE cek dobel sebelum simpan ulang, KOMBINASI lebih cepat. v3.45.0: RAWAT INAP + MULTIPLE VISIT & MULTIPLE PULANG — cari & pilih banyak pasien dirawat, CPPT sementara tiap pasien ditampilkan dan bisa diedit, lalu 'Save multiple' menyimpan semuanya (dicek ulang di daftar CPPT). v3.44.0: RAWAT INAP tanpa tombol CPPT NORMAL; CPPT VISIT — keluhan dibuat singkat (kata keluhan + status, bukan salinan), pemeriksaan fisik = template normal dengan sedikit bagian positif dari pemeriksaan dokter sebelumnya / diagnosis. v3.43.0: KOMBINASI RESEP + Amlodipine 10 mg, Captopril 12,5 mg; tindakan baru Suntik Asam Traneksamat 500 mg iv dan Infus (RL, infus set, tegaderm, vasofix; ket. igd). v3.42.0: KOMBINASI RESEP tanpa kotak cari obat, tindakan selalu terbuka, warna kalem (tiap golongan kartu berwarna lembut dengan garis kiri, latar panel lavender) agar batas bagian jelas. v3.41.0: tampilan KOMBINASI RESEP lebih ringkas & jelas — obat berupa tombol per golongan, kotak cari obat, anamnesis ringkas, tindakan dilipat, daftar terpilih (hapus dengan ×) dan tombol ACC selalu terlihat di bawah. v3.40.0: KOMBINASI RESEP — jumlah tablet dewasa maks 6 (antibiotik 3 hari, obat DM/hipertensi 5 hari); kamus keluhan diperluas sehingga lebih banyak obat tercentang otomatis (alergi, vertigo, GERD, ulkus, ISK/tifoid, infeksi kulit, asma, LBP/nyeri otot, hipertensi, DM, perdarahan, muntah hebat, batuk kering, dll). v3.39.0: KOMBINASI RESEP + obat oral pulang IGD (dewasa: Paracetamol 500, Ibuprofen, Na diklofenak, Omeprazole, Sukralfat, Antasida suspensi, Ondansetron, Lodia, Cetirizine, Loratadine, Methylprednisolon, OBH, Cefadroxil, Cefixime, Betahistine, Flunarizine, Antimo, Amlodipine, Captopril, Metformin, Glimepiride, Asam traneksamat; anak: sirup Ibuprofen, Cetirizine 0,2 mg/kg, Ambroxol, Cefadroxil, Cefixime per BB, Interzinc, Lacto-B 3 sachet); jumlah R/ ditampilkan, penolakan Smartplus 'Jumlah R Sudah Melebihi Batas' dilaporkan gagal. v3.38.0: CPPT VISIT pemeriksaan fisik selalu template CPPT Normal (diedit dokter bila perlu); KOMBINASI RESEP tanpa kolom aturan pakai, obat dikelompokkan per golongan dalam kotak centang. v3.37.0: RAWAT INAP + CPPT VISIT (keluhan dari CPPT dokter terakhir / keluhan masuk IGD, vital & pemfis mengikuti CPPT sebelumnya atau template normal, instruksi Terapi dpjp lanjut; simpan manual); KOMBINASI RESEP memilih per NAMA OBAT dalam tabel, obat yang sesuai keluhan Assesment GADAR otomatis dicentang sebagai saran lalu ACC. v3.36.0: REVIEW GADAR — simpan lebih tahan gagal di komputer IGD (iframe di layar, cadangan simpan langsung, cek perubahan orang lain). v3.35.0: ADVIS SPESIALIS tetap tersimpan walau GADAR diubah orang lain / form tidak termuat (baca ulang GADAR terbaru, tambahan disambung di bawah, 4 percobaan termasuk simpan langsung). v3.34.0: ADVIS SPESIALIS = cari pasien lalu satu kotak berisi Rencana GADAR saat ini, tambahkan advis bebas, Simpan; tempelan chat WA dirapikan otomatis. RAWAT INAP hanya CPPT. v3.33.0: menu dirapikan — RAWAT INAP (CPPT Normal, CPPT Rencana Pulang, Paket Konsul, Advis Spesialis); label tanpa "PDF"/"dari WA"; hasil advis tanpa "via WA". v3.32.1: ADVIS — pencarian pasien lebih cepat (hasil muncul bertahap, tanpa dobel). v3.32.0: ADVIS SPESIALIS — cari & pilih pasien IGD (48 jam) dengan mengetik nama, advis disimpan ke GADAR pasien itu tanpa membuka halamannya. v3.31.0: ADVIS SPESIALIS — tempel chat advis dari WhatsApp Web, otomatis dirapikan lalu ditambahkan di paling bawah Rencana GADAR (Save manual). v3.30.1: REVIEW GADAR — catatan "Darah rutin dihapus" hanya bila memang ada. v3.30.0: REVIEW GADAR — isian otomatis di paling atas; obat suntik non-oral di luar daftar (Inj. X), nebulisasi + nama obat, lidocain/tetagam, IVFD, IV line, O2 ikut ditulis (antibiotik drip tidak). v3.29.0: REVIEW GADAR — perbaikan gagal simpan (baris baru \\r\\n), GADAR dokter lain tetap diubah, usulan bisa diedit, tindakan yang sudah tertulis ditampilkan. v3.28.1: REVIEW GADAR — "dr" (nama dokter) tidak lagi dianggap "darah rutin". v3.28.0: REVIEW GADAR 24 JAM — laporan pasien DONE dokter login (tindakan dari daftar resep tindakan + order lab/radiologi yang belum tertulis), semua dicentang, simpan massal ke Rencana & Pemeriksaan Penunjang GADAR terakhir. v3.27.0: Lab Severe tidak memesan ulang kreatinin/elektrolit/AGD yang sudah ada dalam 1 minggu lalu Save otomatis; tombol Tutup lain dihapus (pakai ✕), tombol panel dirapikan. v3.26.0: tombol kecilkan (—) & tutup (✕) di pojok kanan atas tiap kotak; AUTO PENUNJANG + Lab Severe (Kreatinin, Elektrolit, AGD; Save manual); ekspertise CT whole abdomen & echocardiography (Kesan/Kesimpulan). v3.25.0: ekspertise radiologi dianggap ada hanya bila memuat "KESAN"; KOMBINASI RESEP menampilkan anamnesis (keluhan utama, RPS, alergi) dari Assesment GADAR. v3.24.0: judul "Riwayat kontrol poli spesialis" dihapus dari Riwayat Penyakit Dahulu; ASGADAR untuk pasien belum terdaftar diisikan ke + BUAT DRAF ASSESMENT GAWAT DARURAT (daftar pasien IGD); PAKET KONSUL: film CT tidak diambil, ekspertise rontgen & CT ikut bila sudah ada. v3.23.0: tombol AUTO SOAP & AUTO SCREENSHOT dihapus dari menu (sudah tercakup PAKET KONSUL). v3.22.0: semua kotak AUTO ASM (menu, KOMBINASI RESEP, AUTO SCREENSHOT/PAKET KONSUL, salin SOAP) bisa digeser dan dikecilkan. v3.21.0: tombol 🔄 Update (SOAP disusun ulang dari GADAR + penunjang baru ditambahkan); semua AUTO kembali ke tab E-RAWAT DARURAT dulu sehingga tidak macet saat tab Riwayat/Hasil terbuka. v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.53.0
+// @description  v3.53.0: PAKET KONSUL RANAP = satu SOAP utuh — S: keluhan saat masuk IGD (KU/RPS) + keluhan saat ini dari dokter; O: tanda vital masuk IGD → saat ini dibandingkan + pemeriksaan fisik dokter; A: diagnosis DPJP; P: perjalanan terapi (terapi IGD → advis DPJP → obat ditambah/diubah/dihentikan di ruangan → kesimpulan terapi yang berjalan saat ini) + advis spesialis lain; tanpa nama penulis CPPT, tanpa penunjang di teks (cukup gambar). v3.52.0: audit stabilitas — sesi login Smartplus yang habis kini dilaporkan jelas (dulu dibaca sebagai data kosong); REVIEW GADAR tidak bisa tersimpan ganda saat kotak lain dicentang/diedit selama menyimpan dan tidak berjalan bersamaan dengan tugas lain; AUTO ASGADAR membuka tab & tombol TAMBAH milik Assesment GADAR (bukan TAMBAH Lab/Rad); petunjuk izinkan pop-up bila film diblokir. v3.51.0: PAKET KONSUL RANAP lebih lengkap — bagian RIWAYAT MASUK dari IGD (keluhan, RPS, RPD, riwayat pengobatan, alergi, TTV & pemeriksaan fisik saat masuk, penunjang & diagnosis IGD, tatalaksana IGD, obat e-resep IGD; pasien poli dari ASM AWAL), lalu S/O kondisi saat ini dari CPPT; lab awal masuk ikut sebagai pembanding; obat dari e-resep CPPT dokter (cadangan riwayat e-resep R.Inap, tanpa resep anestesi & alat); jam tanpa detik. v3.50.0: RAWAT INAP + PAKET KONSUL RANAP — teks konsul lengkap (identitas, ruang, DPJP, hari rawat; keluhan saat ini & saat masuk, RPS, RPD, alergi; tanda vital & pemeriksaan fisik terakhir; lab selama dirawat (nilai di luar normal) & kesan radiologi; diagnosis; terapi DPJP & obat e-resep 48 jam) bisa diedit lalu disalin, plus gambar lab/film/ekspertise; bisa dari halaman pasien atau pilih dari daftar; hanya membaca. v3.49.3: AUTO/KOMBINASI/MASTER RESEP memastikan obat benar-benar masuk draft (tidak lagi dianggap berhasil bila draft tidak berubah). v3.49.2: singkatan 'bapil' dibaca sebagai batuk pilek (saran obat KOMBINASI & keluhan CPPT VISIT). v3.49.1: perbaikan rilis (contoh No. RM di komentar kode dihapus sehingga pemeriksaan keamanan rilis lolos). v3.49.0: RESEP PULANG bisa dimulai dari daftar pasien e-Ranap (cari & pilih pasien, halaman pasien dibuka lalu input dilanjutkan otomatis); nama pasien tampil di panel; tombol Masukkan saja (biru) & Simpan (merah) sama besar. v3.48.0: RESEP PULANG — cari SEMUA obat oral di master Smartplus, klik langsung masuk preview yang bisa diedit; dosis bawaan = dosis tersering dari 3.293 riwayat resep; anak = dosis per kg BB (sirup/drop); tombol Simpan resep pulang langsung (dicek di riwayat resep) atau Masukkan saja. v3.47.0: RAWAT INAP + RESEP PULANG — pilih obat dari database obat pulang (73 obat dari resep poli spesialis, 💡 obat rutin pasien), preview bisa diedit (jumlah otomatis 7 hari, bisa diubah), lalu masuk ke e-resep form CPPT + centang resep pulang hari ini/besok; Simpan resep manual. v3.46.0: audit stabilitas — script tidak berjalan ganda, semua permintaan ke Smartplus diberi batas waktu (tidak macet), satu tugas otomatis pada satu waktu (cegah order/CPPT dobel), AUTO LAB menunggu daftar pemeriksaan dan tidak Save bila gagal, MULTIPLE cek dobel sebelum simpan ulang, KOMBINASI lebih cepat. v3.45.0: RAWAT INAP + MULTIPLE VISIT & MULTIPLE PULANG — cari & pilih banyak pasien dirawat, CPPT sementara tiap pasien ditampilkan dan bisa diedit, lalu 'Save multiple' menyimpan semuanya (dicek ulang di daftar CPPT). v3.44.0: RAWAT INAP tanpa tombol CPPT NORMAL; CPPT VISIT — keluhan dibuat singkat (kata keluhan + status, bukan salinan), pemeriksaan fisik = template normal dengan sedikit bagian positif dari pemeriksaan dokter sebelumnya / diagnosis. v3.43.0: KOMBINASI RESEP + Amlodipine 10 mg, Captopril 12,5 mg; tindakan baru Suntik Asam Traneksamat 500 mg iv dan Infus (RL, infus set, tegaderm, vasofix; ket. igd). v3.42.0: KOMBINASI RESEP tanpa kotak cari obat, tindakan selalu terbuka, warna kalem (tiap golongan kartu berwarna lembut dengan garis kiri, latar panel lavender) agar batas bagian jelas. v3.41.0: tampilan KOMBINASI RESEP lebih ringkas & jelas — obat berupa tombol per golongan, kotak cari obat, anamnesis ringkas, tindakan dilipat, daftar terpilih (hapus dengan ×) dan tombol ACC selalu terlihat di bawah. v3.40.0: KOMBINASI RESEP — jumlah tablet dewasa maks 6 (antibiotik 3 hari, obat DM/hipertensi 5 hari); kamus keluhan diperluas sehingga lebih banyak obat tercentang otomatis (alergi, vertigo, GERD, ulkus, ISK/tifoid, infeksi kulit, asma, LBP/nyeri otot, hipertensi, DM, perdarahan, muntah hebat, batuk kering, dll). v3.39.0: KOMBINASI RESEP + obat oral pulang IGD (dewasa: Paracetamol 500, Ibuprofen, Na diklofenak, Omeprazole, Sukralfat, Antasida suspensi, Ondansetron, Lodia, Cetirizine, Loratadine, Methylprednisolon, OBH, Cefadroxil, Cefixime, Betahistine, Flunarizine, Antimo, Amlodipine, Captopril, Metformin, Glimepiride, Asam traneksamat; anak: sirup Ibuprofen, Cetirizine 0,2 mg/kg, Ambroxol, Cefadroxil, Cefixime per BB, Interzinc, Lacto-B 3 sachet); jumlah R/ ditampilkan, penolakan Smartplus 'Jumlah R Sudah Melebihi Batas' dilaporkan gagal. v3.38.0: CPPT VISIT pemeriksaan fisik selalu template CPPT Normal (diedit dokter bila perlu); KOMBINASI RESEP tanpa kolom aturan pakai, obat dikelompokkan per golongan dalam kotak centang. v3.37.0: RAWAT INAP + CPPT VISIT (keluhan dari CPPT dokter terakhir / keluhan masuk IGD, vital & pemfis mengikuti CPPT sebelumnya atau template normal, instruksi Terapi dpjp lanjut; simpan manual); KOMBINASI RESEP memilih per NAMA OBAT dalam tabel, obat yang sesuai keluhan Assesment GADAR otomatis dicentang sebagai saran lalu ACC. v3.36.0: REVIEW GADAR — simpan lebih tahan gagal di komputer IGD (iframe di layar, cadangan simpan langsung, cek perubahan orang lain). v3.35.0: ADVIS SPESIALIS tetap tersimpan walau GADAR diubah orang lain / form tidak termuat (baca ulang GADAR terbaru, tambahan disambung di bawah, 4 percobaan termasuk simpan langsung). v3.34.0: ADVIS SPESIALIS = cari pasien lalu satu kotak berisi Rencana GADAR saat ini, tambahkan advis bebas, Simpan; tempelan chat WA dirapikan otomatis. RAWAT INAP hanya CPPT. v3.33.0: menu dirapikan — RAWAT INAP (CPPT Normal, CPPT Rencana Pulang, Paket Konsul, Advis Spesialis); label tanpa "PDF"/"dari WA"; hasil advis tanpa "via WA". v3.32.1: ADVIS — pencarian pasien lebih cepat (hasil muncul bertahap, tanpa dobel). v3.32.0: ADVIS SPESIALIS — cari & pilih pasien IGD (48 jam) dengan mengetik nama, advis disimpan ke GADAR pasien itu tanpa membuka halamannya. v3.31.0: ADVIS SPESIALIS — tempel chat advis dari WhatsApp Web, otomatis dirapikan lalu ditambahkan di paling bawah Rencana GADAR (Save manual). v3.30.1: REVIEW GADAR — catatan "Darah rutin dihapus" hanya bila memang ada. v3.30.0: REVIEW GADAR — isian otomatis di paling atas; obat suntik non-oral di luar daftar (Inj. X), nebulisasi + nama obat, lidocain/tetagam, IVFD, IV line, O2 ikut ditulis (antibiotik drip tidak). v3.29.0: REVIEW GADAR — perbaikan gagal simpan (baris baru \\r\\n), GADAR dokter lain tetap diubah, usulan bisa diedit, tindakan yang sudah tertulis ditampilkan. v3.28.1: REVIEW GADAR — "dr" (nama dokter) tidak lagi dianggap "darah rutin". v3.28.0: REVIEW GADAR 24 JAM — laporan pasien DONE dokter login (tindakan dari daftar resep tindakan + order lab/radiologi yang belum tertulis), semua dicentang, simpan massal ke Rencana & Pemeriksaan Penunjang GADAR terakhir. v3.27.0: Lab Severe tidak memesan ulang kreatinin/elektrolit/AGD yang sudah ada dalam 1 minggu lalu Save otomatis; tombol Tutup lain dihapus (pakai ✕), tombol panel dirapikan. v3.26.0: tombol kecilkan (—) & tutup (✕) di pojok kanan atas tiap kotak; AUTO PENUNJANG + Lab Severe (Kreatinin, Elektrolit, AGD; Save manual); ekspertise CT whole abdomen & echocardiography (Kesan/Kesimpulan). v3.25.0: ekspertise radiologi dianggap ada hanya bila memuat "KESAN"; KOMBINASI RESEP menampilkan anamnesis (keluhan utama, RPS, alergi) dari Assesment GADAR. v3.24.0: judul "Riwayat kontrol poli spesialis" dihapus dari Riwayat Penyakit Dahulu; ASGADAR untuk pasien belum terdaftar diisikan ke + BUAT DRAF ASSESMENT GAWAT DARURAT (daftar pasien IGD); PAKET KONSUL: film CT tidak diambil, ekspertise rontgen & CT ikut bila sudah ada. v3.23.0: tombol AUTO SOAP & AUTO SCREENSHOT dihapus dari menu (sudah tercakup PAKET KONSUL). v3.22.0: semua kotak AUTO ASM (menu, KOMBINASI RESEP, AUTO SCREENSHOT/PAKET KONSUL, salin SOAP) bisa digeser dan dikecilkan. v3.21.0: tombol 🔄 Update (SOAP disusun ulang dari GADAR + penunjang baru ditambahkan); semua AUTO kembali ke tab E-RAWAT DARURAT dulu sehingga tidak macet saat tab Riwayat/Hasil terbuka. v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -42,7 +42,7 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + window.__SP_AUTO_ASM_LOADED__ + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.52.0";
+  window.__SP_AUTO_ASM_LOADED__ = "3.53.0";
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -3433,136 +3433,218 @@
   }
 
   // =========================
-  // v3.50.0: PAKET KONSUL RAWAT INAP (permintaan dokter 6 Okt 2026) — HANYA MEMBACA (GET), tidak menyimpan apa pun.
-  // Teks konsul (format WhatsApp, bisa diedit sebelum disalin) disusun dari:
-  //  - daftar e-Ranap (ruang/kamar/bed/kelas, DPJP), halaman pasien (nama, JK, umur), riwayat kunjungan (tgl masuk, hari rawat)
-  //  - CPPT: keluhan & pemeriksaan fisik dokter terakhir, tanda vital terakhir (dokter/perawat), diagnosis & terapi
-  //    (diutamakan CPPT dokter spesialis/DPJP; "terapi dpjp lanjut" dilewati)
-  //  - Assesment GADAR IGD saat masuk: keluhan masuk, RPS, RPD, alergi, BB, diagnosis masuk
-  //  - hasil lab selama dirawat (maks 4 terakhir, nilai yang ditandai di luar normal), kesan radiologi
-  //  - obat e-resep di CPPT dokter 48 jam terakhir (alkes/BHP tidak ditulis), terapi dari kolom Instruksi PPA
-  // Gambar lab, film rontgen & ekspertise memakai AUTO SCREENSHOT yang sama dengan PAKET KONSUL IGD.
+  // PAKET KONSUL RAWAT INAP (v3.50.0, disusun ulang v3.53.0 atas instruksi dokter 6 Okt 2026) — HANYA MEMBACA (GET).
+  // Satu SOAP utuh untuk konsul ke spesialis lain:
+  //  S = keluhan saat masuk (IGD: KU/RPS) + keluhan saat ini (CPPT DOKTER saja)
+  //  O = tanda vital saat masuk IGD -> saat ini (dibandingkan, tidak terpisah) + pemeriksaan fisik dokter terakhir
+  //  A = diagnosis DPJP
+  //  P = perjalanan terapi: terapi di IGD -> perubahan di ruangan (ditambah / diubah / dihentikan) -> KESIMPULAN terapi
+  //      yang berjalan saat ini (bukan "terapi lanjut", bukan daftar resep) + advis spesialis lain.
+  // Nama penulis CPPT (dokter/nakes) tidak ditulis. Penunjang tidak ditulis di teks (cukup gambar AUTO SCREENSHOT).
   // =========================
   const SP_BHP_RE = /spuit|syringe|infus(ion)? set|blood set|abocath|iv ?cath|vasofix|wing needle|\bneedle|\bkas+a\b|gauze|plester|hypafix|tegaderm|handsc|sarung tangan|glove|masker|kanul|canul|cannula|spalk|splint|bidai|gown|disposable|surgical|three ?way|stopcock|urine ?bag|kateter|catheter|\bngt\b|feeding tube|alcohol swab|alkohol swab|\bswab\b|kapas|elektroda|electrode|underpad|pampers|diapers|extension tube|micropore|leukoplast|perban|verband|bandage|gelang|plastik|pastik|kantong|\bpot\b/i;
 
-  // Nilai lab yang ditandai di luar normal (merah / keterangan H-L) -> ["Hb 9,8 g/dL (N 12-16)", ...].
-  function spLabAbnormal(sheet) {
-    const num = (x) => { const m = String(x || "").replace(/,/g, ".").match(/-?\d+(?:\.\d+)?/); return m ? Number(m[0]) : NaN; };
-    const out = [];
-    for (const r of sheet?.rows || []) {
-      if (r.type !== "item" || !r.hasil) continue;
-      const pre = String(r.hasil).match(/^\s*(HH|LL|H|L)\b\s*/i);
-      const val = pre ? String(r.hasil).slice(pre[0].length).trim() : String(r.hasil).trim();
-      let dir = pre ? (/h/i.test(pre[1]) ? "↑" : "↓") : "";
-      const range = String(r.normal || "").match(/^\s*(-?\d+(?:[.,]\d+)?)\s*-\s*(-?\d+(?:[.,]\d+)?)\s*$/);
-      if (!dir && range && /^-?\d+(?:[.,]\d+)?$/.test(val)) {
-        const v = num(val), lo = num(range[1]), hi = num(range[2]);
-        if (v > hi) dir = "↑"; else if (v < lo) dir = "↓";
+  // ---- Terapi: baca instruksi bebas dokter baris per baris (fungsi murni, diuji di node: tests/uji_v3_50.js) ----
+  // Kunci obat: nama generik/merek yang sering dipakai di RS disamakan supaya perubahan dosis/merek terbaca "diubah".
+  const SP_TX_BRAND = [
+    [/^(sanmol|pamol|praxion|panadol|tempra|dumin|pct|parasetamol|paracetamol|fasidol)/, "parace"],
+    [/^(ondans|ondanc|narfoz|vomceran)/, "ondans"],
+    [/^(combivent|farbivent|respivent|ipratropium)/, "combiv"],
+    [/^(budesma|pulmicort|sonide|budesonid|budenofalk)/, "budeso"],
+    [/^(dexametason|dexamethason|dexa$|cortidex|kalmethason)/, "dexame"],
+    [/^(omeprazol|omz$|ozid|lokev|pumpitor)/, "omepra"],
+    [/^(ceftriaxon|terfacef|cefxon|bioxon|broadced)/, "ceftri"],
+    [/^(ketorolac|ketorolak|toradol|remopain)/, "ketoro"],
+    [/^(antrain|novalgin|metamizol|metampiron)/, "metami"],
+    [/^(lacidofil|liprolac|lactobacil|lacto)/, "probio"],
+    [/^(o2|oksigen|oxygen)$/, "o2"],
+    [/^(rl|ringer)/, "rl"],
+    [/^(nacl|ns)$/, "nacl"]
+  ];
+  const SP_TX_LEAD = /^(?:pasang|beri(?:kan)?|lanjut(?:kan)?|inj(?:eksi|ection)?|drip|ivfd|infus|inf|nebu(?:lisasi|lizer|l)?|neb|inhalasi|tab(?:let)?|syr(?:up)?|sirup|supp?|kaps(?:ul)?|caps?|puyer|pulv|drop|gtt|salep|cream|krim|p\.?o|iv|im|sc|oral|cairan|koreksi)\b\.?\s*/i;
+  const SP_TX_NONDRUG = /^(?:obs(?:ervasi)?\b|monitor|cek\b|periksa|rencana|konsul|lapor|edukasi|diet|asi\b|mobilisasi|tirah|tidak puasa|puasa|fisioterapi|kompres|posisi|ubah posisi|miring|ro\b|rontgen|foto\b|usg|ct\b|ct-?scan|mri|ekg|lab\b|darah|dpl\b|dl\b|gds\b|rawat|pindah|acc\b|advi[cs]e?\b|terapi\b|th\b|tx\b|dx\b|diagnos|kaji|motivasi|bed ?rest|awasi|target|evaluasi|pasang (?:ngt|kateter|dc)\b|ganti verban|rawat luka)/i;
+  const SP_TX_DOSE = /\d\s*(?:mg|mcg|µg|g|gr|gram|ml|cc|iu|ui|unit|tpm|lpm|l\/m|lt|liter|meq|%|tab|tablet|kaps|kapsul|sach|sachet|sacet|drop|tetes|gtt|puff|respule|resp|amp|ampul|vial|fls|flash|kolf|supp|cth|sdm|sdt|bungkus|bks)\b|\b\d+\s*x\s*\d|\b\d\s*x\s*(?:sehari|\/hari|perhari)|\/\s*\d+(?:\s*-\s*\d+)?\s*jam|\btiap\s*\d+\s*jam|\b(?:k\/p|prn|bila perlu|ekstra|extra)\b/i;
+  const SP_TX_ROUTE = /^(?:pasang\s+)?(?:inj(?:eksi)?\b|drip\b|ivfd\b|infus\b|nebu|inhalasi|o2\b|oksigen|transfusi|tab\b|syr\b|sirup|supp\b|p\.?o\b)/i;
+  const SP_TX_STOPW = /\b(?:stop(?:kan)?|hentikan|dihentikan|aff|lepas|dilepas|cabut|dicabut|tidak dilanjutkan|dc)\b/i;
+  const SP_TX_SWAPW = /\b(?:diganti|ganti(?:kan)?|switch|diubah)\b/i;
+  // Baris pembuka advis / instruksi DPJP ("Advis dr. X SpA (14.20):", "ADVICE DR. X SP. A;", "RAWAT INAP DR. X SP.A :").
+  const SP_TX_HEADER = /^(?:advi[cs]e?|rawat inap\s+(?:dr|dokter)|instruksi\s+(?:dr|dokter)|acc\s+(?:dr|dokter))\b/i;
+
+  function spTxKey(line) {
+    let t = String(line || "").toLowerCase().replace(/^\s*(?:[-•*·>]+|\d+[.)])\s*/, "").trim();
+    for (let i = 0; i < 4; i++) { const n = t.replace(SP_TX_LEAD, ""); if (n === t) break; t = n; }
+    const m = t.match(/[a-z][a-z0-9]*/);
+    if (!m) return "";
+    for (const [re, k] of SP_TX_BRAND) if (re.test(m[0])) return k;
+    return m[0].replace(/ph/g, "f").replace(/h/g, "").replace(/(.)\1+/g, "$1").replace(/e$/, "").slice(0, 6);
+  }
+
+  function spTxIsTherapy(line) {
+    return !SP_TX_NONDRUG.test(line) && (SP_TX_ROUTE.test(line) || SP_TX_DOSE.test(line)) && !!spTxKey(line);
+  }
+
+  // Satu baris instruksi -> { op: "set" | "stop" | "swap" | "header", key, line, raw } atau null (bukan terapi).
+  function spTxLine(raw) {
+    const line = String(raw || "").replace(/\s*=>\s*yang (?:menyerahkan|menerima)[\s\S]*$/i, "")
+      .replace(/^\s*(?:[-•*·>]+|\d+[.)])\s*/, "").replace(/^(?:terapi|th\/?|tx|r\/)\s*[:/]\s*(?=\S)/i, "").replace(/\s+/g, " ").trim();
+    if (!line) return null;
+    if (SP_TX_HEADER.test(line)) return { op: "header", raw: line };
+    if (SP_TX_SWAPW.test(line)) {
+      const parts = line.split(SP_TX_SWAPW);
+      let before = parts[0].replace(SP_TX_STOPW, "").replace(/[,;:]\s*$/, "").trim();
+      let after = parts.slice(1).join(" ").replace(/^\s*(?:dengan|jadi|menjadi|ke)\b\s*/i, "").trim();
+      if (!before) {
+        const p = after.split(/\s*(?:\b(?:dengan|jadi|menjadi|ke)\b|->|→)\s*/i);
+        if (p.length >= 2) { before = p[0]; after = p.slice(1).join(" "); }
       }
-      if (!dir && !r.flagged && !/^(H|L|HH|LL|\*+|tinggi|rendah)$/i.test(String(r.ket || "").trim())) continue;
-      out.push(`${r.name} ${val}${dir ? " " + dir : ""}${r.satuan ? " " + r.satuan : ""}${r.normal && range ? ` (N ${r.normal})` : ""}`);
+      if (before && after && spTxKey(before) && spTxKey(after)) return { op: "swap", key: spTxKey(before), line: after, raw: line };
     }
-    return out;
+    if (SP_TX_STOPW.test(line)) {
+      const rest = line.replace(SP_TX_STOPW, " ").replace(/\b(?:bisa|boleh|saja|sudah|bila|jika|apabila)\b[\s\S]*$/i, "").replace(/[,;:.]+/g, " ").trim();
+      const fluid = /^(?:infus|ivfd|iv ?line|cairan|venflon|abocath)\b/i.test(rest);
+      return { op: "stop", key: fluid ? "" : spTxKey(rest), fluid, raw: line };
+    }
+    const add = line.match(/^(?:tambah(?:kan)?|add|\+)\s*:?\s*(.+)$/i);
+    if (add && spTxKey(add[1])) return { op: "set", key: spTxKey(add[1]), line: add[1].trim(), raw: line };
+    if (spTxIsTherapy(line)) return { op: "set", key: spTxKey(line), line, raw: line };
+    return null;
   }
 
-  // Kalimat kesan/kesimpulan dari ekspertise radiologi (spParseRadExpertise). "" bila belum ada.
-  function spRadKesan(exp) {
-    const lines = (exp?.lines || []).filter(Boolean);
-    const i = lines.findIndex((l) => /\bKESAN\b|\bKESIMPULAN\b/i.test(l));
-    if (i < 0) return "";
-    const out = [];
-    for (const l of lines.slice(i)) {
-      if (/terima kasih|salam sejawat|sp\.?\s*rad\b/i.test(l)) break;
-      out.push(l);
+  // Perjalanan terapi. events (urut lama -> baru): { when, label, kind: "igd" | "advis" | "ward", text }.
+  //  - "igd": terapi awal (digabung). Daftar lengkap (>= 3 obat, tanpa kata "lanjut") = daftar terapi baru (pengganti):
+  //    obat yang tidak tertulis lagi dianggap dihentikan. Daftar pendek / ada "lanjut" = tambahan/perubahan saja.
+  //  - "stop/aff/lepas X", "ganti X dengan Y", "tambah X" dibaca sebagai perintah.
+  // -> { igd: [baris], start: { when, label, items } | null, changes: [{ when, label, items }], current: [baris] }
+  //    start = daftar terapi PERTAMA bila belum ada terapi IGD (pasien dari poli / IGD tanpa terapi tertulis).
+  function spTherapyTimeline(events) {
+    let state = new Map();
+    let igd = [];
+    let start = null;
+    const changes = [];
+    const nums = (t) => (String(t).match(/\d+(?:[.,]\d+)?/g) || []).join("|");
+    const short = (t) => String(t).replace(/\s+/g, " ").trim().slice(0, 110);
+    const isFluid = (t) => /^(?:infus|ivfd|inf\b|drip)|\b(?:rl|ringer|nacl|ns|d5|d10|kaen\w*|asering|futrolit|tutofusin|aminofluid)\b/i.test(t);
+    for (const ev of events) {
+      const ops = String(ev.text || "").replace(/\r/g, "").split("\n").map(spTxLine).filter(Boolean);
+      // Baris berkunci sama dalam satu bagian digabung ("RL 500cc habis 4 jam, selanjutnya" + "RL 20cc/jam");
+      // bagian sesudah baris advis menggantikan bagian sebelumnya.
+      const next = new Map(), seg = new Map();
+      let s = 0;
+      for (const o of ops) {
+        if (o.op === "header") { s++; continue; }
+        if (o.op !== "set") continue;
+        if (next.has(o.key) && seg.get(o.key) === s) {
+          // Obat sama dengan angka dosis sama ditulis dua kali ("Ceftri 1x2gr IV" + "Inj. ceftriaxone 1x2 gr") -> sekali saja.
+          if (nums(next.get(o.key)) !== nums(o.line)) next.set(o.key, `${next.get(o.key)}; ${o.line}`);
+        }
+        else { next.set(o.key, o.line); seg.set(o.key, s); }
+      }
+      const keepOthers = /\b(?:lanjut|lnjut|lanjutkan)\b|sesuai\s+(?:ts\s+)?dpjp/i.test(ev.text || "");
+      const log = [];
+      const put = (k, line) => {
+        if (!state.has(k)) log.push(`+ ${short(line)}`);
+        else if (nums(state.get(k)) !== nums(line)) log.push(`${short(state.get(k))} → ${short(line)}`);
+        state.set(k, line);
+      };
+      if (ev.kind !== "igd" && next.size >= 3 && !keepOthers) {
+        const old = state;
+        state = new Map();
+        for (const [k, line] of next) { if (old.has(k)) state.set(k, old.get(k)); put(k, line); }
+        for (const [k, line] of old) if (!next.has(k)) log.push(`stop ${short(line)}`);
+      } else {
+        for (const [k, line] of next) put(k, line);
+      }
+      for (const o of ops) {
+        if (o.op === "stop") {
+          const keys = o.fluid ? [...state.keys()].filter((k) => isFluid(state.get(k))) : (o.key && state.has(o.key) ? [o.key] : []);
+          if (keys.length) { log.push(short(o.raw)); keys.forEach((k) => state.delete(k)); }
+        } else if (o.op === "swap") {
+          const k2 = spTxKey(o.line);
+          if (state.has(o.key)) { log.push(`${short(state.get(o.key))} → ${short(o.line)}`); state.delete(o.key); }
+          else log.push(`+ ${short(o.line)}`);
+          state.set(k2, o.line);
+        }
+      }
+      if (ev.kind === "igd") igd = [...state.values()];
+      else if (!igd.length && !start && !changes.length && state.size && log.every((x) => x.startsWith("+ "))) start = { when: ev.when || "", label: ev.label || "", items: [...state.values()] };
+      else if (log.length) changes.push({ when: ev.when || "", label: ev.label || "", items: log });
     }
-    return out.join(" ").replace(/^.*?\b(KESAN|KESIMPULAN)\b\s*:?\s*/i, "").replace(/\s+/g, " ").trim().slice(0, 500);
+    return { igd, start, changes, current: [...state.values()] };
   }
 
-  // Bagian P CPPT yang bermakna (bukan sekadar "Terapi dpjp lanjut"); "" bila tidak ada.
-  function spCpptTerapiText(pText) {
-    const t = String(pText || "").replace(/^\s*(instruksi|planning|plan|terapi)\s*:\s*/i, "").trim();
-    if (t.length < 6 || /^(terapi\s+)?(dpjp\s+)?(terapi\s+)?lanjut(kan)?(\s+terapi)?(\s+dpjp)?\.?$/i.test(t)) return "";
-    return t.slice(0, 1500);
+  // "dr. X, Sp.PD" / "dr.SpOG" / "X, Sp. A" -> "Sp.PD" / "Sp.OG" / "Sp.A"; "" bila bukan spesialis.
+  function spSpecialty(ppa) {
+    const m = String(ppa || "").match(/\bsp\.?\s?([a-z]{1,4}(?:-k\w*)?)\b/i);
+    return m ? `Sp.${m[1].charAt(0).toUpperCase()}${m[1].slice(1)}` : "";
+  }
+
+  // Ringkasan advis spesialis lain: baris bermakna (bukan "terapi lanjut"/serah terima), maks ~350 huruf.
+  function spAdvisSummary(text) {
+    const lines = String(text || "").replace(/\r/g, "").replace(/\s*=>\s*yang (?:menyerahkan|menerima)[\s\S]*$/i, "").split("\n")
+      .map((l) => l.replace(/^\s*(?:[-•*·>]+|\d+[.)])\s*/, "").replace(/\s+/g, " ").trim())
+      .filter((l) => l.length > 2 && !/^(?:(?:terapi|th|obat|lain[- ]lain)\s+)?(?:lanjut|lnjut|lanjutkan)(?:\s+(?:terapi|sesuai\s+\w+|dpjp))*\.?$/i.test(l));
+    const t = lines.join("; ");
+    return t.length > 350 ? t.slice(0, 350).replace(/\s+\S*$/, "") + " …" : t;
   }
 
   // Teks konsul rawat inap (fungsi murni, diuji di node: tests/uji_v3_50.js).
-  // v3.51.0 (instruksi dokter 6 Okt 2026): susunan = identitas -> RIWAYAT MASUK (data penting saat masuk dari IGD:
-  // keluhan, RPS, RPD, riwayat pengobatan, alergi, TTV IGD, pemeriksaan fisik IGD, penunjang & diagnosis IGD, tatalaksana IGD)
-  // -> kondisi SAAT INI dari CPPT rawat inap (S, O) -> penunjang selama dirawat -> A -> P.
   function spBuildKonsulRanapText(d) {
-    const v = d.vitals || {};
-    const m = d.masuk || {};
     const L = ["Assalamualaikum. Izin konsul pasien rawat inap dengan saya Dokter Taufan.", d.patientLine || "-"];
     if (d.roomLine) L.push(d.roomLine);
 
-    L.push("", `*RIWAYAT MASUK${m.from ? ` (${m.from})` : ""} :*`);
-    L.push(`Keluhan utama: ${m.keluhan || "-"}`);
-    if (m.rps) L.push(`RPS: ${m.rps}`);
-    L.push(`RPD: ${m.rpd || "-"}`);
-    if (m.rpo) L.push(`Riwayat pengobatan: ${m.rpo}`);
-    if (m.alergi) L.push(`Alergi: ${m.alergi}`);
-    if (m.ttv) L.push(`TTV saat masuk: ${m.ttv}`);
-    if (m.pemfis) L.push("Pemeriksaan fisik saat masuk:", m.pemfis);
-    if (m.penunjang) L.push(`Penunjang di IGD: ${m.penunjang}`);
-    if (m.dx) L.push(`Diagnosis IGD: ${m.dx}`);
-    if (m.tatalaksana) L.push("Tatalaksana IGD:", m.tatalaksana);
-    if ((m.obat || []).length) L.push("Obat IGD (e-resep):", ...m.obat.map((o) => `- ${o}`));
+    L.push("", "*S :*");
+    if (d.masuk && d.masuk.text) L.push(`Saat masuk${d.masuk.when ? ` (${d.masuk.when})` : ""}: ${d.masuk.text}`);
+    L.push(d.keluhanNow ? `Saat ini${d.keluhanNowWhen ? ` (${d.keluhanNowWhen})` : ""}: ${d.keluhanNow}` : "Saat ini: belum ada catatan keluhan dari dokter di CPPT.");
 
-    L.push("", "*S (saat ini) :*");
-    if (d.keluhanNow) L.push(`Keluhan${d.keluhanNowFrom ? ` (${d.keluhanNowFrom})` : ""}: ${d.keluhanNow}`);
-    if (d.keluhanLatest) L.push(`Keluhan terakhir${d.keluhanLatestFrom ? ` (${d.keluhanLatestFrom})` : ""}: ${d.keluhanLatest}`);
-    if (!d.keluhanNow && !d.keluhanLatest) L.push("Belum ada catatan CPPT rawat inap (lihat riwayat masuk).");
-
-    L.push("", "*O (saat ini) :*");
-    if (d.vitalsFrom) {
-      L.push(`*Tanda-tanda vital* (${d.vitalsFrom})`, `Kesadaran: ${v.kesadaran || "-"}`);
-      if (v.keadaan_umum) L.push(`KU: ${v.keadaan_umum}`);
-      if (v.gcs) L.push(`GCS: ${v.gcs}`);
-      L.push(`TD: ${v.td ? v.td + " mmHg" : "-"}`, `Nadi: ${v.nadi ? v.nadi + " x/menit" : "-"}`,
-        `Napas: ${v.nafas ? v.nafas + " x/menit" : "-"}`, `Suhu: ${v.suhu ? v.suhu + " °C" : "-"}`);
-      if (v.spo2) L.push(`SpO2: ${v.spo2}%`);
+    L.push("", "*O :*");
+    const t = d.ttv || {};
+    const both = !!(t.igdWhen && t.nowWhen);
+    if ((t.rows || []).length) {
+      L.push(`Tanda vital (${[t.igdWhen, t.nowWhen].filter(Boolean).join(" → ") || "-"}):`);
+      if (t.igdWhen && !t.nowWhen) L[L.length - 1] = `Tanda vital (${t.igdWhen}; belum ada di CPPT):`;
+      if (t.ku) L.push(`KU: ${t.ku}`);
+      for (const [label, a, b, unit] of t.rows) {
+        if (both && a && b) L.push(`${label}: ${a} → ${b}${unit || ""}`);
+        else L.push(`${label}: ${a || b}${unit || ""}${both ? (a ? " (saat masuk)" : " (saat ini)") : ""}`);
+      }
     } else {
-      L.push("Tanda vital: belum ada di CPPT rawat inap (lihat TTV saat masuk).");
+      L.push("Tanda vital: -");
     }
-    if (d.pemfis) L.push("", `*Pemeriksaan fisik${d.pemfisFrom ? ` (${d.pemfisFrom})` : ""} :*`, d.pemfis);
+    if (t.bb) L.push(`BB: ${t.bb} kg`);
+    if (d.pemfis) L.push(`Pemeriksaan fisik${d.pemfisWhen ? ` (${d.pemfisWhen})` : ""}:`, d.pemfis);
 
-    L.push("", "*Penunjang :*");
-    const pen = [];
-    for (const l of d.labs || []) pen.push(`Lab ${l.date}${l.tag ? ` (${l.tag})` : ""}: ${l.abnormal.length ? l.abnormal.join("; ") : "tidak ada nilai yang ditandai di luar normal"}`);
-    for (const r of d.rads || []) pen.push(`${r.exam} ${r.date}: ${r.kesan ? "Kesan: " + r.kesan : "ekspertise belum ada"}`);
-    L.push(...(pen.length ? pen : ["-"]));
-
-    L.push("", "*A :*", d.dx || m.dx || "-");
+    L.push("", "*A :*", d.dx || "-");
 
     L.push("", "*P :*");
-    const p = [];
-    if (d.terapi) p.push(`Terapi${d.terapiFrom ? ` (${d.terapiFrom})` : ""}:`, d.terapi);
-    if ((d.obat || []).length) {
-      if (p.length) p.push("");
-      p.push(d.obatTitle || "Obat e-resep 48 jam terakhir:", ...d.obat.map((o) => `- ${o}`));
+    const tx0 = d.tx || {};
+    // Belum ada perubahan & daftar awal = daftar saat ini -> cukup ditulis sekali ("... saat ini (sejak tgl)").
+    const firstList = (tx0.igd || []).length ? tx0.igd : (tx0.start ? tx0.start.items : []);
+    const same = firstList.length && !(tx0.changes || []).length && JSON.stringify(firstList) === JSON.stringify(tx0.current || []);
+    const tx = same ? { ...tx0, igd: [], start: null, currentTitle: `Terapi yang berjalan saat ini (sejak ${(tx0.igd || []).length ? `IGD ${tx0.igdWhen || ""}`.trim() : tx0.start.when}):` } : tx0;
+    if ((tx.igd || []).length) L.push(`Terapi di IGD${tx.igdWhen ? ` (${tx.igdWhen})` : ""}:`, ...tx.igd.map((x) => `- ${x}`));
+    else if (tx.start && tx.start.items.length) {
+      L.push(`Terapi awal perawatan (${[tx.start.when, tx.start.label].filter(Boolean).join(", ")}):`, ...tx.start.items.map((x) => `- ${x}`));
     }
-    L.push(...(p.length ? p : [m.tatalaksana ? "Lanjut tatalaksana IGD (belum ada instruksi CPPT rawat inap)." : "-"]));
+    const hasStart = (tx.igd || []).length || (tx.start && tx.start.items.length);
+    const ch = tx.changes || [];
+    if (ch.length) {
+      if (hasStart) L.push("");
+      L.push("Perubahan terapi:");
+      const shown = ch.slice(-10);
+      if (ch.length > shown.length) L.push(`- (${ch.length - shown.length} perubahan sebelumnya tidak ditampilkan)`);
+      for (const c of shown) L.push(`- ${c.when}${c.label ? ` (${c.label})` : ""}:`, ...c.items.map((x) => `   ${x}`));
+    }
+    if ((tx.current || []).length) {
+      if (hasStart || ch.length) L.push("");
+      L.push(tx.currentTitle || "Terapi yang berjalan saat ini:", ...tx.current.map((x) => `- ${x}`));
+    } else if (!hasStart && !ch.length) {
+      L.push("Terapi: belum tertulis di instruksi dokter.");
+    }
+    if ((d.advis || []).length) {
+      L.push("", "Advis spesialis lain:", ...d.advis.map((a) => `- ${a.sp}${a.when ? ` (${a.when})` : ""}: ${a.text}`));
+    }
     L.push("", "Mohon advis. Terima kasih sebelumnya, Dok.");
     return L.join("\n");
-  }
-
-  // TTV GADAR IGD -> satu baris ("Kesadaran Compos Mentis, GCS 15, TD 120/80 mmHg, Nadi 135 x/menit, ...").
-  function spGadarTtvLine(g) {
-    const KES = { 1: "Compos Mentis", 2: "Apatis", 3: "Somnolen", 4: "Sopor", 5: "Koma" };
-    const c = (x) => spCleanGadarText(x);
-    const parts = [];
-    const kes = KES[String(g.kesadaran || "").trim()];
-    if (kes) parts.push(`Kesadaran ${kes}`);
-    if (c(g.glosgow_coma)) parts.push(`GCS ${c(g.glosgow_coma)}`);
-    const td = spCpptFieldValue("td", g.td), n = spCpptFieldValue("nadi", g.nadi), rr = spCpptFieldValue("nafas", g.nafas), t = spCpptFieldValue("suhu", g.suhu);
-    if (td) parts.push(`TD ${td} mmHg`);
-    if (n) parts.push(`Nadi ${n} x/menit`);
-    if (rr) parts.push(`Napas ${rr} x/menit`);
-    if (t) parts.push(`Suhu ${t} °C`);
-    if (c(g.pain_score) && c(g.pain_score) !== "0") parts.push(`Nyeri ${c(g.pain_score)}/10`);
-    const bb = c(g.berat).replace(/\s*kg$/i, "");
-    if (bb) parts.push(`BB ${bb} kg`);
-    return parts.join(", ");
   }
 
   function spFmtDate(ts) {
@@ -3570,13 +3652,8 @@
     const p = (n) => String(n).padStart(2, "0");
     return `${p(d.getDate())}-${p(d.getMonth() + 1)}-${d.getFullYear()}`;
   }
-  function spIsoDay(ts) {
-    const d = new Date(ts);
-    const p = (n) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-  }
 
-  // Kumpulkan semua data konsul pasien rawat inap ctx = { noreg, normRm?, base, name? } -> teks konsul.
+  // Kumpulkan data konsul pasien rawat inap ctx = { noreg, normRm?, base, name? } -> teks konsul.
   async function spBuildKonsulRanap(ctxIn) {
     const ctx = { ...ctxIn };
     const base = ctx.base || spSmartplusBase();
@@ -3619,173 +3696,170 @@
     }
 
     const g = gadar ? gadar.data : {};
-    // Waktu singkat "05-10 14:54, <PPA>".
-    const label = (r) => {
-      if (!Number.isFinite(r.time)) return `${r.timeText}, ${r.ppa}`;
-      const x = new Date(r.time), p = (n) => String(n).padStart(2, "0");
-      return `${p(x.getDate())}-${p(x.getMonth() + 1)} ${p(x.getHours())}:${p(x.getMinutes())}, ${r.ppa}`;
-    };
-    const isSp = (r) => /\bsp\.?\s?[a-z]/i.test(r.ppa);
-    // DPJP: PPA yang namanya muncul di kolom dokter daftar e-Ranap.
-    const dpjpWords = norm(pt.dokter || "").split(" ").filter((w) => w.length >= 4 && !/^(dokter)$/.test(w));
-    const isDpjp = (r) => dpjpWords.length && dpjpWords.some((w) => norm(r.ppa).includes(w));
+    const gm = String(g.gadar_date || "").match(/(\d{4})-(\d{2})-(\d{2})(?:\D+(\d{1,2}):(\d{2}))?/);
+    const gTime = gm ? new Date(+gm[1], +gm[2] - 1, +gm[3], +(gm[4] || 0), +(gm[5] || 0)).getTime() : NaN;
+    const p2 = (n) => String(n).padStart(2, "0");
+    const dm = (ts) => { if (!Number.isFinite(ts)) return ""; const x = new Date(ts); return `${p2(x.getDate())}-${p2(x.getMonth() + 1)}`; };
+    const dmhm = (ts) => { if (!Number.isFinite(ts)) return ""; const x = new Date(ts); return `${dm(ts)} ${p2(x.getHours())}:${p2(x.getMinutes())}`; };
+    const one = (t) => String(t || "").replace(/\s*\n\s*/g, "; ").trim();
+    const clip = (t, n) => { const x = String(t || "").trim(); return x.length > n ? x.slice(0, n).replace(/\s+\S*$/, "") + " …" : x; };
+
+    // Dokter: DPJP = PPA yang namanya ada di kolom dokter daftar e-Ranap; bila tidak cocok -> spesialis (bukan anestesi)
+    // dengan CPPT terbanyak. Nama penulis TIDAK ditulis di teks konsul.
+    const isSp = (r) => !!spSpecialty(r.ppa);
+    const isAnes = (r) => /^Sp\.An$/i.test(spSpecialty(r.ppa));
     const doc = rows.filter((r) => r.isDoctor);
-    const isAnes = (r) => /\bsp\.?\s?an\b/i.test(r.ppa);
-    // Diagnosis/terapi: DPJP terakhir > dokter spesialis lain (bukan anestesi) > dokter mana pun.
-    const byPref = (pred) => doc.find((r) => isDpjp(r) && pred(r)) || doc.find((r) => isSp(r) && !isAnes(r) && pred(r)) || doc.find(pred);
-    // Keluhan/pemfis: DPJP bila ditulis ≤ 24 jam dari CPPT dokter terakhir, selain itu dokter terakhir (bukan anestesi).
+    const dpjpWords = norm(pt.dokter || "").split(" ").filter((w) => w.length >= 4 && w !== "dokter");
+    let isDpjp = (r) => dpjpWords.length > 0 && dpjpWords.some((w) => norm(r.ppa).includes(w));
+    if (!doc.some(isDpjp)) {
+      const cnt = new Map();
+      doc.filter((r) => isSp(r) && !isAnes(r)).forEach((r) => cnt.set(norm(r.ppa), (cnt.get(norm(r.ppa)) || 0) + 1));
+      const best = [...cnt.entries()].sort((a, b) => b[1] - a[1])[0];
+      if (best) isDpjp = (r) => norm(r.ppa) === best[0];
+    }
     const latestDocT = doc[0] ? doc[0].time || 0 : 0;
+    // Keluhan/pemfis: DPJP bila ditulis <= 24 jam dari CPPT dokter terakhir, selain itu dokter terakhir (bukan anestesi).
     const recentPref = (pred) => {
       const dp = doc.find((r) => isDpjp(r) && pred(r));
       if (dp && latestDocT - (dp.time || 0) <= 864e5) return dp;
       return doc.find((r) => !isAnes(r) && pred(r)) || doc.find(pred);
     };
-    const one = (t) => String(t || "").replace(/\s*\n\s*/g, "; ").trim();
-    const sOf = (r) => one(r.keluhan || String(r.sText || "").replace(/^keluhan utama\s*:\s*/i, ""));
+    const byPref = (pred) => doc.find((r) => isDpjp(r) && pred(r)) || doc.find((r) => isSp(r) && !isAnes(r) && pred(r)) || doc.find(pred);
+    const kelOf = (r) => one(r.keluhan || String(r.sText || "").replace(/^keluhan utama\s*:\s*/i, ""));
 
-    // Keluhan: CPPT dokter terakhir; bila ada CPPT perawat/bidan yang lebih baru, keluhannya ditambahkan.
-    const kelRow = recentPref((r) => r.keluhan && spShortKeluhan(r.keluhan, false, true)) || recentPref((r) => sOf(r));
-    const latestRow = rows.find((r) => sOf(r));
-    const asmAwal = [...rows].reverse().find((r) => r.type === "ASM AWAL" && sOf(r));
-    const latestNewer = latestRow && latestRow !== kelRow && (!kelRow || (latestRow.time || 0) > (kelRow.time || 0)) ? latestRow : null;
-    // Pemeriksaan fisik: CPPT dokter terakhir (DPJP diutamakan bila sama-sama terbaru), cadangan GADAR.
-    const pfRow = recentPref((r) => spUsableObjective(r.objective || r.oText));
-    const dxRow = byPref((r) => r.diagnosis && r.diagnosis.replace(/[;\s]/g, ""));
-    // Terapi: instruksi PPA (kolom ke-4) / bagian P CPPT DPJP terakhir yang bermakna.
-    const terOf = (r) => spCpptTerapiText(r.instruksi) || spCpptTerapiText(r.pText);
-    const tpRow = byPref((r) => terOf(r));
-    // Tanda vital: SATU baris CPPT terakhir (dokter/perawat) yang memuat TD/nadi -> konsisten satu waktu; cadangan GADAR.
+    // S: saat masuk = KU/RPS Assesment GADAR IGD; saat ini = keluhan CPPT dokter.
+    const kelRow = recentPref((r) => r.keluhan && spShortKeluhan(r.keluhan, false, true)) || recentPref((r) => kelOf(r));
+    let masuk = null;
+    if (gadar) {
+      const ku = one(spCleanGadarText(g.kel_utama)), rps = one(spCleanGadarText(g.riwayat_sakit_now));
+      const kuWord = norm(ku).split(" ").find((w) => w.length >= 4) || "";
+      const cap = (x) => x.charAt(0).toUpperCase() + x.slice(1);
+      const txt = rps ? (!ku || (kuWord && norm(rps).includes(kuWord)) ? cap(rps) : `${cap(ku)}. ${cap(rps)}`) : cap(ku);
+      if (txt) masuk = { when: `IGD ${dm(gTime)}`.trim(), text: clip(txt, 700) };
+    } else {
+      const first = [...doc].reverse().find((r) => !isAnes(r) && kelOf(r));
+      if (first && first !== kelRow) masuk = { when: `awal perawatan ${dm(first.time)}`.trim(), text: clip(kelOf(first), 500) };
+    }
+
+    // O: tanda vital masuk IGD -> CPPT terakhir (satu baris CPPT, dokter/perawat) + pemeriksaan fisik dokter.
     const vitOf = (r) => ({ ...spParseFreeVitals(r.oText), ...r.fields });
     const vRow = rows.find((r) => { const v = vitOf(r); return v.td || v.nadi; });
-    let vitals = {}, vFrom = "";
+    const now = vRow ? vitOf(vRow) : {};
+    let nowKu = "";
     if (vRow) {
-      vitals = vitOf(vRow);
-      const t = String(vRow.oText || "");
-      const kes = t.match(/\bkes(?:adaran)?\.?\s*:?\s*(cm\b|compos\s*mentis|apatis|somnolen|sopor|koma|delirium)/i);
-      if (!vitals.kesadaran && kes) vitals.kesadaran = /^cm$/i.test(kes[1]) ? "Compos Mentis" : kes[1];
-      const ku = t.match(/\b(?:ku|keadaan umum)\.?\s*:?\s*(baik|sedang|lemah|buruk|tampak sakit \w+|sakit \w+)/i);
-      if (!vitals.keadaan_umum && ku) vitals.keadaan_umum = ku[1];
-      vFrom = `CPPT ${label(vRow)}`;
+      const tt = String(vRow.oText || "");
+      const kes = tt.match(/\bkes(?:adaran)?\.?\s*:?\s*(cm\b|compos\s*mentis|apatis|somnolen|sopor|koma|delirium)/i);
+      if (!now.kesadaran && kes) now.kesadaran = kes[1];
+      const ku = tt.match(/\b(?:ku|keadaan umum)\.?\s*:?\s*(baik|sedang|lemah|buruk|tampak sakit \w+|sakit \w+)/i);
+      nowKu = now.keadaan_umum || (ku ? ku[1] : "");
+      const sp = tt.match(/\b(?:spo2|saturasi|sat)\s*:?\s*(\d{2,3})\s*%?/i);
+      if (sp && +sp[1] <= 100) now.spo2 = sp[1];
     }
-    // v3.51.0: tanpa CPPT -> TTV tidak diulang di O (sudah tertulis di "TTV saat masuk").
-    const sp = vRow && String(vRow.oText || "").match(/\bspo2\s*:?\s*(\d{2,3})\s*%?/i);
-    if (sp && +sp[1] <= 100) vitals.spo2 = sp[1];
-
-    // v3.51.0: RIWAYAT MASUK = data penting saat masuk dari IGD (GADAR); pasien dari poli (tanpa GADAR) -> ASM AWAL.
-    const gTime = spParseIdDate(String(g.gadar_date || "").replace(/^(\d{4})-(\d{2})-(\d{2})/, "$3-$2-$1"));
-    const hhmm = (String(g.gadar_date || "").match(/\s(\d{2}:\d{2})/) || [])[1] || "";
-    const clip = (t, n) => { const x = spCleanGadarText(t).replace(/[ \t]+\n/g, "\n").replace(/\n{2,}/g, "\n"); return x.length > n ? x.slice(0, n).replace(/\s+\S*$/, "") + " …" : x; };
-    const masuk = gadar ? {
-      from: `IGD ${Number.isFinite(gTime) ? spFmtDate(gTime) : ""}${hhmm ? " " + hhmm : ""}`.trim(),
-      keluhan: one(spCleanGadarText(g.kel_utama)), rps: clip(g.riwayat_sakit_now, 800), rpd: clip(g.riwayat_sakit_old, 800),
-      rpo: clip(g.riwayat_pengobatan, 400), alergi: spCleanGadarText(g.alergi_note), ttv: spGadarTtvLine(g),
-      pemfis: clip(g.cek_fisik, 1200), penunjang: one(clip(g.penunjang, 400)), dx: spCleanGadarText(g.diagnosa_banding),
-      tatalaksana: clip(g.rencana_tindakan, 1200)
-    } : asmAwal ? {
-      from: `ASM AWAL ${label(asmAwal)}`, keluhan: sOf(asmAwal).slice(0, 600)
+    const kesShort = (k) => { const x = String(k || "").trim(); return /^(cm|compos\s*mentis)$/i.test(x) ? "CM" : x; };
+    const KES = { 1: "CM", 2: "Apatis", 3: "Somnolen", 4: "Sopor", 5: "Koma" };
+    const gSpo2 = (String(g.cek_fisik || "").match(/\b(?:spo2|saturasi|sat)\s*:?\s*(\d{2,3})\s*%/i) || [])[1] || "";
+    const igdV = gadar ? {
+      kesadaran: KES[String(g.kesadaran || "").trim()] || "", gcs: spCleanGadarText(g.glosgow_coma),
+      td: spCpptFieldValue("td", g.td), nadi: spCpptFieldValue("nadi", g.nadi), nafas: spCpptFieldValue("nafas", g.nafas),
+      suhu: spCpptFieldValue("suhu", g.suhu), spo2: gSpo2
     } : {};
+    const ttvRows = [["Kesadaran", "kesadaran", ""], ["GCS", "gcs", ""], ["TD", "td", " mmHg"], ["Nadi", "nadi", " x/menit"],
+      ["Napas", "nafas", " x/menit"], ["Suhu", "suhu", " °C"], ["SpO2", "spo2", "%"]]
+      .map(([label, k, unit]) => [label, k === "kesadaran" ? kesShort(igdV[k]) : igdV[k] || "", k === "kesadaran" ? kesShort(now[k]) : now[k] || "", unit])
+      .filter((r) => r[1] || r[2]);
+    const bb = g.berat ? String(spCleanGadarText(g.berat)).replace(/\s*kg$/i, "") : "";
+    const pfRow = recentPref((r) => spUsableObjective(r.objective || r.oText));
 
-    // Lab selama dirawat (sejak 1 hari sebelum masuk; tanpa tgl masuk = 7 hari), maks 4 terakhir; radiologi sejak 2 hari
-    // sebelum masuk (tanpa tgl masuk = 1 bulan), maks 5.
-    const labCut = Number.isFinite(admit) ? spIsoDay(admit - 864e5) : spCutoffKey({ days: 7 });
-    const radCut = Number.isFinite(admit) ? spIsoDay(admit - 2 * 864e5) : spCutoffKey({ months: 1 });
-    const newest = (x, y) => (y.sortKey || "").localeCompare(x.sortKey || "");
-    const labs = [], rads = [];
-    const [labList, radList] = await Promise.all([
-      spFetchLabEntries(base, ctx.noreg).catch(() => []),
-      spFetchRadEntries(base, ctx.noreg).catch(() => [])
-    ]);
-    // v3.51.0: 3 lab terbaru + lab PERTAMA saat masuk (IGD) sebagai pembanding bila dirawat lebih lama.
-    const labAll = labList.filter((e) => e.dateKey >= labCut).sort(newest);
-    const labPick = labAll.slice(0, 3);
-    if (labAll.length > 3) labPick.push(labAll[labAll.length - 1]);
-    const sheets = await Promise.all(labPick.map((e) =>
-      get(`/hasil_lab/hasil_lab/print_hasil_labx_by_id_sample/${enc(e.idSample)}/${enc(e.noreg)}`).then(spParseLabSheet).catch(() => null)));
-    const noSec = (t) => String(t || "").replace(/(\d{1,2}:\d{2}):\d{2}/, "$1");
-    labPick.forEach((e, i) => {
-      if (sheets[i] && sheets[i].rows.length) labs.push({ date: noSec(e.dateText), abnormal: spLabAbnormal(sheets[i]), tag: labAll.length > 1 && e === labAll[labAll.length - 1] ? "awal masuk" : "" });
-    });
-    const radPick = radList.filter((e) => e.dateKey >= radCut).sort(newest).slice(0, 5);
-    const exps = await Promise.all(radPick.map((r) =>
-      get(`/hasil_rad/hasil_rad/inner_hasil_rad_detail/${enc(r.noreg)}/${enc(r.idTrx)}`).then(spParseRadExpertise).catch(() => null)));
-    radPick.forEach((r, i) => rads.push({ exam: r.exam, date: noSec(r.dateText), kesan: spRadKesan(exps[i]) }));
+    // A: diagnosis DPJP terakhir.
+    const dxRow = byPref((r) => r.diagnosis && r.diagnosis.replace(/[;\s]/g, ""));
+    const dx = String(dxRow ? dxRow.diagnosis : (pt.dx || spCleanGadarText(g.diagnosa_banding)))
+      .replace(/\s*,\s*;/g, ";").replace(/;\s*;/g, ";").replace(/^[;,\s]+|[;,\s]+$/g, "");
 
-    // Obat: e-resep di CPPT dokter 48 jam terakhir (terbaru dulu, tidak dobel, alkes/BHP dilewati);
-    // bila tidak ada -> e-resep CPPT terakhir yang memuat obat.
-    // v3.51.0: + riwayat e-resep (resep R.Inap sebagian pasien ada di sini, bukan di CPPT) & e-resep UGD saat masuk.
-    const clean = (x) => String(x || "").replace(/^[\s,;-]+|[\s,;-]+$/g, "").replace(/\s*,\s*(?=[A-Za-z])/g, ", ");
-    const fmtObat = (o) => [o.nama, clean(o.dosis) || clean(o.ket), clean(o.frek).replace(/^-$/, ""), clean(o.waktu)].filter(Boolean).join(" — ");
-    const okObat = (o) => o.nama && !SP_BHP_RE.test(o.nama) && !/alkes|bhp|alat/i.test(o.jenis) &&
-      !/durante|intra\s*op|\bSAB\b|spinal|epidural|premedikasi|induksi anest/i.test(`${o.waktu} ${o.ket}`);
-    const since = Date.now() - 48 * 3600e3;
-    const resep = []; // [{ time, tipe, obat:[...] }] dari riwayat e-resep (terbaru dulu)
-    try {
-      const rr = new DOMParser().parseFromString(await get(`/soap_eresep/riwayat_resep/${enc(ctx.noreg)}`), "text/html");
-      const want = [];
-      for (const a of rr.querySelectorAll('[onclick*="load_resep_detail"]')) {
-        const c = [...(a.closest("tr")?.cells || [])].map((x) => x.textContent.replace(/\s+/g, " ").trim());
-        const id = ((a.getAttribute("onclick") || "").match(/'(\d+)'/) || [])[1];
-        const t = spReviewTs(c[0] || a.textContent);
-        const isIgd = /UGD|IGD/i.test(c[1] || "");
-        const nearAdmit = Number.isFinite(admit) && t >= admit - 36 * 3600e3 && t <= admit + 36 * 3600e3;
-        // Resep dokter anestesi (kamar operasi) tidak dipakai.
-        if (/\bsp\.?\s?an\b|anest/i.test(c[2] || "")) continue;
-        if (id && (t >= since || (isIgd && nearAdmit))) want.push({ id, time: t, tipe: isIgd ? "IGD" : "RI" });
-      }
-      const det = await Promise.all(want.slice(0, 12).map((w) => get(`/soap_eresep/inner_resep_detail/${w.id}`).catch(() => "")));
-      want.slice(0, 12).forEach((w, i) => {
-        const d = new DOMParser().parseFromString(det[i], "text/html");
-        const obat = [...d.querySelectorAll("tr")].map((tr) => [...tr.querySelectorAll("td")].map((x) => x.textContent.replace(/\s+/g, " ").trim()))
-          .filter((c) => c.length >= 4 && c[0])
-          .map((c) => ({ nama: c[0], jenis: c[1] || "", jumlah: c[2] || "", dosis: c[3] || "", frek: c[4] || "", waktu: c[5] || "", ket: c[6] || "" }));
-        resep.push({ ...w, obat });
+    // P: perjalanan terapi = Rencana GADAR (terapi IGD + advis) -> instruksi CPPT DPJP & dokter umum (urut waktu).
+    const events = [];
+    const advis = [];
+    if (gadar) {
+      const segs = [{ head: "", lines: [] }];
+      spCleanGadarText(g.rencana_tindakan).split("\n").forEach((l) => {
+        if (SP_TX_HEADER.test(l.trim())) segs.push({ head: l.trim(), lines: [] });
+        else segs[segs.length - 1].lines.push(l);
       });
-    } catch (err) { console.warn("[KONSUL RANAP] riwayat e-resep", err); }
-    const listObat = (sources) => {
-      const out = [], seen = new Set();
-      for (const src of sources) for (const o of (src.obat || []).filter(okObat)) {
-        const k = norm(o.nama);
-        if (seen.has(k)) continue;
-        seen.add(k);
-        out.push(fmtObat(o));
-      }
-      return out;
-    };
-    const cpptRecent = rows.filter((r) => !isAnes(r) && (r.time || 0) >= since && (r.obat || []).some(okObat));
-    const riRecent = resep.filter((x) => x.tipe === "RI" && x.time >= since);
-    let obatTitle = "Obat e-resep 48 jam terakhir:";
-    // e-resep di CPPT dokter = paling bersih (per instruksi DPJP); riwayat e-resep R.Inap hanya bila CPPT tidak memuat obat.
-    let obat = listObat(cpptRecent);
-    if (!obat.length) obat = listObat(riRecent);
-    if (obat.length > 20) obat = obat.slice(0, 20).concat(["… (lihat e-resep untuk daftar lengkap)"]);
-    if (!obat.length) {
-      const last = rows.find((r) => !isAnes(r) && (r.obat || []).some(okObat));
-      if (last) { obat = listObat([last]); obatTitle = `Obat e-resep terakhir (${label(last)}):`; }
+      segs.forEach((sg, i) => {
+        const sp = spSpecialty(sg.head);
+        const dpjpHead = !sp || dpjpWords.some((w) => norm(sg.head).includes(w));
+        // IGD selalu diproses PALING AWAL (jam CPPT DPJP bisa lebih awal dari jam GADAR yang dilengkapi advis belakangan).
+        events.push({ time: -1e15 + i, when: dm(gTime), kind: i ? "advis" : "igd",
+          label: i ? (dpjpHead ? "advis DPJP di IGD" : `advis ${sp} di IGD`) : "", text: sg.lines.join("\n") });
+        if (i && !dpjpHead) { const t = spAdvisSummary(sg.lines.join("\n")); if (t) advis.push({ sp, when: dm(gTime), text: t }); }
+      });
     }
-    // Obat IGD (e-resep UGD sekitar waktu masuk) -> bagian RIWAYAT MASUK.
-    const obatIgd = listObat(resep.filter((x) => x.tipe === "IGD"));
-    if (obatIgd.length && masuk.from) masuk.obat = obatIgd;
+    doc.filter((r) => !isAnes(r) && (isDpjp(r) || !isSp(r))).forEach((r) => {
+      const text = r.instruksi || r.pText;
+      if (text) events.push({ time: r.time || 0, when: dm(r.time), kind: "ward", label: "", text });
+    });
+    events.sort((a, b) => a.time - b.time);
+    const tl = spTherapyTimeline(events);
+    let currentTitle = "Terapi yang berjalan saat ini:";
+    let current = tl.current;
+    if (!current.length) {
+      // Cadangan: belum ada instruksi terapi tertulis -> obat dari e-resep 48 jam terakhir (CPPT dokter / riwayat e-resep).
+      const okObat = (o) => o.nama && !SP_BHP_RE.test(o.nama) && !/alkes|bhp|alat/i.test(o.jenis) &&
+        !/durante|intra\s*op|\bSAB\b|spinal|epidural|premedikasi|induksi anest/i.test(`${o.waktu} ${o.ket}`);
+      const fmt = (o) => [o.nama, o.dosis || o.ket, o.frek].map((x) => String(x || "").replace(/^[\s,;-]+|[\s,;-]+$/g, "")).filter((x) => x && x !== "-").join(" ");
+      const since = Date.now() - 48 * 3600e3;
+      let src = rows.filter((r) => !isAnes(r) && (r.time || 0) >= since).flatMap((r) => r.obat || []);
+      if (!src.some(okObat)) {
+        try {
+          const rr = new DOMParser().parseFromString(await get(`/soap_eresep/riwayat_resep/${enc(ctx.noreg)}`), "text/html");
+          const ids = [];
+          for (const a of rr.querySelectorAll('[onclick*="load_resep_detail"]')) {
+            const c = [...(a.closest("tr")?.cells || [])].map((x) => x.textContent.replace(/\s+/g, " ").trim());
+            const id = ((a.getAttribute("onclick") || "").match(/'(\d+)'/) || [])[1];
+            if (id && !/\bsp\.?\s?an\b|anest/i.test(c[2] || "") && spReviewTs(c[0] || a.textContent) >= since) ids.push(id);
+          }
+          const det = await Promise.all(ids.slice(0, 10).map((id) => get(`/soap_eresep/inner_resep_detail/${id}`).catch(() => "")));
+          src = det.flatMap((h) => [...new DOMParser().parseFromString(h, "text/html").querySelectorAll("tr")]
+            .map((tr) => [...tr.querySelectorAll("td")].map((x) => x.textContent.replace(/\s+/g, " ").trim()))
+            .filter((c) => c.length >= 4 && c[0])
+            .map((c) => ({ nama: c[0], jenis: c[1] || "", dosis: c[3] || "", frek: c[4] || "", waktu: c[5] || "", ket: c[6] || "" })));
+        } catch (err) { console.warn("[KONSUL RANAP] riwayat e-resep", err); }
+      }
+      const seen = new Set();
+      current = src.filter(okObat).filter((o) => { const k = norm(o.nama); if (seen.has(k)) return false; seen.add(k); return true; }).map(fmt).slice(0, 20);
+      if (current.length) currentTitle = "Obat yang berjalan saat ini (dari e-resep 48 jam; instruksi terapi belum tertulis):";
+    }
+
+    // Advis spesialis lain (bukan DPJP): CPPT terakhir tiap spesialisasi — diagnosis + instruksi.
+    const seenSp = new Set(advis.map((a) => a.sp));
+    doc.filter((r) => isSp(r) && !isDpjp(r)).forEach((r) => {
+      const sp = spSpecialty(r.ppa);
+      if (seenSp.has(sp)) return;
+      const t = spAdvisSummary(r.instruksi || r.pText);
+      const dxs = String(r.diagnosis || "").replace(/^[;,\s]+|[;,\s]+$/g, "");
+      if (!t && !dxs) return;
+      seenSp.add(sp);
+      advis.push({ sp, when: dm(r.time), text: [dxs && `A: ${dxs}`, t].filter(Boolean).join(". ") });
+    });
 
     return spBuildKonsulRanapText({
       patientLine: [name, sex && `(${sex})`, age && `/ ${age}`].filter(Boolean).join(" "),
       roomLine,
-      keluhanNow: kelRow ? sOf(kelRow) : "", keluhanNowFrom: kelRow ? label(kelRow) : "",
-      keluhanLatest: latestNewer ? sOf(latestNewer) : "", keluhanLatestFrom: latestNewer ? label(latestNewer) : "",
       masuk,
-      vitals, vitalsFrom: vFrom,
-      pemfis: pfRow ? (pfRow.objective && spUsableObjective(pfRow.objective) ? pfRow.objective : pfRow.oText) : "",
-      pemfisFrom: pfRow ? label(pfRow) : "",
-      labs, rads,
-      dx: String(dxRow ? dxRow.diagnosis : (pt.dx || "")).replace(/\s*,\s*;/g, ";").replace(/;\s*;/g, ";").replace(/^[;,\s]+|[;,\s]+$/g, ""),
-      terapi: tpRow ? terOf(tpRow) : "", terapiFrom: tpRow ? label(tpRow) : "",
-      obat, obatTitle
+      keluhanNow: kelRow ? kelOf(kelRow) : "", keluhanNowWhen: kelRow ? dm(kelRow.time) : "",
+      ttv: { igdWhen: gadar && ttvRows.some((r) => r[1]) ? `masuk IGD ${dm(gTime)}`.trim() : "", nowWhen: vRow ? `saat ini ${dmhm(vRow.time)}`.trim() : "",
+        rows: ttvRows, bb, ku: nowKu },
+      pemfis: pfRow ? (pfRow.objective && spUsableObjective(pfRow.objective) ? pfRow.objective : pfRow.oText) : spCleanGadarText(g.cek_fisik),
+      pemfisWhen: pfRow ? dm(pfRow.time) : (g.cek_fisik ? `saat masuk IGD ${dm(gTime)}`.trim() : ""),
+      dx,
+      tx: { igd: tl.igd, igdWhen: dm(gTime), start: tl.start, changes: tl.changes, current, currentTitle },
+      advis
     });
   }
 
   async function runPaketKonsulRanap(ctxIn = null) {
     const ctx = ctxIn || spRanapContext();
     if (!ctx.noreg) { toast("PAKET KONSUL RANAP: buka halaman pasien rawat inap atau pilih pasien dari daftar."); return; }
-    toast("PAKET KONSUL RANAP: menyusun data konsul (CPPT, GADAR, lab, radiologi, obat)...");
+    toast("PAKET KONSUL RANAP: menyusun SOAP konsul (CPPT, GADAR IGD, perjalanan terapi)...");
     let soap = "";
     try { soap = await spBuildKonsulRanap(ctx); } catch (err) {
       console.warn("[KONSUL RANAP]", err);
@@ -9934,7 +10008,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.52.0</div>
+        <div class="sp-title">🚑 SMARTPLUS AUTO ASM v3.53.0</div>
         <div class="sp-note">Pilih modul yang ingin digunakan:</div>
 
         <button type="button" data-disease-menu="1">
