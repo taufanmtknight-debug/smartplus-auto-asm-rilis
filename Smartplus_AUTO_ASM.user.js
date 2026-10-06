@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.54.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.55.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.54.0
-// @description  v3.54.0: polishing & audit — tampilan menu lebih rapi (judul satu baris + lencana versi, label kelompok menu, tombol berbingkai tipis, huruf sistem lebih nyaman dibaca, catatan dipersingkat; posisi & urutan tombol tetap), pesan status bisa diklik untuk ditutup & pesan panjang tampil lebih lama; isian RESEP PULANG tidak hilang bila menu tertutup atau simpan gagal di tengah jalan; pesan REVIEW GADAR sesuai keadaan (0 pasien / semua lengkap); perbaikan CSS kotak preview; ±290 baris kode mati dihapus (fitur tidak berubah). v3.53.0: PAKET KONSUL RANAP = satu SOAP utuh — S: keluhan saat masuk IGD (KU/RPS) + keluhan saat ini dari dokter; O: tanda vital masuk IGD → saat ini dibandingkan + pemeriksaan fisik dokter; A: diagnosis DPJP; P: perjalanan terapi (terapi IGD → advis DPJP → obat ditambah/diubah/dihentikan di ruangan → kesimpulan terapi yang berjalan saat ini) + advis spesialis lain; tanpa nama penulis CPPT, tanpa penunjang di teks (cukup gambar). v3.52.0: audit stabilitas — sesi login Smartplus yang habis kini dilaporkan jelas (dulu dibaca sebagai data kosong); REVIEW GADAR tidak bisa tersimpan ganda saat kotak lain dicentang/diedit selama menyimpan dan tidak berjalan bersamaan dengan tugas lain; AUTO ASGADAR membuka tab & tombol TAMBAH milik Assesment GADAR (bukan TAMBAH Lab/Rad); petunjuk izinkan pop-up bila film diblokir. v3.51.0: PAKET KONSUL RANAP lebih lengkap — bagian RIWAYAT MASUK dari IGD (keluhan, RPS, RPD, riwayat pengobatan, alergi, TTV & pemeriksaan fisik saat masuk, penunjang & diagnosis IGD, tatalaksana IGD, obat e-resep IGD; pasien poli dari ASM AWAL), lalu S/O kondisi saat ini dari CPPT; lab awal masuk ikut sebagai pembanding; obat dari e-resep CPPT dokter (cadangan riwayat e-resep R.Inap, tanpa resep anestesi & alat); jam tanpa detik. v3.50.0: RAWAT INAP + PAKET KONSUL RANAP — teks konsul lengkap (identitas, ruang, DPJP, hari rawat; keluhan saat ini & saat masuk, RPS, RPD, alergi; tanda vital & pemeriksaan fisik terakhir; lab selama dirawat (nilai di luar normal) & kesan radiologi; diagnosis; terapi DPJP & obat e-resep 48 jam) bisa diedit lalu disalin, plus gambar lab/film/ekspertise; bisa dari halaman pasien atau pilih dari daftar; hanya membaca. v3.49.3: AUTO/KOMBINASI/MASTER RESEP memastikan obat benar-benar masuk draft (tidak lagi dianggap berhasil bila draft tidak berubah). v3.49.2: singkatan 'bapil' dibaca sebagai batuk pilek (saran obat KOMBINASI & keluhan CPPT VISIT). v3.49.1: perbaikan rilis (contoh No. RM di komentar kode dihapus sehingga pemeriksaan keamanan rilis lolos). v3.49.0: RESEP PULANG bisa dimulai dari daftar pasien e-Ranap (cari & pilih pasien, halaman pasien dibuka lalu input dilanjutkan otomatis); nama pasien tampil di panel; tombol Masukkan saja (biru) & Simpan (merah) sama besar. v3.48.0: RESEP PULANG — cari SEMUA obat oral di master Smartplus, klik langsung masuk preview yang bisa diedit; dosis bawaan = dosis tersering dari 3.293 riwayat resep; anak = dosis per kg BB (sirup/drop); tombol Simpan resep pulang langsung (dicek di riwayat resep) atau Masukkan saja. v3.47.0: RAWAT INAP + RESEP PULANG — pilih obat dari database obat pulang (73 obat dari resep poli spesialis, 💡 obat rutin pasien), preview bisa diedit (jumlah otomatis 7 hari, bisa diubah), lalu masuk ke e-resep form CPPT + centang resep pulang hari ini/besok; Simpan resep manual. v3.46.0: audit stabilitas — script tidak berjalan ganda, semua permintaan ke Smartplus diberi batas waktu (tidak macet), satu tugas otomatis pada satu waktu (cegah order/CPPT dobel), AUTO LAB menunggu daftar pemeriksaan dan tidak Save bila gagal, MULTIPLE cek dobel sebelum simpan ulang, KOMBINASI lebih cepat. v3.45.0: RAWAT INAP + MULTIPLE VISIT & MULTIPLE PULANG — cari & pilih banyak pasien dirawat, CPPT sementara tiap pasien ditampilkan dan bisa diedit, lalu 'Save multiple' menyimpan semuanya (dicek ulang di daftar CPPT). v3.44.0: RAWAT INAP tanpa tombol CPPT NORMAL; CPPT VISIT — keluhan dibuat singkat (kata keluhan + status, bukan salinan), pemeriksaan fisik = template normal dengan sedikit bagian positif dari pemeriksaan dokter sebelumnya / diagnosis. v3.43.0: KOMBINASI RESEP + Amlodipine 10 mg, Captopril 12,5 mg; tindakan baru Suntik Asam Traneksamat 500 mg iv dan Infus (RL, infus set, tegaderm, vasofix; ket. igd). v3.42.0: KOMBINASI RESEP tanpa kotak cari obat, tindakan selalu terbuka, warna kalem (tiap golongan kartu berwarna lembut dengan garis kiri, latar panel lavender) agar batas bagian jelas. v3.41.0: tampilan KOMBINASI RESEP lebih ringkas & jelas — obat berupa tombol per golongan, kotak cari obat, anamnesis ringkas, tindakan dilipat, daftar terpilih (hapus dengan ×) dan tombol ACC selalu terlihat di bawah. v3.40.0: KOMBINASI RESEP — jumlah tablet dewasa maks 6 (antibiotik 3 hari, obat DM/hipertensi 5 hari); kamus keluhan diperluas sehingga lebih banyak obat tercentang otomatis (alergi, vertigo, GERD, ulkus, ISK/tifoid, infeksi kulit, asma, LBP/nyeri otot, hipertensi, DM, perdarahan, muntah hebat, batuk kering, dll). v3.39.0: KOMBINASI RESEP + obat oral pulang IGD (dewasa: Paracetamol 500, Ibuprofen, Na diklofenak, Omeprazole, Sukralfat, Antasida suspensi, Ondansetron, Lodia, Cetirizine, Loratadine, Methylprednisolon, OBH, Cefadroxil, Cefixime, Betahistine, Flunarizine, Antimo, Amlodipine, Captopril, Metformin, Glimepiride, Asam traneksamat; anak: sirup Ibuprofen, Cetirizine 0,2 mg/kg, Ambroxol, Cefadroxil, Cefixime per BB, Interzinc, Lacto-B 3 sachet); jumlah R/ ditampilkan, penolakan Smartplus 'Jumlah R Sudah Melebihi Batas' dilaporkan gagal. v3.38.0: CPPT VISIT pemeriksaan fisik selalu template CPPT Normal (diedit dokter bila perlu); KOMBINASI RESEP tanpa kolom aturan pakai, obat dikelompokkan per golongan dalam kotak centang. v3.37.0: RAWAT INAP + CPPT VISIT (keluhan dari CPPT dokter terakhir / keluhan masuk IGD, vital & pemfis mengikuti CPPT sebelumnya atau template normal, instruksi Terapi dpjp lanjut; simpan manual); KOMBINASI RESEP memilih per NAMA OBAT dalam tabel, obat yang sesuai keluhan Assesment GADAR otomatis dicentang sebagai saran lalu ACC. v3.36.0: REVIEW GADAR — simpan lebih tahan gagal di komputer IGD (iframe di layar, cadangan simpan langsung, cek perubahan orang lain). v3.35.0: ADVIS SPESIALIS tetap tersimpan walau GADAR diubah orang lain / form tidak termuat (baca ulang GADAR terbaru, tambahan disambung di bawah, 4 percobaan termasuk simpan langsung). v3.34.0: ADVIS SPESIALIS = cari pasien lalu satu kotak berisi Rencana GADAR saat ini, tambahkan advis bebas, Simpan; tempelan chat WA dirapikan otomatis. RAWAT INAP hanya CPPT. v3.33.0: menu dirapikan — RAWAT INAP (CPPT Normal, CPPT Rencana Pulang, Paket Konsul, Advis Spesialis); label tanpa "PDF"/"dari WA"; hasil advis tanpa "via WA". v3.32.1: ADVIS — pencarian pasien lebih cepat (hasil muncul bertahap, tanpa dobel). v3.32.0: ADVIS SPESIALIS — cari & pilih pasien IGD (48 jam) dengan mengetik nama, advis disimpan ke GADAR pasien itu tanpa membuka halamannya. v3.31.0: ADVIS SPESIALIS — tempel chat advis dari WhatsApp Web, otomatis dirapikan lalu ditambahkan di paling bawah Rencana GADAR (Save manual). v3.30.1: REVIEW GADAR — catatan "Darah rutin dihapus" hanya bila memang ada. v3.30.0: REVIEW GADAR — isian otomatis di paling atas; obat suntik non-oral di luar daftar (Inj. X), nebulisasi + nama obat, lidocain/tetagam, IVFD, IV line, O2 ikut ditulis (antibiotik drip tidak). v3.29.0: REVIEW GADAR — perbaikan gagal simpan (baris baru \\r\\n), GADAR dokter lain tetap diubah, usulan bisa diedit, tindakan yang sudah tertulis ditampilkan. v3.28.1: REVIEW GADAR — "dr" (nama dokter) tidak lagi dianggap "darah rutin". v3.28.0: REVIEW GADAR 24 JAM — laporan pasien DONE dokter login (tindakan dari daftar resep tindakan + order lab/radiologi yang belum tertulis), semua dicentang, simpan massal ke Rencana & Pemeriksaan Penunjang GADAR terakhir. v3.27.0: Lab Severe tidak memesan ulang kreatinin/elektrolit/AGD yang sudah ada dalam 1 minggu lalu Save otomatis; tombol Tutup lain dihapus (pakai ✕), tombol panel dirapikan. v3.26.0: tombol kecilkan (—) & tutup (✕) di pojok kanan atas tiap kotak; AUTO PENUNJANG + Lab Severe (Kreatinin, Elektrolit, AGD; Save manual); ekspertise CT whole abdomen & echocardiography (Kesan/Kesimpulan). v3.25.0: ekspertise radiologi dianggap ada hanya bila memuat "KESAN"; KOMBINASI RESEP menampilkan anamnesis (keluhan utama, RPS, alergi) dari Assesment GADAR. v3.24.0: judul "Riwayat kontrol poli spesialis" dihapus dari Riwayat Penyakit Dahulu; ASGADAR untuk pasien belum terdaftar diisikan ke + BUAT DRAF ASSESMENT GAWAT DARURAT (daftar pasien IGD); PAKET KONSUL: film CT tidak diambil, ekspertise rontgen & CT ikut bila sudah ada. v3.23.0: tombol AUTO SOAP & AUTO SCREENSHOT dihapus dari menu (sudah tercakup PAKET KONSUL). v3.22.0: semua kotak AUTO ASM (menu, KOMBINASI RESEP, AUTO SCREENSHOT/PAKET KONSUL, salin SOAP) bisa digeser dan dikecilkan. v3.21.0: tombol 🔄 Update (SOAP disusun ulang dari GADAR + penunjang baru ditambahkan); semua AUTO kembali ke tab E-RAWAT DARURAT dulu sehingga tidak macet saat tab Riwayat/Hasil terbuka. v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
+// @version      3.55.0
+// @description  v3.55.0: PAKET KONSUL RANAP — kondisi TERBARU dulu (S & O saat ini di atas, keluhan & TTV/pemeriksaan saat masuk IGD di bawahnya); P = terapi yang berjalan saat ini → advis spesialis lain → riwayat perubahan terapi (terbaru dulu); terapi sementara IGD tidak dimasukkan; perbaikan: tulisan 'terapi lanjutan/dilanjutkan' kini dibaca sebagai obat lain tetap berjalan (dulu obat lama keliru tercatat stop). v3.54.0: polishing & audit — tampilan menu lebih rapi (judul satu baris + lencana versi, label kelompok menu, tombol berbingkai tipis, huruf sistem lebih nyaman dibaca, catatan dipersingkat; posisi & urutan tombol tetap), pesan status bisa diklik untuk ditutup & pesan panjang tampil lebih lama; isian RESEP PULANG tidak hilang bila menu tertutup atau simpan gagal di tengah jalan; pesan REVIEW GADAR sesuai keadaan (0 pasien / semua lengkap); perbaikan CSS kotak preview; ±290 baris kode mati dihapus (fitur tidak berubah). v3.53.0: PAKET KONSUL RANAP = satu SOAP utuh — S: keluhan saat masuk IGD (KU/RPS) + keluhan saat ini dari dokter; O: tanda vital masuk IGD → saat ini dibandingkan + pemeriksaan fisik dokter; A: diagnosis DPJP; P: perjalanan terapi (terapi IGD → advis DPJP → obat ditambah/diubah/dihentikan di ruangan → kesimpulan terapi yang berjalan saat ini) + advis spesialis lain; tanpa nama penulis CPPT, tanpa penunjang di teks (cukup gambar). v3.52.0: audit stabilitas — sesi login Smartplus yang habis kini dilaporkan jelas (dulu dibaca sebagai data kosong); REVIEW GADAR tidak bisa tersimpan ganda saat kotak lain dicentang/diedit selama menyimpan dan tidak berjalan bersamaan dengan tugas lain; AUTO ASGADAR membuka tab & tombol TAMBAH milik Assesment GADAR (bukan TAMBAH Lab/Rad); petunjuk izinkan pop-up bila film diblokir. v3.51.0: PAKET KONSUL RANAP lebih lengkap — bagian RIWAYAT MASUK dari IGD (keluhan, RPS, RPD, riwayat pengobatan, alergi, TTV & pemeriksaan fisik saat masuk, penunjang & diagnosis IGD, tatalaksana IGD, obat e-resep IGD; pasien poli dari ASM AWAL), lalu S/O kondisi saat ini dari CPPT; lab awal masuk ikut sebagai pembanding; obat dari e-resep CPPT dokter (cadangan riwayat e-resep R.Inap, tanpa resep anestesi & alat); jam tanpa detik. v3.50.0: RAWAT INAP + PAKET KONSUL RANAP — teks konsul lengkap (identitas, ruang, DPJP, hari rawat; keluhan saat ini & saat masuk, RPS, RPD, alergi; tanda vital & pemeriksaan fisik terakhir; lab selama dirawat (nilai di luar normal) & kesan radiologi; diagnosis; terapi DPJP & obat e-resep 48 jam) bisa diedit lalu disalin, plus gambar lab/film/ekspertise; bisa dari halaman pasien atau pilih dari daftar; hanya membaca. v3.49.3: AUTO/KOMBINASI/MASTER RESEP memastikan obat benar-benar masuk draft (tidak lagi dianggap berhasil bila draft tidak berubah). v3.49.2: singkatan 'bapil' dibaca sebagai batuk pilek (saran obat KOMBINASI & keluhan CPPT VISIT). v3.49.1: perbaikan rilis (contoh No. RM di komentar kode dihapus sehingga pemeriksaan keamanan rilis lolos). v3.49.0: RESEP PULANG bisa dimulai dari daftar pasien e-Ranap (cari & pilih pasien, halaman pasien dibuka lalu input dilanjutkan otomatis); nama pasien tampil di panel; tombol Masukkan saja (biru) & Simpan (merah) sama besar. v3.48.0: RESEP PULANG — cari SEMUA obat oral di master Smartplus, klik langsung masuk preview yang bisa diedit; dosis bawaan = dosis tersering dari 3.293 riwayat resep; anak = dosis per kg BB (sirup/drop); tombol Simpan resep pulang langsung (dicek di riwayat resep) atau Masukkan saja. v3.47.0: RAWAT INAP + RESEP PULANG — pilih obat dari database obat pulang (73 obat dari resep poli spesialis, 💡 obat rutin pasien), preview bisa diedit (jumlah otomatis 7 hari, bisa diubah), lalu masuk ke e-resep form CPPT + centang resep pulang hari ini/besok; Simpan resep manual. v3.46.0: audit stabilitas — script tidak berjalan ganda, semua permintaan ke Smartplus diberi batas waktu (tidak macet), satu tugas otomatis pada satu waktu (cegah order/CPPT dobel), AUTO LAB menunggu daftar pemeriksaan dan tidak Save bila gagal, MULTIPLE cek dobel sebelum simpan ulang, KOMBINASI lebih cepat. v3.45.0: RAWAT INAP + MULTIPLE VISIT & MULTIPLE PULANG — cari & pilih banyak pasien dirawat, CPPT sementara tiap pasien ditampilkan dan bisa diedit, lalu 'Save multiple' menyimpan semuanya (dicek ulang di daftar CPPT). v3.44.0: RAWAT INAP tanpa tombol CPPT NORMAL; CPPT VISIT — keluhan dibuat singkat (kata keluhan + status, bukan salinan), pemeriksaan fisik = template normal dengan sedikit bagian positif dari pemeriksaan dokter sebelumnya / diagnosis. v3.43.0: KOMBINASI RESEP + Amlodipine 10 mg, Captopril 12,5 mg; tindakan baru Suntik Asam Traneksamat 500 mg iv dan Infus (RL, infus set, tegaderm, vasofix; ket. igd). v3.42.0: KOMBINASI RESEP tanpa kotak cari obat, tindakan selalu terbuka, warna kalem (tiap golongan kartu berwarna lembut dengan garis kiri, latar panel lavender) agar batas bagian jelas. v3.41.0: tampilan KOMBINASI RESEP lebih ringkas & jelas — obat berupa tombol per golongan, kotak cari obat, anamnesis ringkas, tindakan dilipat, daftar terpilih (hapus dengan ×) dan tombol ACC selalu terlihat di bawah. v3.40.0: KOMBINASI RESEP — jumlah tablet dewasa maks 6 (antibiotik 3 hari, obat DM/hipertensi 5 hari); kamus keluhan diperluas sehingga lebih banyak obat tercentang otomatis (alergi, vertigo, GERD, ulkus, ISK/tifoid, infeksi kulit, asma, LBP/nyeri otot, hipertensi, DM, perdarahan, muntah hebat, batuk kering, dll). v3.39.0: KOMBINASI RESEP + obat oral pulang IGD (dewasa: Paracetamol 500, Ibuprofen, Na diklofenak, Omeprazole, Sukralfat, Antasida suspensi, Ondansetron, Lodia, Cetirizine, Loratadine, Methylprednisolon, OBH, Cefadroxil, Cefixime, Betahistine, Flunarizine, Antimo, Amlodipine, Captopril, Metformin, Glimepiride, Asam traneksamat; anak: sirup Ibuprofen, Cetirizine 0,2 mg/kg, Ambroxol, Cefadroxil, Cefixime per BB, Interzinc, Lacto-B 3 sachet); jumlah R/ ditampilkan, penolakan Smartplus 'Jumlah R Sudah Melebihi Batas' dilaporkan gagal. v3.38.0: CPPT VISIT pemeriksaan fisik selalu template CPPT Normal (diedit dokter bila perlu); KOMBINASI RESEP tanpa kolom aturan pakai, obat dikelompokkan per golongan dalam kotak centang. v3.37.0: RAWAT INAP + CPPT VISIT (keluhan dari CPPT dokter terakhir / keluhan masuk IGD, vital & pemfis mengikuti CPPT sebelumnya atau template normal, instruksi Terapi dpjp lanjut; simpan manual); KOMBINASI RESEP memilih per NAMA OBAT dalam tabel, obat yang sesuai keluhan Assesment GADAR otomatis dicentang sebagai saran lalu ACC. v3.36.0: REVIEW GADAR — simpan lebih tahan gagal di komputer IGD (iframe di layar, cadangan simpan langsung, cek perubahan orang lain). v3.35.0: ADVIS SPESIALIS tetap tersimpan walau GADAR diubah orang lain / form tidak termuat (baca ulang GADAR terbaru, tambahan disambung di bawah, 4 percobaan termasuk simpan langsung). v3.34.0: ADVIS SPESIALIS = cari pasien lalu satu kotak berisi Rencana GADAR saat ini, tambahkan advis bebas, Simpan; tempelan chat WA dirapikan otomatis. RAWAT INAP hanya CPPT. v3.33.0: menu dirapikan — RAWAT INAP (CPPT Normal, CPPT Rencana Pulang, Paket Konsul, Advis Spesialis); label tanpa "PDF"/"dari WA"; hasil advis tanpa "via WA". v3.32.1: ADVIS — pencarian pasien lebih cepat (hasil muncul bertahap, tanpa dobel). v3.32.0: ADVIS SPESIALIS — cari & pilih pasien IGD (48 jam) dengan mengetik nama, advis disimpan ke GADAR pasien itu tanpa membuka halamannya. v3.31.0: ADVIS SPESIALIS — tempel chat advis dari WhatsApp Web, otomatis dirapikan lalu ditambahkan di paling bawah Rencana GADAR (Save manual). v3.30.1: REVIEW GADAR — catatan "Darah rutin dihapus" hanya bila memang ada. v3.30.0: REVIEW GADAR — isian otomatis di paling atas; obat suntik non-oral di luar daftar (Inj. X), nebulisasi + nama obat, lidocain/tetagam, IVFD, IV line, O2 ikut ditulis (antibiotik drip tidak). v3.29.0: REVIEW GADAR — perbaikan gagal simpan (baris baru \\r\\n), GADAR dokter lain tetap diubah, usulan bisa diedit, tindakan yang sudah tertulis ditampilkan. v3.28.1: REVIEW GADAR — "dr" (nama dokter) tidak lagi dianggap "darah rutin". v3.28.0: REVIEW GADAR 24 JAM — laporan pasien DONE dokter login (tindakan dari daftar resep tindakan + order lab/radiologi yang belum tertulis), semua dicentang, simpan massal ke Rencana & Pemeriksaan Penunjang GADAR terakhir. v3.27.0: Lab Severe tidak memesan ulang kreatinin/elektrolit/AGD yang sudah ada dalam 1 minggu lalu Save otomatis; tombol Tutup lain dihapus (pakai ✕), tombol panel dirapikan. v3.26.0: tombol kecilkan (—) & tutup (✕) di pojok kanan atas tiap kotak; AUTO PENUNJANG + Lab Severe (Kreatinin, Elektrolit, AGD; Save manual); ekspertise CT whole abdomen & echocardiography (Kesan/Kesimpulan). v3.25.0: ekspertise radiologi dianggap ada hanya bila memuat "KESAN"; KOMBINASI RESEP menampilkan anamnesis (keluhan utama, RPS, alergi) dari Assesment GADAR. v3.24.0: judul "Riwayat kontrol poli spesialis" dihapus dari Riwayat Penyakit Dahulu; ASGADAR untuk pasien belum terdaftar diisikan ke + BUAT DRAF ASSESMENT GAWAT DARURAT (daftar pasien IGD); PAKET KONSUL: film CT tidak diambil, ekspertise rontgen & CT ikut bila sudah ada. v3.23.0: tombol AUTO SOAP & AUTO SCREENSHOT dihapus dari menu (sudah tercakup PAKET KONSUL). v3.22.0: semua kotak AUTO ASM (menu, KOMBINASI RESEP, AUTO SCREENSHOT/PAKET KONSUL, salin SOAP) bisa digeser dan dikecilkan. v3.21.0: tombol 🔄 Update (SOAP disusun ulang dari GADAR + penunjang baru ditambahkan); semua AUTO kembali ke tab E-RAWAT DARURAT dulu sehingga tidak macet saat tab Riwayat/Hasil terbuka. v3.20.0: perbaikan salin SOAP (dulu 'tersalin' tapi kosong saat modal GADAR terbuka); PAKET KONSUL tidak lagi unduh PDF otomatis, SOAP berupa teks untuk Paste; gambar penunjang bisa diseret ke WhatsApp. v3.19.0: PAKET KONSUL (SOAP disalin + PDF penunjang dengan SOAP di halaman 1, sekali klik); menu AUTO PENUNJANG berisi Lab, Ro Thorax, USG, CT Brain Non Kontras (baru). v3.18.0: AUTO SCREENSHOT 'Unduh semua' = 1 file PDF; riwayat poli tanpa nama poli, terapi ditulis ke bawah. v3.17.0: riwayat poli spesialis masuk kolom Riwayat Penyakit Dahulu; AUTO SOAP menyalin RPD. v3.16.0: riwayat poli spesialis tanpa batas waktu (batas 6 bulan dihapus). v3.15.0: satu kunjungan terakhir per spesialisasi (dokter berbeda dengan spesialisasi sama -> yang terakhir). v3.14.0: semua ASGADAR (penyakit & normal) menambahkan riwayat kunjungan poli spesialis terakhir per poli (tgl, dokter, diagnosis, terapi) ke Riwayat Penyakit Sekarang. v3.13.0: AUTO PENUNJANG berganti nama AUTO SCREENSHOT; lab 1 minggu tampil lebih dulu; tiap film ditunggu maks 6 detik lalu lanjut; AUTO LAB tanpa kata Febris. v3.12.0: AUTO PENUNJANG mengambil lab 1 minggu terakhir & radiologi 1 bulan terakhir; CT/rontgen = film saja, USG = ekspertise saja. v3.11.0: AUTO PENUNJANG (gambar hasil lab + film radiologi kunjungan ini, siap dikirim untuk konsul). v3.10.0: AUTO SOAP membuka GADAR terakhir, mengisi Terapi sementara (dewasa/anak berdasarkan BB & diagnosis) di Rencana, lalu menyalin SOAP. v3.9.0: menu MASTER TEMPLATE RESEP disembunyikan (pakai KOMBINASI RESEP). v3.8.3: perbaikan BB otomatis dari GADAR di KOMBINASI RESEP. v3.8.2: BB anak hanya dari kolom Berat GADAR terakhir. v3.8.0: resep keluhan diperbarui (Mual/Muntah dewasa Domperidon saja; Demam/Nyeri/Infeksi anak sirup <=15 kg, puyer >15 kg; Paracetamol 4-6x sehari); batas BB racikan diperbaiki; BB anak otomatis dari GADAR. v3.7.0: AUTO USG Whole Abdomen; order radiologi memakai satu fungsi umum (mudah ditambah). v3.6.0: AUTO RO THORAX (order radiologi Thorax PA/AP, diagnosis dari GADAR terakhir, Save otomatis). v3.5.0: alamat server tidak lagi ditulis di script (hanya aktif di halaman SmartPlus); data pasien contoh dihapus dari komentar. v3.4.1: alamat update pindah ke repo rilis publik (repo sumber akan privat). v3.4.0: AUTO LAB mengisi diagnosis dari Assesment GADAR terakhir kunjungan ini. v3.3.0: Simpan otomatis Resep Tindakan hanya menekan tombol simpan resep (#butt_simpan_resep), tidak lagi tombol 'Simpan' sembarang. v3.2.3: resep satu keluhan tidak lagi menduplikasi obat yang sudah ada di draft. v3.2.2: CPPT memakai ID tetap Smartplus, aman saat form sudah terbuka, tidak pernah klik TAMBAH Lab/Rad. v3.2.1: CPPT memakai ID tetap Smartplus (tidak salah klik TAMBAH Lab/Rad). v3.2.0: tanda vital CPPT menyesuaikan usia (neonatus s.d. dewasa), TD tidak diisi untuk bayi/anak. v3.1.2: perbaikan klik tab E-RANAP (bukan breadcrumb) dan klik elemen terdalam. v3.1.1: CPPT lebih stabil (klik teks tepat, tidak salah klik, tunggu form baru, anti dobel-klik). v3.1: sebelum membuka CPPT otomatis klik E-Ranap terlebih dahulu agar pilihan CPPT muncul; tersedia CPPT Normal dan CPPT Rencana Pulang.
 
 // @author       OpenAI
 // @match        http://*/*
@@ -42,7 +42,7 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + window.__SP_AUTO_ASM_LOADED__ + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.54.0";
+  window.__SP_AUTO_ASM_LOADED__ = "3.55.0";
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -3534,16 +3534,22 @@
       // bagian sesudah baris advis menggantikan bagian sebelumnya.
       const next = new Map(), seg = new Map();
       let s = 0;
+      // v3.55.0: catatan dokter jaga/umum (ev.dropBeforeAdvis) yang memuat baris advis ("ADVICE DR. X SP.A") -> baris
+      // SEBELUM advis = terapi sementara / suntikan IGD, dilewati. Catatan DPJP tidak terpengaruh.
+      const skipFirst = !!ev.dropBeforeAdvis && ops.some((o) => o.op === "header");
       for (const o of ops) {
         if (o.op === "header") { s++; continue; }
         if (o.op !== "set") continue;
+        if (skipFirst && s === 0) continue;
         if (next.has(o.key) && seg.get(o.key) === s) {
           // Obat sama dengan angka dosis sama ditulis dua kali ("Ceftri 1x2gr IV" + "Inj. ceftriaxone 1x2 gr") -> sekali saja.
           if (nums(next.get(o.key)) !== nums(o.line)) next.set(o.key, `${next.get(o.key)}; ${o.line}`);
         }
         else { next.set(o.key, o.line); seg.set(o.key, s); }
       }
-      const keepOthers = /\b(?:lanjut|lnjut|lanjutkan)\b|sesuai\s+(?:ts\s+)?dpjp/i.test(ev.text || "");
+      // v3.55.0: semua bentuk kata "lanjut" (lanjutan, lanjutkan, dilanjutkan, lnjut) = obat lain tetap berjalan.
+      // Dulu "terapi lanjutan" tidak dikenali -> daftar pendek dianggap daftar baru dan obat lain tercatat "stop".
+      const keepOthers = /lanjut|lnjut|sesuai\s+(?:ts\s+)?dpjp/i.test(ev.text || "");
       const log = [];
       const put = (k, line) => {
         if (!state.has(k)) log.push(`+ ${short(line)}`);
@@ -3592,60 +3598,59 @@
   }
 
   // Teks konsul rawat inap (fungsi murni, diuji di node: tests/uji_v3_50.js).
+  // v3.55.0 (instruksi dokter 6 Okt 2026): KONDISI TERBARU DULU — S & O saat ini di atas, kondisi saat masuk IGD di bawahnya;
+  // P = terapi yang berjalan saat ini -> advis spesialis lain -> riwayat perubahan terapi (terbaru dulu).
+  // Terapi sementara IGD tidak dimasukkan.
   function spBuildKonsulRanapText(d) {
     const L = ["Assalamualaikum. Izin konsul pasien rawat inap dengan saya Dokter Taufan.", d.patientLine || "-"];
     if (d.roomLine) L.push(d.roomLine);
 
+    // S: saat ini (CPPT dokter) -> saat masuk (IGD).
     L.push("", "*S :*");
-    if (d.masuk && d.masuk.text) L.push(`Saat masuk${d.masuk.when ? ` (${d.masuk.when})` : ""}: ${d.masuk.text}`);
     L.push(d.keluhanNow ? `Saat ini${d.keluhanNowWhen ? ` (${d.keluhanNowWhen})` : ""}: ${d.keluhanNow}` : "Saat ini: belum ada catatan keluhan dari dokter di CPPT.");
+    if (d.masuk && d.masuk.text) L.push(`Saat masuk${d.masuk.when ? ` (${d.masuk.when})` : ""}: ${d.masuk.text}`);
 
+    // O: tanda vital & pemeriksaan fisik terbaru -> data saat masuk IGD di bawahnya.
     L.push("", "*O :*");
     const t = d.ttv || {};
-    const both = !!(t.igdWhen && t.nowWhen);
-    if ((t.rows || []).length) {
-      L.push(`Tanda vital (${[t.igdWhen, t.nowWhen].filter(Boolean).join(" → ") || "-"}):`);
-      if (t.igdWhen && !t.nowWhen) L[L.length - 1] = `Tanda vital (${t.igdWhen}; belum ada di CPPT):`;
+    const rows = t.rows || [];
+    const nowRows = rows.filter((r) => r[2]);
+    const igdRows = rows.filter((r) => r[1]);
+    if (nowRows.length) {
+      L.push(`Tanda vital saat ini${t.nowWhen ? ` (${t.nowWhen})` : ""}:`);
       if (t.ku) L.push(`KU: ${t.ku}`);
-      for (const [label, a, b, unit] of t.rows) {
-        if (both && a && b) L.push(`${label}: ${a} → ${b}${unit || ""}`);
-        else L.push(`${label}: ${a || b}${unit || ""}${both ? (a ? " (saat masuk)" : " (saat ini)") : ""}`);
-      }
+      for (const [label, , b, unit] of nowRows) L.push(`${label}: ${b}${unit || ""}`);
     } else {
-      L.push("Tanda vital: -");
+      L.push("Tanda vital saat ini: belum ada di CPPT.");
     }
     if (t.bb) L.push(`BB: ${t.bb} kg`);
-    if (d.pemfis) L.push(`Pemeriksaan fisik${d.pemfisWhen ? ` (${d.pemfisWhen})` : ""}:`, d.pemfis);
+    if (d.pemfis && !d.pemfisIgd) L.push(`Pemeriksaan fisik${d.pemfisWhen ? ` (${d.pemfisWhen})` : ""}:`, d.pemfis);
+    if (igdRows.length || (d.pemfis && d.pemfisIgd)) {
+      L.push("", `Saat masuk IGD${t.igdWhen ? ` (${t.igdWhen})` : ""}:`);
+      if (igdRows.length) L.push(`TTV: ${igdRows.map(([label, a, , unit]) => `${label} ${a}${unit || ""}`).join(", ")}`);
+      if (d.pemfis && d.pemfisIgd) L.push("Pemeriksaan fisik:", d.pemfis);
+    }
 
     L.push("", "*A :*", d.dx || "-");
 
+    // P: terapi saat ini -> advis spesialis lain -> riwayat perubahan terapi (terbaru dulu).
     L.push("", "*P :*");
-    const tx0 = d.tx || {};
-    // Belum ada perubahan & daftar awal = daftar saat ini -> cukup ditulis sekali ("... saat ini (sejak tgl)").
-    const firstList = (tx0.igd || []).length ? tx0.igd : (tx0.start ? tx0.start.items : []);
-    const same = firstList.length && !(tx0.changes || []).length && JSON.stringify(firstList) === JSON.stringify(tx0.current || []);
-    const tx = same ? { ...tx0, igd: [], start: null, currentTitle: `Terapi yang berjalan saat ini (sejak ${(tx0.igd || []).length ? `IGD ${tx0.igdWhen || ""}`.trim() : tx0.start.when}):` } : tx0;
-    if ((tx.igd || []).length) L.push(`Terapi di IGD${tx.igdWhen ? ` (${tx.igdWhen})` : ""}:`, ...tx.igd.map((x) => `- ${x}`));
-    else if (tx.start && tx.start.items.length) {
-      L.push(`Terapi awal perawatan (${[tx.start.when, tx.start.label].filter(Boolean).join(", ")}):`, ...tx.start.items.map((x) => `- ${x}`));
-    }
-    const hasStart = (tx.igd || []).length || (tx.start && tx.start.items.length);
+    const tx = d.tx || {};
     const ch = tx.changes || [];
-    if (ch.length) {
-      if (hasStart) L.push("");
-      L.push("Perubahan terapi:");
-      const shown = ch.slice(-10);
-      if (ch.length > shown.length) L.push(`- (${ch.length - shown.length} perubahan sebelumnya tidak ditampilkan)`);
-      for (const c of shown) L.push(`- ${c.when}${c.label ? ` (${c.label})` : ""}:`, ...c.items.map((x) => `   ${x}`));
-    }
     if ((tx.current || []).length) {
-      if (hasStart || ch.length) L.push("");
-      L.push(tx.currentTitle || "Terapi yang berjalan saat ini:", ...tx.current.map((x) => `- ${x}`));
-    } else if (!hasStart && !ch.length) {
-      L.push("Terapi: belum tertulis di instruksi dokter.");
+      const since = !ch.length && tx.start && tx.start.when && !tx.currentTitle ? ` (sejak ${tx.start.when})` : "";
+      L.push(tx.currentTitle || `Terapi yang berjalan saat ini${since}:`, ...tx.current.map((x) => `- ${x}`));
+    } else {
+      L.push("Terapi yang berjalan saat ini: belum tertulis di instruksi dokter.");
     }
     if ((d.advis || []).length) {
       L.push("", "Advis spesialis lain:", ...d.advis.map((a) => `- ${a.sp}${a.when ? ` (${a.when})` : ""}: ${a.text}`));
+    }
+    if (ch.length) {
+      const shown = ch.slice(-10).reverse();
+      L.push("", "Riwayat perubahan terapi:");
+      for (const c of shown) L.push(`- ${c.when}${c.label ? ` (${c.label})` : ""}:`, ...c.items.map((x) => `   ${x}`));
+      if (ch.length > shown.length) L.push(`- (${ch.length - shown.length} perubahan sebelumnya tidak ditampilkan)`);
     }
     L.push("", "Mohon advis. Terima kasih sebelumnya, Dok.");
     return L.join("\n");
@@ -3779,7 +3784,8 @@
     const dx = String(dxRow ? dxRow.diagnosis : (pt.dx || spCleanGadarText(g.diagnosa_banding)))
       .replace(/\s*,\s*;/g, ";").replace(/;\s*;/g, ";").replace(/^[;,\s]+|[;,\s]+$/g, "");
 
-    // P: perjalanan terapi = Rencana GADAR (terapi IGD + advis) -> instruksi CPPT DPJP & dokter umum (urut waktu).
+    // P: perjalanan terapi = advis di Rencana GADAR -> instruksi CPPT DPJP & dokter umum (urut waktu).
+    // v3.55.0 (instruksi dokter): terapi sementara IGD (bagian Rencana sebelum baris advis) TIDAK dimasukkan.
     const events = [];
     const advis = [];
     if (gadar) {
@@ -3789,21 +3795,22 @@
         else segs[segs.length - 1].lines.push(l);
       });
       segs.forEach((sg, i) => {
+        if (!i) return; // terapi sementara IGD dilewati
         const sp = spSpecialty(sg.head);
         const dpjpHead = !sp || dpjpWords.some((w) => norm(sg.head).includes(w));
-        // IGD selalu diproses PALING AWAL (jam CPPT DPJP bisa lebih awal dari jam GADAR yang dilengkapi advis belakangan).
-        events.push({ time: -1e15 + i, when: dm(gTime), kind: i ? "advis" : "igd",
-          label: i ? (dpjpHead ? "advis DPJP di IGD" : `advis ${sp} di IGD`) : "", text: sg.lines.join("\n") });
-        if (i && !dpjpHead) { const t = spAdvisSummary(sg.lines.join("\n")); if (t) advis.push({ sp, when: dm(gTime), text: t }); }
+        // Advis di IGD selalu diproses PALING AWAL (jam CPPT DPJP bisa lebih awal dari jam GADAR yang dilengkapi belakangan).
+        events.push({ time: -1e15 + i, when: dm(gTime), kind: "advis",
+          label: dpjpHead ? "advis DPJP di IGD" : `advis ${sp} di IGD`, text: sg.lines.join("\n") });
+        if (!dpjpHead) { const t = spAdvisSummary(sg.lines.join("\n")); if (t) advis.push({ sp, when: dm(gTime), text: t }); }
       });
     }
     doc.filter((r) => !isAnes(r) && (isDpjp(r) || !isSp(r))).forEach((r) => {
       const text = r.instruksi || r.pText;
-      if (text) events.push({ time: r.time || 0, when: dm(r.time), kind: "ward", label: "", text });
+      if (text) events.push({ time: r.time || 0, when: dm(r.time), kind: "ward", label: "", text, dropBeforeAdvis: !isSp(r) });
     });
     events.sort((a, b) => a.time - b.time);
     const tl = spTherapyTimeline(events);
-    let currentTitle = "Terapi yang berjalan saat ini:";
+    let currentTitle = "";
     let current = tl.current;
     if (!current.length) {
       // Cadangan: belum ada instruksi terapi tertulis -> obat dari e-resep 48 jam terakhir (CPPT dokter / riwayat e-resep).
@@ -3850,12 +3857,11 @@
       roomLine,
       masuk,
       keluhanNow: kelRow ? kelOf(kelRow) : "", keluhanNowWhen: kelRow ? dm(kelRow.time) : "",
-      ttv: { igdWhen: gadar && ttvRows.some((r) => r[1]) ? `masuk IGD ${dm(gTime)}`.trim() : "", nowWhen: vRow ? `saat ini ${dmhm(vRow.time)}`.trim() : "",
-        rows: ttvRows, bb, ku: nowKu },
+      ttv: { igdWhen: gadar ? dm(gTime) : "", nowWhen: vRow ? dmhm(vRow.time) : "", rows: ttvRows, bb, ku: nowKu },
       pemfis: pfRow ? (pfRow.objective && spUsableObjective(pfRow.objective) ? pfRow.objective : pfRow.oText) : spCleanGadarText(g.cek_fisik),
-      pemfisWhen: pfRow ? dm(pfRow.time) : (g.cek_fisik ? `saat masuk IGD ${dm(gTime)}`.trim() : ""),
+      pemfisWhen: pfRow ? dm(pfRow.time) : "", pemfisIgd: !pfRow && !!spCleanGadarText(g.cek_fisik),
       dx,
-      tx: { igd: tl.igd, igdWhen: dm(gTime), start: tl.start, changes: tl.changes, current, currentTitle },
+      tx: { start: tl.start, changes: tl.changes, current, currentTitle },
       advis
     });
   }
@@ -9758,7 +9764,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.54.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.55.0</span></div>
         <div class="sp-section-title">Pasien IGD</div>
 
         <button type="button" data-disease-menu="1">
