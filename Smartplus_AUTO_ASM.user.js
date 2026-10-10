@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.58.2
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.58.3
 // @namespace    smartplus-auto-asm-v221
-// @version      3.58.2
-// @description  v3.58.2: header dirapikan — @description kini hanya ringkasan versi terbaru (riwayat lengkap di tests/README.md), @author diperbaiki; perilaku script tidak berubah. v3.58.1: perbaikan ASGADAR + order lab — Save Order Lab memuat ulang halaman sehingga Assesment GADAR tidak terbuka; kini pilihan template dititipkan sebelum Save dan GADAR otomatis dibuka & diisi setelah halaman pasien dimuat ulang.
+// @version      3.58.3
+// @description  v3.58.3: lanjutan ASGADAR setelah Save Order Lab lebih tahan — bila Save mendarat di halaman lain, tab otomatis kembali ke halaman pasien lalu Assesment GADAR diisi; bila order lab tidak terlihat setelahnya, dokter diberi peringatan.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @match        http://*/*
@@ -42,7 +42,7 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + window.__SP_AUTO_ASM_LOADED__ + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.58.2";
+  window.__SP_AUTO_ASM_LOADED__ = "3.58.3";
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -4106,7 +4106,8 @@
     window.addEventListener("beforeunload", onHide);
     const saved = await runAutoLabFebris({
       diagnosis: (TEMPLATES[key] && TEMPLATES[key].diagnosis) || "",
-      beforeSave: () => { try { sessionStorage.setItem(SP_ASGADAR_PENDING_KEY, JSON.stringify({ key, noreg, ts: Date.now() })); } catch (_) {} }
+      // v3.58.3: alamat halaman pasien ikut dititipkan (back) agar bisa kembali bila Save mendarat di halaman lain.
+      beforeSave: () => { try { sessionStorage.setItem(SP_ASGADAR_PENDING_KEY, JSON.stringify({ key, noreg, back: location.pathname + location.search, ts: Date.now() })); } catch (_) {} }
     });
     if (saved) {
       toast("ASGADAR: order lab tersimpan — Assesment GADAR akan dibuka otomatis...");
@@ -4120,18 +4121,51 @@
   }
 
   // v3.58.1: lanjutan ASGADAR setelah halaman dimuat ulang oleh Save Order Lab (titipan < 3 menit, pasien sama).
+  // v3.58.3: bila Save mendarat di halaman BUKAN halaman pasien (alamat tujuan Save belum pernah terlihat langsung),
+  // tab ini dikembalikan SEKALI ke halaman pasien (titipan < 90 dtk); halaman pasien lain dibuka -> titipan dibuang.
+  // Setelah GADAR diisi, daftar order lab dicek; bila kosong dokter diberi tahu (Save mungkin gagal).
   const SP_ASGADAR_PENDING_KEY = "sp-auto-asm-asgadar-pending";
+  function spAsgadarResumeAction(p, path, now) {
+    if (!p || !p.key || !p.noreg) return "none";
+    const age = now - (p.ts || 0);
+    if (!(age >= 0 && age <= 180000)) return "drop";
+    const m = String(path || "").match(/pasien_detail\/([^/?#]+)/i);
+    if (m) return decodeURIComponent(m[1]) === p.noreg ? "resume" : "drop";
+    if (p.back && /pasien_detail\//i.test(p.back) && !p.redirected && age <= 90000) return "redirect";
+    return "wait";
+  }
   async function spResumePendingAsgadar() {
     let p = null;
     try { p = JSON.parse(sessionStorage.getItem(SP_ASGADAR_PENDING_KEY) || "null"); } catch (_) { p = null; }
-    if (!p) return;
-    if (Date.now() - (p.ts || 0) > 180000) { try { sessionStorage.removeItem(SP_ASGADAR_PENDING_KEY); } catch (_) {} return; }
-    if (getCurrentIgdNoreg() !== p.noreg) return; // halaman lain (mis. hasil submit) -> tunggu halaman pasien
-    try { sessionStorage.removeItem(SP_ASGADAR_PENDING_KEY); } catch (_) {}
+    const drop = () => { try { sessionStorage.removeItem(SP_ASGADAR_PENDING_KEY); } catch (_) {} };
+    const action = spAsgadarResumeAction(p, location.pathname, Date.now());
+    if (action === "none" || action === "wait") return;
+    if (action === "drop") { drop(); return; }
+    if (action === "redirect") {
+      // Beri kesempatan halaman hasil Save mengalihkan sendiri dulu.
+      const here = location.href;
+      await recipeSleep(3000);
+      if (location.href !== here) return;
+      p.redirected = true;
+      try { sessionStorage.setItem(SP_ASGADAR_PENDING_KEY, JSON.stringify(p)); } catch (_) {}
+      toast("ASGADAR: kembali ke halaman pasien untuk mengisi Assesment GADAR...");
+      location.href = p.back;
+      return;
+    }
+    drop();
     await waitFor(() => document.getElementById("new_gadar") && document.getElementById(BUTTON_ID), 15000);
     await recipeSleep(800);
     toast("ASGADAR: order lab sudah tersimpan — melanjutkan mengisi Assesment GADAR...");
     await spExclusive("ASGADAR", () => fillTemplate(p.key));
+    try {
+      const html = await spFetch(`${smartplusBaseUrl()}/lab/splab/lab_modal_lad/${encodeURIComponent(p.noreg)}`, { credentials: "same-origin" }).then((r) => r.text());
+      const orders = [...new DOMParser().parseFromString(html, "text/html").querySelectorAll("tr")].slice(1)
+        .filter((tr) => tr.cells.length >= 6 && tr.textContent.trim());
+      if (!orders.length) {
+        await recipeSleep(2500);
+        toast("⚠️ ASGADAR: order lab belum terlihat di daftar Order Lab — cek tab Order Lab, order ulang bila perlu.");
+      }
+    } catch (_) {}
   }
 
   async function runAutoLabFebris(opts = {}) {
@@ -9973,7 +10007,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.58.2</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.58.3</span></div>
         <div class="sp-section-title">Pasien IGD</div>
 
         <button type="button" data-disease-menu="1">
