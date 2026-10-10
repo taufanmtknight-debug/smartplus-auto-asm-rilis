@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.58.3
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.58.4
 // @namespace    smartplus-auto-asm-v221
-// @version      3.58.3
-// @description  v3.58.3: lanjutan ASGADAR setelah Save Order Lab lebih tahan — bila Save mendarat di halaman lain, tab otomatis kembali ke halaman pasien lalu Assesment GADAR diisi; bila order lab tidak terlihat setelahnya, dokter diberi peringatan.
+// @version      3.58.4
+// @description  v3.58.4: PAKET KONSUL RANAP — keluhan saat ini dari CPPT dokter terbaru (termasuk dokter umum), judul "Pemeriksaan fisik" tanpa kata kesimpulan, baris penunjuk "Advis spesialis lain (lihat gambar CPPT terlampir)" dihapus (gambar CPPT tetap dilampirkan).
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @match        http://*/*
@@ -42,7 +42,7 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + window.__SP_AUTO_ASM_LOADED__ + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.58.3";
+  window.__SP_AUTO_ASM_LOADED__ = "3.58.4";
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -3692,7 +3692,7 @@
       L.push("Tanda vital saat ini: belum ada di CPPT.");
     }
     if (t.bb) L.push(`BB: ${t.bb} kg`);
-    if (d.pemfis) L.push("Pemeriksaan fisik (kesimpulan):", d.pemfis);
+    if (d.pemfis) L.push("Pemeriksaan fisik:", d.pemfis); // v3.58.4: kata "(kesimpulan)" dihapus (instruksi dokter)
 
     L.push("", "*A :*", d.dx || "-");
 
@@ -3706,11 +3706,10 @@
     } else {
       L.push("Terapi yang berjalan saat ini: belum tertulis di instruksi dokter.");
     }
-    if ((d.advis || []).length) {
-      // v3.57.0: isi advis spesialis lain dilampirkan sebagai gambar CPPT (d.advisAttached) -> di teks cukup penunjuk.
-      L.push("", d.advisAttached ? "Advis spesialis lain (lihat gambar CPPT terlampir):" : "Advis spesialis lain:",
-        ...d.advis.map((a) => `- ${a.sp}${a.when ? ` (${a.when})` : ""}${a.text ? `: ${a.text}` : ""}`));
-    }
+    // v3.58.4 (instruksi dokter): penunjuk "Advis spesialis lain (lihat gambar CPPT terlampir): - Sp.X (tgl)" dihapus dari
+    // teks; advis spesialis lain cukup dari gambar CPPT di panel. Advis yang masih berisi teks (a.text) tetap ditulis.
+    const advisTxt = (d.advis || []).filter((a) => a.text);
+    if (advisTxt.length) L.push("", "Advis spesialis lain:", ...advisTxt.map((a) => `- ${a.sp}${a.when ? ` (${a.when})` : ""}: ${a.text}`));
     if (ch.length) {
       const shown = ch.slice(-10).reverse();
       L.push("", "Riwayat perubahan terapi:");
@@ -3801,7 +3800,10 @@
     const kelOf = (r) => one(r.keluhan || String(r.sText || "").replace(/^keluhan utama\s*:\s*/i, ""));
 
     // S: saat masuk = KU/RPS Assesment GADAR IGD; saat ini = keluhan CPPT dokter.
-    const kelRow = recentPref((r) => r.keluhan && spShortKeluhan(r.keluhan, false, true)) || recentPref((r) => kelOf(r));
+    // v3.58.4 (instruksi dokter): keluhan saat ini = CPPT dokter TERBARU (dokter umum/jaga boleh, bukan anestesi) —
+    // DPJP tidak lagi diutamakan, agar keluhan terbaru yang ditulis dokter umum ikut menjadi update.
+    const kelRow = doc.find((r) => !isAnes(r) && r.keluhan && spShortKeluhan(r.keluhan, false, true)) ||
+      doc.find((r) => !isAnes(r) && kelOf(r)) || recentPref((r) => kelOf(r));
     let masuk = null;
     if (gadar) {
       const ku = one(spCleanGadarText(g.kel_utama)), rps = one(spCleanGadarText(g.riwayat_sakit_now));
@@ -10007,7 +10009,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.58.3</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.58.4</span></div>
         <div class="sp-section-title">Pasien IGD</div>
 
         <button type="button" data-disease-menu="1">
