@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.59.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.60.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.59.0
-// @description  v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
+// @version      3.60.0
+// @description  v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @match        http://*/*
@@ -10009,7 +10009,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.59.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.60.0</span></div>
         <div class="sp-section-title">Pasien IGD</div>
 
         <button type="button" data-disease-menu="1">
@@ -10051,7 +10051,7 @@
         </button>
 
         <div class="sp-note">
-          Resep dari KOMBINASI masuk sebagai draft — review lalu Simpan manual. Pintasan keyboard: Alt + A.<br>🎤 Dikte suara: klik kolom isian lalu tombol 🎤 (atau Alt + V); ucapkan "titik", "tanda koma", "baris baru", "stop dikte".
+          Resep dari KOMBINASI masuk sebagai draft — review lalu Simpan manual. Pintasan keyboard: Alt + A.<br>🎤 Dikte suara: klik kolom isian lalu tombol 🎤 (atau Alt + V); ucapkan "titik", "tanda koma", "baris baru", "stop dikte".<br>🧠 Asisten suara (uji coba): tombol 🧠 atau Alt + Q — bicara bebas, Claude menyiapkan isian GADAR, Terapkan, lalu Simpan manual.
         </div>
       `;
     }
@@ -11219,7 +11219,7 @@
     if (!b) {
       b = document.createElement("div");
       b.id = SP_VOICE_BUBBLE_ID;
-      b.style.cssText = "position:fixed;right:18px;bottom:190px;z-index:2147483647;max-width:min(420px,calc(100vw - 36px));" +
+      b.style.cssText = "position:fixed;right:18px;bottom:244px;z-index:2147483647;max-width:min(420px,calc(100vw - 36px));" +
         "background:#263238;color:#fff;border-radius:10px;padding:8px 12px;font:13px/1.35 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;" +
         "box-shadow:0 4px 14px rgba(0,0,0,.25);white-space:pre-wrap;pointer-events:none;";
       document.documentElement.appendChild(b);
@@ -11341,6 +11341,423 @@
   }, true);
 
   // =========================================================
+  // v3.60.0: ASISTEN SUARA tahap 1 (permintaan dokter 11 Okt 2026, uji coba)
+  // Dokter bicara / mengetik bebas di panel 🧠 (Alt + Q). Claude (API Anthropic, dipanggil langsung dari browser) mengubah
+  // ucapan menjadi isian form Assesment GADAR. Hasil tampil sebagai PRATINJAU; kolom baru diisi setelah dokter menekan
+  // "Terapkan". TIDAK PERNAH menyimpan (Save GADAR tetap manual).
+  // Privasi: yang dikirim HANYA teks di kotak asisten setelah disaring (spAsistenScrub: No.RM/No.Reg/NIK/telepon, tanggal,
+  // alamat IP, nama setelah "nama"/"tn."/"ny." dihapus). Isi halaman Smartplus tidak pernah dikirim.
+  // Kunci API milik dokter disimpan di localStorage browser ini (TIDAK ditulis di script).
+  // =========================================================
+  const SP_AS_BTN_ID = "sp-auto-asm-asisten-btn";
+  const SP_AS_PANEL_ID = "sp-auto-asm-asisten-panel";
+  const SP_AS_KEY_LS = "sp-auto-asm-asisten-key";
+  const SP_AS_MODEL_LS = "sp-auto-asm-asisten-model";
+  const SP_AS_MODELS = [
+    ["claude-opus-5-5", "Claude Opus 5.5 — paling teliti"],
+    ["claude-sonnet-5-5", "Claude Sonnet 5.5 — seimbang"],
+    ["claude-haiku-5-5", "Claude Haiku 5.5 — paling cepat & murah"]
+  ];
+
+  // Kolom form GADAR (name) yang boleh diisi asisten. mode: "ganti" = isi diganti, "tambah" = ditambahkan di bawah isi lama.
+  const SP_AS_FIELDS = [
+    { key: "kel_utama", label: "Keluhan Utama", mode: "ganti" },
+    { key: "riwayat_sakit_now", label: "Riwayat Penyakit Sekarang", mode: "tambah" },
+    { key: "riwayat_sakit_old", label: "Riwayat Penyakit Dahulu", mode: "tambah" },
+    { key: "riwayat_pengobatan", label: "Riwayat Pengobatan", mode: "tambah" },
+    { key: "alergi_note", label: "Alergi", mode: "ganti" },
+    { key: "kesadaran", label: "Kesadaran", mode: "pilih" },
+    { key: "td", label: "Tekanan Darah", mode: "ganti" },
+    { key: "nadi", label: "Nadi", mode: "ganti" },
+    { key: "nafas", label: "Pernafasan", mode: "ganti" },
+    { key: "suhu", label: "Suhu", mode: "ganti" },
+    { key: "glosgow_coma", label: "GCS", mode: "gcs" },
+    { key: "pain_score", label: "Skala Nyeri", mode: "nyeri" },
+    { key: "berat", label: "Berat Badan", mode: "ganti" },
+    { key: "tinggi", label: "Tinggi Badan", mode: "ganti" },
+    { key: "cek_fisik", label: "Pemeriksaan Fisik", mode: "tambah" },
+    { key: "penunjang", label: "Pemeriksaan Penunjang", mode: "tambah" },
+    { key: "diagnosa_banding", label: "Diagnosis", mode: "ganti" },
+    { key: "rencana_tindakan", label: "Rencana", mode: "tambah" },
+    { key: "masalah_kesehatan", label: "Masalah Kesehatan", mode: "ganti" },
+    { key: "edukasi", label: "Edukasi", mode: "tambah" }
+  ];
+  const SP_AS_KESADARAN = ["", "Compos mentis", "Apatis", "Somnolen", "Sopor", "Koma"];
+
+  // Saring identitas pasien dari teks sebelum dikirim (fungsi murni, diuji di tests/uji_v3_60.js).
+  // Hasil: { text, removed } — removed = jumlah bagian yang dihapus.
+  function spAsistenScrub(raw) {
+    let removed = 0;
+    const hit = (rep) => () => { removed++; return rep; };
+    let s = String(raw || "");
+    // "no rm <angka>", "nomor rekam medis <kode>", "no reg ...", "NIK ...", "no hp ..." -> label + nomor sesudahnya dihapus
+    // (hanya token yang berisi angka; teks klinis sesudahnya tetap, karena hasil dikte jarang bertanda baca).
+    s = s.replace(/\b(no(mor)?\.?\s*(rm|rekam\s+medi[sk]|reg(istrasi)?|register|nik|ktp|bpjs|hp|telp(on)?|telepon|kartu)|nik|nrm)\b(\s*[.:]?\s*[A-Za-z]*\d[\w-]*(\s+\d[\w-]*)*)?/gi, hit("[identitas dihapus]"));
+    // "nama (pasien) Budi Santoso", "atas nama ...", "a.n. ...", "tn./ny./nn./sdr. ..." -> hapus 1–3 kata berikutnya
+    // (berhenti di kata klinis umum seperti usia, sejak, sesak, nyeri).
+    const stop = "usia|umur|datang|dengan|mengeluh|keluhan|sejak|th|thn|tahun|bulan|laki|perempuan|wanita|pria|pasien|sesak|nyeri|demam|batuk|mual|muntah|pusing|lemas|kejang|tensi|td|riwayat|post|dibawa|rujukan|dan";
+    const word = `(?!(${stop})\\b)[^\\s\\d.,;:\\n\\[\\]]+`;
+    s = s.replace(new RegExp(`(^|[\\s,(])(nama(\\s+pasien(nya)?)?|atas\\s+nama|bernama|a\\.\\s?n\\.|tn\\.?|ny\\.?|nn\\.?|sdr[ia]?\\.?)(?=\\s)\\s+${word}(\\s+${word}){0,2}`, "gi"),
+      (m, a) => { removed++; return a + "[nama dihapus]"; });
+    // alamat IP
+    s = s.replace(/\b\d{1,3}(\.\d{1,3}){3}(:\d+)?\b/g, hit("[alamat dihapus]"));
+    // tanggal lengkap (tanggal lahir dsb.): 12-05-1980, 12/5/80
+    s = s.replace(/\b\d{1,2}[-/.]\d{1,2}[-/.](\d{4}|\d{2})\b/g, hit("[tanggal dihapus]"));
+    // angka panjang tanpa pemisah ribuan (No.RM, No.Reg, NIK, telepon) atau kode huruf+angka (format No.Reg)
+    s = s.replace(/(^|[^\w/])((?=[A-Za-z]*\d)[A-Za-z0-9-]*\d[A-Za-z0-9-]*)(?![\w/])/g, (m, a, tok) => {
+      const digits = (tok.match(/\d/g) || []).length;
+      const letters = /[A-Za-z]/.test(tok);
+      if (digits >= 6 || (letters && digits >= 4 && tok.length >= 7)) { removed++; return a + "[nomor dihapus]"; }
+      return m;
+    });
+    return { text: s.replace(/[ \t]{2,}/g, " ").trim(), removed };
+  }
+
+  // Gabungkan isi baru ke isi lama sesuai mode (fungsi murni). "tambah": isi baru di baris baru, tidak dobel.
+  function spAsistenMerge(oldVal, newVal, mode) {
+    const o = String(oldVal || "").replace(/\s+$/, "");
+    const n = String(newVal || "").trim();
+    if (!n) return o;
+    if (mode !== "tambah" || !o) return n;
+    const squash = (x) => x.toLowerCase().replace(/\s+/g, " ").trim();
+    if (squash(o).includes(squash(n))) return o;
+    return o + "\n" + n;
+  }
+
+  // Bersihkan hasil Claude: hanya kolom yang dikenal, nilai teks, kesadaran dari daftar tetap (fungsi murni).
+  function spAsistenNormalize(obj) {
+    const out = {};
+    const src = obj && typeof obj === "object" ? obj : {};
+    for (const f of SP_AS_FIELDS) {
+      let v = src[f.key];
+      if (v === null || v === undefined) v = "";
+      v = String(v).replace(/\r\n?/g, "\n").trim();
+      if (f.key === "kesadaran") {
+        const k = SP_AS_KESADARAN.find((x) => x && x.toLowerCase() === v.toLowerCase());
+        v = k || "";
+      }
+      if (["nadi", "nafas", "glosgow_coma", "pain_score", "berat", "tinggi"].includes(f.key)) v = v.replace(/\s*(x\/?m(e?nit)?|kali\/menit|kg|cm)\.?$/i, "");
+      if (f.key === "suhu") v = v.replace(/\s*°?\s*c\.?$/i, "").replace(/(\d)\.(\d)/, "$1,$2");
+      if (v) out[f.key] = v;
+    }
+    const spo2 = String(src.spo2 || "").replace(/\s*%$/, "").trim();
+    // Form GADAR tidak punya kolom SpO2 -> dicatat di Pemeriksaan Fisik.
+    if (spo2) out.cek_fisik = (out.cek_fisik ? out.cek_fisik + "\n" : "") + "SpO2: " + spo2 + "%";
+    return {
+      fields: out,
+      catatan: String(src.catatan_untuk_dokter || "").trim()
+    };
+  }
+
+  function spAsistenSchema() {
+    const props = {};
+    for (const f of SP_AS_FIELDS) props[f.key] = f.key === "kesadaran" ? { type: "string", enum: SP_AS_KESADARAN } : { type: "string" };
+    props.spo2 = { type: "string" };
+    props.catatan_untuk_dokter = { type: "string" };
+    return { type: "object", properties: props, required: Object.keys(props), additionalProperties: false };
+  }
+
+  const SP_AS_SYSTEM = [
+    "Anda asisten dokter IGD di rumah sakit Indonesia. Dokter mendiktekan (lewat pengenal suara) temuan pasien dalam Bahasa Indonesia.",
+    "Tugas: pindahkan isi ucapan ke kolom form Assesment Gawat Darurat. Jawab HANYA dengan JSON sesuai skema.",
+    "Aturan:",
+    "- Pakai hanya yang diucapkan dokter. Jangan menambah temuan, tanda vital, diagnosis, obat, atau dosis yang tidak disebut. Kolom yang tidak disebut = string kosong.",
+    "- Perbaiki salah dengar istilah medis yang jelas (mis. 'ronki basah', 'vesikuler', 'nyeri tekan epigastrium'), tulis ringkas gaya rekam medis.",
+    "- Bila suatu angka/istilah tidak jelas atau janggal (mis. tensi 15/90), kosongkan kolomnya dan tulis pertanyaannya di catatan_untuk_dokter.",
+    "- Format: td '120/80'; nadi, nafas, glosgow_coma, pain_score, berat, tinggi hanya angka; suhu memakai koma desimal ('37,5'); spo2 hanya angka.",
+    "- kesadaran salah satu: Compos mentis, Apatis, Somnolen, Sopor, Koma (kosong bila tidak disebut).",
+    "- kel_utama: keluhan utama singkat + lama keluhan. riwayat_sakit_now: perjalanan penyakit/keluhan penyerta. riwayat_sakit_old: penyakit dahulu (HT, DM, dll).",
+    "- riwayat_pengobatan: obat yang sudah diminum. cek_fisik: pemeriksaan fisik per sistem, satu temuan per baris. penunjang: hasil/rencana lab & radiologi yang disebut.",
+    "- diagnosa_banding: diagnosis kerja (dan banding bila disebut). rencana_tindakan: rencana terapi/tindakan PERSIS seperti diucapkan (jangan menambah dosis).",
+    "- Abaikan dan jangan salin identitas pasien (nama, nomor RM, alamat) bila terucap.",
+    "- catatan_untuk_dokter: pertanyaan/peringatan singkat untuk dokter, atau kosong."
+  ].join("\n");
+
+  function spAsistenGetKey() { try { return localStorage.getItem(SP_AS_KEY_LS) || ""; } catch (_) { return ""; } }
+  function spAsistenGetModel() {
+    let m = "";
+    try { m = localStorage.getItem(SP_AS_MODEL_LS) || ""; } catch (_) {}
+    return SP_AS_MODELS.some((x) => x[0] === m) ? m : SP_AS_MODELS[0][0];
+  }
+
+  async function spAsistenCallClaude(text) {
+    const key = spAsistenGetKey();
+    if (!key) throw new Error("Kunci API Claude belum diisi. Buka ⚙️ di panel asisten.");
+    const model = spAsistenGetModel();
+    const body = {
+      model,
+      max_tokens: 8000,
+      system: SP_AS_SYSTEM,
+      messages: [{ role: "user", content: "Ucapan dokter:\n" + text }],
+      output_config: { effort: "low", format: { type: "json_schema", schema: spAsistenSchema() } }
+    };
+    const headers = {
+      "content-type": "application/json",
+      "x-api-key": key,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true"
+    };
+    // Opus/Sonnet: bila permintaan ditolak pengaman, server mencoba model cadangan otomatis.
+    if (model !== "claude-haiku-5-5") {
+      body.fallbacks = "default";
+      headers["anthropic-beta"] = "server-side-fallback-2026-07-01";
+    }
+    const send = async () => {
+      const ctrl = typeof AbortController === "function" ? new AbortController() : null;
+      const timer = ctrl ? setTimeout(() => ctrl.abort(), 60000) : null;
+      let r;
+      try {
+        r = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST", headers, body: JSON.stringify(body), credentials: "omit", signal: ctrl ? ctrl.signal : undefined
+        });
+      } catch (err) {
+        throw new Error(err && err.name === "AbortError"
+          ? "Claude tidak menjawab dalam 60 detik."
+          : "tidak bisa menghubungi Claude (internet mati atau diblokir jaringan RS).");
+      } finally { if (timer) clearTimeout(timer); }
+      let data = null;
+      try { data = await r.json(); } catch (_) {}
+      return { r, data, msg: (data && data.error && data.error.message) || ("HTTP " + r.status) };
+    };
+    let { r, data, msg } = await send();
+    // Akun yang belum mendukung model cadangan -> ulangi sekali tanpa fitur itu.
+    if (r.status === 400 && body.fallbacks && /fallback|beta/i.test(msg)) {
+      delete body.fallbacks;
+      delete headers["anthropic-beta"];
+      ({ r, data, msg } = await send());
+    }
+    if (!r.ok) {
+      const why = { 401: "kunci API salah / dicabut", 403: "kunci API tidak diizinkan", 429: "terlalu banyak permintaan / batas belanja tercapai", 529: "server Claude sedang sibuk" }[r.status];
+      throw new Error((why ? why + " — " : "") + msg);
+    }
+    if (data && data.stop_reason === "refusal") throw new Error("Claude menolak permintaan ini. Coba ulangi dengan kalimat lain.");
+    if (data && data.stop_reason === "max_tokens") throw new Error("jawaban Claude terpotong. Coba ucapan yang lebih pendek.");
+    const block = ((data && data.content) || []).find((b) => b && b.type === "text");
+    if (!block) throw new Error("jawaban Claude kosong.");
+    let obj;
+    try { obj = JSON.parse(block.text); } catch (_) { throw new Error("jawaban Claude bukan JSON yang sah."); }
+    return { result: spAsistenNormalize(obj), usage: data.usage || null, model: data.model || model };
+  }
+
+  const spAs = { plan: null, busy: false };
+
+  function spAsistenFormRoot() {
+    const ids = ["modal_form_gadar", "modal_form_gadar_draft"];
+    for (const id of ids) {
+      const m = document.getElementById(id);
+      if (m && m.classList.contains("show") && visible(m)) return m.querySelector("form") || m;
+    }
+    return null;
+  }
+
+  function spAsistenField(root, name) {
+    return root.querySelector(`[name="${name}"]:not([type="hidden"]):not([type="radio"]):not([type="checkbox"])`);
+  }
+
+  function spAsistenEsc(s) { return escapeHtmlText(String(s == null ? "" : s)); }
+
+  function spAsistenSetStatus(msg, color) {
+    const el = document.querySelector(`#${SP_AS_PANEL_ID} .sp-as-status`);
+    if (el) { el.textContent = msg || ""; el.style.color = color || "#37474f"; }
+  }
+
+  function spAsistenRenderPlan() {
+    const box = document.querySelector(`#${SP_AS_PANEL_ID} .sp-as-plan`);
+    if (!box) return;
+    const p = spAs.plan;
+    if (!p) { box.innerHTML = ""; return; }
+    const keys = SP_AS_FIELDS.filter((f) => p.fields[f.key]);
+    if (!keys.length) {
+      box.innerHTML = `<div style="color:#b71c1c">Claude tidak menemukan isian untuk form GADAR.</div>` +
+        (p.catatan ? `<div class="sp-as-note">❓ ${spAsistenEsc(p.catatan)}</div>` : "");
+      return;
+    }
+    box.innerHTML =
+      `<div style="font-weight:700;margin:6px 0 4px">Claude memahami (centang yang mau diisi):</div>` +
+      keys.map((f) => {
+        const how = f.mode === "tambah" ? "ditambahkan di bawah isi lama" : "isi lama diganti";
+        return `<label style="display:flex;gap:6px;align-items:flex-start;padding:4px 0;border-bottom:1px solid #eceff1">` +
+          `<input type="checkbox" data-as-key="${f.key}" checked style="margin-top:3px">` +
+          `<span><b>${spAsistenEsc(f.label)}</b> <span style="color:#78909c;font-size:11px">(${how})</span><br>` +
+          `<span style="white-space:pre-wrap">${spAsistenEsc(p.fields[f.key])}</span></span></label>`;
+      }).join("") +
+      (p.catatan ? `<div class="sp-as-note" style="margin-top:6px;background:#fff8e1;border-radius:6px;padding:6px">❓ ${spAsistenEsc(p.catatan)}</div>` : "") +
+      `<button type="button" data-as="apply" style="margin-top:8px;width:100%;background:#2e7d32">✅ Terapkan ke form GADAR (tidak menyimpan)</button>`;
+  }
+
+  async function spAsistenUnderstand() {
+    if (spAs.busy) return;
+    const ta = document.querySelector(`#${SP_AS_PANEL_ID} textarea`);
+    const raw = ta ? ta.value.trim() : "";
+    if (!raw) { spAsistenSetStatus("Bicara (🎤) atau ketik dulu temuan pasien di kotak di atas.", "#b71c1c"); return; }
+    if (spVoice.on) spVoiceStop("");
+    const { text, removed } = spAsistenScrub(raw);
+    spAs.busy = true;
+    spAs.plan = null;
+    spAsistenRenderPlan();
+    const t0 = Date.now();
+    spAsistenSetStatus("🧠 Claude sedang memahami…" + (removed ? ` (${removed} identitas disaring sebelum dikirim)` : ""));
+    try {
+      const { result, usage, model } = await spAsistenCallClaude(text);
+      spAs.plan = result;
+      spAsistenRenderPlan();
+      const sec = ((Date.now() - t0) / 1000).toFixed(1);
+      const tok = usage ? ` • ${usage.input_tokens || 0}+${usage.output_tokens || 0} token` : "";
+      spAsistenSetStatus(`Selesai ${sec} dtk (${model}${tok}).` + (removed ? ` ${removed} identitas disaring.` : "") + " Periksa lalu Terapkan.", "#2e7d32");
+      console.log("[ASISTEN] dikirim:", text, "hasil:", result, "usage:", usage);
+    } catch (err) {
+      spAsistenSetStatus("ASISTEN gagal: " + (err && err.message || err), "#b71c1c");
+    } finally {
+      spAs.busy = false;
+    }
+  }
+
+  async function spAsistenApply() {
+    const p = spAs.plan;
+    if (!p) return;
+    const panel = document.getElementById(SP_AS_PANEL_ID);
+    const chosen = [...panel.querySelectorAll("input[data-as-key]")].filter((c) => c.checked).map((c) => c.getAttribute("data-as-key"));
+    if (!chosen.length) { spAsistenSetStatus("Tidak ada kolom yang dicentang.", "#b71c1c"); return; }
+    let root = spAsistenFormRoot();
+    if (!root) {
+      spAsistenSetStatus("Membuka form Assesment GADAR (+ TAMBAH)…");
+      const ok = await openAssessmentGadarForTemplate();
+      if (!ok) { spAsistenSetStatus("Form Assesment GADAR tidak bisa dibuka. Buka form GADAR dulu, lalu Terapkan lagi.", "#b71c1c"); return; }
+      await recipeSleep(300);
+      root = spAsistenFormRoot() || modalRoot();
+    }
+    const done = [], fail = [];
+    for (const f of SP_AS_FIELDS) {
+      if (!chosen.includes(f.key)) continue;
+      const v = p.fields[f.key];
+      let ok = false;
+      try {
+        if (f.mode === "pilih") ok = clickInSection(root, ["Kesadaran"], v === "Compos mentis" ? ["Compos mentis", "Compos Mentis"] : [v]);
+        else if (f.mode === "gcs") ok = setGCS(root, v);
+        else if (f.mode === "nyeri") ok = setPain(root, v);
+        else {
+          const el = spAsistenField(root, f.key) || findFieldByLabel(root, [f.label]);
+          if (el) ok = setValue(el, spAsistenMerge(el.value, v, f.mode));
+        }
+      } catch (err) { console.warn("[ASISTEN]", f.key, err); ok = false; }
+      (ok ? done : fail).push(f.label);
+    }
+    spAsistenSetStatus(`Terisi ${done.length} kolom.` + (fail.length ? ` Perlu cek manual: ${fail.join(", ")}.` : "") + " Review lalu Simpan manual.", fail.length ? "#e65100" : "#2e7d32");
+    toast(`ASISTEN: ${done.length} kolom GADAR terisi${fail.length ? ", cek manual: " + fail.join(", ") : ""}. TIDAK disimpan — review lalu Save manual.`);
+  }
+
+  function spAsistenRenderSettings() {
+    const box = document.querySelector(`#${SP_AS_PANEL_ID} .sp-as-settings`);
+    if (!box) return;
+    const has = !!spAsistenGetKey();
+    const cur = spAsistenGetModel();
+    box.innerHTML =
+      `<div style="font-weight:700;margin-bottom:4px">⚙️ Setelan asisten (hanya di browser ini)</div>` +
+      `<div style="font-size:11px;color:#546e7a;margin-bottom:4px">Kunci API dibuat di console.anthropic.com (pasang batas belanja). ` +
+      `Kunci disimpan di browser ini saja, tidak di script. Status: <b>${has ? "kunci tersimpan" : "belum ada kunci"}</b>.</div>` +
+      `<input type="password" class="sp-as-key" autocomplete="off" placeholder="${has ? "•••••• (isi untuk mengganti)" : "sk-ant-…"}" style="width:100%;box-sizing:border-box;padding:6px;border:1px solid #b0bec5;border-radius:6px">` +
+      `<select class="sp-as-model" style="width:100%;margin-top:6px;padding:5px;border:1px solid #b0bec5;border-radius:6px">` +
+      SP_AS_MODELS.map(([id, name]) => `<option value="${id}"${id === cur ? " selected" : ""}>${spAsistenEsc(name)}</option>`).join("") +
+      `</select><div style="display:flex;gap:6px;margin-top:6px">` +
+      `<button type="button" data-as="save-set" style="flex:1">Simpan setelan</button>` +
+      `<button type="button" data-as="del-key" style="flex:1;background:#78909c">Hapus kunci</button></div>` +
+      `<div style="font-size:11px;color:#546e7a;margin-top:6px">Yang dikirim ke Claude hanya teks di kotak asisten setelah nama/No.RM/No.Reg/tanggal disaring. Jangan ucapkan identitas pasien.</div>`;
+  }
+
+  function spAsistenOpen() {
+    let panel = document.getElementById(SP_AS_PANEL_ID);
+    if (panel) {
+      panel.style.display = panel.style.display === "none" ? "block" : "none";
+      if (panel.style.display === "block") { const ta = panel.querySelector("textarea"); if (ta) ta.focus(); }
+      return;
+    }
+    panel = document.createElement("div");
+    panel.id = SP_AS_PANEL_ID;
+    panel.style.cssText = "position:fixed;right:72px;top:12px;z-index:2147483646;width:min(440px,calc(100vw - 84px));max-height:calc(100vh - 24px);" +
+      "overflow:auto;box-sizing:border-box;background:#fff;color:#263238;border:1px solid #b0bec5;border-radius:12px;padding:10px 12px;" +
+      "box-shadow:0 8px 28px rgba(0,0,0,.28);font:13px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;";
+    panel.innerHTML =
+      `<style>#${SP_AS_PANEL_ID} button{border:0;border-radius:8px;padding:7px 10px;color:#fff;background:#1565c0;font-weight:700;font-size:13px;line-height:1.2;cursor:pointer}</style>` +
+      `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">` +
+      `<div style="font-weight:800;flex:1">🧠 ASISTEN SUARA <span style="font-weight:400;color:#78909c">(uji coba)</span></div>` +
+      `<button type="button" data-as="settings" title="Setelan" style="background:#78909c">⚙️</button>` +
+      `<button type="button" data-as="close" title="Tutup (Alt+Q)" style="background:#78909c">✕</button></div>` +
+      `<div class="sp-as-settings" style="display:none;background:#eceff1;border-radius:8px;padding:8px;margin-bottom:8px"></div>` +
+      `<textarea rows="5" placeholder="Bicara (🎤) atau ketik, mis.: laki-laki 45 tahun sesak sejak 2 hari, batuk berdahak, riwayat hipertensi. TD 150 per 90 nadi 110 napas 28 suhu 37 koma 8 saturasi 92. Ronki basah kedua paru. Diagnosis pneumonia. Rencana cek darah lengkap dan rontgen thorax." ` +
+      `style="width:100%;box-sizing:border-box;padding:7px;border:1px solid #b0bec5;border-radius:8px;font-size:13px;line-height:1.4;font-family:inherit;resize:vertical"></textarea>` +
+      `<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">` +
+      `<button type="button" data-as="mic" style="background:#455a64">🎤 Dikte</button>` +
+      `<button type="button" data-as="go" style="flex:1">🧠 Pahami</button>` +
+      `<button type="button" data-as="clear" style="background:#78909c">Bersihkan</button></div>` +
+      `<div class="sp-as-status" style="margin-top:6px;font-size:12px"></div>` +
+      `<div class="sp-as-plan"></div>`;
+    (document.body || document.documentElement).appendChild(panel);
+    // Modal GADAR (Bootstrap) merebut fokus kembali ke dalam modal (lihat v3.20.0): focusin dari panel tidak diteruskan ke
+    // document supaya kotak asisten tetap bisa diketik / didikte saat form GADAR terbuka.
+    panel.addEventListener("focusin", (e) => e.stopPropagation());
+    panel.addEventListener("mousedown", (e) => { if (e.target.closest("button[data-as='mic']")) e.preventDefault(); }, true);
+    panel.addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-as]");
+      if (!b) return;
+      e.preventDefault();
+      const act = b.getAttribute("data-as");
+      const ta = panel.querySelector("textarea");
+      const set = panel.querySelector(".sp-as-settings");
+      if (act === "close") { if (spVoice.on && spVoice.target === ta) spVoiceStop(""); panel.style.display = "none"; }
+      else if (act === "settings") { const show = set.style.display === "none"; set.style.display = show ? "block" : "none"; if (show) spAsistenRenderSettings(); }
+      else if (act === "save-set") {
+        const k = set.querySelector(".sp-as-key").value.trim();
+        const m = set.querySelector(".sp-as-model").value;
+        try {
+          if (k) localStorage.setItem(SP_AS_KEY_LS, k);
+          localStorage.setItem(SP_AS_MODEL_LS, m);
+        } catch (_) { spAsistenSetStatus("Setelan gagal disimpan (penyimpanan browser diblokir).", "#b71c1c"); return; }
+        spAsistenRenderSettings();
+        spAsistenSetStatus("Setelan tersimpan.", "#2e7d32");
+      }
+      else if (act === "del-key") { try { localStorage.removeItem(SP_AS_KEY_LS); } catch (_) {} spAsistenRenderSettings(); spAsistenSetStatus("Kunci API dihapus dari browser ini.", "#2e7d32"); }
+      else if (act === "mic") {
+        if (spVoice.on) { spVoiceStop("DIKTE SUARA berhenti."); return; }
+        ta.focus();
+        try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (_) {}
+        spVoiceStart();
+      }
+      else if (act === "go") spAsistenUnderstand();
+      else if (act === "clear") { ta.value = ""; spAs.plan = null; spAsistenRenderPlan(); spAsistenSetStatus(""); ta.focus(); }
+      else if (act === "apply") spAsistenApply();
+    });
+    if (!spAsistenGetKey()) {
+      panel.querySelector(".sp-as-settings").style.display = "block";
+      spAsistenRenderSettings();
+      spAsistenSetStatus("Isi kunci API Claude dulu di ⚙️ (sekali saja per browser).", "#e65100");
+    } else {
+      spAsistenSetStatus("Bicara (🎤) atau ketik temuan pasien, lalu tekan 🧠 Pahami. Mic diblokir? Klik kotak lalu tekan Win + H.");
+    }
+    panel.querySelector("textarea").focus();
+  }
+
+  function spEnsureAsistenButton() {
+    if (document.getElementById(SP_AS_BTN_ID)) return;
+    const b = document.createElement("button");
+    b.id = SP_AS_BTN_ID;
+    b.type = "button";
+    b.title = "ASISTEN SUARA (Alt+Q): ucapan -> isian form GADAR lewat Claude, dengan pratinjau. Tidak menyimpan.";
+    b.textContent = "🧠";
+    b.style.cssText = "position:fixed;right:18px;bottom:190px;z-index:2147483647;border:0;border-radius:22px;" +
+      "min-width:44px;height:44px;padding:0 12px;color:#fff;background:#6a1b9a;font:700 18px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;" +
+      "box-shadow:0 4px 12px rgba(0,0,0,.25);cursor:pointer;";
+    b.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); spAsistenOpen(); }, true);
+    (document.body || document.documentElement).appendChild(b);
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.altKey && !e.ctrlKey && String(e.key || "").toLowerCase() === "q") {
+      e.preventDefault();
+      spAsistenOpen();
+    }
+  }, true);
+
+  // =========================================================
   // CHROME + FIREFOX + VIOLENTMONKEY COMPATIBILITY BOOTSTRAP
   // =========================================================
   // Chrome/Firefox dapat memulihkan halaman dari BFCache atau
@@ -11352,6 +11769,7 @@
       if (!document.documentElement) return false;
       ensureButton();
       spEnsureVoiceButton();
+      spEnsureAsistenButton();
       return !!document.getElementById(BUTTON_ID);
     } catch (err) {
       console.warn('[AUTO ASM] ensureButton retry:', err);
@@ -11406,11 +11824,11 @@
   }, true);
 
   setInterval(() => {
-    if (!document.getElementById(BUTTON_ID) || !document.getElementById(SP_VOICE_BTN_ID)) safeEnsureButton();
+    if (!document.getElementById(BUTTON_ID) || !document.getElementById(SP_VOICE_BTN_ID) || !document.getElementById(SP_AS_BTN_ID)) safeEnsureButton();
   }, 1500);
 
   const observer = new MutationObserver(() => {
-    if (!document.getElementById(BUTTON_ID) || !document.getElementById(SP_VOICE_BTN_ID)) safeEnsureButton();
+    if (!document.getElementById(BUTTON_ID) || !document.getElementById(SP_VOICE_BTN_ID) || !document.getElementById(SP_AS_BTN_ID)) safeEnsureButton();
   });
 
   if (document.documentElement) {
