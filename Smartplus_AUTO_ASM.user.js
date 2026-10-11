@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.60.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.61.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.60.0
-// @description  v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
+// @version      3.61.0
+// @description  v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @match        http://*/*
@@ -10009,7 +10009,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.60.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.61.0</span></div>
         <div class="sp-section-title">Pasien IGD</div>
 
         <button type="button" data-disease-menu="1">
@@ -10051,7 +10051,7 @@
         </button>
 
         <div class="sp-note">
-          Resep dari KOMBINASI masuk sebagai draft — review lalu Simpan manual. Pintasan keyboard: Alt + A.<br>🎤 Dikte suara: klik kolom isian lalu tombol 🎤 (atau Alt + V); ucapkan "titik", "tanda koma", "baris baru", "stop dikte".<br>🧠 Asisten suara (uji coba): tombol 🧠 atau Alt + Q — bicara bebas, Claude menyiapkan isian GADAR, Terapkan, lalu Simpan manual.
+          Resep dari KOMBINASI masuk sebagai draft — review lalu Simpan manual. Pintasan keyboard: Alt + A.<br>🎤 Dikte suara: klik kolom isian lalu tombol 🎤 (atau Alt + V); ucapkan "titik", "tanda koma", "baris baru", "stop dikte".<br>🧠 Asisten suara (uji coba): tombol 🧠 atau Alt + Q — bicara bebas (🗣️ Dikte) atau rekam anamnesa (👥 Percakapan), Claude menyiapkan isian GADAR, Terapkan, lalu Simpan manual.
         </div>
       `;
     }
@@ -11182,12 +11182,12 @@
     return !!el.isContentEditable;
   }
 
-  const spVoice = { rec: null, on: false, target: null, lastField: null, interim: "", restarts: 0 };
+  const spVoice = { rec: null, on: false, target: null, lastField: null, interim: "", restarts: 0, raw: false, onStop: null };
 
   document.addEventListener("focusin", (e) => {
     if (spVoiceIsField(e.target)) {
       spVoice.lastField = e.target;
-      if (spVoice.on) spVoice.target = e.target; // dikte pindah ke kolom yang baru diklik
+      if (spVoice.on && !spVoice.raw) spVoice.target = e.target; // dikte pindah ke kolom yang baru diklik (mode percakapan tetap ke panel)
     }
   }, true);
 
@@ -11236,14 +11236,21 @@
       btn.textContent = spVoice.on ? "⏹ 🎤" : "🎤";
     }
     spVoiceBubble(spVoice.on ? "🎤 Mendengarkan… " + (spVoice.interim || "") : "");
+    try { spAsistenRenderMode(); } catch (_) {}
   }
 
   function spVoiceStop(msg) {
+    const wasOn = spVoice.on;
     spVoice.on = false;
     spVoice.interim = "";
     try { spVoice.rec && spVoice.rec.stop(); } catch (_) {}
     spVoiceRender();
     if (msg) toast(msg);
+    // v3.61.0: panel asisten (mode percakapan) dipanggil sekali saat mendengar berhenti.
+    const cb = spVoice.onStop;
+    spVoice.onStop = null;
+    spVoice.raw = false;
+    if (wasOn && typeof cb === "function") { try { cb(); } catch (err) { console.warn("[ASISTEN] onStop", err); } }
   }
 
   function spVoiceStart() {
@@ -11268,8 +11275,9 @@
       for (let i = ev.resultIndex; i < ev.results.length; i++) {
         const r = ev.results[i];
         if (r.isFinal) {
-          const { text, stop } = spVoiceTransform(r[0].transcript);
-          if (text && !spVoiceInsert(spVoice.target, text)) toast("DIKTE SUARA: kolom tujuan hilang — klik kolom isian lagi.");
+          // v3.61.0: mode percakapan (spVoice.raw) -> ucapan apa adanya, satu baris per ucapan, tanpa perintah tanda baca.
+          const { text, stop } = spVoice.raw ? spAsistenRawPiece(r[0].transcript) : spVoiceTransform(r[0].transcript);
+          if (text && !(spVoice.raw ? spAsistenAppendLine(spVoice.target, text) : spVoiceInsert(spVoice.target, text))) toast("DIKTE SUARA: kolom tujuan hilang — klik kolom isian lagi.");
           if (stop) { spVoiceStop("DIKTE SUARA berhenti."); return; }
         } else {
           interim += r[0].transcript;
@@ -11383,6 +11391,28 @@
     { key: "edukasi", label: "Edukasi", mode: "tambah" }
   ];
   const SP_AS_KESADARAN = ["", "Compos mentis", "Apatis", "Somnolen", "Sopor", "Koma"];
+  const SP_AS_MODE_LS = "sp-auto-asm-asisten-mode";
+
+  // v3.61.0: mode percakapan — satu potong hasil pengenalan suara apa adanya (fungsi murni).
+  // "titik"/"koma" tidak diubah (bisa ucapan pasien); hanya "stop mendengar" / "stop dikte" yang menghentikan.
+  function spAsistenRawPiece(raw) {
+    let s = " " + String(raw || "").replace(/\s+/g, " ").trim() + " ";
+    const re = /\s(stop|berhenti|selesai)\s+(dikte|mendengar|mendengarkan|rekam)(?=\s)/gi;
+    const stop = re.test(s);
+    s = s.replace(re, " ");
+    return { text: s.replace(/\s+/g, " ").trim(), stop };
+  }
+
+  // Tambahkan satu ucapan sebagai baris baru di akhir kotak asisten.
+  function spAsistenAppendLine(el, line) {
+    if (!el || !el.isConnected || !line) return false;
+    const v = String(el.value || "").replace(/\s+$/, "");
+    const nv = (v ? v + "\n" : "") + line;
+    try { el.value = nv; el.scrollTop = el.scrollHeight; } catch (_) { return false; }
+    return true;
+  }
+
+  function spAsistenGetMode() { try { return localStorage.getItem(SP_AS_MODE_LS) === "percakapan" ? "percakapan" : "dikte"; } catch (_) { return "dikte"; } }
 
   // Saring identitas pasien dari teks sebelum dikirim (fungsi murni, diuji di tests/uji_v3_60.js).
   // Hasil: { text, removed } — removed = jumlah bagian yang dihapus.
@@ -11445,7 +11475,8 @@
     if (spo2) out.cek_fisik = (out.cek_fisik ? out.cek_fisik + "\n" : "") + "SpO2: " + spo2 + "%";
     return {
       fields: out,
-      catatan: String(src.catatan_untuk_dokter || "").trim()
+      catatan: String(src.catatan_untuk_dokter || "").trim(),
+      saran: String(src.saran_pertanyaan || "").trim()
     };
   }
 
@@ -11454,6 +11485,7 @@
     for (const f of SP_AS_FIELDS) props[f.key] = f.key === "kesadaran" ? { type: "string", enum: SP_AS_KESADARAN } : { type: "string" };
     props.spo2 = { type: "string" };
     props.catatan_untuk_dokter = { type: "string" };
+    props.saran_pertanyaan = { type: "string" };
     return { type: "object", properties: props, required: Object.keys(props), additionalProperties: false };
   }
 
@@ -11470,7 +11502,15 @@
     "- riwayat_pengobatan: obat yang sudah diminum. cek_fisik: pemeriksaan fisik per sistem, satu temuan per baris. penunjang: hasil/rencana lab & radiologi yang disebut.",
     "- diagnosa_banding: diagnosis kerja (dan banding bila disebut). rencana_tindakan: rencana terapi/tindakan PERSIS seperti diucapkan (jangan menambah dosis).",
     "- Abaikan dan jangan salin identitas pasien (nama, nomor RM, alamat) bila terucap.",
-    "- catatan_untuk_dokter: pertanyaan/peringatan singkat untuk dokter, atau kosong."
+    "- catatan_untuk_dokter: pertanyaan/peringatan singkat untuk dokter, atau kosong.",
+    "- saran_pertanyaan: hanya untuk MODE PERCAKAPAN — maksimal 5 pertanyaan anamnesa penting yang BELUM ditanyakan (tanda bahaya, onset, faktor pemberat, riwayat obat/alergi), satu per baris diawali '- '. Kosong pada mode dikte.",
+    "",
+    "MODE PERCAKAPAN: teks adalah transkrip percakapan dokter dengan pasien/keluarga di IGD, satu baris per ucapan, TANPA label pembicara dan bisa ada salah dengar.",
+    "- Tentukan sendiri mana pertanyaan dokter dan mana jawaban pasien. Temuan hanya dari jawaban/pernyataan pasien atau keluarga; pertanyaan yang tidak dijawab bukan temuan.",
+    "- Keluhan yang disangkal tulis di riwayat_sakit_now sebagai 'Disangkal: ...'. Ubah bahasa awam menjadi istilah medis singkat (mis. 'ulu hati perih' -> nyeri epigastrium) tanpa menambah makna.",
+    "- Riwayat keluarga dan kebiasaan (merokok, dll.) masuk riwayat_sakit_old dengan awalan 'Riwayat keluarga:' / 'Kebiasaan:'.",
+    "- Abaikan basa-basi, salam, dan pembicaraan di luar pasien ini. Tanda vital/pemeriksaan fisik hanya bila jelas disebut.",
+    "- Jangan menulis diagnosis atau rencana kecuali dokter jelas mengucapkannya."
   ].join("\n");
 
   function spAsistenGetKey() { try { return localStorage.getItem(SP_AS_KEY_LS) || ""; } catch (_) { return ""; } }
@@ -11480,7 +11520,7 @@
     return SP_AS_MODELS.some((x) => x[0] === m) ? m : SP_AS_MODELS[0][0];
   }
 
-  async function spAsistenCallClaude(text) {
+  async function spAsistenCallClaude(text, mode) {
     const key = spAsistenGetKey();
     if (!key) throw new Error("Kunci API Claude belum diisi. Buka ⚙️ di panel asisten.");
     const model = spAsistenGetModel();
@@ -11488,7 +11528,9 @@
       model,
       max_tokens: 8000,
       system: SP_AS_SYSTEM,
-      messages: [{ role: "user", content: "Ucapan dokter:\n" + text }],
+      messages: [{ role: "user", content: mode === "percakapan"
+        ? "MODE PERCAKAPAN. Transkrip percakapan anamnesa:\n" + text
+        : "MODE DIKTE. Ucapan dokter:\n" + text }],
       output_config: { effort: "low", format: { type: "json_schema", schema: spAsistenSchema() } }
     };
     const headers = {
@@ -11539,7 +11581,7 @@
     return { result: spAsistenNormalize(obj), usage: data.usage || null, model: data.model || model };
   }
 
-  const spAs = { plan: null, busy: false };
+  const spAs = { plan: null, busy: false, again: false, mode: "" };
 
   function spAsistenFormRoot() {
     const ids = ["modal_form_gadar", "modal_form_gadar_draft"];
@@ -11561,6 +11603,13 @@
     if (el) { el.textContent = msg || ""; el.style.color = color || "#37474f"; }
   }
 
+  function spAsistenSaranHtml(p) {
+    if (!p || !p.saran) return "";
+    return `<div style="margin-top:6px;background:#e3f2fd;border-radius:6px;padding:6px"><b>💡 Belum ditanyakan</b> ` +
+      `<span style="color:#78909c;font-size:11px">(saran, tidak diisi ke form)</span>` +
+      `<div style="white-space:pre-wrap">${spAsistenEsc(p.saran)}</div></div>`;
+  }
+
   function spAsistenRenderPlan() {
     const box = document.querySelector(`#${SP_AS_PANEL_ID} .sp-as-plan`);
     if (!box) return;
@@ -11569,7 +11618,7 @@
     const keys = SP_AS_FIELDS.filter((f) => p.fields[f.key]);
     if (!keys.length) {
       box.innerHTML = `<div style="color:#b71c1c">Claude tidak menemukan isian untuk form GADAR.</div>` +
-        (p.catatan ? `<div class="sp-as-note">❓ ${spAsistenEsc(p.catatan)}</div>` : "");
+        (p.catatan ? `<div class="sp-as-note">❓ ${spAsistenEsc(p.catatan)}</div>` : "") + spAsistenSaranHtml(p);
       return;
     }
     box.innerHTML =
@@ -11582,15 +11631,18 @@
           `<span style="white-space:pre-wrap">${spAsistenEsc(p.fields[f.key])}</span></span></label>`;
       }).join("") +
       (p.catatan ? `<div class="sp-as-note" style="margin-top:6px;background:#fff8e1;border-radius:6px;padding:6px">❓ ${spAsistenEsc(p.catatan)}</div>` : "") +
+      spAsistenSaranHtml(p) +
       `<button type="button" data-as="apply" style="margin-top:8px;width:100%;background:#2e7d32">✅ Terapkan ke form GADAR (tidak menyimpan)</button>`;
   }
 
   async function spAsistenUnderstand() {
-    if (spAs.busy) return;
+    if (spAs.busy) { spAs.again = true; return; } // diproses ulang setelah permintaan yang sedang jalan selesai
     const ta = document.querySelector(`#${SP_AS_PANEL_ID} textarea`);
     const raw = ta ? ta.value.trim() : "";
     if (!raw) { spAsistenSetStatus("Bicara (🎤) atau ketik dulu temuan pasien di kotak di atas.", "#b71c1c"); return; }
-    if (spVoice.on) spVoiceStop("");
+    const mode = spAsistenGetMode();
+    // Mode percakapan: mendengar tetap jalan (Pahami bisa ditekan di tengah anamnesa untuk melihat saran pertanyaan).
+    if (spVoice.on && mode !== "percakapan") spVoiceStop("");
     const { text, removed } = spAsistenScrub(raw);
     spAs.busy = true;
     spAs.plan = null;
@@ -11598,7 +11650,7 @@
     const t0 = Date.now();
     spAsistenSetStatus("🧠 Claude sedang memahami…" + (removed ? ` (${removed} identitas disaring sebelum dikirim)` : ""));
     try {
-      const { result, usage, model } = await spAsistenCallClaude(text);
+      const { result, usage, model } = await spAsistenCallClaude(text, mode);
       spAs.plan = result;
       spAsistenRenderPlan();
       const sec = ((Date.now() - t0) / 1000).toFixed(1);
@@ -11609,6 +11661,7 @@
       spAsistenSetStatus("ASISTEN gagal: " + (err && err.message || err), "#b71c1c");
     } finally {
       spAs.busy = false;
+      if (spAs.again) { spAs.again = false; setTimeout(spAsistenUnderstand, 0); }
     }
   }
 
@@ -11683,7 +11736,10 @@
       `<button type="button" data-as="settings" title="Setelan" style="background:#78909c">⚙️</button>` +
       `<button type="button" data-as="close" title="Tutup (Alt+Q)" style="background:#78909c">✕</button></div>` +
       `<div class="sp-as-settings" style="display:none;background:#eceff1;border-radius:8px;padding:8px;margin-bottom:8px"></div>` +
-      `<textarea rows="5" placeholder="Bicara (🎤) atau ketik, mis.: laki-laki 45 tahun sesak sejak 2 hari, batuk berdahak, riwayat hipertensi. TD 150 per 90 nadi 110 napas 28 suhu 37 koma 8 saturasi 92. Ronki basah kedua paru. Diagnosis pneumonia. Rencana cek darah lengkap dan rontgen thorax." ` +
+      `<div class="sp-as-modes" style="display:flex;gap:6px;margin-bottom:6px">` +
+      `<button type="button" data-as="mode-dikte" style="flex:1">🗣️ Dikte dokter</button>` +
+      `<button type="button" data-as="mode-percakapan" style="flex:1">👥 Percakapan anamnesa</button></div>` +
+      `<textarea rows="6" ` +
       `style="width:100%;box-sizing:border-box;padding:7px;border:1px solid #b0bec5;border-radius:8px;font-size:13px;line-height:1.4;font-family:inherit;resize:vertical"></textarea>` +
       `<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">` +
       `<button type="button" data-as="mic" style="background:#455a64">🎤 Dikte</button>` +
@@ -11717,23 +11773,62 @@
       }
       else if (act === "del-key") { try { localStorage.removeItem(SP_AS_KEY_LS); } catch (_) {} spAsistenRenderSettings(); spAsistenSetStatus("Kunci API dihapus dari browser ini.", "#2e7d32"); }
       else if (act === "mic") {
-        if (spVoice.on) { spVoiceStop("DIKTE SUARA berhenti."); return; }
+        if (spVoice.on) { spVoiceStop(spVoice.raw ? "" : "DIKTE SUARA berhenti."); return; }
         ta.focus();
         try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (_) {}
         spVoiceStart();
+        if (spVoice.on && spAsistenGetMode() === "percakapan") {
+          spVoice.raw = true;
+          spVoice.target = ta;
+          // Selesai mendengar (tombol, Esc, "stop mendengar", atau hening lama) -> otomatis Pahami.
+          spVoice.onStop = () => { spAsistenRenderMode(); if (ta.value.trim()) spAsistenUnderstand(); };
+          spAsistenSetStatus("👥 Mendengarkan percakapan… Tekan 🧠 Pahami kapan saja untuk melihat hasil & saran pertanyaan; ⏹ untuk selesai.");
+        }
+        spAsistenRenderMode();
+      }
+      else if (act === "mode-dikte" || act === "mode-percakapan") {
+        if (spVoice.on) { spAsistenSetStatus("Hentikan mic dulu (⏹) sebelum ganti mode.", "#e65100"); return; }
+        try { localStorage.setItem(SP_AS_MODE_LS, act === "mode-percakapan" ? "percakapan" : "dikte"); } catch (_) {}
+        spAs.mode = act === "mode-percakapan" ? "percakapan" : "dikte";
+        spAsistenRenderMode();
       }
       else if (act === "go") spAsistenUnderstand();
       else if (act === "clear") { ta.value = ""; spAs.plan = null; spAsistenRenderPlan(); spAsistenSetStatus(""); ta.focus(); }
       else if (act === "apply") spAsistenApply();
     });
+    spAsistenRenderMode();
     if (!spAsistenGetKey()) {
       panel.querySelector(".sp-as-settings").style.display = "block";
       spAsistenRenderSettings();
       spAsistenSetStatus("Isi kunci API Claude dulu di ⚙️ (sekali saja per browser).", "#e65100");
     } else {
-      spAsistenSetStatus("Bicara (🎤) atau ketik temuan pasien, lalu tekan 🧠 Pahami. Mic diblokir? Klik kotak lalu tekan Win + H.");
+      spAsistenSetStatus(spAsistenGetMode() === "percakapan"
+        ? "Mode percakapan: tekan 🎤 Dengar, lakukan anamnesa seperti biasa, lalu ⏹ — Claude merangkum otomatis."
+        : "Bicara (🎤) atau ketik temuan pasien, lalu tekan 🧠 Pahami. Mic diblokir? Klik kotak lalu tekan Win + H.");
     }
     panel.querySelector("textarea").focus();
+  }
+
+  // Tampilan tombol mode, tombol mic, dan contoh isi kotak sesuai mode yang dipilih.
+  function spAsistenRenderMode() {
+    const panel = document.getElementById(SP_AS_PANEL_ID);
+    if (!panel) return;
+    const mode = spAs.mode || spAsistenGetMode();
+    const conv = mode === "percakapan";
+    const bD = panel.querySelector("button[data-as='mode-dikte']");
+    const bP = panel.querySelector("button[data-as='mode-percakapan']");
+    if (bD) { bD.style.background = conv ? "#cfd8dc" : "#6a1b9a"; bD.style.color = conv ? "#37474f" : "#fff"; }
+    if (bP) { bP.style.background = conv ? "#6a1b9a" : "#cfd8dc"; bP.style.color = conv ? "#fff" : "#37474f"; }
+    const ta = panel.querySelector("textarea");
+    if (ta) ta.placeholder = conv
+      ? "Tekan 🎤 Dengar lalu lakukan anamnesa seperti biasa. Tiap ucapan dokter & pasien masuk satu baris, mis.:\nApa keluhannya, Pak?\nSesak dari dua hari, batuk ada dahaknya\nDemam? Tidak, dok\nAda darah tinggi? Ada, minum amlodipin\nTekan ⏹ bila selesai: Claude merangkum ke isian GADAR + saran pertanyaan."
+      : "Bicara (🎤) atau ketik, mis.: laki-laki 45 tahun sesak sejak 2 hari, batuk berdahak, riwayat hipertensi. TD 150 per 90 nadi 110 napas 28 suhu 37 koma 8 saturasi 92. Ronki basah kedua paru. Diagnosis pneumonia. Rencana cek darah lengkap dan rontgen thorax.";
+    const mic = panel.querySelector("button[data-as='mic']");
+    if (mic) {
+      const listening = spVoice.on && spVoice.target === ta;
+      mic.textContent = listening ? "⏹ Selesai" : (conv ? "🎤 Dengar" : "🎤 Dikte");
+      mic.style.background = listening ? "#d32f2f" : "#455a64";
+    }
   }
 
   function spEnsureAsistenButton() {
