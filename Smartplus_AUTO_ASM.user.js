@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.61.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.62.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.61.0
-// @description  v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
+// @version      3.62.0
+// @description  v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @match        http://*/*
@@ -4319,12 +4319,13 @@
     return done;
   }
 
-  async function runAutoLabSevere() {
+  // v3.62.0: opts.diagnosis (ASISTEN SUARA) diutamakan; opts.beforeSave dipanggil tepat sebelum Save; true bila Save ditekan.
+  async function runAutoLabSevere(opts = {}) {
     toast("AUTO LAB SEVERE: mengecek lab 1 minggu terakhir & diagnosis GADAR...");
     let done = null;
     const [doneRes, gadarDx] = await Promise.all([
       spSevereLabsDoneLastWeek().then((d) => d, (err) => { console.warn("[AUTO LAB SEVERE] riwayat lab", err); return null; }),
-      getLatestGadarDiagnosis()
+      opts.diagnosis ? Promise.resolve({ diagnosis: opts.diagnosis }) : getLatestGadarDiagnosis()
     ]);
     done = doneRes;
     const todo = done ? SP_LAB_SEVERE.filter((t) => !done[t.key]) : SP_LAB_SEVERE;
@@ -4373,10 +4374,12 @@
       toast(`AUTO LAB SEVERE sebagian. Cek manual: ${fail.join(", ")}.${skipNote}${dxNote} BELUM disimpan.`);
     } else {
       await recipeSleep(500);
+      if (opts.beforeSave) { try { opts.beforeSave(); } catch (_) {} }
       const saved = clickVisibleTextWithin(root, ["Save"]);
       toast(`AUTO LAB SEVERE: ${ordered}${saved ? " dipesan, Save ditekan." : " dipilih, tombol Save tidak ditemukan — Save manual."}${skipNote}${dxNote}`);
     }
     console.log("[AUTO LAB SEVERE]", { labDiagnosis, done, todo: todo.map((t) => t.key), fail });
+    return !!(done && !fail.length);
   }
 
   // =========================
@@ -5142,14 +5145,15 @@
     return [...modal.querySelectorAll('input[type="checkbox"]')].find((c) => norm(c.value) === want) || null;
   }
 
-  async function runAutoRadOrder(orderKey) {
+  // v3.62.0: opts.diagnosis (ASISTEN SUARA) diutamakan; opts.beforeSave dipanggil tepat sebelum Save; true bila Save ditekan.
+  async function runAutoRadOrder(orderKey, opts = {}) {
     const order = AUTO_RAD_ORDERS[orderKey];
     if (!order) return;
     const T = `AUTO ${order.label}`;
 
     toast(`${T}: mengecek diagnosis Assesment GADAR terakhir...`);
-    const gadarDx = await getLatestGadarDiagnosis();
-    const radDiagnosis = gadarDx ? gadarDx.diagnosis : "febris";
+    const gadarDx = opts.diagnosis ? null : await getLatestGadarDiagnosis();
+    const radDiagnosis = opts.diagnosis || (gadarDx ? gadarDx.diagnosis : "febris");
     console.log("[AUTO RAD]", order.label, "diagnosis dipakai:", radDiagnosis, gadarDx);
 
     toast(`${T}: membuka Order Radiologi...`);
@@ -5201,7 +5205,8 @@
       if (!(box && box.checked)) fail.push(extra.toUpperCase());
     }
 
-    const dxNote = gadarDx
+    const dxNote = opts.diagnosis ? ` Diagnosis dari ASISTEN: "${radDiagnosis}".`
+      : gadarDx
       ? ` Diagnosis dari GADAR terakhir: "${radDiagnosis}".`
       : ` ⚠️ GADAR kunjungan ini tidak ditemukan, diagnosis memakai "febris".`;
 
@@ -5219,9 +5224,11 @@
       toast(`${T}: form terisi, tombol Save tidak ditemukan. Simpan manual.${dxNote}`);
       return;
     }
+    if (opts.beforeSave) { try { opts.beforeSave(); } catch (_) {} }
     save.click();
     toast(`${T} selesai: ${[order.exam, ...(order.extras || []).map((x) => x.toUpperCase())].join(" + ")} dipilih dan Save ditekan.${dxNote}`);
     console.log("[AUTO RAD] selesai", { order: order.label, diagnosis: radDiagnosis, idGadar: gadarDx && gadarDx.idGadar });
+    return true;
   }
 
   // Nama lama dipertahankan agar kompatibel.
@@ -10009,7 +10016,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.61.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.62.0</span></div>
         <div class="sp-section-title">Pasien IGD</div>
 
         <button type="button" data-disease-menu="1">
@@ -11294,7 +11301,7 @@
         "not-allowed": window.isSecureContext
           ? "izin mikrofon ditolak. Klik ikon gembok/mikrofon di bilah alamat -> Izinkan mikrofon."
           : "browser menolak mikrofon karena Smartplus memakai http (tidak aman). Minta IT menambahkan alamat Smartplus di " +
-            "chrome://flags/#unsafely-treat-insecure-origin-as-secure (Edge: edge://flags), atau pakai Win + H.",
+            "chrome://flags/#unsafely-treat-insecure-origin-as-secure (Edge: edge://flags), atau pakai Win + H. Di HP: ketuk 🎤 di keyboard.",
         "service-not-allowed": "layanan pengenalan suara browser tidak diizinkan. Pakai Win + H (dikte Windows).",
         "audio-capture": "mikrofon tidak ditemukan. Cek headset/mikrofon PC.",
         "network": "layanan pengenalan suara butuh internet dan sedang tidak terjangkau. Pakai Win + H.",
@@ -11392,6 +11399,15 @@
   ];
   const SP_AS_KESADARAN = ["", "Compos mentis", "Apatis", "Somnolen", "Sopor", "Koma"];
   const SP_AS_MODE_LS = "sp-auto-asm-asisten-mode";
+  // v3.62.0: order penunjang yang boleh dijalankan asisten = HANYA fungsi AUTO yang sudah diizinkan Save oleh dokter.
+  const SP_AS_ORDERS = [
+    { key: "LAB_RUTIN", label: "Lab: Hema rutin (+ GDS bila usia >39 th)" },
+    { key: "LAB_SEVERE", label: "Lab Severe: Kreatinin + Elektrolit + AGD" },
+    { key: "THORAX", label: "Radiologi: Ro Thorax PA/AP" },
+    { key: "USG_WHOLE_ABDOMEN", label: "Radiologi: USG Whole Abdomen" },
+    { key: "CT_BRAIN_NK", label: "Radiologi: CT Brain non kontras" }
+  ];
+  const SP_AS_JOB_KEY = "sp-auto-asm-asisten-job";
 
   // v3.61.0: mode percakapan — satu potong hasil pengenalan suara apa adanya (fungsi murni).
   // "titik"/"koma" tidak diubah (bisa ucapan pasien); hanya "stop mendengar" / "stop dikte" yang menghentikan.
@@ -11476,7 +11492,9 @@
     return {
       fields: out,
       catatan: String(src.catatan_untuk_dokter || "").trim(),
-      saran: String(src.saran_pertanyaan || "").trim()
+      saran: String(src.saran_pertanyaan || "").trim(),
+      orders: SP_AS_ORDERS.map((o) => o.key).filter((k) => Array.isArray(src.order_penunjang) && src.order_penunjang.includes(k)),
+      orderManual: String(src.order_manual || "").trim()
     };
   }
 
@@ -11486,6 +11504,8 @@
     props.spo2 = { type: "string" };
     props.catatan_untuk_dokter = { type: "string" };
     props.saran_pertanyaan = { type: "string" };
+    props.order_penunjang = { type: "array", items: { type: "string", enum: SP_AS_ORDERS.map((o) => o.key) } };
+    props.order_manual = { type: "string" };
     return { type: "object", properties: props, required: Object.keys(props), additionalProperties: false };
   }
 
@@ -11510,7 +11530,15 @@
     "- Keluhan yang disangkal tulis di riwayat_sakit_now sebagai 'Disangkal: ...'. Ubah bahasa awam menjadi istilah medis singkat (mis. 'ulu hati perih' -> nyeri epigastrium) tanpa menambah makna.",
     "- Riwayat keluarga dan kebiasaan (merokok, dll.) masuk riwayat_sakit_old dengan awalan 'Riwayat keluarga:' / 'Kebiasaan:'.",
     "- Abaikan basa-basi, salam, dan pembicaraan di luar pasien ini. Tanda vital/pemeriksaan fisik hanya bila jelas disebut.",
-    "- Jangan menulis diagnosis atau rencana kecuali dokter jelas mengucapkannya."
+    "- Jangan menulis diagnosis atau rencana kecuali dokter jelas mengucapkannya.",
+    "- Setelah anamnesa, dokter biasanya MENDIKTEKAN tanda vital, pemeriksaan fisik, diagnosis, rencana, dan pemeriksaan penunjang. Bagian dikte itu adalah temuan dokter: isi ke kolomnya seperti mode dikte. Di sini 'titik'/'koma' bisa berarti tanda baca, '120 per 80' = 120/80, '37 koma 5' = 37,5, 'saturasi 95' = spo2.",
+    "",
+    "ORDER PENUNJANG (kedua mode): order_penunjang hanya berisi pemeriksaan yang dokter PERINTAHKAN/rencanakan dengan jelas, dari daftar tetap:",
+    "- LAB_RUTIN: darah lengkap / DL / hema rutin / cek darah rutin (GDS otomatis ikut bila usia >39 th).",
+    "- LAB_SEVERE: hanya bila dokter menyebut 'lab severe'/'lab berat' atau meminta ketiganya: kreatinin, elektrolit, dan analisa gas darah.",
+    "- THORAX: rontgen/foto/ro thorax/dada. USG_WHOLE_ABDOMEN: USG abdomen/perut. CT_BRAIN_NK: CT scan kepala/brain (non kontras).",
+    "- Pemeriksaan lain yang diperintahkan tetapi tidak ada di daftar (mis. ureum, SGOT, EKG, urin, GDS pada usia <40) tulis di order_manual dipisah koma.",
+    "- Pemeriksaan yang hanya ditanyakan, sudah ada hasilnya, atau 'nanti bila perlu' JANGAN dimasukkan order_penunjang. Semua rencana penunjang juga ditulis di kolom penunjang (mis. 'Rencana: DL, Ro thorax')."
   ].join("\n");
 
   function spAsistenGetKey() { try { return localStorage.getItem(SP_AS_KEY_LS) || ""; } catch (_) { return ""; } }
@@ -11603,6 +11631,17 @@
     if (el) { el.textContent = msg || ""; el.style.color = color || "#37474f"; }
   }
 
+  function spAsistenOrdersHtml(p) {
+    const list = SP_AS_ORDERS.filter((o) => p.orders && p.orders.includes(o.key));
+    if (!list.length && !p.orderManual) return "";
+    const draft = spIsDraftGadarPage() || !getCurrentIgdNoreg();
+    return `<div style="margin-top:6px;background:#fce4ec;border-radius:6px;padding:6px"><b>🧪 Order penunjang</b> ` +
+      `<span style="color:#78909c;font-size:11px">${draft ? "(halaman ini bukan halaman pasien terdaftar — order manual)" : "(dicentang = dijalankan & Save otomatis saat Terapkan)"}</span>` +
+      list.map((o) => `<label style="display:flex;gap:6px;align-items:center;padding:3px 0">` +
+        `<input type="checkbox" data-as-order="${o.key}"${draft ? " disabled" : " checked"}> ${spAsistenEsc(o.label)}</label>`).join("") +
+      (p.orderManual ? `<div style="margin-top:3px">✋ Order manual: ${spAsistenEsc(p.orderManual)}</div>` : "") + `</div>`;
+  }
+
   function spAsistenSaranHtml(p) {
     if (!p || !p.saran) return "";
     return `<div style="margin-top:6px;background:#e3f2fd;border-radius:6px;padding:6px"><b>💡 Belum ditanyakan</b> ` +
@@ -11616,7 +11655,7 @@
     const p = spAs.plan;
     if (!p) { box.innerHTML = ""; return; }
     const keys = SP_AS_FIELDS.filter((f) => p.fields[f.key]);
-    if (!keys.length) {
+    if (!keys.length && !(p.orders && p.orders.length)) {
       box.innerHTML = `<div style="color:#b71c1c">Claude tidak menemukan isian untuk form GADAR.</div>` +
         (p.catatan ? `<div class="sp-as-note">❓ ${spAsistenEsc(p.catatan)}</div>` : "") + spAsistenSaranHtml(p);
       return;
@@ -11631,8 +11670,9 @@
           `<span style="white-space:pre-wrap">${spAsistenEsc(p.fields[f.key])}</span></span></label>`;
       }).join("") +
       (p.catatan ? `<div class="sp-as-note" style="margin-top:6px;background:#fff8e1;border-radius:6px;padding:6px">❓ ${spAsistenEsc(p.catatan)}</div>` : "") +
+      spAsistenOrdersHtml(p) +
       spAsistenSaranHtml(p) +
-      `<button type="button" data-as="apply" style="margin-top:8px;width:100%;background:#2e7d32">✅ Terapkan ke form GADAR (tidak menyimpan)</button>`;
+      `<button type="button" data-as="apply" style="margin-top:8px;width:100%;background:#2e7d32">✅ Terapkan: isi form GADAR${p.orders && p.orders.length ? " + jalankan order" : ""} (GADAR tidak disimpan)</button>`;
   }
 
   async function spAsistenUnderstand() {
@@ -11665,24 +11705,12 @@
     }
   }
 
-  async function spAsistenApply() {
-    const p = spAs.plan;
-    if (!p) return;
-    const panel = document.getElementById(SP_AS_PANEL_ID);
-    const chosen = [...panel.querySelectorAll("input[data-as-key]")].filter((c) => c.checked).map((c) => c.getAttribute("data-as-key"));
-    if (!chosen.length) { spAsistenSetStatus("Tidak ada kolom yang dicentang.", "#b71c1c"); return; }
-    let root = spAsistenFormRoot();
-    if (!root) {
-      spAsistenSetStatus("Membuka form Assesment GADAR (+ TAMBAH)…");
-      const ok = await openAssessmentGadarForTemplate();
-      if (!ok) { spAsistenSetStatus("Form Assesment GADAR tidak bisa dibuka. Buka form GADAR dulu, lalu Terapkan lagi.", "#b71c1c"); return; }
-      await recipeSleep(300);
-      root = spAsistenFormRoot() || modalRoot();
-    }
+  // Isi kolom GADAR (root = form yang terbuka). Hasil: { done, fail } berisi label kolom.
+  function spAsistenFill(root, fields) {
     const done = [], fail = [];
     for (const f of SP_AS_FIELDS) {
-      if (!chosen.includes(f.key)) continue;
-      const v = p.fields[f.key];
+      const v = fields[f.key];
+      if (!v) continue;
       let ok = false;
       try {
         if (f.mode === "pilih") ok = clickInSection(root, ["Kesadaran"], v === "Compos mentis" ? ["Compos mentis", "Compos Mentis"] : [v]);
@@ -11695,8 +11723,123 @@
       } catch (err) { console.warn("[ASISTEN]", f.key, err); ok = false; }
       (ok ? done : fail).push(f.label);
     }
-    spAsistenSetStatus(`Terisi ${done.length} kolom.` + (fail.length ? ` Perlu cek manual: ${fail.join(", ")}.` : "") + " Review lalu Simpan manual.", fail.length ? "#e65100" : "#2e7d32");
-    toast(`ASISTEN: ${done.length} kolom GADAR terisi${fail.length ? ", cek manual: " + fail.join(", ") : ""}. TIDAK disimpan — review lalu Save manual.`);
+    return { done, fail };
+  }
+
+  async function spAsistenOpenAndFill(fields) {
+    let root = spAsistenFormRoot();
+    if (!root) {
+      spAsistenSetStatus("Membuka form Assesment GADAR (+ TAMBAH)…");
+      const ok = await openAssessmentGadarForTemplate();
+      if (!ok) return null;
+      await recipeSleep(300);
+      root = spAsistenFormRoot() || modalRoot();
+    }
+    return spAsistenFill(root, fields);
+  }
+
+  async function spAsistenApply() {
+    const p = spAs.plan;
+    if (!p) return;
+    const panel = document.getElementById(SP_AS_PANEL_ID);
+    const chosen = [...panel.querySelectorAll("input[data-as-key]")].filter((c) => c.checked).map((c) => c.getAttribute("data-as-key"));
+    const orders = [...panel.querySelectorAll("input[data-as-order]")].filter((c) => c.checked && !c.disabled).map((c) => c.getAttribute("data-as-order"));
+    if (!chosen.length && !orders.length) { spAsistenSetStatus("Tidak ada kolom / order yang dicentang.", "#b71c1c"); return; }
+    const fields = {};
+    for (const k of chosen) fields[k] = p.fields[k];
+    if (!orders.length) {
+      const r = await spAsistenOpenAndFill(fields);
+      if (!r) { spAsistenSetStatus("Form Assesment GADAR tidak bisa dibuka. Buka form GADAR dulu, lalu Terapkan lagi.", "#b71c1c"); return; }
+      spAsistenSetStatus(`Terisi ${r.done.length} kolom.` + (r.fail.length ? ` Perlu cek manual: ${r.fail.join(", ")}.` : "") + " Review lalu Simpan manual.", r.fail.length ? "#e65100" : "#2e7d32");
+      toast(`ASISTEN: ${r.done.length} kolom GADAR terisi${r.fail.length ? ", cek manual: " + r.fail.join(", ") : ""}. TIDAK disimpan — review lalu Save manual.`);
+      return;
+    }
+    // Order penunjang memakai tab Order Lab / Radiologi (form GADAR tersembunyi, Save lab memuat ulang halaman):
+    // order dijalankan DULU, lalu form GADAR baru (+ TAMBAH) diisi. Langkah dititipkan di sessionStorage tab ini.
+    const noreg = getCurrentIgdNoreg();
+    if (!noreg || spIsDraftGadarPage()) { spAsistenSetStatus("Order hanya bisa di halaman pasien IGD yang sudah terdaftar.", "#b71c1c"); return; }
+    if (spAsistenFormRoot() && !window.confirm("ASISTEN: order penunjang perlu pindah tab, form GADAR yang sedang terbuka akan tertutup (isian yang BELUM disimpan hilang).\nIsian asisten akan dimasukkan ke form GADAR baru setelah order.\n\nLanjutkan?")) return;
+    const dx = (p.fields.diagnosa_banding || p.fields.kel_utama || "").split("\n")[0].slice(0, 200);
+    const job = { noreg, back: location.pathname + location.search, ts: Date.now(), fields, orders, dx, notes: [] };
+    if (spVoice.on) spVoiceStop("");
+    panel.style.display = "none";
+    await spExclusive("ASISTEN SUARA", () => spAsistenRunJob(job));
+  }
+
+  function spAsistenSaveJob(job) {
+    try { if (job) sessionStorage.setItem(SP_AS_JOB_KEY, JSON.stringify(job)); else sessionStorage.removeItem(SP_AS_JOB_KEY); } catch (_) {}
+  }
+
+  async function spAsistenRunOrder(key, dx, beforeSave) {
+    if (key === "LAB_RUTIN") {
+      // Cegah order dobel: bila kunjungan ini sudah punya order lab, tidak diorder ulang (sama seperti ASGADAR).
+      const html = await spFetch(`${smartplusBaseUrl()}/lab/splab/lab_modal_lad/${encodeURIComponent(getCurrentIgdNoreg())}`, { credentials: "same-origin" }).then((r) => r.text());
+      const rows = [...new DOMParser().parseFromString(html, "text/html").querySelectorAll("tr")].slice(1)
+        .filter((tr) => tr.cells.length >= 6 && tr.textContent.trim());
+      if (rows.length) return "sudah ada order lab kunjungan ini";
+      return runAutoLabFebris({ diagnosis: dx, beforeSave });
+    }
+    if (key === "LAB_SEVERE") return runAutoLabSevere({ diagnosis: dx, beforeSave });
+    return runAutoRadOrder(key, { diagnosis: dx, beforeSave });
+  }
+
+  async function spAsistenRunJob(job) {
+    while (job.orders.length) {
+      const key = job.orders[0];
+      const label = (SP_AS_ORDERS.find((o) => o.key === key) || { label: key }).label;
+      let unloading = false, saving = false;
+      const onHide = () => { unloading = true; };
+      window.addEventListener("pagehide", onHide);
+      window.addEventListener("beforeunload", onHide);
+      // Ditandai selesai TEPAT sebelum Save -> bila halaman dimuat ulang, order ini tidak dijalankan dua kali.
+      const markDone = () => { saving = true; job.orders.shift(); job.notes.push("✓ " + label); job.ts = Date.now(); spAsistenSaveJob(job); };
+      let res;
+      spAsistenSaveJob(job);
+      try { res = await spAsistenRunOrder(key, job.dx, markDone); } catch (err) { res = "gagal: " + (err && err.message || err); }
+      if (saving) await waitFor(() => unloading, 4000, 200);
+      window.removeEventListener("pagehide", onHide);
+      window.removeEventListener("beforeunload", onHide);
+      if (unloading) return; // dilanjutkan spResumeAsistenJob setelah halaman dimuat ulang
+      if (!saving) {
+        job.orders.shift();
+        job.notes.push("✗ " + label + (typeof res === "string" ? " (" + res + ")" : " — belum tersimpan, cek manual"));
+        job.ts = Date.now();
+        spAsistenSaveJob(job);
+      }
+      await recipeSleep(1500); // beri waktu modal order menutup
+    }
+    spAsistenSaveJob(null);
+    const r = Object.keys(job.fields).length ? await spAsistenOpenAndFill(job.fields) : { done: [], fail: [] };
+    const fillMsg = !r ? "Form GADAR tidak bisa dibuka — isi manual." :
+      `${r.done.length} kolom GADAR terisi${r.fail.length ? " (cek manual: " + r.fail.join(", ") + ")" : ""}.`;
+    const msg = `ASISTEN selesai. Order: ${job.notes.join("; ") || "-"}. ${fillMsg} GADAR TIDAK disimpan — review lalu Save manual.`;
+    toast(msg);
+    spAsistenSetStatus(msg, /✗/.test(msg) || !r || r.fail.length ? "#e65100" : "#2e7d32");
+    console.log("[ASISTEN] job selesai", job, r);
+  }
+
+  // Lanjutan setelah Save order memuat ulang halaman (pasien sama, titipan < 3 menit sejak langkah terakhir).
+  async function spResumeAsistenJob() {
+    let job = null;
+    try { job = JSON.parse(sessionStorage.getItem(SP_AS_JOB_KEY) || "null"); } catch (_) { job = null; }
+    if (!job) return;
+    const action = spAsgadarResumeAction(Object.assign({ key: "ASISTEN" }, job), location.pathname, Date.now());
+    if (action === "none" || action === "wait") return;
+    if (action === "drop") { spAsistenSaveJob(null); return; }
+    if (action === "redirect") {
+      const here = location.href;
+      await recipeSleep(3000);
+      if (location.href !== here) return;
+      job.redirected = true;
+      spAsistenSaveJob(job);
+      location.href = job.back;
+      return;
+    }
+    await waitFor(() => document.getElementById("new_gadar") && document.getElementById(BUTTON_ID), 15000);
+    await recipeSleep(800);
+    toast("ASISTEN: melanjutkan order / isian GADAR...");
+    job.redirected = false;
+    await spExclusive("ASISTEN SUARA", () => spAsistenRunJob(job));
   }
 
   function spAsistenRenderSettings() {
@@ -11726,11 +11869,15 @@
     }
     panel = document.createElement("div");
     panel.id = SP_AS_PANEL_ID;
-    panel.style.cssText = "position:fixed;right:72px;top:12px;z-index:2147483646;width:min(440px,calc(100vw - 84px));max-height:calc(100vh - 24px);" +
+    panel.style.cssText = "position:fixed;right:72px;top:12px;z-index:2147483647;width:min(440px,calc(100vw - 84px));max-height:calc(100vh - 24px);" +
       "overflow:auto;box-sizing:border-box;background:#fff;color:#263238;border:1px solid #b0bec5;border-radius:12px;padding:10px 12px;" +
       "box-shadow:0 8px 28px rgba(0,0,0,.28);font:13px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;";
     panel.innerHTML =
-      `<style>#${SP_AS_PANEL_ID} button{border:0;border-radius:8px;padding:7px 10px;color:#fff;background:#1565c0;font-weight:700;font-size:13px;line-height:1.2;cursor:pointer}</style>` +
+      `<style>#${SP_AS_PANEL_ID} button{border:0;border-radius:8px;padding:7px 10px;color:#fff;background:#1565c0;font-weight:700;font-size:13px;line-height:1.2;cursor:pointer}` +
+      // v3.62.0: HP — panel selebar layar, tombol & kotak centang lebih besar, huruf 16px (iPhone tidak memperbesar halaman).
+      `@media (max-width:640px){#${SP_AS_PANEL_ID}{left:8px!important;right:8px!important;top:8px!important;width:auto!important;max-height:calc(100vh - 16px)!important;font-size:14px!important}` +
+      `#${SP_AS_PANEL_ID} button{min-height:42px;font-size:14px}#${SP_AS_PANEL_ID} textarea{font-size:16px!important}` +
+      `#${SP_AS_PANEL_ID} input[type=checkbox]{width:20px;height:20px}}</style>` +
       `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">` +
       `<div style="font-weight:800;flex:1">🧠 ASISTEN SUARA <span style="font-weight:400;color:#78909c">(uji coba)</span></div>` +
       `<button type="button" data-as="settings" title="Setelan" style="background:#78909c">⚙️</button>` +
@@ -11773,6 +11920,12 @@
       }
       else if (act === "del-key") { try { localStorage.removeItem(SP_AS_KEY_LS); } catch (_) {} spAsistenRenderSettings(); spAsistenSetStatus("Kunci API dihapus dari browser ini.", "#2e7d32"); }
       else if (act === "mic") {
+        if (!spVoice.on && !(window.SpeechRecognition || window.webkitSpeechRecognition)) {
+          // HP (Firefox/Edge Android) tanpa Web Speech API: pakai dikte bawaan keyboard.
+          ta.focus();
+          spAsistenSetStatus("Browser ini tidak punya dikte suara: ketuk ikon 🎤 di keyboard HP (Gboard/SwiftKey) lalu bicara. Selesai → tekan 🧠 Pahami.", "#e65100");
+          return;
+        }
         if (spVoice.on) { spVoiceStop(spVoice.raw ? "" : "DIKTE SUARA berhenti."); return; }
         ta.focus();
         try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (_) {}
@@ -11821,12 +11974,13 @@
     if (bP) { bP.style.background = conv ? "#6a1b9a" : "#cfd8dc"; bP.style.color = conv ? "#fff" : "#37474f"; }
     const ta = panel.querySelector("textarea");
     if (ta) ta.placeholder = conv
-      ? "Tekan 🎤 Dengar lalu lakukan anamnesa seperti biasa. Tiap ucapan dokter & pasien masuk satu baris, mis.:\nApa keluhannya, Pak?\nSesak dari dua hari, batuk ada dahaknya\nDemam? Tidak, dok\nAda darah tinggi? Ada, minum amlodipin\nTekan ⏹ bila selesai: Claude merangkum ke isian GADAR + saran pertanyaan."
+      ? "Tekan 🎤 Dengar lalu lakukan anamnesa seperti biasa. Tiap ucapan dokter & pasien masuk satu baris, mis.:\nApa keluhannya, Pak?\nSesak dari dua hari, batuk ada dahaknya\nDemam? Tidak, dok\nAda darah tinggi? Ada, minum amlodipin\nLalu dokter mendikte: tensi 150 per 90, nadi 110, ronki basah, rencana cek darah lengkap dan rontgen thorax\nTekan ⏹ bila selesai: Claude merangkum ke isian GADAR + order penunjang + saran pertanyaan."
       : "Bicara (🎤) atau ketik, mis.: laki-laki 45 tahun sesak sejak 2 hari, batuk berdahak, riwayat hipertensi. TD 150 per 90 nadi 110 napas 28 suhu 37 koma 8 saturasi 92. Ronki basah kedua paru. Diagnosis pneumonia. Rencana cek darah lengkap dan rontgen thorax.";
     const mic = panel.querySelector("button[data-as='mic']");
     if (mic) {
       const listening = spVoice.on && spVoice.target === ta;
-      mic.textContent = listening ? "⏹ Selesai" : (conv ? "🎤 Dengar" : "🎤 Dikte");
+      const hasSR = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+      mic.textContent = listening ? "⏹ Selesai" : !hasSR ? "🎤 Mic keyboard" : (conv ? "🎤 Dengar" : "🎤 Dikte");
       mic.style.background = listening ? "#d32f2f" : "#455a64";
     }
   }
@@ -11910,6 +12064,7 @@
   }
   spResumePendingResepPulang().catch((err) => console.warn("[RESEP PULANG] lanjutan gagal", err));
   spResumePendingAsgadar().catch((err) => console.warn("[ASGADAR] lanjutan gagal", err));
+  spResumeAsistenJob().catch((err) => console.warn("[ASISTEN] lanjutan gagal", err));
 
   // Firefox Back/Forward Cache dan tab yang dipulihkan.
   window.addEventListener('pageshow', bootAutoAsmCrossBrowser, true);
