@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.62.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.62.1
 // @namespace    smartplus-auto-asm-v221
-// @version      3.62.0
-// @description  v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
+// @version      3.62.1
+// @description  v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @match        http://*/*
@@ -10016,7 +10016,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.62.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.62.1</span></div>
         <div class="sp-section-title">Pasien IGD</div>
 
         <button type="button" data-disease-menu="1">
@@ -11368,6 +11368,8 @@
   const SP_AS_PANEL_ID = "sp-auto-asm-asisten-panel";
   const SP_AS_KEY_LS = "sp-auto-asm-asisten-key";
   const SP_AS_MODEL_LS = "sp-auto-asm-asisten-model";
+  // v3.62.1: kunci API tingkat organisasi (tidak terikat workspace) butuh header anthropic-workspace-id.
+  const SP_AS_WS_LS = "sp-auto-asm-asisten-workspace";
   const SP_AS_MODELS = [
     ["claude-opus-5-5", "Claude Opus 5.5 — paling teliti"],
     ["claude-sonnet-5-5", "Claude Sonnet 5.5 — seimbang"],
@@ -11567,6 +11569,9 @@
       "anthropic-version": "2023-06-01",
       "anthropic-dangerous-direct-browser-access": "true"
     };
+    let ws = "";
+    try { ws = (localStorage.getItem(SP_AS_WS_LS) || "").trim(); } catch (_) {}
+    if (ws) headers["anthropic-workspace-id"] = ws;
     // Opus/Sonnet: bila permintaan ditolak pengaman, server mencoba model cadangan otomatis.
     if (model !== "claude-haiku-5-5") {
       body.fallbacks = "default";
@@ -11597,6 +11602,7 @@
       ({ r, data, msg } = await send());
     }
     if (!r.ok) {
+      if (/workspace/i.test(msg) && !ws) throw new Error("kunci API ini tidak terikat workspace. Buat kunci baru DI DALAM workspace (console.anthropic.com/settings/workspaces), atau isi Workspace ID di ⚙️.");
       const why = { 401: "kunci API salah / dicabut", 403: "kunci API tidak diizinkan", 429: "terlalu banyak permintaan / batas belanja tercapai", 529: "server Claude sedang sibuk" }[r.status];
       throw new Error((why ? why + " — " : "") + msg);
     }
@@ -11852,6 +11858,7 @@
       `<div style="font-size:11px;color:#546e7a;margin-bottom:4px">Kunci API dibuat di console.anthropic.com (pasang batas belanja). ` +
       `Kunci disimpan di browser ini saja, tidak di script. Status: <b>${has ? "kunci tersimpan" : "belum ada kunci"}</b>.</div>` +
       `<input type="password" class="sp-as-key" autocomplete="off" placeholder="${has ? "•••••• (isi untuk mengganti)" : "sk-ant-…"}" style="width:100%;box-sizing:border-box;padding:6px;border:1px solid #b0bec5;border-radius:6px">` +
+      `<input type="text" class="sp-as-ws" autocomplete="off" placeholder="Workspace ID (opsional, wrkspc_…) — hanya bila kunci tidak terikat workspace" value="${spAsistenEsc((() => { try { return localStorage.getItem(SP_AS_WS_LS) || ""; } catch (_) { return ""; } })())}" style="width:100%;box-sizing:border-box;margin-top:6px;padding:6px;border:1px solid #b0bec5;border-radius:6px">` +
       `<select class="sp-as-model" style="width:100%;margin-top:6px;padding:5px;border:1px solid #b0bec5;border-radius:6px">` +
       SP_AS_MODELS.map(([id, name]) => `<option value="${id}"${id === cur ? " selected" : ""}>${spAsistenEsc(name)}</option>`).join("") +
       `</select><div style="display:flex;gap:6px;margin-top:6px">` +
@@ -11914,6 +11921,8 @@
         try {
           if (k) localStorage.setItem(SP_AS_KEY_LS, k);
           localStorage.setItem(SP_AS_MODEL_LS, m);
+          const w = (set.querySelector(".sp-as-ws").value || "").trim();
+          if (w) localStorage.setItem(SP_AS_WS_LS, w); else localStorage.removeItem(SP_AS_WS_LS);
         } catch (_) { spAsistenSetStatus("Setelan gagal disimpan (penyimpanan browser diblokir).", "#b71c1c"); return; }
         spAsistenRenderSettings();
         spAsistenSetStatus("Setelan tersimpan.", "#2e7d32");
