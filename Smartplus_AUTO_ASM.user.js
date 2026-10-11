@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.62.1
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.63.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.62.1
-// @description  v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
+// @version      3.63.0
+// @description  v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @match        http://*/*
@@ -10013,40 +10013,14 @@
       `;
     }
 
-    function renderMain() {
+    // v3.63.0: AUTO IGD — PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM (dulu langsung di menu utama).
+    function renderIgdMenu() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.62.1</span></div>
-        <div class="sp-section-title">Pasien IGD</div>
-
-        <button type="button" data-disease-menu="1">
-          🩺 ASGADAR PENYAKIT ▶
-        </button>
-
-        <button type="button" data-package-menu="1">
-          📦 KOMBINASI RESEP ▶
-        </button>
-
-        <!-- v3.9.0: MASTER TEMPLATE RESEP disembunyikan dari menu utama atas permintaan dokter
-             (isinya sama dengan KOMBINASI RESEP). Kode & template tetap ada dan dipakai KOMBINASI. -->
-
-        <div class="sp-section-title">Rawat inap</div>
-
-        <button type="button" data-cppt-menu="1">
-          🛏️ RAWAT INAP ▶
-        </button>
-
-        <div class="sp-section-title">Konsul, penunjang & laporan</div>
-
-        <!-- v3.23.0: AUTO SOAP & AUTO SCREENSHOT disembunyikan dari menu (sudah tercakup PAKET KONSUL, permintaan dokter).
-             Fungsinya tetap ada karena dipakai PAKET KONSUL; tampilkan lagi tombolnya bila diperlukan. -->
+        <div class="sp-title">🚑 AUTO IGD</div>
 
         <button type="button" data-paket-konsul="1">
-          📨 PAKET KONSUL – SOAP + Penunjang
-        </button>
-
-        <button type="button" data-penunjang-menu="1">
-          🧾 AUTO PENUNJANG ▶
+          📨 PAKET KONSUL IGD – SOAP + Penunjang
         </button>
 
         <button type="button" data-advis="1">
@@ -10057,6 +10031,42 @@
           🩺 REVIEW GADAR 24 JAM
         </button>
 
+        <button type="button" class="sp-back" data-back="main">← Kembali</button>
+      `;
+    }
+
+    function renderMain() {
+      menu.classList.remove("sp-package-modal");
+      menu.innerHTML = `
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.63.0</span></div>
+        <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
+             -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
+
+        <button type="button" data-disease-menu="1">
+          🩺 ASGADAR PENYAKIT ▶
+        </button>
+
+        <button type="button" data-penunjang-menu="1">
+          🧾 AUTO PENUNJANG ▶
+        </button>
+
+        <button type="button" data-package-menu="1">
+          📦 KOMBINASI RESEP ▶
+        </button>
+
+        <!-- v3.9.0: MASTER TEMPLATE RESEP disembunyikan dari menu utama atas permintaan dokter
+             (isinya sama dengan KOMBINASI RESEP). Kode & template tetap ada dan dipakai KOMBINASI. -->
+        <!-- v3.23.0: AUTO SOAP & AUTO SCREENSHOT disembunyikan dari menu (sudah tercakup PAKET KONSUL, permintaan dokter).
+             Fungsinya tetap ada karena dipakai PAKET KONSUL; tampilkan lagi tombolnya bila diperlukan. -->
+
+        <button type="button" data-igd-menu="1">
+          🚑 AUTO IGD ▶
+        </button>
+
+        <button type="button" data-cppt-menu="1">
+          🛏️ RAWAT INAP ▶
+        </button>
+
         <div class="sp-note">
           Resep dari KOMBINASI masuk sebagai draft — review lalu Simpan manual. Pintasan keyboard: Alt + A.<br>🎤 Dikte suara: klik kolom isian lalu tombol 🎤 (atau Alt + V); ucapkan "titik", "tanda koma", "baris baru", "stop dikte".<br>🧠 Asisten suara (uji coba): tombol 🧠 atau Alt + Q — bicara bebas (🗣️ Dikte) atau rekam anamnesa (👥 Percakapan), Claude menyiapkan isian GADAR, Terapkan, lalu Simpan manual.
         </div>
@@ -10065,7 +10075,9 @@
 
     function renderDiseaseMenu() {
       menu.classList.remove("sp-package-modal");
-      const diseaseEntries = Object.entries(TEMPLATES);
+      // v3.63.0 (instruksi dokter): Febris ec VI dd BI paling atas.
+      const diseaseEntries = Object.entries(TEMPLATES)
+        .sort(([a], [b]) => (b === "FEBRIS_VI_BI") - (a === "FEBRIS_VI_BI"));
 
       menu.innerHTML = `
         <div class="sp-title">🩺 ASGADAR PENYAKIT</div>
@@ -10502,6 +10514,11 @@
 
       if (cpptMenu === "1") {
         renderCpptMenu();
+        return;
+      }
+
+      if (target.dataset?.igdMenu === "1") {
+        renderIgdMenu();
         return;
       }
 
