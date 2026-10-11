@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.63.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.64.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.63.0
-// @description  v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
+// @version      3.64.0
+// @description  v3.64.0: ASISTEN — kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (dipilih Claude, bisa diganti di pratinjau; membuka form GADAR baru), pemfis template + temuan yang diucapkan, Riwayat Penyakit Sekarang lama diganti hasil terbaru; GADAR tetap Save manual. v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @match        http://*/*
@@ -10038,7 +10038,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.63.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.64.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -10836,7 +10836,9 @@
     return true;
   }
 
-  async function fillTemplate(key) {
+  // v3.64.0: opts.after dipanggil di akhir pengisian tertunda (setelah riwayat poli, nadi/RR/GCS diulang) — dipakai
+  // ASISTEN SUARA untuk menimpa kolom template dengan yang diucapkan dokter.
+  async function fillTemplate(key, opts = {}) {
     const data = TEMPLATES[key];
     if (!data) return;
 
@@ -11142,6 +11144,7 @@
       console.log("Diagnosis:", data.diagnosis);
       console.log("Jam Datang/Tinggi/Berat: dikosongkan");
       console.groupEnd();
+      if (opts.after) { try { opts.after({ ok, fail, root }); } catch (err) { console.warn("[AUTO ASM] after", err); } }
     }, 800);
   }
 
@@ -11396,7 +11399,8 @@
   // Kolom form GADAR (name) yang boleh diisi asisten. mode: "ganti" = isi diganti, "tambah" = ditambahkan di bawah isi lama.
   const SP_AS_FIELDS = [
     { key: "kel_utama", label: "Keluhan Utama", mode: "ganti" },
-    { key: "riwayat_sakit_now", label: "Riwayat Penyakit Sekarang", mode: "tambah" },
+    // v3.64.0 (instruksi dokter): RPS lama dihapus, diganti hasil asisten terbaru.
+    { key: "riwayat_sakit_now", label: "Riwayat Penyakit Sekarang", mode: "ganti" },
     { key: "riwayat_sakit_old", label: "Riwayat Penyakit Dahulu", mode: "tambah" },
     { key: "riwayat_pengobatan", label: "Riwayat Pengobatan", mode: "tambah" },
     { key: "alergi_note", label: "Alergi", mode: "ganti" },
@@ -11513,7 +11517,13 @@
       catatan: String(src.catatan_untuk_dokter || "").trim(),
       saran: String(src.saran_pertanyaan || "").trim(),
       orders: SP_AS_ORDERS.map((o) => o.key).filter((k) => Array.isArray(src.order_penunjang) && src.order_penunjang.includes(k)),
-      orderManual: String(src.order_manual || "").trim()
+      orderManual: String(src.order_manual || "").trim(),
+      template: (typeof TEMPLATES === "object" && TEMPLATES[src.template_asgadar]) ? src.template_asgadar : "",
+      fisikLengkap: (() => {
+        let f = String(src.cek_fisik_lengkap || "").replace(/\r\n?/g, "\n").trim();
+        if (f && spo2 && !/spo2/i.test(f)) f += "\nSpO2: " + spo2 + "%";
+        return f;
+      })()
     };
   }
 
@@ -11525,7 +11535,17 @@
     props.saran_pertanyaan = { type: "string" };
     props.order_penunjang = { type: "array", items: { type: "string", enum: SP_AS_ORDERS.map((o) => o.key) } };
     props.order_manual = { type: "string" };
+    props.template_asgadar = { type: "string", enum: Object.keys(TEMPLATES) };
+    props.cek_fisik_lengkap = { type: "string" };
     return { type: "object", properties: props, required: Object.keys(props), additionalProperties: false };
+  }
+
+  // v3.64.0: daftar template ASGADAR (diagnosis, keluhan, pemfis) untuk memilih template terdekat & melengkapi pemfis.
+  function spAsistenTemplatePrompt() {
+    return Object.keys(TEMPLATES).map((k) => {
+      const t = TEMPLATES[k];
+      return `### ${k} — ${t.diagnosis}\nKeluhan: ${t.keluhan}\nPemfis:\n${t.fisik}`;
+    }).join("\n");
   }
 
   const SP_AS_SYSTEM = [
@@ -11558,7 +11578,13 @@
     "- THORAX: rontgen/foto/ro thorax/dada. USG_WHOLE_ABDOMEN: USG abdomen/perut. CT_BRAIN_NK: CT scan kepala/brain (non kontras).",
     "- Pemeriksaan lain yang diperintahkan tetapi tidak ada di daftar (mis. ureum, SGOT, EKG, urin, GDS pada usia <40) tulis di order_manual dipisah koma.",
     "- Pemeriksaan yang hanya ditanyakan, sudah ada hasilnya, atau 'nanti bila perlu' JANGAN dimasukkan order_penunjang. Semua rencana penunjang juga ditulis di kolom penunjang (mis. 'Rencana: DL, Ro thorax')."
-  ].join("\n");
+  ].join("\n") + "\n\n" + [
+    "TEMPLATE ASGADAR (kedua mode): kolom yang tidak diucapkan akan diisi script dari template ASGADAR dokter.",
+    "- template_asgadar: pilih SATU template yang paling mendekati keluhan/diagnosis pasien dari daftar di bawah; bila tidak ada yang mirip pilih NORMAL.",
+    "- cek_fisik_lengkap: salin Pemfis template terpilih apa adanya, lalu ganti/ tambahkan HANYA baris yang temuannya diucapkan dokter (mis. 'ronki basah' mengganti 'rh -' pada baris Th). Jangan menambah temuan lain. Kolom cek_fisik tetap berisi temuan yang diucapkan saja.",
+    "",
+    "Daftar template:"
+  ].join("\n") + "\n" + spAsistenTemplatePrompt();
 
   function spAsistenGetKey() { try { return localStorage.getItem(SP_AS_KEY_LS) || ""; } catch (_) { return ""; } }
   function spAsistenGetModel() {
@@ -11654,6 +11680,22 @@
     if (el) { el.textContent = msg || ""; el.style.color = color || "#37474f"; }
   }
 
+  // v3.64.0: kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (bisa diganti / dimatikan).
+  function spAsistenTemplateHtml(p) {
+    const cur = spAs.tpl === undefined ? p.template : spAs.tpl;
+    return `<div style="margin-top:6px;background:#ede7f6;border-radius:6px;padding:6px"><b>📋 Kolom kosong diisi dari template ASGADAR</b><br>` +
+      `<select data-as-tpl style="width:100%;margin-top:4px;padding:5px;border:1px solid #b0bec5;border-radius:6px">` +
+      `<option value="">— Tanpa template (kolom lain dibiarkan) —</option>` +
+      Object.keys(TEMPLATES).map((k) => `<option value="${k}"${k === cur ? " selected" : ""}>${spAsistenEsc(TEMPLATES[k].diagnosis)}${k === p.template ? " (pilihan Claude)" : ""}</option>`).join("") +
+      `</select><div style="color:#78909c;font-size:11px;margin-top:3px">Triase, TTV, pemfis, rencana, masalah, edukasi, discharge yang tidak diucapkan memakai template; yang diucapkan tetap dipakai. Form GADAR baru (+ TAMBAH) dibuka.</div></div>`;
+  }
+
+  // Nilai Pemeriksaan Fisik yang dipakai: pemfis template + temuan yang diucapkan (dari Claude) bila template = pilihan Claude.
+  function spAsistenFisikValue(p, tpl) {
+    if (tpl && tpl === p.template && p.fisikLengkap) return p.fisikLengkap;
+    return p.fields.cek_fisik || "";
+  }
+
   function spAsistenOrdersHtml(p) {
     const list = SP_AS_ORDERS.filter((o) => p.orders && p.orders.includes(o.key));
     if (!list.length && !p.orderManual) return "";
@@ -11677,7 +11719,7 @@
     if (!box) return;
     const p = spAs.plan;
     if (!p) { box.innerHTML = ""; return; }
-    const keys = SP_AS_FIELDS.filter((f) => p.fields[f.key]);
+    const keys = SP_AS_FIELDS.filter((f) => p.fields[f.key] || (f.key === "cek_fisik" && p.fisikLengkap));
     if (!keys.length && !(p.orders && p.orders.length)) {
       box.innerHTML = `<div style="color:#b71c1c">Claude tidak menemukan isian untuk form GADAR.</div>` +
         (p.catatan ? `<div class="sp-as-note">❓ ${spAsistenEsc(p.catatan)}</div>` : "") + spAsistenSaranHtml(p);
@@ -11690,9 +11732,10 @@
         return `<label style="display:flex;gap:6px;align-items:flex-start;padding:4px 0;border-bottom:1px solid #eceff1">` +
           `<input type="checkbox" data-as-key="${f.key}" checked style="margin-top:3px">` +
           `<span><b>${spAsistenEsc(f.label)}</b> <span style="color:#78909c;font-size:11px">(${how})</span><br>` +
-          `<span style="white-space:pre-wrap">${spAsistenEsc(p.fields[f.key])}</span></span></label>`;
+          `<span style="white-space:pre-wrap">${spAsistenEsc(f.key === "cek_fisik" ? spAsistenFisikValue(p, spAs.tpl === undefined ? p.template : spAs.tpl) : p.fields[f.key])}</span></span></label>`;
       }).join("") +
       (p.catatan ? `<div class="sp-as-note" style="margin-top:6px;background:#fff8e1;border-radius:6px;padding:6px">❓ ${spAsistenEsc(p.catatan)}</div>` : "") +
+      spAsistenTemplateHtml(p) +
       spAsistenOrdersHtml(p) +
       spAsistenSaranHtml(p) +
       `<button type="button" data-as="apply" style="margin-top:8px;width:100%;background:#2e7d32">✅ Terapkan: isi form GADAR${p.orders && p.orders.length ? " + jalankan order" : ""} (GADAR tidak disimpan)</button>`;
@@ -11715,6 +11758,7 @@
     try {
       const { result, usage, model } = await spAsistenCallClaude(text, mode);
       spAs.plan = result;
+      spAs.tpl = undefined; // pilihan template kembali ke pilihan Claude
       spAsistenRenderPlan();
       const sec = ((Date.now() - t0) / 1000).toFixed(1);
       const tok = usage ? ` • ${usage.input_tokens || 0}+${usage.output_tokens || 0} token` : "";
@@ -11729,9 +11773,11 @@
   }
 
   // Isi kolom GADAR (root = form yang terbuka). Hasil: { done, fail } berisi label kolom.
-  function spAsistenFill(root, fields) {
+  // modes: { key: "ganti" | "tambah" } menimpa mode bawaan (dipakai setelah template diisi).
+  function spAsistenFill(root, fields, modes = {}) {
     const done = [], fail = [];
-    for (const f of SP_AS_FIELDS) {
+    for (const f0 of SP_AS_FIELDS) {
+      const f = modes[f0.key] ? Object.assign({}, f0, { mode: modes[f0.key] }) : f0;
       const v = fields[f.key];
       if (!v) continue;
       let ok = false;
@@ -11749,7 +11795,26 @@
     return { done, fail };
   }
 
-  async function spAsistenOpenAndFill(fields) {
+  // Template dulu (fillTemplate membuka + TAMBAH dan mengisi semua kolom), lalu kolom yang diucapkan menimpa.
+  async function spAsistenFillWithTemplate(tpl, fields, fisikMode) {
+    spAsistenSetStatus("Mengisi template ASGADAR " + TEMPLATES[tpl].diagnosis + "…");
+    const res = await Promise.race([
+      new Promise((resolve) => { fillTemplate(tpl, { after: resolve }).catch(() => resolve(null)); }),
+      recipeSleep(20000).then(() => null)
+    ]);
+    if (!res) return null;
+    await recipeSleep(900); // GCS template diulang 150/600 ms setelah blok tertunda
+    const root = spAsistenFormRoot() || res.root;
+    const modes = {};
+    for (const f of SP_AS_FIELDS) modes[f.key] = f.key === "riwayat_sakit_old" ? "tambah" : "ganti";
+    modes.cek_fisik = fisikMode;
+    const r = spAsistenFill(root, fields, modes);
+    r.template = TEMPLATES[tpl].diagnosis;
+    return r;
+  }
+
+  async function spAsistenOpenAndFill(fields, tpl, fisikMode) {
+    if (tpl && TEMPLATES[tpl]) return spAsistenFillWithTemplate(tpl, fields, fisikMode || "ganti");
     let root = spAsistenFormRoot();
     if (!root) {
       spAsistenSetStatus("Membuka form Assesment GADAR (+ TAMBAH)…");
@@ -11767,13 +11832,18 @@
     const panel = document.getElementById(SP_AS_PANEL_ID);
     const chosen = [...panel.querySelectorAll("input[data-as-key]")].filter((c) => c.checked).map((c) => c.getAttribute("data-as-key"));
     const orders = [...panel.querySelectorAll("input[data-as-order]")].filter((c) => c.checked && !c.disabled).map((c) => c.getAttribute("data-as-order"));
-    if (!chosen.length && !orders.length) { spAsistenSetStatus("Tidak ada kolom / order yang dicentang.", "#b71c1c"); return; }
+    const tplSel = panel.querySelector("select[data-as-tpl]");
+    const tpl = tplSel ? tplSel.value : "";
     const fields = {};
-    for (const k of chosen) fields[k] = p.fields[k];
+    for (const k of chosen) fields[k] = k === "cek_fisik" ? spAsistenFisikValue(p, tpl) : p.fields[k];
+    // Pemfis: versi lengkap Claude menggantikan pemfis template; bila template diganti manual, temuan ditambahkan di bawahnya.
+    const fisikMode = tpl && tpl === p.template && p.fisikLengkap ? "ganti" : "tambah";
+    if (!chosen.length && !orders.length && !tpl) { spAsistenSetStatus("Tidak ada kolom / order / template yang dipilih.", "#b71c1c"); return; }
+    if (tpl && !orders.length && spAsistenFormRoot() && !window.confirm("ASISTEN: template ASGADAR membuka form GADAR BARU (+ TAMBAH); form yang sedang terbuka tertutup dan isian yang BELUM disimpan hilang.\n\nLanjutkan?")) return;
     if (!orders.length) {
-      const r = await spAsistenOpenAndFill(fields);
+      const r = await spAsistenOpenAndFill(fields, tpl, fisikMode);
       if (!r) { spAsistenSetStatus("Form Assesment GADAR tidak bisa dibuka. Buka form GADAR dulu, lalu Terapkan lagi.", "#b71c1c"); return; }
-      spAsistenSetStatus(`Terisi ${r.done.length} kolom.` + (r.fail.length ? ` Perlu cek manual: ${r.fail.join(", ")}.` : "") + " Review lalu Simpan manual.", r.fail.length ? "#e65100" : "#2e7d32");
+      spAsistenSetStatus((r.template ? `Template ${r.template} + ` : "") + `${r.done.length} kolom dari ucapan terisi.` + (r.fail.length ? ` Perlu cek manual: ${r.fail.join(", ")}.` : "") + " Review lalu Simpan manual.", r.fail.length ? "#e65100" : "#2e7d32");
       toast(`ASISTEN: ${r.done.length} kolom GADAR terisi${r.fail.length ? ", cek manual: " + r.fail.join(", ") : ""}. TIDAK disimpan — review lalu Save manual.`);
       return;
     }
@@ -11783,7 +11853,7 @@
     if (!noreg || spIsDraftGadarPage()) { spAsistenSetStatus("Order hanya bisa di halaman pasien IGD yang sudah terdaftar.", "#b71c1c"); return; }
     if (spAsistenFormRoot() && !window.confirm("ASISTEN: order penunjang perlu pindah tab, form GADAR yang sedang terbuka akan tertutup (isian yang BELUM disimpan hilang).\nIsian asisten akan dimasukkan ke form GADAR baru setelah order.\n\nLanjutkan?")) return;
     const dx = (p.fields.diagnosa_banding || p.fields.kel_utama || "").split("\n")[0].slice(0, 200);
-    const job = { noreg, back: location.pathname + location.search, ts: Date.now(), fields, orders, dx, notes: [] };
+    const job = { noreg, back: location.pathname + location.search, ts: Date.now(), fields, orders, dx, notes: [], tpl, fisikMode };
     if (spVoice.on) spVoiceStop("");
     panel.style.display = "none";
     await spExclusive("ASISTEN SUARA", () => spAsistenRunJob(job));
@@ -11832,9 +11902,9 @@
       await recipeSleep(1500); // beri waktu modal order menutup
     }
     spAsistenSaveJob(null);
-    const r = Object.keys(job.fields).length ? await spAsistenOpenAndFill(job.fields) : { done: [], fail: [] };
+    const r = Object.keys(job.fields).length || job.tpl ? await spAsistenOpenAndFill(job.fields, job.tpl, job.fisikMode) : { done: [], fail: [] };
     const fillMsg = !r ? "Form GADAR tidak bisa dibuka — isi manual." :
-      `${r.done.length} kolom GADAR terisi${r.fail.length ? " (cek manual: " + r.fail.join(", ") + ")" : ""}.`;
+      `${r.template ? "Template " + r.template + " + " : ""}${r.done.length} kolom GADAR terisi${r.fail.length ? " (cek manual: " + r.fail.join(", ") + ")" : ""}.`;
     const msg = `ASISTEN selesai. Order: ${job.notes.join("; ") || "-"}. ${fillMsg} GADAR TIDAK disimpan — review lalu Save manual.`;
     toast(msg);
     spAsistenSetStatus(msg, /✗/.test(msg) || !r || r.fail.length ? "#e65100" : "#2e7d32");
@@ -11923,6 +11993,18 @@
     // document supaya kotak asisten tetap bisa diketik / didikte saat form GADAR terbuka.
     panel.addEventListener("focusin", (e) => e.stopPropagation());
     panel.addEventListener("mousedown", (e) => { if (e.target.closest("button[data-as='mic']")) e.preventDefault(); }, true);
+    panel.addEventListener("change", (e) => {
+      if (e.target.matches("select[data-as-tpl]")) {
+        // Pertahankan centang kolom/order saat pratinjau digambar ulang.
+        const off = [...panel.querySelectorAll("input[data-as-key], input[data-as-order]")].filter((c) => !c.checked)
+          .map((c) => c.getAttribute("data-as-key") || "o:" + c.getAttribute("data-as-order"));
+        spAs.tpl = e.target.value;
+        spAsistenRenderPlan();
+        panel.querySelectorAll("input[data-as-key], input[data-as-order]").forEach((c) => {
+          if (off.includes(c.getAttribute("data-as-key") || "o:" + c.getAttribute("data-as-order"))) c.checked = false;
+        });
+      }
+    });
     panel.addEventListener("click", (e) => {
       const b = e.target.closest("button[data-as]");
       if (!b) return;
