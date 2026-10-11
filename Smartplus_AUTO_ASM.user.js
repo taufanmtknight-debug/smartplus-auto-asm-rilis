@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.66.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.67.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.66.0
-// @description  v3.66.0: audit fitur — ASISTEN: kesadaran yang diucapkan kini benar terpilih saat memakai template (dulu nilai pilihan Compos Mentis ikut berubah) dan GCS yang diucapkan tidak lagi tertimpa GCS template, perkiraan Claude tidak menimpa kesadaran/GCS yang sudah dipilih dokter, pemfis perkiraan Claude tidak menimpa pemfis yang sudah ditulis dokter (hanya temuan yang diucapkan ditambahkan), Terapkan yang tertekan dua kali tidak membuka form GADAR dua kali, keterangan pratinjau sesuai cara pengisian, order penunjang ditandai ✗ bila tombol Save tidak ditekan, diagnosis order memakai diagnosis template bila tidak diucapkan, nilai lab seperti "trombosit 150000" tidak lagi ikut disaring, batas tunggu Claude 90 dtk; DIKTE: Esc menghentikan dikte tanpa menutup form GADAR; tombol 🎤 & 🧠 pindah ke kiri tombol AUTO ASM (dulu menutupi menu). v3.65.0: ASISTEN — bila tidak ada template ASGADAR yang mendekati, kolom yang tidak diucapkan diisi perkiraan Claude (data paling mungkin untuk kasus itu, pemfis per sistem; tanpa obat/dosis baru), tampil terpisah di pratinjau & hanya mengisi kolom yang masih kosong; GADAR tetap Save manual. v3.64.0: ASISTEN — kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (dipilih Claude, bisa diganti di pratinjau; membuka form GADAR baru), pemfis template + temuan yang diucapkan, Riwayat Penyakit Sekarang lama diganti hasil terbaru; GADAR tetap Save manual. v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
+// @version      3.67.0
+// @description  v3.67.0: tombol 🎤 / Alt+V DIKTE SUARA terpisah dihapus (dikte tetap lewat panel ASISTEN 🧠); ASISTEN untuk IGD ramai — Claude hanya memakai ucapan yang nyambung dengan pasien yang diperiksa, mengabaikan suara bed sebelah/perawat/TV dan menampilkan potongan yang diabaikan (🔇) di pratinjau, ucapan yang kurang yakin dikenali ditandai "(?)" di mode percakapan, TTV ganda tanpa koreksi dikosongkan & ditanyakan. v3.66.0: audit fitur — ASISTEN: kesadaran yang diucapkan kini benar terpilih saat memakai template (dulu nilai pilihan Compos Mentis ikut berubah) dan GCS yang diucapkan tidak lagi tertimpa GCS template, perkiraan Claude tidak menimpa kesadaran/GCS yang sudah dipilih dokter, pemfis perkiraan Claude tidak menimpa pemfis yang sudah ditulis dokter (hanya temuan yang diucapkan ditambahkan), Terapkan yang tertekan dua kali tidak membuka form GADAR dua kali, keterangan pratinjau sesuai cara pengisian, order penunjang ditandai ✗ bila tombol Save tidak ditekan, diagnosis order memakai diagnosis template bila tidak diucapkan, nilai lab seperti "trombosit 150000" tidak lagi ikut disaring, batas tunggu Claude 90 dtk; DIKTE: Esc menghentikan dikte tanpa menutup form GADAR; tombol 🎤 & 🧠 pindah ke kiri tombol AUTO ASM (dulu menutupi menu). v3.65.0: ASISTEN — bila tidak ada template ASGADAR yang mendekati, kolom yang tidak diucapkan diisi perkiraan Claude (data paling mungkin untuk kasus itu, pemfis per sistem; tanpa obat/dosis baru), tampil terpisah di pratinjau & hanya mengisi kolom yang masih kosong; GADAR tetap Save manual. v3.64.0: ASISTEN — kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (dipilih Claude, bisa diganti di pratinjau; membuka form GADAR baru), pemfis template + temuan yang diucapkan, Riwayat Penyakit Sekarang lama diganti hasil terbaru; GADAR tetap Save manual. v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @match        http://*/*
@@ -42,7 +42,7 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + window.__SP_AUTO_ASM_LOADED__ + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.66.0";
+  window.__SP_AUTO_ASM_LOADED__ = "3.67.0";
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -10039,7 +10039,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.66.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.67.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -10069,7 +10069,7 @@
         </button>
 
         <div class="sp-note">
-          Resep dari KOMBINASI masuk sebagai draft — review lalu Simpan manual. Pintasan keyboard: Alt + A.<br>🎤 Dikte suara: klik kolom isian lalu tombol 🎤 (atau Alt + V); ucapkan "titik", "tanda koma", "baris baru", "stop dikte".<br>🧠 Asisten suara (uji coba): tombol 🧠 atau Alt + Q — bicara bebas (🗣️ Dikte) atau rekam anamnesa (👥 Percakapan), Claude menyiapkan isian GADAR, Terapkan, lalu Simpan manual.
+          Resep dari KOMBINASI masuk sebagai draft — review lalu Simpan manual. Pintasan keyboard: Alt + A.<br>🧠 Asisten suara (uji coba): tombol 🧠 atau Alt + Q — bicara bebas (🗣️ Dikte) atau rekam anamnesa (👥 Percakapan), Claude menyiapkan isian GADAR, Terapkan, lalu Simpan manual.
         </div>
       `;
     }
@@ -11151,7 +11151,8 @@
   }
 
   // =========================================================
-  // v3.59.0: DIKTE SUARA (instruksi dokter 11 Okt 2026)
+  // v3.59.0: DIKTE SUARA (instruksi dokter 11 Okt 2026). v3.67.0: tombol 🎤 / Alt+V terpisah dihapus atas instruksi dokter;
+  // mesin dikte di bawah ini tetap dipakai tombol 🎤 Dikte / 🎤 Dengar di panel ASISTEN 🧠.
   // Klik kolom isian (Keluhan, Anamnesis, Pemeriksaan Fisik, CPPT, dll), lalu tombol 🎤 atau Alt + V: ucapan
   // (Bahasa Indonesia) diketik di posisi kursor. Pindah kolom saat dikte tetap jalan -> teks masuk ke kolom baru.
   // Hentikan: klik 🎤 lagi, Alt + V, Esc, atau ucapkan "stop dikte". TIDAK PERNAH menyimpan apa pun.
@@ -11290,7 +11291,7 @@
     }
     const active = document.activeElement;
     const target = spVoiceIsField(active) ? active : (spVoice.lastField && spVoice.lastField.isConnected ? spVoice.lastField : null);
-    if (!target) { toast("DIKTE SUARA: klik dulu kolom isian (mis. Keluhan Utama), lalu tekan 🎤 / Alt + V."); return; }
+    if (!target) { toast("DIKTE SUARA: klik dulu kotak teks panel ASISTEN 🧠, lalu tekan 🎤."); return; }
     spVoice.target = target;
     try { target.focus(); } catch (_) {}
 
@@ -11305,7 +11306,10 @@
         const r = ev.results[i];
         if (r.isFinal) {
           // v3.61.0: mode percakapan (spVoice.raw) -> ucapan apa adanya, satu baris per ucapan, tanpa perintah tanda baca.
-          const { text, stop } = spVoice.raw ? spAsistenRawPiece(r[0].transcript) : spVoiceTransform(r[0].transcript);
+          let { text, stop } = spVoice.raw ? spAsistenRawPiece(r[0].transcript) : spVoiceTransform(r[0].transcript);
+          // v3.67.0: IGD ramai — ucapan yang kurang yakin dikenali (sering suara orang lain/jauh) ditandai "(?)" di panel
+          // ASISTEN, tidak dibuang; Claude mengabaikannya bila tidak nyambung dengan pasien ini.
+          if (text && spVoice.raw && spAsistenLowConf(r[0].confidence)) text = "(?) " + text;
           if (text && !(spVoice.raw ? spAsistenAppendLine(spVoice.target, text) : spVoiceInsert(spVoice.target, text))) toast("DIKTE SUARA: kolom tujuan hilang — klik kolom isian lagi.");
           if (stop) { spVoiceStop("DIKTE SUARA berhenti."); return; }
         } else {
@@ -11345,8 +11349,10 @@
     spVoice.restarts = 0;
     try { rec.start(); } catch (err) { spVoiceStop("DIKTE SUARA gagal mulai: " + (err && err.message || err)); return; }
     spVoiceRender();
-    toast("🎤 DIKTE SUARA aktif — bicara sekarang. Klik kolom lain untuk pindah. Berhenti: 🎤 / Alt + V / Esc / \"stop dikte\".");
+    toast("🎤 Mendengarkan — bicara sekarang. Berhenti: ⏹ / Esc / \"stop dikte\".");
   }
+
+  function spAsistenLowConf(c) { return typeof c === "number" && c > 0 && c < 0.45; }
 
   function spVoiceToggle() {
     if (spVoice.on) spVoiceStop("DIKTE SUARA berhenti.");
@@ -11358,34 +11364,16 @@
   function spPlaceFloatButtons() {
     const main = document.getElementById(BUTTON_ID);
     const w = main && main.offsetWidth ? main.offsetWidth : 112;
-    [[SP_VOICE_BTN_ID, 0], [SP_AS_BTN_ID, 1]].forEach(([id, slot]) => {
+    [[SP_AS_BTN_ID, 0]].forEach(([id, slot]) => {
       const el = document.getElementById(id);
       const right = (18 + w + 8 + slot * 52) + "px";
       if (el && el.style.right !== right) el.style.right = right;
     });
   }
 
-  function spEnsureVoiceButton() {
-    if (document.getElementById(SP_VOICE_BTN_ID)) return;
-    const b = document.createElement("button");
-    b.id = SP_VOICE_BTN_ID;
-    b.type = "button";
-    b.style.cssText = "position:fixed;right:138px;bottom:80px;z-index:2147483647;border:0;border-radius:22px;" +
-      "min-width:44px;height:44px;padding:0 12px;color:#fff;font:700 18px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;" +
-      "box-shadow:0 4px 12px rgba(0,0,0,.25);cursor:pointer;";
-    // mousedown dicegah agar fokus/kursor di kolom isian tidak hilang saat tombol diklik.
-    b.addEventListener("mousedown", (e) => e.preventDefault(), true);
-    b.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); spVoiceToggle(); }, true);
-    (document.body || document.documentElement).appendChild(b);
-    spPlaceFloatButtons();
-    spVoiceRender();
-  }
-
   document.addEventListener("keydown", (e) => {
-    if (e.altKey && !e.ctrlKey && String(e.key || "").toLowerCase() === "v") {
-      e.preventDefault();
-      spVoiceToggle();
-    } else if (e.key === "Escape" && spVoice.on) {
+    // v3.67.0 (instruksi dokter): tombol 🎤 / Alt+V DIKTE SUARA terpisah dihapus; mic hanya lewat panel ASISTEN 🧠.
+    if (e.key === "Escape" && spVoice.on) {
       // v3.66.0 (audit): Esc hanya menghentikan dikte — dulu Esc juga diteruskan ke form GADAR (modal Bootstrap) sehingga
       // form ikut tertutup saat dokter menghentikan dikte.
       e.preventDefault();
@@ -11548,6 +11536,7 @@
     return {
       fields: out,
       catatan: String(src.catatan_untuk_dokter || "").trim(),
+      diabaikan: String(src.ucapan_diabaikan || "").trim(),
       saran: String(src.saran_pertanyaan || "").trim(),
       orders: SP_AS_ORDERS.map((o) => o.key).filter((k) => Array.isArray(src.order_penunjang) && src.order_penunjang.includes(k)),
       orderManual: String(src.order_manual || "").trim(),
@@ -11566,6 +11555,7 @@
     for (const f of SP_AS_FIELDS) props[f.key] = f.key === "kesadaran" ? { type: "string", enum: SP_AS_KESADARAN } : { type: "string" };
     props.spo2 = { type: "string" };
     props.catatan_untuk_dokter = { type: "string" };
+    props.ucapan_diabaikan = { type: "string" };
     props.saran_pertanyaan = { type: "string" };
     props.order_penunjang = { type: "array", items: { type: "string", enum: SP_AS_ORDERS.map((o) => o.key) } };
     props.order_manual = { type: "string" };
@@ -11600,6 +11590,12 @@
     "- Abaikan dan jangan salin identitas pasien (nama, nomor RM, alamat) bila terucap.",
     "- catatan_untuk_dokter: pertanyaan/peringatan singkat untuk dokter, atau kosong.",
     "- saran_pertanyaan: hanya untuk MODE PERCAKAPAN — maksimal 5 pertanyaan anamnesa penting yang BELUM ditanyakan (tanda bahaya, onset, faktor pemberat, riwayat obat/alergi), satu per baris diawali '- '. Kosong pada mode dikte.",
+    "",
+    "IGD RAMAI (kedua mode): transkrip bisa ikut menangkap suara lain — pasien/keluarga di bed sebelah, perawat yang membicarakan pasien lain, telepon, TV, panggilan nama, angka TTV pasien lain.",
+    "- Pakai hanya ucapan yang nyambung dengan pasien yang sedang diperiksa (keluhan, kronologi, dan temuan yang konsisten). Potongan yang tidak nyambung, berbeda pasien, atau bertentangan tanpa koreksi jelas: JANGAN dipakai.",
+    "- Baris yang diawali '(?)' dikenali kurang yakin oleh pengenal suara: pakai hanya bila jelas nyambung.",
+    "- Bila ada dua nilai TTV yang berbeda tanpa koreksi jelas ('eh, maksud saya ...'), kosongkan kolomnya dan tanyakan di catatan_untuk_dokter.",
+    "- ucapan_diabaikan: kutip singkat potongan yang Anda abaikan karena diduga suara lain, satu per baris diawali '- ' (maks 5), atau kosong.",
     "",
     "MODE PERCAKAPAN: teks adalah transkrip percakapan dokter dengan pasien/keluarga di IGD, satu baris per ucapan, TANPA label pembicara dan bisa ada salah dengar.",
     "- Tentukan sendiri mana pertanyaan dokter dan mana jawaban pasien. Temuan hanya dari jawaban/pernyataan pasien atau keluarga; pertanyaan yang tidak dijawab bukan temuan.",
@@ -11758,6 +11754,14 @@
       (p.orderManual ? `<div style="margin-top:3px">✋ Order manual: ${spAsistenEsc(p.orderManual)}</div>` : "") + `</div>`;
   }
 
+  // v3.67.0: potongan transkrip yang diabaikan Claude (diduga suara lain di IGD) — supaya dokter bisa cek.
+  function spAsistenDiabaikanHtml(p) {
+    if (!p || !p.diabaikan) return "";
+    return `<div style="margin-top:6px;background:#eceff1;border-radius:6px;padding:6px"><b>🔇 Diabaikan (diduga suara lain)</b> ` +
+      `<span style="color:#78909c;font-size:11px">(bila ternyata ucapan pasien ini, ketik ulang lalu Pahami)</span>` +
+      `<div style="white-space:pre-wrap">${spAsistenEsc(p.diabaikan)}</div></div>`;
+  }
+
   function spAsistenSaranHtml(p) {
     if (!p || !p.saran) return "";
     return `<div style="margin-top:6px;background:#e3f2fd;border-radius:6px;padding:6px"><b>💡 Belum ditanyakan</b> ` +
@@ -11793,6 +11797,7 @@
           `<span style="white-space:pre-wrap">${spAsistenEsc(f.key === "cek_fisik" ? spAsistenFisikValue(p, spAs.tpl === undefined ? p.template : spAs.tpl) : p.fields[f.key])}</span></span></label>`;
       }).join("") +
       (p.catatan ? `<div class="sp-as-note" style="margin-top:6px;background:#fff8e1;border-radius:6px;padding:6px">❓ ${spAsistenEsc(p.catatan)}</div>` : "") +
+      spAsistenDiabaikanHtml(p) +
       spAsistenTemplateHtml(p) +
       spAsistenPerkiraanHtml(p) +
       spAsistenOrdersHtml(p) +
@@ -12230,7 +12235,6 @@
     try {
       if (!document.documentElement) return false;
       ensureButton();
-      spEnsureVoiceButton();
       spEnsureAsistenButton();
       return !!document.getElementById(BUTTON_ID);
     } catch (err) {
@@ -12287,12 +12291,12 @@
   }, true);
 
   setInterval(() => {
-    if (!document.getElementById(BUTTON_ID) || !document.getElementById(SP_VOICE_BTN_ID) || !document.getElementById(SP_AS_BTN_ID)) safeEnsureButton();
+    if (!document.getElementById(BUTTON_ID) || !document.getElementById(SP_AS_BTN_ID)) safeEnsureButton();
     spPlaceFloatButtons(); // lebar tombol AUTO ASM baru pasti setelah huruf termuat
   }, 1500);
 
   const observer = new MutationObserver(() => {
-    if (!document.getElementById(BUTTON_ID) || !document.getElementById(SP_VOICE_BTN_ID) || !document.getElementById(SP_AS_BTN_ID)) safeEnsureButton();
+    if (!document.getElementById(BUTTON_ID) || !document.getElementById(SP_AS_BTN_ID)) safeEnsureButton();
   });
 
   if (document.documentElement) {
