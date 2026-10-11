@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.58.4
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.59.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.58.4
-// @description  v3.58.4: PAKET KONSUL RANAP — keluhan saat ini dari CPPT dokter terbaru (termasuk dokter umum), judul "Pemeriksaan fisik" tanpa kata kesimpulan, baris penunjuk "Advis spesialis lain (lihat gambar CPPT terlampir)" dihapus (gambar CPPT tetap dilampirkan).
+// @version      3.59.0
+// @description  v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @match        http://*/*
@@ -42,7 +42,7 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + window.__SP_AUTO_ASM_LOADED__ + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.58.4";
+  window.__SP_AUTO_ASM_LOADED__ = "3.59.0";
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -10009,7 +10009,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.58.4</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.59.0</span></div>
         <div class="sp-section-title">Pasien IGD</div>
 
         <button type="button" data-disease-menu="1">
@@ -10051,7 +10051,7 @@
         </button>
 
         <div class="sp-note">
-          Resep dari KOMBINASI masuk sebagai draft — review lalu Simpan manual. Pintasan keyboard: Alt + A.
+          Resep dari KOMBINASI masuk sebagai draft — review lalu Simpan manual. Pintasan keyboard: Alt + A.<br>🎤 Dikte suara: klik kolom isian lalu tombol 🎤 (atau Alt + V); ucapkan "titik", "tanda koma", "baris baru", "stop dikte".
         </div>
       `;
     }
@@ -11122,6 +11122,225 @@
   }
 
   // =========================================================
+  // v3.59.0: DIKTE SUARA (instruksi dokter 11 Okt 2026)
+  // Klik kolom isian (Keluhan, Anamnesis, Pemeriksaan Fisik, CPPT, dll), lalu tombol 🎤 atau Alt + V: ucapan
+  // (Bahasa Indonesia) diketik di posisi kursor. Pindah kolom saat dikte tetap jalan -> teks masuk ke kolom baru.
+  // Hentikan: klik 🎤 lagi, Alt + V, Esc, atau ucapkan "stop dikte". TIDAK PERNAH menyimpan apa pun.
+  // Memakai Web Speech API browser (Chrome/Edge): suara diproses layanan pengenalan suara browser (Google/Microsoft),
+  // jadi jangan mendiktekan nama / No. RM pasien. Firefox belum mendukung -> pakai Win + H (dikte bawaan Windows).
+  // Perintah: "titik" -> ".", "tanda koma" -> "," (kata "koma" saja dibiarkan karena istilah klinis),
+  // "titik dua", "tanda tanya", "garis miring", "baris baru"; angka "120 per 80" -> "120/80", "37 koma 5" -> "37,5".
+  // =========================================================
+  const SP_VOICE_BTN_ID = "sp-auto-asm-voice-btn";
+  const SP_VOICE_BUBBLE_ID = "sp-auto-asm-voice-bubble";
+
+  // Ubah satu potong hasil dikte menjadi teks (fungsi murni, diuji di tests/uji_v3_59.js).
+  // Hasil: { text, stop } — stop = true bila dokter mengucapkan "stop dikte" / "selesai dikte".
+  function spVoiceTransform(raw) {
+    let s = " " + String(raw || "").replace(/\s+/g, " ").trim() + " ";
+    let stop = false;
+    if (/\s(stop|berhenti|selesai)\s+dikte\s/i.test(s)) {
+      stop = true;
+      s = s.replace(/\s(stop|berhenti|selesai)\s+dikte(?=\s)/gi, " ");
+    }
+    s = s
+      .replace(/(\d)\s+per\s+(\d)/gi, "$1/$2")
+      .replace(/(\d)\s+koma\s+(\d)/gi, "$1,$2")
+      .replace(/\s(baris|garis)\s+baru(?=\s)/gi, " \n ")
+      .replace(/\stitik\s+dua(?=\s)/gi, " : ")
+      .replace(/\standa\s+tanya(?=\s)/gi, " ? ")
+      .replace(/\standa\s+seru(?=\s)/gi, " ! ")
+      .replace(/\sgaris\s+miring(?=\s)/gi, " / ")
+      .replace(/\standa\s+koma(?=\s)/gi, " , ")
+      .replace(/\s(tanda\s+)?titik(?=\s)/gi, " . ")
+      .replace(/[ \t]+([.,:?!])/g, "$1")      // tanda baca menempel ke kata sebelumnya
+      .replace(/\s*\/\s*/g, "/")
+      .replace(/[ \t]*\n[ \t]*/g, "\n")
+      .replace(/[ \t]{2,}/g, " ");
+    return { text: s.replace(/^ +| +$/g, ""), stop };
+  }
+
+  // Sambungkan teks dikte ke isi kolom pada posisi kursor (spasi & huruf kapital awal kalimat). Fungsi murni.
+  function spVoiceJoin(before, piece) {
+    if (!piece) return "";
+    let p = piece;
+    const prev = before.replace(/[ \t]+$/, "");
+    const sentenceStart = !prev || /[.?!]$/.test(prev) || /\n$/.test(before);
+    if (sentenceStart) p = p.replace(/^(\s*)(\p{Ll})/u, (m, a, c) => a + c.toUpperCase());
+    // Huruf setelah titik / tanda tanya di dalam potongan ini juga dikapitalkan.
+    p = p.replace(/([.?!]\s+|\n)(\p{Ll})/gu, (m, a, c) => a + c.toUpperCase());
+    const needSpace = before && !/[\s(/]$/.test(before) && !/^[\s.,:?!/\n]/.test(p);
+    return (needSpace ? " " : "") + p;
+  }
+
+  function spVoiceIsField(el) {
+    if (!el || el.nodeType !== 1) return false;
+    if (el.closest && el.closest(`#${MENU_ID}, #${SP_VOICE_BTN_ID}, #${SP_VOICE_BUBBLE_ID}`)) return false;
+    if (el.disabled || el.readOnly) return false;
+    if (el.tagName === "TEXTAREA") return true;
+    if (el.tagName === "INPUT") return /^(text|search|)$/i.test(el.getAttribute("type") || "");
+    return !!el.isContentEditable;
+  }
+
+  const spVoice = { rec: null, on: false, target: null, lastField: null, interim: "", restarts: 0 };
+
+  document.addEventListener("focusin", (e) => {
+    if (spVoiceIsField(e.target)) {
+      spVoice.lastField = e.target;
+      if (spVoice.on) spVoice.target = e.target; // dikte pindah ke kolom yang baru diklik
+    }
+  }, true);
+
+  function spVoiceInsert(el, piece) {
+    if (!el || !piece || !el.isConnected) return false;
+    if (el.isContentEditable) {
+      el.focus();
+      try { document.execCommand("insertText", false, spVoiceJoin(el.textContent || "", piece)); } catch (_) { return false; }
+      return true;
+    }
+    const v = String(el.value || "");
+    let a = v.length, b = v.length;
+    try {
+      if (typeof el.selectionStart === "number") { a = el.selectionStart; b = el.selectionEnd; }
+    } catch (_) {}
+    const add = spVoiceJoin(v.slice(0, a), el.tagName === "INPUT" ? piece.replace(/\n/g, " ") : piece);
+    const proto = el.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+    const setter = Object.getOwnPropertyDescriptor(proto, "value")?.set;
+    const nv = v.slice(0, a) + add + v.slice(b);
+    try { setter ? setter.call(el, nv) : (el.value = nv); } catch (_) { return false; }
+    try { el.setSelectionRange(a + add.length, a + add.length); } catch (_) {}
+    ["input", "change"].forEach((t) => { try { el.dispatchEvent(new Event(t, { bubbles: true })); } catch (_) {} });
+    return true;
+  }
+
+  function spVoiceBubble(text) {
+    let b = document.getElementById(SP_VOICE_BUBBLE_ID);
+    if (!text) { if (b) b.style.display = "none"; return; }
+    if (!b) {
+      b = document.createElement("div");
+      b.id = SP_VOICE_BUBBLE_ID;
+      b.style.cssText = "position:fixed;right:18px;bottom:190px;z-index:2147483647;max-width:min(420px,calc(100vw - 36px));" +
+        "background:#263238;color:#fff;border-radius:10px;padding:8px 12px;font:13px/1.35 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;" +
+        "box-shadow:0 4px 14px rgba(0,0,0,.25);white-space:pre-wrap;pointer-events:none;";
+      document.documentElement.appendChild(b);
+    }
+    b.textContent = text;
+    b.style.display = "block";
+  }
+
+  function spVoiceRender() {
+    const btn = document.getElementById(SP_VOICE_BTN_ID);
+    if (btn) {
+      btn.style.background = spVoice.on ? "#d32f2f" : "#455a64";
+      btn.title = spVoice.on ? "Dikte suara AKTIF — klik / Alt+V / Esc untuk berhenti" : "Dikte suara (Alt+V): klik kolom isian dulu, lalu bicara";
+      btn.textContent = spVoice.on ? "⏹ 🎤" : "🎤";
+    }
+    spVoiceBubble(spVoice.on ? "🎤 Mendengarkan… " + (spVoice.interim || "") : "");
+  }
+
+  function spVoiceStop(msg) {
+    spVoice.on = false;
+    spVoice.interim = "";
+    try { spVoice.rec && spVoice.rec.stop(); } catch (_) {}
+    spVoiceRender();
+    if (msg) toast(msg);
+  }
+
+  function spVoiceStart() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      toast("DIKTE SUARA tidak didukung browser ini (Firefox). Pakai Chrome/Edge, atau dikte bawaan Windows: tekan Win + H di kolom isian.");
+      return;
+    }
+    const active = document.activeElement;
+    const target = spVoiceIsField(active) ? active : (spVoice.lastField && spVoice.lastField.isConnected ? spVoice.lastField : null);
+    if (!target) { toast("DIKTE SUARA: klik dulu kolom isian (mis. Keluhan Utama), lalu tekan 🎤 / Alt + V."); return; }
+    spVoice.target = target;
+    try { target.focus(); } catch (_) {}
+
+    const rec = new SR();
+    rec.lang = "id-ID";
+    rec.continuous = true;
+    rec.interimResults = true;
+    rec.maxAlternatives = 1;
+    rec.onresult = (ev) => {
+      let interim = "";
+      for (let i = ev.resultIndex; i < ev.results.length; i++) {
+        const r = ev.results[i];
+        if (r.isFinal) {
+          const { text, stop } = spVoiceTransform(r[0].transcript);
+          if (text && !spVoiceInsert(spVoice.target, text)) toast("DIKTE SUARA: kolom tujuan hilang — klik kolom isian lagi.");
+          if (stop) { spVoiceStop("DIKTE SUARA berhenti."); return; }
+        } else {
+          interim += r[0].transcript;
+        }
+      }
+      spVoice.interim = interim;
+      spVoice.restarts = 0;
+      spVoiceRender();
+    };
+    rec.onerror = (ev) => {
+      const err = ev && ev.error;
+      if (err === "no-speech" || err === "aborted") return; // diam sebentar -> dilanjutkan otomatis (onend)
+      const why = {
+        "not-allowed": window.isSecureContext
+          ? "izin mikrofon ditolak. Klik ikon gembok/mikrofon di bilah alamat -> Izinkan mikrofon."
+          : "browser menolak mikrofon karena Smartplus memakai http (tidak aman). Minta IT menambahkan alamat Smartplus di " +
+            "chrome://flags/#unsafely-treat-insecure-origin-as-secure (Edge: edge://flags), atau pakai Win + H.",
+        "service-not-allowed": "layanan pengenalan suara browser tidak diizinkan. Pakai Win + H (dikte Windows).",
+        "audio-capture": "mikrofon tidak ditemukan. Cek headset/mikrofon PC.",
+        "network": "layanan pengenalan suara butuh internet dan sedang tidak terjangkau. Pakai Win + H.",
+        "language-not-supported": "Bahasa Indonesia tidak tersedia di browser ini."
+      }[err] || ("galat " + err);
+      spVoiceStop("DIKTE SUARA berhenti: " + why);
+    };
+    rec.onend = () => {
+      // Chrome menghentikan pengenalan setelah jeda/±60 dtk: lanjutkan selama dikte masih aktif.
+      if (spVoice.on && spVoice.rec === rec && spVoice.restarts < 20) {
+        spVoice.restarts++;
+        try { rec.start(); return; } catch (_) {}
+      }
+      if (spVoice.rec === rec && spVoice.on) spVoiceStop("DIKTE SUARA berhenti (tidak ada suara).");
+    };
+    spVoice.rec = rec;
+    spVoice.on = true;
+    spVoice.interim = "";
+    spVoice.restarts = 0;
+    try { rec.start(); } catch (err) { spVoiceStop("DIKTE SUARA gagal mulai: " + (err && err.message || err)); return; }
+    spVoiceRender();
+    toast("🎤 DIKTE SUARA aktif — bicara sekarang. Klik kolom lain untuk pindah. Berhenti: 🎤 / Alt + V / Esc / \"stop dikte\".");
+  }
+
+  function spVoiceToggle() {
+    if (spVoice.on) spVoiceStop("DIKTE SUARA berhenti.");
+    else spVoiceStart();
+  }
+
+  function spEnsureVoiceButton() {
+    if (document.getElementById(SP_VOICE_BTN_ID)) return;
+    const b = document.createElement("button");
+    b.id = SP_VOICE_BTN_ID;
+    b.type = "button";
+    b.style.cssText = "position:fixed;right:18px;bottom:136px;z-index:2147483647;border:0;border-radius:22px;" +
+      "min-width:44px;height:44px;padding:0 12px;color:#fff;font:700 18px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;" +
+      "box-shadow:0 4px 12px rgba(0,0,0,.25);cursor:pointer;";
+    // mousedown dicegah agar fokus/kursor di kolom isian tidak hilang saat tombol diklik.
+    b.addEventListener("mousedown", (e) => e.preventDefault(), true);
+    b.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); spVoiceToggle(); }, true);
+    (document.body || document.documentElement).appendChild(b);
+    spVoiceRender();
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.altKey && !e.ctrlKey && String(e.key || "").toLowerCase() === "v") {
+      e.preventDefault();
+      spVoiceToggle();
+    } else if (e.key === "Escape" && spVoice.on) {
+      spVoiceStop("DIKTE SUARA berhenti.");
+    }
+  }, true);
+
+  // =========================================================
   // CHROME + FIREFOX + VIOLENTMONKEY COMPATIBILITY BOOTSTRAP
   // =========================================================
   // Chrome/Firefox dapat memulihkan halaman dari BFCache atau
@@ -11132,6 +11351,7 @@
     try {
       if (!document.documentElement) return false;
       ensureButton();
+      spEnsureVoiceButton();
       return !!document.getElementById(BUTTON_ID);
     } catch (err) {
       console.warn('[AUTO ASM] ensureButton retry:', err);
@@ -11186,11 +11406,11 @@
   }, true);
 
   setInterval(() => {
-    if (!document.getElementById(BUTTON_ID)) safeEnsureButton();
+    if (!document.getElementById(BUTTON_ID) || !document.getElementById(SP_VOICE_BTN_ID)) safeEnsureButton();
   }, 1500);
 
   const observer = new MutationObserver(() => {
-    if (!document.getElementById(BUTTON_ID)) safeEnsureButton();
+    if (!document.getElementById(BUTTON_ID) || !document.getElementById(SP_VOICE_BTN_ID)) safeEnsureButton();
   });
 
   if (document.documentElement) {
