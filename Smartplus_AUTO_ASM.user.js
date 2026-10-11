@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.67.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.68.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.67.0
-// @description  v3.67.0: tombol 🎤 / Alt+V DIKTE SUARA terpisah dihapus (dikte tetap lewat panel ASISTEN 🧠); ASISTEN untuk IGD ramai — Claude hanya memakai ucapan yang nyambung dengan pasien yang diperiksa, mengabaikan suara bed sebelah/perawat/TV dan menampilkan potongan yang diabaikan (🔇) di pratinjau, ucapan yang kurang yakin dikenali ditandai "(?)" di mode percakapan, TTV ganda tanpa koreksi dikosongkan & ditanyakan. v3.66.0: audit fitur — ASISTEN: kesadaran yang diucapkan kini benar terpilih saat memakai template (dulu nilai pilihan Compos Mentis ikut berubah) dan GCS yang diucapkan tidak lagi tertimpa GCS template, perkiraan Claude tidak menimpa kesadaran/GCS yang sudah dipilih dokter, pemfis perkiraan Claude tidak menimpa pemfis yang sudah ditulis dokter (hanya temuan yang diucapkan ditambahkan), Terapkan yang tertekan dua kali tidak membuka form GADAR dua kali, keterangan pratinjau sesuai cara pengisian, order penunjang ditandai ✗ bila tombol Save tidak ditekan, diagnosis order memakai diagnosis template bila tidak diucapkan, nilai lab seperti "trombosit 150000" tidak lagi ikut disaring, batas tunggu Claude 90 dtk; DIKTE: Esc menghentikan dikte tanpa menutup form GADAR; tombol 🎤 & 🧠 pindah ke kiri tombol AUTO ASM (dulu menutupi menu). v3.65.0: ASISTEN — bila tidak ada template ASGADAR yang mendekati, kolom yang tidak diucapkan diisi perkiraan Claude (data paling mungkin untuk kasus itu, pemfis per sistem; tanpa obat/dosis baru), tampil terpisah di pratinjau & hanya mengisi kolom yang masih kosong; GADAR tetap Save manual. v3.64.0: ASISTEN — kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (dipilih Claude, bisa diganti di pratinjau; membuka form GADAR baru), pemfis template + temuan yang diucapkan, Riwayat Penyakit Sekarang lama diganti hasil terbaru; GADAR tetap Save manual. v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
+// @version      3.68.0
+// @description  v3.68.0: ASISTEN 🎙️ Rekam — di tablet/HP tanpa dikte browser (Firefox) atau bila dipilih "Selalu", tombol mic membuka tab perekam https (GitHub Pages repo rilis), rekaman dikirim kembali ke tab Smartplus lalu diubah menjadi teks oleh layanan OpenAI dengan kunci dokter (⚙️, disimpan di browser saja), kemudian otomatis Pahami; tidak bergantung keyboard layar. v3.67.0: tombol 🎤 / Alt+V DIKTE SUARA terpisah dihapus (dikte tetap lewat panel ASISTEN 🧠); ASISTEN untuk IGD ramai — Claude hanya memakai ucapan yang nyambung dengan pasien yang diperiksa, mengabaikan suara bed sebelah/perawat/TV dan menampilkan potongan yang diabaikan (🔇) di pratinjau, ucapan yang kurang yakin dikenali ditandai "(?)" di mode percakapan, TTV ganda tanpa koreksi dikosongkan & ditanyakan. v3.66.0: audit fitur — ASISTEN: kesadaran yang diucapkan kini benar terpilih saat memakai template (dulu nilai pilihan Compos Mentis ikut berubah) dan GCS yang diucapkan tidak lagi tertimpa GCS template, perkiraan Claude tidak menimpa kesadaran/GCS yang sudah dipilih dokter, pemfis perkiraan Claude tidak menimpa pemfis yang sudah ditulis dokter (hanya temuan yang diucapkan ditambahkan), Terapkan yang tertekan dua kali tidak membuka form GADAR dua kali, keterangan pratinjau sesuai cara pengisian, order penunjang ditandai ✗ bila tombol Save tidak ditekan, diagnosis order memakai diagnosis template bila tidak diucapkan, nilai lab seperti "trombosit 150000" tidak lagi ikut disaring, batas tunggu Claude 90 dtk; DIKTE: Esc menghentikan dikte tanpa menutup form GADAR; tombol 🎤 & 🧠 pindah ke kiri tombol AUTO ASM (dulu menutupi menu). v3.65.0: ASISTEN — bila tidak ada template ASGADAR yang mendekati, kolom yang tidak diucapkan diisi perkiraan Claude (data paling mungkin untuk kasus itu, pemfis per sistem; tanpa obat/dosis baru), tampil terpisah di pratinjau & hanya mengisi kolom yang masih kosong; GADAR tetap Save manual. v3.64.0: ASISTEN — kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (dipilih Claude, bisa diganti di pratinjau; membuka form GADAR baru), pemfis template + temuan yang diucapkan, Riwayat Penyakit Sekarang lama diganti hasil terbaru; GADAR tetap Save manual. v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @match        http://*/*
@@ -29,6 +29,84 @@
     } catch (_) {}
     return false;
   }
+  // v3.68.0: PEREKAM SUARA ASISTEN (permintaan dokter 11 Okt 2026: tablet Firefox tanpa dikte browser, pilih layanan suara).
+  // Smartplus memakai http sehingga browser memblokir mikrofon di halaman Smartplus. Tombol 🎙️ Rekam di panel ASISTEN
+  // membuka tab perekam di GitHub Pages repo rilis MILIK DOKTER (https); script ini menggambar perekam di sana, lalu
+  // rekaman dikirim HANYA ke tab Smartplus pembuka (postMessage dengan alamat tujuan = alamat Smartplus pembuka).
+  // Halaman perekam tidak mengirim rekaman ke mana pun selain tab Smartplus itu dan tidak menyimpan apa pun.
+  // Dipanggil sebelum konstanta lain dibuat, jadi berdiri sendiri.
+  function spIsRekamPage() {
+    return location.protocol === "https:" && location.hostname === "taufanmtknight-debug.github.io" &&
+      /^\/smartplus-auto-asm-rilis\/rekam\.html$/.test(location.pathname) && /^#sp-asm-rekam\b/.test(location.hash || "");
+  }
+  function spRunRekamPage() {
+    const q = new URLSearchParams((location.hash || "").replace(/^#sp-asm-rekam&?/, ""));
+    const back = q.get("o") || "";
+    const MAX_MS = 20 * 60 * 1000;
+    let rec = null, stream = null, chunks = [], t0 = 0, timer = null, sent = false;
+    document.title = "🎙️ Perekam ASISTEN";
+    document.body.innerHTML =
+      '<div style="font:16px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:520px;margin:24px auto;padding:0 16px;color:#263238">' +
+      '<h2 style="margin:0 0 6px">🎙️ Perekam ASISTEN</h2>' +
+      '<div id="sp-rk-st" style="margin:10px 0;min-height:48px">Menyiapkan mikrofon…</div>' +
+      '<div id="sp-rk-t" style="font:700 40px/1 monospace;margin:10px 0">00:00</div>' +
+      '<button id="sp-rk-go" style="display:none;width:100%;height:64px;font-size:20px;border:0;border-radius:12px;background:#c62828;color:#fff">⏺ Mulai rekam</button>' +
+      '<button id="sp-rk-stop" style="display:none;width:100%;height:72px;font-size:22px;border:0;border-radius:12px;background:#2e7d32;color:#fff">⏹ Selesai &amp; kirim ke Smartplus</button>' +
+      '<button id="sp-rk-cancel" style="width:100%;height:48px;margin-top:10px;font-size:16px;border:0;border-radius:12px;background:#90a4ae;color:#fff">✖ Batal</button>' +
+      '<p style="font-size:13px;color:#607d8b">Dekatkan tablet ke dokter &amp; pasien. Rekaman hanya dikirim ke tab Smartplus yang membuka halaman ini.</p></div>';
+    const $ = (id) => document.getElementById(id);
+    const st = (m, c) => { $("sp-rk-st").textContent = m; $("sp-rk-st").style.color = c || "#263238"; };
+    const opener = window.opener;
+    if (!opener || !/^https?:\/\/[^/]+$/.test(back)) {
+      st("Halaman ini harus dibuka dari tombol 🎙️ Rekam di panel ASISTEN Smartplus.", "#b71c1c");
+      $("sp-rk-cancel").onclick = () => window.close();
+      return;
+    }
+    const post = (msg) => { try { opener.postMessage(msg, back); return true; } catch (_) { return false; } };
+    const finish = () => { try { stream && stream.getTracks().forEach((t) => t.stop()); } catch (_) {} clearInterval(timer); };
+    const close = () => { try { opener.focus(); } catch (_) {} setTimeout(() => window.close(), 250); };
+    const start = async () => {
+      $("sp-rk-go").style.display = "none";
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+      } catch (err) {
+        st("Mikrofon tidak bisa dipakai: " + (err && err.name === "NotAllowedError"
+          ? "izin ditolak. Ketuk ikon di bilah alamat → izinkan Mikrofon, lalu Mulai rekam." : (err && err.message || err)), "#b71c1c");
+        $("sp-rk-go").style.display = "block";
+        return;
+      }
+      const mime = ["audio/webm;codecs=opus", "audio/ogg;codecs=opus", "audio/webm", "audio/mp4"]
+        .find((m) => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) || "";
+      rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+      chunks = [];
+      rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+      rec.onstop = () => {
+        finish();
+        if (sent) return;
+        sent = true;
+        const blob = new Blob(chunks, { type: rec.mimeType || mime || "audio/webm" });
+        if (!blob.size) { sent = false; st("Rekaman kosong — coba lagi.", "#b71c1c"); $("sp-rk-go").style.display = "block"; return; }
+        if (post({ type: "sp-asm-rekaman", blob, mime: blob.type, ms: Date.now() - t0 })) { st("✓ Terkirim. Kembali ke Smartplus…", "#2e7d32"); close(); }
+        else st("Tab Smartplus tidak ditemukan. Buka lagi dari panel ASISTEN.", "#b71c1c");
+      };
+      rec.start(1000);
+      t0 = Date.now();
+      st("🔴 Merekam… bicara seperti biasa. Tekan Selesai bila sudah.", "#c62828");
+      $("sp-rk-stop").style.display = "block";
+      timer = setInterval(() => {
+        const s = Math.floor((Date.now() - t0) / 1000);
+        $("sp-rk-t").textContent = String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+        if (Date.now() - t0 > MAX_MS && rec.state === "recording") rec.stop();
+      }, 500);
+    };
+    $("sp-rk-go").onclick = start;
+    $("sp-rk-stop").onclick = () => { $("sp-rk-stop").style.display = "none"; st("Menyiapkan rekaman…"); if (rec && rec.state !== "inactive") rec.stop(); };
+    $("sp-rk-cancel").onclick = () => { sent = true; try { if (rec && rec.state !== "inactive") rec.stop(); } catch (_) {} finish(); post({ type: "sp-asm-rekaman-batal" }); close(); };
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) { st("Browser ini tidak bisa merekam suara.", "#b71c1c"); return; }
+    start();
+  }
+  if (spIsRekamPage()) { spRunRekamPage(); return; }
+
   // v3.11.0: mode khusus di jendela viewer PACS yang dibuka AUTO PENUNJANG (lihat runOrthancCapture).
   if (/^spcap\|/.test(window.name || "") && /osimis-viewer|\/app\//i.test(location.pathname)) {
     runOrthancCapture();
@@ -42,7 +120,7 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + window.__SP_AUTO_ASM_LOADED__ + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.67.0";
+  window.__SP_AUTO_ASM_LOADED__ = "3.68.0";
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -10039,7 +10117,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.67.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.68.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -12060,8 +12138,104 @@
       `</select><div style="display:flex;gap:6px;margin-top:6px">` +
       `<button type="button" data-as="save-set" style="flex:1">Simpan setelan</button>` +
       `<button type="button" data-as="del-key" style="flex:1;background:#78909c">Hapus kunci</button></div>` +
-      `<div style="font-size:11px;color:#546e7a;margin-top:6px">Yang dikirim ke Claude hanya teks di kotak asisten setelah nama/No.RM/No.Reg/tanggal disaring. Jangan ucapkan identitas pasien.</div>`;
+      `<div style="font-size:11px;color:#546e7a;margin-top:6px">Yang dikirim ke Claude hanya teks di kotak asisten setelah nama/No.RM/No.Reg/tanggal disaring. Jangan ucapkan identitas pasien.</div>` +
+      // v3.68.0: rekam suara lewat layanan OpenAI (tablet/HP tanpa dikte browser).
+      `<div style="font-weight:700;margin:10px 0 4px">🎙️ Rekam suara (tablet/HP tanpa dikte)</div>` +
+      `<div style="font-size:11px;color:#546e7a;margin-bottom:4px">Kunci dibuat di platform.openai.com → API keys (isi saldo kecil + batas belanja). ` +
+      `Status: <b>${spAsistenLs(SP_AS_STT_LS) ? "kunci tersimpan" : "belum ada kunci"}</b>. Rekaman suara (semua yang terucap) dikirim ke OpenAI untuk diubah menjadi teks.</div>` +
+      `<input type="password" class="sp-as-stt" autocomplete="off" placeholder="${spAsistenLs(SP_AS_STT_LS) ? "•••••• (isi untuk mengganti)" : "sk-…"}" style="width:100%;box-sizing:border-box;padding:6px;border:1px solid #b0bec5;border-radius:6px">` +
+      `<select class="sp-as-stt-model" style="width:100%;margin-top:6px;padding:5px;border:1px solid #b0bec5;border-radius:6px">` +
+      SP_AS_STT_MODELS.map(([id, name]) => `<option value="${id}"${id === spAsistenSttModel() ? " selected" : ""}>${spAsistenEsc(name)}</option>`).join("") + `</select>` +
+      `<select class="sp-as-stt-pref" style="width:100%;margin-top:6px;padding:5px;border:1px solid #b0bec5;border-radius:6px">` +
+      `<option value="">Otomatis: dikte browser bila ada, selain itu 🎙️ Rekam</option>` +
+      `<option value="selalu"${spAsistenLs(SP_AS_STT_PREF_LS) === "selalu" ? " selected" : ""}>Selalu 🎙️ Rekam (lebih tahan bising IGD)</option></select>` +
+      `<button type="button" data-as="del-stt" style="width:100%;margin-top:6px;background:#78909c">Hapus kunci OpenAI</button>`;
   }
+
+  // v3.68.0: 🎙️ Rekam — tab perekam https (spRunRekamPage) + layanan suara-ke-teks OpenAI dengan kunci milik dokter
+  // (disimpan di browser ini saja; dokter memilih layanan ini 11 Okt 2026). Dipakai bila browser tidak punya dikte
+  // (Firefox) atau dokter memilih "Selalu 🎙️ Rekam".
+  const SP_REKAM_ORIGIN = "https://taufanmtknight-debug.github.io";
+  const SP_REKAM_PATH = "/smartplus-auto-asm-rilis/rekam.html";
+  const SP_AS_STT_LS = "sp-auto-asm-asisten-stt-kunci";
+  const SP_AS_STT_MODEL_LS = "sp-auto-asm-asisten-stt-model";
+  const SP_AS_STT_PREF_LS = "sp-auto-asm-asisten-stt-pilihan";
+  const SP_AS_STT_MODELS = [["gpt-4o-mini-transcribe", "gpt-4o-mini-transcribe (hemat, disarankan)"], ["gpt-4o-transcribe", "gpt-4o-transcribe (paling teliti)"], ["whisper-1", "whisper-1"]];
+  const SP_AS_STT_PROMPT = "Rekaman di IGD rumah sakit Indonesia: anamnesa dokter dengan pasien/keluarga, lalu dokter mendikte tanda vital, " +
+    "pemeriksaan fisik, diagnosis dan rencana. Istilah: tensi 120 per 80, nadi, saturasi, GCS, ronki basah, wheezing, vesikuler, " +
+    "nyeri tekan epigastrium, akral hangat, CRT, darah lengkap, rontgen thorax, USG abdomen, CT scan kepala.";
+  function spAsistenLs(k) { try { return localStorage.getItem(k) || ""; } catch (_) { return ""; } }
+  function spAsistenSttModel() { const m = spAsistenLs(SP_AS_STT_MODEL_LS); return SP_AS_STT_MODELS.some((x) => x[0] === m) ? m : SP_AS_STT_MODELS[0][0]; }
+  // true = tombol mic memakai 🎙️ Rekam (tab perekam + layanan suara).
+  function spAsistenUseRekam() {
+    if (spAsistenLs(SP_AS_STT_PREF_LS) === "selalu" && spAsistenLs(SP_AS_STT_LS)) return true;
+    return !(window.SpeechRecognition || window.webkitSpeechRecognition);
+  }
+  function spAsistenRekamUrl(mode) {
+    return SP_REKAM_ORIGIN + SP_REKAM_PATH + "#sp-asm-rekam&o=" + encodeURIComponent(location.origin) + "&m=" + encodeURIComponent(mode || "dikte");
+  }
+  // Nama berkas sesuai jenis rekaman (layanan menebak format dari ekstensi).
+  function spAsistenAudioName(mime) {
+    const m = String(mime || "").toLowerCase();
+    return "rekaman." + (/ogg/.test(m) ? "ogg" : /mp4|m4a|aac/.test(m) ? "m4a" : /wav/.test(m) ? "wav" : /mpeg|mp3/.test(m) ? "mp3" : "webm");
+  }
+
+  async function spAsistenTranscribe(blob, mime) {
+    const k = spAsistenLs(SP_AS_STT_LS);
+    if (!k) throw new Error("kunci OpenAI untuk rekam suara belum diisi (⚙️).");
+    const fd = new FormData();
+    fd.append("file", blob, spAsistenAudioName(mime || blob.type));
+    fd.append("model", spAsistenSttModel());
+    fd.append("language", "id");
+    fd.append("prompt", SP_AS_STT_PROMPT);
+    fd.append("response_format", "json");
+    const ctrl = typeof AbortController === "function" ? new AbortController() : null;
+    const tm = ctrl ? setTimeout(() => ctrl.abort(), 180000) : 0;
+    let r, data;
+    try {
+      r = await fetch("https://api.openai.com/v1/audio/transcriptions", { method: "POST", headers: { Authorization: "Bearer " + k }, body: fd, signal: ctrl ? ctrl.signal : undefined });
+      data = await r.json().catch(() => null);
+    } catch (err) {
+      throw new Error(err && err.name === "AbortError" ? "layanan suara tidak menjawab dalam 3 menit" : "tidak bisa menghubungi layanan suara (cek internet): " + (err && err.message || err));
+    } finally { if (tm) clearTimeout(tm); }
+    if (!r.ok) {
+      const msg = (data && data.error && data.error.message) || ("HTTP " + r.status);
+      if (r.status === 401) throw new Error("kunci OpenAI ditolak — cek/ganti kunci di ⚙️.");
+      if (r.status === 429) throw new Error(/quota|billing/i.test(msg) ? "saldo/kuota OpenAI habis — isi saldo di platform.openai.com." : "terlalu banyak permintaan, coba lagi sebentar.");
+      throw new Error(msg);
+    }
+    return String((data && data.text) || "").trim();
+  }
+
+  function spAsistenOpenRekam() {
+    if (!spAsistenLs(SP_AS_STT_LS)) {
+      const set = document.querySelector(`#${SP_AS_PANEL_ID} .sp-as-settings`);
+      if (set) { set.style.display = "block"; spAsistenRenderSettings(); }
+      spAsistenSetStatus("Browser ini tidak punya dikte suara. Isi kunci OpenAI di ⚙️ (bagian 🎙️ Rekam suara) supaya tombol mic bisa langsung merekam; atau ketuk 🎤 di keyboard layar.", "#e65100");
+      return;
+    }
+    const w = window.open(spAsistenRekamUrl(spAsistenGetMode()), "sp-asm-rekam");
+    if (!w) { spAsistenSetStatus("Tab perekam diblokir browser. Izinkan pop-up untuk Smartplus lalu tekan 🎙️ Rekam lagi.", "#b71c1c"); return; }
+    spAsistenSetStatus("🎙️ Tab perekam terbuka — bicara di sana, tekan ⏹ Selesai, lalu kembali ke sini otomatis.");
+  }
+
+  async function spAsistenOnRekaman(ev) {
+    if (ev.origin !== SP_REKAM_ORIGIN || !ev.data || typeof ev.data !== "object") return;
+    if (ev.data.type === "sp-asm-rekaman-batal") { spAsistenSetStatus("Rekaman dibatalkan."); return; }
+    if (ev.data.type !== "sp-asm-rekaman" || !(ev.data.blob instanceof Blob)) return;
+    const panel = document.getElementById(SP_AS_PANEL_ID);
+    const ta = panel && panel.querySelector("textarea");
+    if (!ta) return;
+    panel.style.display = "block";
+    spAsistenSetStatus(`📝 Mengubah rekaman ${Math.round((ev.data.ms || 0) / 1000)} dtk menjadi teks…`);
+    let text = "";
+    try { text = await spAsistenTranscribe(ev.data.blob, ev.data.mime); }
+    catch (err) { spAsistenSetStatus("Rekam suara gagal: " + (err && err.message || err), "#b71c1c"); return; }
+    if (!text) { spAsistenSetStatus("Tidak ada ucapan yang terdengar di rekaman. Coba lagi lebih dekat.", "#e65100"); return; }
+    ta.value = ta.value.trim() ? ta.value.replace(/\s+$/, "") + "\n" + text : text;
+    spAsistenUnderstand();
+  }
+  window.addEventListener("message", (ev) => { spAsistenOnRekaman(ev).catch((err) => console.warn("[ASISTEN] rekaman", err)); });
 
   function spAsistenOpen() {
     let panel = document.getElementById(SP_AS_PANEL_ID);
@@ -12131,18 +12305,22 @@
           localStorage.setItem(SP_AS_MODEL_LS, m);
           const w = (set.querySelector(".sp-as-ws").value || "").trim();
           if (w) localStorage.setItem(SP_AS_WS_LS, w); else localStorage.removeItem(SP_AS_WS_LS);
+          const sk = (set.querySelector(".sp-as-stt").value || "").trim();
+          if (sk) localStorage.setItem(SP_AS_STT_LS, sk);
+          localStorage.setItem(SP_AS_STT_MODEL_LS, set.querySelector(".sp-as-stt-model").value);
+          const pref = set.querySelector(".sp-as-stt-pref").value;
+          if (pref) localStorage.setItem(SP_AS_STT_PREF_LS, pref); else localStorage.removeItem(SP_AS_STT_PREF_LS);
         } catch (_) { spAsistenSetStatus("Setelan gagal disimpan (penyimpanan browser diblokir).", "#b71c1c"); return; }
         spAsistenRenderSettings();
         spAsistenSetStatus("Setelan tersimpan.", "#2e7d32");
+        spAsistenRenderMode();
       }
+      else if (act === "del-stt") { try { localStorage.removeItem(SP_AS_STT_LS); } catch (_) {} spAsistenRenderSettings(); spAsistenRenderMode(); spAsistenSetStatus("Kunci OpenAI dihapus dari browser ini.", "#2e7d32"); }
       else if (act === "del-key") { try { localStorage.removeItem(SP_AS_KEY_LS); } catch (_) {} spAsistenRenderSettings(); spAsistenSetStatus("Kunci API dihapus dari browser ini.", "#2e7d32"); }
       else if (act === "mic") {
-        if (!spVoice.on && !(window.SpeechRecognition || window.webkitSpeechRecognition)) {
-          // HP (Firefox/Edge Android) tanpa Web Speech API: pakai dikte bawaan keyboard.
-          ta.focus();
-          spAsistenSetStatus("Browser ini tidak punya dikte suara: ketuk ikon 🎤 di keyboard HP (Gboard/SwiftKey) lalu bicara. Selesai → tekan 🧠 Pahami.", "#e65100");
-          return;
-        }
+        // v3.68.0: tanpa dikte browser (Firefox) atau pilihan "Selalu 🎙️ Rekam" -> tab perekam + layanan suara.
+        // Tanpa kunci OpenAI: ⚙️ dibuka + petunjuk; keyboard layar tetap bisa dipakai.
+        if (!spVoice.on && spAsistenUseRekam()) { spAsistenOpenRekam(); return; }
         if (spVoice.on) { spVoiceStop(spVoice.raw ? "" : "DIKTE SUARA berhenti."); return; }
         ta.focus();
         try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (_) {}
@@ -12196,8 +12374,7 @@
     const mic = panel.querySelector("button[data-as='mic']");
     if (mic) {
       const listening = spVoice.on && spVoice.target === ta;
-      const hasSR = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
-      mic.textContent = listening ? "⏹ Selesai" : !hasSR ? "🎤 Mic keyboard" : (conv ? "🎤 Dengar" : "🎤 Dikte");
+      mic.textContent = listening ? "⏹ Selesai" : spAsistenUseRekam() ? (spAsistenLs(SP_AS_STT_LS) ? "🎙️ Rekam" : "🎤 Mic keyboard") : (conv ? "🎤 Dengar" : "🎤 Dikte");
       mic.style.background = listening ? "#d32f2f" : "#455a64";
     }
   }
