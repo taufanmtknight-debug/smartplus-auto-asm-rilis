@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.73.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.74.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.73.0
-// @description  v3.73.0: HP/tablet — preview MULTIPLE VISIT, panel 🧠 dan menu AUTO ASM diperbesar sesuai layar dan memenuhi layar (dulu kotak kecil di samping saat dibuka dari ASISTEN SUARA); perbaikan: pasien kartu diganti tidak lagi membawa isian/peringatan pasien sebelumnya, galat Claude per kartu, tidak bisa menyusun preview baru selama Save multiple berjalan (cegah CPPT dobel), ketikan tidak hilang saat kartu lain diperbarui. v3.72.2: ASISTEN Multiple visit — perbaikan laporan dokter: kata biasa tidak lagi terbaca sebagai nama pasien lain ("mau tanya" ≠ Tania, "pasien saat ini" ≠ Satria); satu kata tanpa "pasien/Pak/Bu" tidak pernah memulai pasien baru, satu kata setelah pemicu harus hampir persis, panggilan pendek minimal 4 huruf. v3.72.1: ASISTEN mode ⚡ Cepat (bawaan, instruksi dokter) — isian Multiple visit langsung tampil tanpa menunggu konteks klinis, peringatan ⚠ dari konteks menyusul di tiap kartu tanpa mengganggu isian/ketikan; IGD menunggu konteks maks 2,5 dtk; pilihan 📚 Lengkap (tunggu konteks dulu) di ⚙️. v3.72.0: ASISTEN SUARA membaca KONTEKS KLINIS pasien (pilihan dokter, tanpa nama/No.RM) — Multiple visit: ringkasan rawat inap (keluhan & TTV sebelumnya, pemfis, diagnosis, terapi berjalan, advis spesialis) + hasil lab terbaru tiap pasien; mode percakapan IGD: umur + lab kunjungan ini. Claude memakai konteks untuk memahami ucapan (salah dengar, perbandingan dengan sebelumnya) tetapi kolom tetap hanya dari ucapan; ⚠ PERINGATAN keamanan (lab kritis, TTV memburuk, bertentangan dengan terapi/alergi, dosis tidak lazim) tampil sebagai catatan saja, tidak diisi ke form; konteks yang dibaca bisa dilihat di tiap kartu; ganti pasien = Claude dipanggil ulang untuk kartu itu. v3.71.0: ASISTEN SUARA lebih akurat (pilihan dokter) — mode Multiple visit menampilkan pasien yang dikenali secara langsung saat bicara (✓ yakin / ⚠ tidak yakin, nama yang tidak tertangkap bisa segera diulang); daftar obat RS ikut dikirim ke Claude supaya nama obat yang salah dengar dibetulkan (tanpa mengganti obat/dosis); asisten belajar dari koreksi dokter — perubahan dokter pada isian asisten saat Simpan GADAR / Save multiple visit disimpan sebagai contoh gaya HANYA di browser ini (tanpa identitas, bisa dihapus di ⚙️). v3.70.0: ASISTEN SUARA — mode "Dikte dokter" diganti 🏥 Multiple visit: dokter menyebut nama pasien lalu visit (TTV/pemfis tidak normal & instruksi tambahan bila ada), lalu pasien berikutnya, dst.; ⏹ -> nama dicocokkan di browser dengan daftar pasien dirawat (nama tidak dikirim ke Claude, hanya PASIEN_1, PASIEN_2…), nama yang tidak persis dicari yang paling mungkin dan bisa diganti di tiap kartu; preview MULTIPLE VISIT terisi otomatis (bawaan multiple visit + temuan yang diucapkan), simpan tetap lewat "Save multiple visit" + konfirmasi; nama tidak yakin tidak dicentang. v3.69.0: fitur 🎙️ Rekam v3.68.0 (tab perekam GitHub Pages + layanan suara OpenAI) dihapus atas permintaan dokter — di tablet/HP tanpa dikte browser pakai 🎤 di keyboard layar; kunci OpenAI yang pernah disimpan dihapus otomatis dari browser. v3.68.0 (dihapus di v3.69.0): ASISTEN 🎙️ Rekam lewat tab perekam. v3.67.0: tombol 🎤 / Alt+V DIKTE SUARA terpisah dihapus (dikte tetap lewat panel ASISTEN 🧠); ASISTEN untuk IGD ramai — Claude hanya memakai ucapan yang nyambung dengan pasien yang diperiksa, mengabaikan suara bed sebelah/perawat/TV dan menampilkan potongan yang diabaikan (🔇) di pratinjau, ucapan yang kurang yakin dikenali ditandai "(?)" di mode percakapan, TTV ganda tanpa koreksi dikosongkan & ditanyakan. v3.66.0: audit fitur — ASISTEN: kesadaran yang diucapkan kini benar terpilih saat memakai template (dulu nilai pilihan Compos Mentis ikut berubah) dan GCS yang diucapkan tidak lagi tertimpa GCS template, perkiraan Claude tidak menimpa kesadaran/GCS yang sudah dipilih dokter, pemfis perkiraan Claude tidak menimpa pemfis yang sudah ditulis dokter (hanya temuan yang diucapkan ditambahkan), Terapkan yang tertekan dua kali tidak membuka form GADAR dua kali, keterangan pratinjau sesuai cara pengisian, order penunjang ditandai ✗ bila tombol Save tidak ditekan, diagnosis order memakai diagnosis template bila tidak diucapkan, nilai lab seperti "trombosit 150000" tidak lagi ikut disaring, batas tunggu Claude 90 dtk; DIKTE: Esc menghentikan dikte tanpa menutup form GADAR; tombol 🎤 & 🧠 pindah ke kiri tombol AUTO ASM (dulu menutupi menu). v3.65.0: ASISTEN — bila tidak ada template ASGADAR yang mendekati, kolom yang tidak diucapkan diisi perkiraan Claude (data paling mungkin untuk kasus itu, pemfis per sistem; tanpa obat/dosis baru), tampil terpisah di pratinjau & hanya mengisi kolom yang masih kosong; GADAR tetap Save manual. v3.64.0: ASISTEN — kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (dipilih Claude, bisa diganti di pratinjau; membuka form GADAR baru), pemfis template + temuan yang diucapkan, Riwayat Penyakit Sekarang lama diganti hasil terbaru; GADAR tetap Save manual. v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
+// @version      3.74.0
+// @description  v3.74.0: ADVIS DPJP dari WhatsApp Web langsung ke Rencana ASGADAR — tombol "📤 Advis → ASGADAR" di WA Web: pilih pesan, pratinjau, Kirim; tab Smartplus (browser yang sama) menambahkannya di bawah Rencana form GADAR yang terbuka (ada Batalkan) atau membuka panel ADVIS SPESIALIS; tidak disimpan otomatis. v3.73.0: HP/tablet — preview MULTIPLE VISIT, panel 🧠 dan menu AUTO ASM diperbesar sesuai layar dan memenuhi layar (dulu kotak kecil di samping saat dibuka dari ASISTEN SUARA); perbaikan: pasien kartu diganti tidak lagi membawa isian/peringatan pasien sebelumnya, galat Claude per kartu, tidak bisa menyusun preview baru selama Save multiple berjalan (cegah CPPT dobel), ketikan tidak hilang saat kartu lain diperbarui. v3.72.2: ASISTEN Multiple visit — perbaikan laporan dokter: kata biasa tidak lagi terbaca sebagai nama pasien lain ("mau tanya" ≠ Tania, "pasien saat ini" ≠ Satria); satu kata tanpa "pasien/Pak/Bu" tidak pernah memulai pasien baru, satu kata setelah pemicu harus hampir persis, panggilan pendek minimal 4 huruf. v3.72.1: ASISTEN mode ⚡ Cepat (bawaan, instruksi dokter) — isian Multiple visit langsung tampil tanpa menunggu konteks klinis, peringatan ⚠ dari konteks menyusul di tiap kartu tanpa mengganggu isian/ketikan; IGD menunggu konteks maks 2,5 dtk; pilihan 📚 Lengkap (tunggu konteks dulu) di ⚙️. v3.72.0: ASISTEN SUARA membaca KONTEKS KLINIS pasien (pilihan dokter, tanpa nama/No.RM) — Multiple visit: ringkasan rawat inap (keluhan & TTV sebelumnya, pemfis, diagnosis, terapi berjalan, advis spesialis) + hasil lab terbaru tiap pasien; mode percakapan IGD: umur + lab kunjungan ini. Claude memakai konteks untuk memahami ucapan (salah dengar, perbandingan dengan sebelumnya) tetapi kolom tetap hanya dari ucapan; ⚠ PERINGATAN keamanan (lab kritis, TTV memburuk, bertentangan dengan terapi/alergi, dosis tidak lazim) tampil sebagai catatan saja, tidak diisi ke form; konteks yang dibaca bisa dilihat di tiap kartu; ganti pasien = Claude dipanggil ulang untuk kartu itu. v3.71.0: ASISTEN SUARA lebih akurat (pilihan dokter) — mode Multiple visit menampilkan pasien yang dikenali secara langsung saat bicara (✓ yakin / ⚠ tidak yakin, nama yang tidak tertangkap bisa segera diulang); daftar obat RS ikut dikirim ke Claude supaya nama obat yang salah dengar dibetulkan (tanpa mengganti obat/dosis); asisten belajar dari koreksi dokter — perubahan dokter pada isian asisten saat Simpan GADAR / Save multiple visit disimpan sebagai contoh gaya HANYA di browser ini (tanpa identitas, bisa dihapus di ⚙️). v3.70.0: ASISTEN SUARA — mode "Dikte dokter" diganti 🏥 Multiple visit: dokter menyebut nama pasien lalu visit (TTV/pemfis tidak normal & instruksi tambahan bila ada), lalu pasien berikutnya, dst.; ⏹ -> nama dicocokkan di browser dengan daftar pasien dirawat (nama tidak dikirim ke Claude, hanya PASIEN_1, PASIEN_2…), nama yang tidak persis dicari yang paling mungkin dan bisa diganti di tiap kartu; preview MULTIPLE VISIT terisi otomatis (bawaan multiple visit + temuan yang diucapkan), simpan tetap lewat "Save multiple visit" + konfirmasi; nama tidak yakin tidak dicentang. v3.69.0: fitur 🎙️ Rekam v3.68.0 (tab perekam GitHub Pages + layanan suara OpenAI) dihapus atas permintaan dokter — di tablet/HP tanpa dikte browser pakai 🎤 di keyboard layar; kunci OpenAI yang pernah disimpan dihapus otomatis dari browser. v3.68.0 (dihapus di v3.69.0): ASISTEN 🎙️ Rekam lewat tab perekam. v3.67.0: tombol 🎤 / Alt+V DIKTE SUARA terpisah dihapus (dikte tetap lewat panel ASISTEN 🧠); ASISTEN untuk IGD ramai — Claude hanya memakai ucapan yang nyambung dengan pasien yang diperiksa, mengabaikan suara bed sebelah/perawat/TV dan menampilkan potongan yang diabaikan (🔇) di pratinjau, ucapan yang kurang yakin dikenali ditandai "(?)" di mode percakapan, TTV ganda tanpa koreksi dikosongkan & ditanyakan. v3.66.0: audit fitur — ASISTEN: kesadaran yang diucapkan kini benar terpilih saat memakai template (dulu nilai pilihan Compos Mentis ikut berubah) dan GCS yang diucapkan tidak lagi tertimpa GCS template, perkiraan Claude tidak menimpa kesadaran/GCS yang sudah dipilih dokter, pemfis perkiraan Claude tidak menimpa pemfis yang sudah ditulis dokter (hanya temuan yang diucapkan ditambahkan), Terapkan yang tertekan dua kali tidak membuka form GADAR dua kali, keterangan pratinjau sesuai cara pengisian, order penunjang ditandai ✗ bila tombol Save tidak ditekan, diagnosis order memakai diagnosis template bila tidak diucapkan, nilai lab seperti "trombosit 150000" tidak lagi ikut disaring, batas tunggu Claude 90 dtk; DIKTE: Esc menghentikan dikte tanpa menutup form GADAR; tombol 🎤 & 🧠 pindah ke kiri tombol AUTO ASM (dulu menutupi menu). v3.65.0: ASISTEN — bila tidak ada template ASGADAR yang mendekati, kolom yang tidak diucapkan diisi perkiraan Claude (data paling mungkin untuk kasus itu, pemfis per sistem; tanpa obat/dosis baru), tampil terpisah di pratinjau & hanya mengisi kolom yang masih kosong; GADAR tetap Save manual. v3.64.0: ASISTEN — kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (dipilih Claude, bisa diganti di pratinjau; membuka form GADAR baru), pemfis template + temuan yang diucapkan, Riwayat Penyakit Sekarang lama diganti hasil terbaru; GADAR tetap Save manual. v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @match        http://*/*
@@ -12,7 +12,10 @@
 // @noframes
 // @updateURL    https://raw.githubusercontent.com/taufanmtknight-debug/smartplus-auto-asm-rilis/main/Smartplus_AUTO_ASM.user.js
 // @downloadURL  https://raw.githubusercontent.com/taufanmtknight-debug/smartplus-auto-asm-rilis/main/Smartplus_AUTO_ASM.user.js
-// @grant        none
+// @grant        GM_getValue
+// @grant        GM_setValue
+// @grant        GM_addValueChangeListener
+// @grant        GM_removeValueChangeListener
 // ==/UserScript==
 
 (function () {
@@ -34,15 +37,23 @@
     runOrthancCapture();
     return;
   }
+  // v3.74.0: di WhatsApp Web hanya tombol kirim ADVIS DPJP -> Rencana ASGADAR (lihat runWaAdvisBridge).
+  if (location.hostname === "web.whatsapp.com") {
+    if (document.body) runWaAdvisBridge(); else document.addEventListener("DOMContentLoaded", runWaAdvisBridge, { once: true });
+    return;
+  }
   if (!isSmartplusPage()) return;
 
   // v3.46.0 (audit): cegah script berjalan DUA KALI di halaman yang sama (mis. dua salinan terpasang di Violentmonkey)
   // — dulu semua tombol/shortcut/simpan otomatis bisa terpicu ganda.
-  if (window.__SP_AUTO_ASM_LOADED__) {
-    console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + window.__SP_AUTO_ASM_LOADED__ + "); salinan kedua dihentikan.");
+  // v3.74.0: penanda juga di atribut <html> — sejak memakai @grant GM_*, tiap salinan script punya `window` sendiri.
+  const spLoadedVer = window.__SP_AUTO_ASM_LOADED__ || document.documentElement.getAttribute("data-sp-auto-asm");
+  if (spLoadedVer) {
+    console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.73.0";
+  window.__SP_AUTO_ASM_LOADED__ = "3.74.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.74.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -4935,6 +4946,235 @@
     return `Advis ${n || "dr. Sp."}${time ? ` (${time})` : ""}:\n${lines.join("\n")}`;
   }
 
+  // =========================
+  // v3.74.0 (instruksi dokter): ADVIS DPJP dari WhatsApp Web (Chrome desktop) LANGSUNG ke Rencana ASGADAR.
+  // Di web.whatsapp.com script hanya menampilkan tombol "📤 Advis → ASGADAR": dokter memilih pesan advis, melihat
+  // pratinjau, lalu Kirim. Teks dititipkan lewat penyimpanan Violentmonkey (GM_setValue — WA https & Smartplus http
+  // beda situs, jadi localStorage/clipboard tidak bisa dipakai). Tab Smartplus di browser yang sama menerimanya:
+  //  - form Assesment GADAR sedang terbuka -> ditambahkan di bawah kolom Rencana (ada tombol Batalkan);
+  //  - tidak ada form terbuka -> panel ADVIS SPESIALIS dibuka dengan advis di bawah Rencana pasien.
+  // TIDAK PERNAH disimpan otomatis: dokter memeriksa pasien & isi lalu menekan Save / 💾 Simpan Rencana sendiri.
+  // Yang dikirim hanya teks advis (nama pengirim, jam, isi pesan); script tidak menyimpan chat.
+  // =========================
+  const SP_WA_KEY = "sp_wa_advis_v1", SP_WA_ACK_KEY = "sp_wa_advis_ack_v1";
+  const SP_WA_MAX_AGE = 120000; // titipan > 2 menit diabaikan
+
+  // [{pre:"[10:32, 12/10/2026] dr Budi SpPD: ", text}] -> "Advis dr. Budi SpPD (10.32):\n- ..." (per pengirim, urutan muncul).
+  function spWaBuildAdvis(msgs) {
+    const raw = (msgs || []).map((m) => String(m.pre || "") + String(m.text || "").replace(/\r/g, "").trim()).filter((t) => t.trim());
+    const head = /^\s*\[[^\]]*\]\s*([^:]{1,60}):/;
+    const order = [], bySender = new Map();
+    raw.forEach((t) => {
+      const s = (t.match(head) || [])[1]?.trim() || "";
+      if (!bySender.has(s)) { bySender.set(s, []); order.push(s); }
+      bySender.get(s).push(t);
+    });
+    return order.map((s) => {
+      const p = spParseWaAdvis(bySender.get(s).join("\n"));
+      return p.lines.length ? spFormatAdvis(p.sender, p.time, p.lines) : "";
+    }).filter(Boolean).join("\n\n");
+  }
+
+  // Sisi WhatsApp Web (berdiri sendiri: tidak memakai fungsi/konstanta Smartplus selain spWaBuildAdvis & SP_WA_*).
+  function runWaAdvisBridge() {
+    if (document.documentElement.hasAttribute("data-sp-wa-advis")) return;
+    document.documentElement.setAttribute("data-sp-wa-advis", "1");
+    const hasGM = typeof GM_setValue === "function";
+    const BTN = "sp-wa-advis-btn", PANEL = "sp-wa-advis-panel";
+    // Kunci ditulis ulang di sini: fungsi ini berjalan sebelum konstanta SP_WA_* di atas dibuat (return lebih awal).
+    const KEY = "sp_wa_advis_v1", ACK = "sp_wa_advis_ack_v1";
+    const el = (tag, css, txt) => { const e = document.createElement(tag); if (css) e.style.cssText = css; if (txt != null) e.textContent = txt; return e; };
+    const plain = (node) => {
+      if (!node) return "";
+      const c = node.cloneNode(true);
+      c.querySelectorAll("img[alt]").forEach((i) => i.replaceWith(document.createTextNode(i.alt))); // emoji
+      c.querySelectorAll("br").forEach((b) => b.replaceWith(document.createTextNode("\n")));
+      return (c.textContent || "").trim(); // salinan tidak dirender -> innerText = textContent (baris baru dari <br> di atas)
+    };
+    const chatName = () => (document.querySelector('#main header span[dir="auto"][title]')?.getAttribute("title") ||
+      document.querySelector('#main header span[dir="auto"]')?.textContent || "").trim();
+    const readMsgs = () => [...document.querySelectorAll("#main [data-pre-plain-text]")].map((n) => {
+      const pre = n.getAttribute("data-pre-plain-text") || "";
+      const text = plain(n.querySelector("span.selectable-text") || n);
+      const box = n.closest(".message-in, .message-out");
+      return { pre, text, out: !!(box && box.classList.contains("message-out")) };
+    }).filter((m) => m.text).slice(-15);
+    let pickedSel = "";
+
+    function openPanel() {
+      document.getElementById(PANEL)?.remove();
+      const msgs = readMsgs();
+      const p = el("div", "position:fixed;right:16px;bottom:140px;z-index:2147483647;width:min(94vw,480px);max-height:78vh;overflow:auto;background:#fff;color:#222;border:2px solid #e91e63;border-radius:12px;padding:12px;box-shadow:0 8px 30px rgba(0,0,0,.35);font:13px/1.45 Arial,sans-serif;");
+      p.id = PANEL;
+      const top = el("div", "display:flex;align-items:center;gap:8px;border-bottom:1px solid #eee;padding-bottom:6px;margin-bottom:6px");
+      top.append(el("b", "flex:1;font-size:15px", "📤 Advis → Rencana ASGADAR"));
+      const x = el("button", "border:0;background:#eee;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:14px", "✕");
+      x.onclick = () => p.remove();
+      top.append(x);
+      p.append(top);
+      if (!hasGM) p.append(el("div", "color:#c62828;margin-bottom:6px", "⚠️ Penyimpanan Violentmonkey tidak tersedia — perbarui AUTO ASM ke versi terbaru di Violentmonkey."));
+      p.append(el("div", "font-weight:600", pickedSel ? "Teks yang Anda blok:" : "Pilih pesan advis (centang):"));
+      const list = el("div", "max-height:220px;overflow:auto;border:1px solid #eee;border-radius:6px;margin:3px 0 8px");
+      const boxes = [];
+      // Bawaan: rangkaian pesan MASUK terakhir dari pengirim yang sama (sampai pesan Anda / pengirim lain).
+      let defSender = null;
+      for (let i = msgs.length - 1; i >= 0 && !pickedSel; i--) {
+        const s = (msgs[i].pre.match(/\]\s*([^:]+):/) || [])[1] || "";
+        if (msgs[i].out) { if (defSender !== null) break; continue; }
+        if (defSender === null) defSender = s;
+        if (s !== defSender) break;
+        msgs[i].def = true;
+      }
+      if (pickedSel) list.append(el("div", "padding:6px;white-space:pre-wrap", pickedSel));
+      else if (!msgs.length) list.append(el("div", "padding:6px;color:#777", "Belum ada pesan terbaca. Buka chat DPJP-nya dulu, atau blok teks advis lalu tekan tombol lagi."));
+      msgs.forEach((m) => {
+        const row = el("label", "display:flex;gap:6px;padding:5px 6px;border-bottom:1px solid #f3f3f3;cursor:pointer;align-items:flex-start");
+        const cb = el("input"); cb.type = "checkbox"; cb.checked = !!m.def; cb.style.marginTop = "3px";
+        const who = (m.pre.match(/\[([^,\]]+)[^\]]*\]\s*([^:]+):/) || []);
+        const t = el("span", "white-space:pre-wrap;word-break:break-word");
+        t.append(el("b", m.out ? "color:#2e7d32" : "color:#1565c0", `${who[1] || ""} ${m.out ? "Anda" : (who[2] || "").trim()}: `), document.createTextNode(m.text.length > 220 ? m.text.slice(0, 220) + "…" : m.text));
+        row.append(cb, t);
+        list.append(row);
+        boxes.push([cb, m]);
+        cb.onchange = rebuild;
+      });
+      p.append(list);
+      p.append(el("div", "font-weight:600", "Yang akan masuk ke Rencana (bisa diedit):"));
+      const ta = el("textarea", "width:100%;box-sizing:border-box;min-height:130px;font:13px/1.45 Arial,sans-serif;border:1px solid #ccc;border-radius:6px;padding:7px;resize:vertical");
+      p.append(ta);
+      const go = el("button", "margin-top:8px;width:100%;padding:10px;font:600 14px Arial,sans-serif;background:#e91e63;color:#fff;border:0;border-radius:6px;cursor:pointer", "📤 Kirim ke Smartplus");
+      const msg = el("div", "margin-top:6px;color:#555");
+      p.append(go, msg, el("div", "margin-top:4px;color:#888;font-size:11px", "Tidak disimpan otomatis: periksa nama pasien & isi di Smartplus, lalu tekan Save sendiri."));
+      document.body.appendChild(p);
+      function rebuild() {
+        if (pickedSel) {
+          const hhmm = new Date().toTimeString().slice(0, 5).replace(":", ".");
+          ta.value = spWaBuildAdvis([{ pre: `[${hhmm}] ${chatName() || "DPJP"}: `, text: pickedSel }]);
+        } else ta.value = spWaBuildAdvis(boxes.filter(([cb]) => cb.checked).map(([, m]) => m));
+      }
+      rebuild();
+      go.onclick = () => {
+        const text = ta.value.replace(/\s+$/, "");
+        if (!text.trim()) { msg.textContent = "Belum ada isi advis."; return; }
+        if (!hasGM) { msg.textContent = "❌ Tidak bisa mengirim (penyimpanan Violentmonkey tidak tersedia)."; return; }
+        const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+        let done = false;
+        const lid = typeof GM_addValueChangeListener === "function" ? GM_addValueChangeListener(ACK, (n, o, v) => {
+          if (!v || v.id !== id || done) return;
+          done = true;
+          msg.style.color = "#2e7d32";
+          msg.textContent = "✅ Masuk ke Smartplus: " + (v.where || "") + ". Buka tab Smartplus, periksa, lalu Save.";
+          go.textContent = "📤 Kirim lagi";
+          try { if (typeof GM_removeValueChangeListener === "function") GM_removeValueChangeListener(lid); } catch (_) {}
+        }) : null;
+        msg.style.color = "#555";
+        msg.textContent = "⏳ Mengirim ke tab Smartplus...";
+        GM_setValue(KEY, { id, ts: Date.now(), text, chat: chatName().slice(0, 60) });
+        setTimeout(() => {
+          if (done) return;
+          msg.style.color = "#c62828";
+          msg.textContent = "⚠️ Belum ada tab Smartplus yang menerima. Pastikan Smartplus terbuka di Chrome yang sama (sudah login, AUTO ASM terbaru), lalu Kirim lagi.";
+        }, 6000);
+      };
+    }
+
+    function ensureBtn() {
+      const inChat = !!document.querySelector("#main");
+      let b = document.getElementById(BTN);
+      if (!inChat) { if (b) b.style.display = "none"; return; }
+      if (!b) {
+        b = el("button", "position:fixed;right:20px;bottom:84px;z-index:2147483646;padding:9px 14px;border:0;border-radius:22px;background:#e91e63;color:#fff;font:600 13px Arial,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.3);cursor:pointer", "📤 Advis → ASGADAR");
+        b.id = BTN;
+        b.title = "Kirim advis DPJP ke kolom Rencana Assesment GADAR di Smartplus (blok teks dulu bila hanya sebagian)";
+        // mousedown: ambil teks yang diblok sebelum fokus pindah ke tombol.
+        b.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          const s = window.getSelection && window.getSelection();
+          const inMain = s && s.rangeCount && document.querySelector("#main")?.contains(s.getRangeAt(0).commonAncestorContainer);
+          pickedSel = inMain ? String(s).trim() : "";
+        });
+        b.addEventListener("click", openPanel);
+        document.body.appendChild(b);
+      }
+      b.style.display = "";
+    }
+    setInterval(ensureBtn, 1500);
+    ensureBtn();
+  }
+
+  // Sisi Smartplus: terima advis dari tab WhatsApp Web.
+  function spWaPatientName() {
+    const m = (document.body?.innerText || "").match(/Data Pasien\s*:\s*([^/\n]+?)\s*\//i);
+    return m ? m[1].trim() : "";
+  }
+  function spWaAdvisInit() {
+    if (typeof GM_addValueChangeListener !== "function" || spWaAdvisInit.done) return;
+    spWaAdvisInit.done = true;
+    GM_addValueChangeListener(SP_WA_KEY, (n, o, v) => { spWaAdvisReceive(v).catch((e) => console.warn("[ADVIS WA]", e)); });
+  }
+  async function spWaAdvisReceive(v) {
+    if (!v || !v.id || !String(v.text || "").trim() || Date.now() - (v.ts || 0) > SP_WA_MAX_AGE) return;
+    if (/\/auth\//i.test(location.pathname)) return; // halaman login
+    const modal = document.getElementById("modal_form_gadar");
+    const formOpen = !!(modal && visible(modal) && document.querySelector('#form_gadar [name="rencana_tindakan"]'));
+    // Beberapa tab Smartplus bisa terbuka: tab dengan form GADAR terbuka didahulukan, lalu halaman pasien, lalu lainnya.
+    const prio = formOpen ? 0 : getCurrentNoregAny() ? 1 : 2;
+    await recipeSleep(prio * 600 + Math.random() * 200);
+    try {
+      if (localStorage.getItem("sp_wa_advis_done") === v.id) return;
+      localStorage.setItem("sp_wa_advis_done", v.id);
+    } catch (_) {}
+    const text = String(v.text).replace(/\r/g, "").replace(/\s+$/, "");
+    const nama = spWaPatientName();
+    let where;
+    const ren = document.querySelector('#form_gadar [name="rencana_tindakan"]');
+    if (formOpen && ren && visible(modal)) {
+      const old = ren.value;
+      if (!spNl(old).includes(spNl(text))) {
+        const nv = spNl(old).replace(/\s+$/, "") + (old.trim() ? "\n\n" : "") + text;
+        setValue(ren, nv);
+        ren.style.outline = "3px solid #e91e63";
+        setTimeout(() => { ren.style.outline = ""; }, 15000);
+        try { ren.scrollIntoView({ block: "center" }); ren.scrollTop = ren.scrollHeight; } catch (_) {}
+        spWaUndoBar(ren, old, nv, nama);
+      }
+      where = "kolom Rencana form ASGADAR yang terbuka" + (nama ? " — " + nama : "");
+    } else {
+      const panel = document.getElementById("sp-advis-panel");
+      if (panel && typeof panel.__spWaAdd === "function") panel.__spWaAdd(text);
+      else runAdvisSpesialis({ waText: text });
+      where = "panel ADVIS SPESIALIS" + (nama ? " — " + nama : " (pilih pasien)");
+    }
+    try { GM_setValue(SP_WA_ACK_KEY, { id: v.id, ts: Date.now(), where }); } catch (_) {}
+    toast("📩 Advis WA masuk ke " + where + ". Periksa lalu Save sendiri (tidak disimpan otomatis).");
+    if (document.hidden && !/^📩/.test(document.title)) {
+      const t0 = document.title;
+      document.title = "📩 Advis WA · " + t0;
+      const back = () => { if (!document.hidden) { document.title = t0; document.removeEventListener("visibilitychange", back); } };
+      document.addEventListener("visibilitychange", back);
+    }
+  }
+  // Bilah kecil di atas form: advis WA baru ditambahkan + Batalkan (kembalikan isi Rencana sebelumnya).
+  function spWaUndoBar(ren, old, nv, nama) {
+    document.getElementById("sp-wa-undo")?.remove();
+    const bar = document.createElement("div");
+    bar.id = "sp-wa-undo";
+    bar.style.cssText = "position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:2147483647;background:#fce4ec;border:2px solid #e91e63;border-radius:10px;padding:8px 12px;font:13px/1.4 Arial,sans-serif;color:#222;box-shadow:0 4px 16px rgba(0,0,0,.25);display:flex;gap:10px;align-items:center;max-width:94vw";
+    const s = document.createElement("span");
+    s.textContent = "📩 Advis WA ditambahkan ke Rencana" + (nama ? " — " + nama : "") + ". Periksa lalu Save.";
+    const u = document.createElement("button");
+    u.textContent = "↩ Batalkan";
+    u.style.cssText = "border:0;background:#e91e63;color:#fff;border-radius:6px;padding:5px 10px;cursor:pointer;font:600 12px Arial,sans-serif";
+    u.onclick = () => { if (spNl(ren.value) === spNl(nv)) setValue(ren, old); bar.remove(); };
+    const x = document.createElement("button");
+    x.textContent = "✕";
+    x.style.cssText = "border:0;background:transparent;cursor:pointer;font-size:14px";
+    x.onclick = () => bar.remove();
+    bar.append(s, u, x);
+    document.documentElement.appendChild(bar);
+    setTimeout(() => bar.remove(), 60000);
+  }
+
   // v3.32.0 (instruksi dokter): pasien dipilih lewat pencarian nama (tanpa membuka halaman pasien).
   // Daftar = pasien IGD 48 jam terakhir dari daftar pasien IGD (semua dokter), dicari langsung saat mengetik.
   // Dimuat 6 halaman sekaligus; onProgress(daftarSementara) dipanggil tiap gelombang supaya hasil cari langsung muncul.
@@ -4978,7 +5218,7 @@
   // v3.34.0 (instruksi dokter): cari pasien -> SATU kotak berisi isi "Rencana (Tindakan, Terapi, dll)" GADAR terakhir saat ini;
   // dokter bebas menambahkan advis dari berbagai spesialis / tambahan lain, lalu Simpan (lewat form GADAR Smartplus).
   // Menempel chat WhatsApp Web ("[00.12, 4/10/2026] dr X SpY: ...") ke kotak otomatis dirapikan menjadi "Advis dr. X SpY (00.12):".
-  async function runAdvisSpesialis() {
+  async function runAdvisSpesialis(opts = {}) {
     const PANEL_ID = "sp-advis-panel";
     document.getElementById(PANEL_ID)?.remove();
     const panel = document.createElement("div");
@@ -5001,6 +5241,7 @@
         <textarea class="sp-adv-ren" rows="16" style="${ta}"></textarea>
         <button type="button" class="sp-adv-go" style="margin-top:8px;width:100%;padding:10px;font:600 14px Arial,sans-serif;background:#e91e63;color:#fff;border:0;border-radius:6px;cursor:pointer">💾 Simpan Rencana</button>
       </div>
+      <div class="sp-adv-wa" style="display:none;margin-top:6px;padding:6px 8px;background:#fce4ec;border-radius:6px;color:#880e4f"></div>
       <div class="sp-adv-msg" style="margin-top:6px;color:#555"></div>`;
     panel.append(head, body);
     document.documentElement.appendChild(panel);
@@ -5011,6 +5252,24 @@
     const base = smartplusBaseUrl();
     const curNoreg = getCurrentNoregAny();
     let patients = null, loading = true, chosen = null, gadarInfo = null, loadSeq = 0;
+    // v3.74.0: advis yang dikirim dari WhatsApp Web -> ditambahkan di bawah Rencana pasien terpilih (ikut bila pasien diganti).
+    const waBox = body.querySelector(".sp-adv-wa"), waAdds = opts.waText ? [String(opts.waText)] : [];
+    const applyWa = () => {
+      if (!waAdds.length) return;
+      waBox.style.display = "block";
+      if (!gadarInfo) { waBox.textContent = "📩 Advis dari WhatsApp diterima — pilih pasien, advis akan ditambahkan di bawah Rencana."; return; }
+      let added = 0;
+      waAdds.forEach((t) => {
+        if (spNl(ren.value).includes(spNl(t))) return;
+        ren.value = spNl(ren.value).replace(/\s+$/, "") + (ren.value.trim() ? "\n\n" : "") + t + "\n";
+        added++;
+      });
+      waBox.textContent = `📩 Advis dari WhatsApp ${added ? "ditambahkan" : "sudah ada"} di bawah Rencana ${chosen ? chosen.nama : ""}. Periksa pasien & isi, lalu tekan 💾 Simpan Rencana.`;
+      ren.setSelectionRange(ren.value.length, ren.value.length);
+      ren.scrollTop = ren.scrollHeight;
+    };
+    panel.__spWaAdd = (t) => { waAdds.push(String(t)); applyWa(); };
+    applyWa();
 
     const choose = async (p) => {
       chosen = p; gadarInfo = null;
@@ -5031,6 +5290,7 @@
         ren.focus();
         ren.setSelectionRange(ren.value.length, ren.value.length);
         ren.scrollTop = ren.scrollHeight;
+        applyWa();
       } catch (err) {
         if (seq === loadSeq) msg.textContent = "❌ Gagal membaca GADAR: " + (err.message || err);
       }
@@ -10412,7 +10672,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.73.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.74.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -13249,6 +13509,7 @@
   spResumePendingResepPulang().catch((err) => console.warn("[RESEP PULANG] lanjutan gagal", err));
   spResumePendingAsgadar().catch((err) => console.warn("[ASGADAR] lanjutan gagal", err));
   spResumeAsistenJob().catch((err) => console.warn("[ASISTEN] lanjutan gagal", err));
+  try { spWaAdvisInit(); } catch (err) { console.warn("[ADVIS WA] gagal dipasang", err); }
 
   // Firefox Back/Forward Cache dan tab yang dipulihkan.
   window.addEventListener('pageshow', bootAutoAsmCrossBrowser, true);
