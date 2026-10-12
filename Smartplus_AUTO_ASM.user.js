@@ -53,7 +53,7 @@
     return;
   }
   window.__SP_AUTO_ASM_LOADED__ = "3.75.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.74.0");
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.74.1");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -4991,11 +4991,26 @@
       c.querySelectorAll("br").forEach((b) => b.replaceWith(document.createTextNode("\n")));
       return (c.textContent || "").trim(); // salinan tidak dirender -> innerText = textContent (baris baru dari <br> di atas)
     };
+    // v3.74.1 (laporan dokter): pesan BALASAN memuat kutipan pesan lain (mis. konsul kita) di dalam kotak yang sama —
+    // dulu kutipan yang terbaca, bukan isi advis. Kutipan = blok tombol (role="button") / .quoted-mention -> dilewati.
+    const isQuote = (x, n) => {
+      if (x.classList.contains("quoted-mention")) return true;
+      const q = x.closest('[role="button"], .quoted-mention, [aria-label*="quoted" i], [aria-label*="kutip" i], [data-testid*="quoted"]');
+      return !!(q && q !== n && n.contains(q));
+    };
+    const msgBody = (n) => {
+      const spans = [...n.querySelectorAll("span.selectable-text")].filter((x) => !isQuote(x, n));
+      const top = spans.filter((x) => !spans.some((y) => y !== x && y.contains(x)));
+      if (top.length) return top[top.length - 1];
+      const c = n.cloneNode(true);
+      c.querySelectorAll('[role="button"], .quoted-mention').forEach((q) => q.remove());
+      return c;
+    };
     const chatName = () => (document.querySelector('#main header span[dir="auto"][title]')?.getAttribute("title") ||
       document.querySelector('#main header span[dir="auto"]')?.textContent || "").trim();
     const readMsgs = () => [...document.querySelectorAll("#main [data-pre-plain-text]")].map((n) => {
       const pre = n.getAttribute("data-pre-plain-text") || "";
-      const text = plain(n.querySelector("span.selectable-text") || n);
+      const text = plain(msgBody(n));
       const box = n.closest(".message-in, .message-out");
       return { pre, text, out: !!(box && box.classList.contains("message-out")) };
     }).filter((m) => m.text).slice(-15);
@@ -5021,6 +5036,8 @@
       for (let i = msgs.length - 1; i >= 0 && !pickedSel; i--) {
         const s = (msgs[i].pre.match(/\]\s*([^:]+):/) || [])[1] || "";
         if (msgs[i].out) { if (defSender !== null) break; continue; }
+        // ucapan singkat ("terimakasih dokter", "ok siap") bukan advis -> dilewati saat memilih bawaan
+        if (defSender === null && /^(ok(e|ey)?|siap|baik|iya|sip|noted|terima ?kasih|makasih|trims|thx|thanks)\b[\s\w,.!]{0,20}$/i.test(msgs[i].text)) continue;
         if (defSender === null) defSender = s;
         if (s !== defSender) break;
         msgs[i].def = true;
