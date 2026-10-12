@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.83.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.84.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.83.0
-// @description  v3.83.0: PAKET KONSUL IGD dari DAFTAR pasien IGD (belum membuka pasien) — ketik nama / No. RM, pilih pasien IGD 48 jam, konfirmasi, lalu halaman pasien dibuka dan PAKET KONSUL (SOAP + penunjang) berjalan otomatis seperti biasa; di halaman pasien tetap langsung berjalan; tidak menyimpan apa pun. v3.82.0: tombol Advis WA — aturan baru (instruksi dokter): semua advis 24 jam TERAKHIR sejak tombol ditekan (bukan lagi 24 jam sebelum advis yang dilihat; yang dilihat hanya ditandai); pemuatan chat lama lebih andal (naik selayar demi selayar, menunggu WA memuat lebih sabar) supaya advis lama tidak terlewat; laporan dokter jaga ("Izin ro sedang proses dok") dan pesan pengirim konsul tidak lagi dianggap advis; bila ada DPJP "Sp." di grup, hanya pesannya yang tercentang. v3.81.0: menu AUTO ASM di HP/tablet dikembalikan seperti sebelum v3.79.0 (daftar kelompok ▶ di kotak menu, tanpa halaman geser) atas permintaan dokter; fitur lain tidak berubah. v3.80.0: tombol Advis WA — chat digulir otomatis ke atas untuk memuat pesan 24 jam sebelum advis yang dilihat (WA hanya memuat pesan di sekitar layar) lalu kembali; pesan yang pernah terbaca diingat; nama pasien di kutipan kini terbaca (penulis & isi kutipan dulu menempel jadi satu baris). v3.79.0: HP/tablet — menu AUTO ASM layar penuh seperti PAKET KONSUL RANAP; kelompok fitur (ASGADAR, Penunjang, Resep, IGD, Rawat Inap) tiap halaman bisa DIGESER kiri/kanan atau dipilih dari tab di atas, kembali dari sub-menu ke halaman yang sama; tombol & fungsi tidak berubah, desktop tidak berubah. v3.78.0: tombol Advis WA — advis yang sedang dilihat diutamakan + semua advis 24 jam ke belakang (yang termuat di WA) tampil sebagai kartu (tiap kartu pasien & isi sendiri) lalu dikirim sekaligus; di Smartplus banyak pasien jadi antrean di panel ADVIS SPESIALIS (Simpan -> otomatis ke pasien berikutnya); advis yang sudah tertulis di Rencana tidak ditulis ulang, advis berubah / dari spesialis lain tetap ditambahkan; pesan sendiri & pertanyaan tidak lagi terbaca sebagai advis. v3.77.0: tombol Advis WA — advis yang tidak mengutip konsul: pasien diambil dari pesan konsul/baris pasien terdekat di atasnya; kotak pasien bisa diketik untuk mencari/memperbaiki dengan pilihan dari pasien di chat + daftar pasien IGD 48 jam Smartplus; nama tanpa No. RM yang cocok lebih dari satu tidak dipilih otomatis. v3.76.0: tombol Advis WA — pesan advis tercentang otomatis (balasan atas konsul / berisi terapi), pasien penerima advis dikenali dari pesan konsul (nama/No. RM): form GADAR pasien yang sama diisi, pasien lain -> panel ADVIS SPESIALIS dengan pasien itu terpilih otomatis; pesan balasan yang mengutip konsul kini membaca isi advis, bukan kutipannya. v3.75.0: ASISTEN Multiple visit — deteksi nama lebih akurat (ejaan Rasyid/Rasheed, Syifa/Shifa; "Pak Bagus"; salah dengar dicoba lagi lebih longgar sebagai "tidak yakin"); nama tidak terdeteksi -> preview tetap terbuka dengan ➕ Tambah pasien (ucapan sudah terisi), pasien terlewat bisa ditambah, transkrip kartu bisa diedit lalu disusun ulang. v3.74.0: ADVIS DPJP dari WhatsApp Web langsung ke Rencana ASGADAR — tombol "📤 Advis → ASGADAR" di WA Web: pilih pesan, pratinjau, Kirim; tab Smartplus (browser yang sama) menambahkannya di bawah Rencana form GADAR yang terbuka (ada Batalkan) atau membuka panel ADVIS SPESIALIS; tidak disimpan otomatis. v3.73.0: HP/tablet — preview MULTIPLE VISIT, panel 🧠 dan menu AUTO ASM diperbesar sesuai layar dan memenuhi layar (dulu kotak kecil di samping saat dibuka dari ASISTEN SUARA); perbaikan: pasien kartu diganti tidak lagi membawa isian/peringatan pasien sebelumnya, galat Claude per kartu, tidak bisa menyusun preview baru selama Save multiple berjalan (cegah CPPT dobel), ketikan tidak hilang saat kartu lain diperbarui. v3.72.2: ASISTEN Multiple visit — perbaikan laporan dokter: kata biasa tidak lagi terbaca sebagai nama pasien lain ("mau tanya" ≠ Tania, "pasien saat ini" ≠ Satria); satu kata tanpa "pasien/Pak/Bu" tidak pernah memulai pasien baru, satu kata setelah pemicu harus hampir persis, panggilan pendek minimal 4 huruf. v3.72.1: ASISTEN mode ⚡ Cepat (bawaan, instruksi dokter) — isian Multiple visit langsung tampil tanpa menunggu konteks klinis, peringatan ⚠ dari konteks menyusul di tiap kartu tanpa mengganggu isian/ketikan; IGD menunggu konteks maks 2,5 dtk; pilihan 📚 Lengkap (tunggu konteks dulu) di ⚙️. v3.72.0: ASISTEN SUARA membaca KONTEKS KLINIS pasien (pilihan dokter, tanpa nama/No.RM) — Multiple visit: ringkasan rawat inap (keluhan & TTV sebelumnya, pemfis, diagnosis, terapi berjalan, advis spesialis) + hasil lab terbaru tiap pasien; mode percakapan IGD: umur + lab kunjungan ini. Claude memakai konteks untuk memahami ucapan (salah dengar, perbandingan dengan sebelumnya) tetapi kolom tetap hanya dari ucapan; ⚠ PERINGATAN keamanan (lab kritis, TTV memburuk, bertentangan dengan terapi/alergi, dosis tidak lazim) tampil sebagai catatan saja, tidak diisi ke form; konteks yang dibaca bisa dilihat di tiap kartu; ganti pasien = Claude dipanggil ulang untuk kartu itu. v3.71.0: ASISTEN SUARA lebih akurat (pilihan dokter) — mode Multiple visit menampilkan pasien yang dikenali secara langsung saat bicara (✓ yakin / ⚠ tidak yakin, nama yang tidak tertangkap bisa segera diulang); daftar obat RS ikut dikirim ke Claude supaya nama obat yang salah dengar dibetulkan (tanpa mengganti obat/dosis); asisten belajar dari koreksi dokter — perubahan dokter pada isian asisten saat Simpan GADAR / Save multiple visit disimpan sebagai contoh gaya HANYA di browser ini (tanpa identitas, bisa dihapus di ⚙️). v3.70.0: ASISTEN SUARA — mode "Dikte dokter" diganti 🏥 Multiple visit: dokter menyebut nama pasien lalu visit (TTV/pemfis tidak normal & instruksi tambahan bila ada), lalu pasien berikutnya, dst.; ⏹ -> nama dicocokkan di browser dengan daftar pasien dirawat (nama tidak dikirim ke Claude, hanya PASIEN_1, PASIEN_2…), nama yang tidak persis dicari yang paling mungkin dan bisa diganti di tiap kartu; preview MULTIPLE VISIT terisi otomatis (bawaan multiple visit + temuan yang diucapkan), simpan tetap lewat "Save multiple visit" + konfirmasi; nama tidak yakin tidak dicentang. v3.69.0: fitur 🎙️ Rekam v3.68.0 (tab perekam GitHub Pages + layanan suara OpenAI) dihapus atas permintaan dokter — di tablet/HP tanpa dikte browser pakai 🎤 di keyboard layar; kunci OpenAI yang pernah disimpan dihapus otomatis dari browser. v3.68.0 (dihapus di v3.69.0): ASISTEN 🎙️ Rekam lewat tab perekam. v3.67.0: tombol 🎤 / Alt+V DIKTE SUARA terpisah dihapus (dikte tetap lewat panel ASISTEN 🧠); ASISTEN untuk IGD ramai — Claude hanya memakai ucapan yang nyambung dengan pasien yang diperiksa, mengabaikan suara bed sebelah/perawat/TV dan menampilkan potongan yang diabaikan (🔇) di pratinjau, ucapan yang kurang yakin dikenali ditandai "(?)" di mode percakapan, TTV ganda tanpa koreksi dikosongkan & ditanyakan. v3.66.0: audit fitur — ASISTEN: kesadaran yang diucapkan kini benar terpilih saat memakai template (dulu nilai pilihan Compos Mentis ikut berubah) dan GCS yang diucapkan tidak lagi tertimpa GCS template, perkiraan Claude tidak menimpa kesadaran/GCS yang sudah dipilih dokter, pemfis perkiraan Claude tidak menimpa pemfis yang sudah ditulis dokter (hanya temuan yang diucapkan ditambahkan), Terapkan yang tertekan dua kali tidak membuka form GADAR dua kali, keterangan pratinjau sesuai cara pengisian, order penunjang ditandai ✗ bila tombol Save tidak ditekan, diagnosis order memakai diagnosis template bila tidak diucapkan, nilai lab seperti "trombosit 150000" tidak lagi ikut disaring, batas tunggu Claude 90 dtk; DIKTE: Esc menghentikan dikte tanpa menutup form GADAR; tombol 🎤 & 🧠 pindah ke kiri tombol AUTO ASM (dulu menutupi menu). v3.65.0: ASISTEN — bila tidak ada template ASGADAR yang mendekati, kolom yang tidak diucapkan diisi perkiraan Claude (data paling mungkin untuk kasus itu, pemfis per sistem; tanpa obat/dosis baru), tampil terpisah di pratinjau & hanya mengisi kolom yang masih kosong; GADAR tetap Save manual. v3.64.0: ASISTEN — kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (dipilih Claude, bisa diganti di pratinjau; membuka form GADAR baru), pemfis template + temuan yang diucapkan, Riwayat Penyakit Sekarang lama diganti hasil terbaru; GADAR tetap Save manual. v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
+// @version      3.84.0
+// @description  v3.84.0: RESEP PULANG — 📋 Tempel daftar obat pulang: tiap baris dibaca (nama, dosis & frekuensi persis seperti ditulis: 3x1, 2 x 1/2, S 2 dd I, 3 x C I, 1-0-1, No. X, ac/pc, k/p, selama 5 hari), dicocokkan ke master obat (obat/kekuatan tidak pernah diganti; yang ragu ⚠ dipilih dokter), preview bisa diedit, OK -> masuk e-resep (Simpan tetap lewat konfirmasi). v3.83.0: PAKET KONSUL IGD dari DAFTAR pasien IGD (belum membuka pasien) — ketik nama / No. RM, pilih pasien IGD 48 jam, konfirmasi, lalu halaman pasien dibuka dan PAKET KONSUL (SOAP + penunjang) berjalan otomatis seperti biasa; di halaman pasien tetap langsung berjalan; tidak menyimpan apa pun. v3.82.0: tombol Advis WA — aturan baru (instruksi dokter): semua advis 24 jam TERAKHIR sejak tombol ditekan (bukan lagi 24 jam sebelum advis yang dilihat; yang dilihat hanya ditandai); pemuatan chat lama lebih andal (naik selayar demi selayar, menunggu WA memuat lebih sabar) supaya advis lama tidak terlewat; laporan dokter jaga ("Izin ro sedang proses dok") dan pesan pengirim konsul tidak lagi dianggap advis; bila ada DPJP "Sp." di grup, hanya pesannya yang tercentang. v3.81.0: menu AUTO ASM di HP/tablet dikembalikan seperti sebelum v3.79.0 (daftar kelompok ▶ di kotak menu, tanpa halaman geser) atas permintaan dokter; fitur lain tidak berubah. v3.80.0: tombol Advis WA — chat digulir otomatis ke atas untuk memuat pesan 24 jam sebelum advis yang dilihat (WA hanya memuat pesan di sekitar layar) lalu kembali; pesan yang pernah terbaca diingat; nama pasien di kutipan kini terbaca (penulis & isi kutipan dulu menempel jadi satu baris). v3.79.0: HP/tablet — menu AUTO ASM layar penuh seperti PAKET KONSUL RANAP; kelompok fitur (ASGADAR, Penunjang, Resep, IGD, Rawat Inap) tiap halaman bisa DIGESER kiri/kanan atau dipilih dari tab di atas, kembali dari sub-menu ke halaman yang sama; tombol & fungsi tidak berubah, desktop tidak berubah. v3.78.0: tombol Advis WA — advis yang sedang dilihat diutamakan + semua advis 24 jam ke belakang (yang termuat di WA) tampil sebagai kartu (tiap kartu pasien & isi sendiri) lalu dikirim sekaligus; di Smartplus banyak pasien jadi antrean di panel ADVIS SPESIALIS (Simpan -> otomatis ke pasien berikutnya); advis yang sudah tertulis di Rencana tidak ditulis ulang, advis berubah / dari spesialis lain tetap ditambahkan; pesan sendiri & pertanyaan tidak lagi terbaca sebagai advis. v3.77.0: tombol Advis WA — advis yang tidak mengutip konsul: pasien diambil dari pesan konsul/baris pasien terdekat di atasnya; kotak pasien bisa diketik untuk mencari/memperbaiki dengan pilihan dari pasien di chat + daftar pasien IGD 48 jam Smartplus; nama tanpa No. RM yang cocok lebih dari satu tidak dipilih otomatis. v3.76.0: tombol Advis WA — pesan advis tercentang otomatis (balasan atas konsul / berisi terapi), pasien penerima advis dikenali dari pesan konsul (nama/No. RM): form GADAR pasien yang sama diisi, pasien lain -> panel ADVIS SPESIALIS dengan pasien itu terpilih otomatis; pesan balasan yang mengutip konsul kini membaca isi advis, bukan kutipannya. v3.75.0: ASISTEN Multiple visit — deteksi nama lebih akurat (ejaan Rasyid/Rasheed, Syifa/Shifa; "Pak Bagus"; salah dengar dicoba lagi lebih longgar sebagai "tidak yakin"); nama tidak terdeteksi -> preview tetap terbuka dengan ➕ Tambah pasien (ucapan sudah terisi), pasien terlewat bisa ditambah, transkrip kartu bisa diedit lalu disusun ulang. v3.74.0: ADVIS DPJP dari WhatsApp Web langsung ke Rencana ASGADAR — tombol "📤 Advis → ASGADAR" di WA Web: pilih pesan, pratinjau, Kirim; tab Smartplus (browser yang sama) menambahkannya di bawah Rencana form GADAR yang terbuka (ada Batalkan) atau membuka panel ADVIS SPESIALIS; tidak disimpan otomatis. v3.73.0: HP/tablet — preview MULTIPLE VISIT, panel 🧠 dan menu AUTO ASM diperbesar sesuai layar dan memenuhi layar (dulu kotak kecil di samping saat dibuka dari ASISTEN SUARA); perbaikan: pasien kartu diganti tidak lagi membawa isian/peringatan pasien sebelumnya, galat Claude per kartu, tidak bisa menyusun preview baru selama Save multiple berjalan (cegah CPPT dobel), ketikan tidak hilang saat kartu lain diperbarui. v3.72.2: ASISTEN Multiple visit — perbaikan laporan dokter: kata biasa tidak lagi terbaca sebagai nama pasien lain ("mau tanya" ≠ Tania, "pasien saat ini" ≠ Satria); satu kata tanpa "pasien/Pak/Bu" tidak pernah memulai pasien baru, satu kata setelah pemicu harus hampir persis, panggilan pendek minimal 4 huruf. v3.72.1: ASISTEN mode ⚡ Cepat (bawaan, instruksi dokter) — isian Multiple visit langsung tampil tanpa menunggu konteks klinis, peringatan ⚠ dari konteks menyusul di tiap kartu tanpa mengganggu isian/ketikan; IGD menunggu konteks maks 2,5 dtk; pilihan 📚 Lengkap (tunggu konteks dulu) di ⚙️. v3.72.0: ASISTEN SUARA membaca KONTEKS KLINIS pasien (pilihan dokter, tanpa nama/No.RM) — Multiple visit: ringkasan rawat inap (keluhan & TTV sebelumnya, pemfis, diagnosis, terapi berjalan, advis spesialis) + hasil lab terbaru tiap pasien; mode percakapan IGD: umur + lab kunjungan ini. Claude memakai konteks untuk memahami ucapan (salah dengar, perbandingan dengan sebelumnya) tetapi kolom tetap hanya dari ucapan; ⚠ PERINGATAN keamanan (lab kritis, TTV memburuk, bertentangan dengan terapi/alergi, dosis tidak lazim) tampil sebagai catatan saja, tidak diisi ke form; konteks yang dibaca bisa dilihat di tiap kartu; ganti pasien = Claude dipanggil ulang untuk kartu itu. v3.71.0: ASISTEN SUARA lebih akurat (pilihan dokter) — mode Multiple visit menampilkan pasien yang dikenali secara langsung saat bicara (✓ yakin / ⚠ tidak yakin, nama yang tidak tertangkap bisa segera diulang); daftar obat RS ikut dikirim ke Claude supaya nama obat yang salah dengar dibetulkan (tanpa mengganti obat/dosis); asisten belajar dari koreksi dokter — perubahan dokter pada isian asisten saat Simpan GADAR / Save multiple visit disimpan sebagai contoh gaya HANYA di browser ini (tanpa identitas, bisa dihapus di ⚙️). v3.70.0: ASISTEN SUARA — mode "Dikte dokter" diganti 🏥 Multiple visit: dokter menyebut nama pasien lalu visit (TTV/pemfis tidak normal & instruksi tambahan bila ada), lalu pasien berikutnya, dst.; ⏹ -> nama dicocokkan di browser dengan daftar pasien dirawat (nama tidak dikirim ke Claude, hanya PASIEN_1, PASIEN_2…), nama yang tidak persis dicari yang paling mungkin dan bisa diganti di tiap kartu; preview MULTIPLE VISIT terisi otomatis (bawaan multiple visit + temuan yang diucapkan), simpan tetap lewat "Save multiple visit" + konfirmasi; nama tidak yakin tidak dicentang. v3.69.0: fitur 🎙️ Rekam v3.68.0 (tab perekam GitHub Pages + layanan suara OpenAI) dihapus atas permintaan dokter — di tablet/HP tanpa dikte browser pakai 🎤 di keyboard layar; kunci OpenAI yang pernah disimpan dihapus otomatis dari browser. v3.68.0 (dihapus di v3.69.0): ASISTEN 🎙️ Rekam lewat tab perekam. v3.67.0: tombol 🎤 / Alt+V DIKTE SUARA terpisah dihapus (dikte tetap lewat panel ASISTEN 🧠); ASISTEN untuk IGD ramai — Claude hanya memakai ucapan yang nyambung dengan pasien yang diperiksa, mengabaikan suara bed sebelah/perawat/TV dan menampilkan potongan yang diabaikan (🔇) di pratinjau, ucapan yang kurang yakin dikenali ditandai "(?)" di mode percakapan, TTV ganda tanpa koreksi dikosongkan & ditanyakan. v3.66.0: audit fitur — ASISTEN: kesadaran yang diucapkan kini benar terpilih saat memakai template (dulu nilai pilihan Compos Mentis ikut berubah) dan GCS yang diucapkan tidak lagi tertimpa GCS template, perkiraan Claude tidak menimpa kesadaran/GCS yang sudah dipilih dokter, pemfis perkiraan Claude tidak menimpa pemfis yang sudah ditulis dokter (hanya temuan yang diucapkan ditambahkan), Terapkan yang tertekan dua kali tidak membuka form GADAR dua kali, keterangan pratinjau sesuai cara pengisian, order penunjang ditandai ✗ bila tombol Save tidak ditekan, diagnosis order memakai diagnosis template bila tidak diucapkan, nilai lab seperti "trombosit 150000" tidak lagi ikut disaring, batas tunggu Claude 90 dtk; DIKTE: Esc menghentikan dikte tanpa menutup form GADAR; tombol 🎤 & 🧠 pindah ke kiri tombol AUTO ASM (dulu menutupi menu). v3.65.0: ASISTEN — bila tidak ada template ASGADAR yang mendekati, kolom yang tidak diucapkan diisi perkiraan Claude (data paling mungkin untuk kasus itu, pemfis per sistem; tanpa obat/dosis baru), tampil terpisah di pratinjau & hanya mengisi kolom yang masih kosong; GADAR tetap Save manual. v3.64.0: ASISTEN — kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (dipilih Claude, bisa diganti di pratinjau; membuka form GADAR baru), pemfis template + temuan yang diucapkan, Riwayat Penyakit Sekarang lama diganti hasil terbaru; GADAR tetap Save manual. v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @match        http://*/*
@@ -52,8 +52,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.83.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.83.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.84.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.84.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -1945,6 +1945,259 @@
   })();
   // Dosis tersering untuk nama master: cocok persis, atau cocok inti nama.
   const spRpStat = (name) => RP_DOSE_STATS[spDrugKey(name)] || RP_DOSE_CORE[spCoreKey(name)] || null;
+
+  // =========================
+  // v3.84.0 (permintaan dokter 12 Okt 2026): TEMPEL DAFTAR OBAT PULANG. Dokter menempel daftar obat pulang (dari resume, WA,
+  // catatan); tiap baris dibaca: nama obat, dosis & frekuensi PERSIS seperti ditulis (3x1, 2 x 1/2, S 3 dd I, 1-0-1, tiap 8 jam,
+  // 1x10 mg, 3 x C I), waktu (ac/pc/malam), jumlah (No. X, #10, jml 10), lama (selama 5 hari / 1 minggu), keterangan (k/p, prn).
+  // Nama dicocokkan ke master obat Smartplus. Obat & dosis TIDAK pernah diganti: bila kekuatan/sediaan tidak cocok atau ada
+  // beberapa pilihan, baris ditandai ⚠ dan dokter memilih sendiri di preview.
+  // =========================
+  function spRoman(s) {
+    const v = { I: 1, V: 5, X: 10, L: 50, C: 100 };
+    const t = String(s || "").toUpperCase();
+    if (!/^[IVXLC]+$/.test(t)) return null;
+    let n = 0;
+    for (let i = 0; i < t.length; i++) { const a = v[t[i]], b = v[t[i + 1]] || 0; n += a < b ? -a : a; }
+    return n > 0 ? n : null;
+  }
+  // "½" -> "1/2", "1½" -> "1 1/2", angka romawi dosis ("I", "II") -> "1", "2"; selain itu apa adanya.
+  function spRpDoseNum(s) {
+    let t = String(s || "").trim().replace(/(\d)\s*½/g, "$1 1/2").replace(/½/g, "1/2").replace(/¼/g, "1/4").replace(/¾/g, "3/4");
+    if (/^[iv]{1,3}$/i.test(t)) t = String(spRoman(t));
+    return t.replace(/\s*\/\s*/g, "/");
+  }
+  const SP_RP_DOSE_RE = "(\\d+\\s+\\d+\\s*\\/\\s*\\d+|\\d+\\s*½|\\d+(?:[.,]\\d+)?(?:\\s*\\/\\s*\\d+)?|½|¼|¾|[IViv]{1,3}(?![a-z]))";
+  const SP_RP_UNIT_RE = "(mg|mcg|µg|gram|gr|g|ml|cc|iu|ui|unit|tetes|gtt|puff|sachet|sach|sendok\\s*(?:makan|teh)?|cth|C|tablet|tab|kapsul|kaps|capsul|caps|cap|kaplet|butir|pcs)(?![a-z])";
+  const SP_RP_COUNT_UNIT = /^(tablet|tab|kapsul|kaps|capsul|caps|cap|kaplet|butir|pcs)$/i;
+  const SP_RP_WORDNUM = { se: 1, satu: 1, dua: 2, tiga: 3, empat: 4, lima: 5, enam: 6 };
+
+  // Dosis + satuan seperti ditulis: tablet/kapsul cukup angkanya ("1 tab" -> "1"), lainnya "10 ml", "1 C", "2 puff".
+  function spRpDoseText(num, unit, preUnit) {
+    const n = spRpDoseNum(num);
+    const u = String(preUnit || unit || "").trim();
+    if (!u || SP_RP_COUNT_UNIT.test(u)) return n;
+    return `${n} ${/^c$/i.test(u) ? "C" : u.toLowerCase()}`;
+  }
+
+  // Frekuensi dalam satu baris -> { at, len, n, dosis, doseGiven, raw } (pola paling depan yang cocok).
+  function spRpFindFreq(s) {
+    const D = SP_RP_DOSE_RE, U = SP_RP_UNIT_RE;
+    const pats = [
+      // S 3 dd I / 3dd1 / 3 d.d. C I
+      [new RegExp(`(?:\\bS\\.?\\s*)?\\b([1-6])\\s*d\\.?\\s*d\\.?\\s*(?:(C|cth)\\.?\\s*)?${D}?\\s*(?:${U})?`, "i"), (m) => ({ n: +m[1], pre: m[2], num: m[3], unit: m[4] })],
+      // 3x1 / 3 x 1/2 / 2x500 mg / 3 x C I / 3x sehari 1 tab / 1 x 1 tab
+      [new RegExp(`\\b([1-6])\\s*[x×]\\s*(?:sehari|per\\s*hari|perhari)?\\s*(?:(C|cth)\\.?\\s*)?${D}?\\s*(?:${U})?`, "i"), (m) => ({ n: +m[1], pre: m[2], num: m[3], unit: m[4] })],
+      // 2 kali sehari 1 tablet / sekali sehari
+      [new RegExp(`\\b([1-6]|se|satu|dua|tiga|empat|lima|enam)\\s*kali\\s*(?:sehari|per\\s*hari|perhari)?\\s*(?:${D}\\s*(?:${U})?)?`, "i"), (m) => ({ n: SP_RP_WORDNUM[m[1].toLowerCase()] || +m[1], num: m[2], unit: m[3] })],
+      // tiap 8 jam / /12 jam
+      [/(?:\b(?:tiap|setiap|per)\s*|\/\s*)(4|6|8|12|24)\s*jam\b/i, (m) => ({ n: 24 / +m[1] })],
+      // 1-0-1 / 1-1-1 / ½-0-½
+      [/(?:^|[^\d\/.,-])((?:\d|½)(?:[.,\/]\d)?)\s*-\s*((?:\d|½)(?:[.,\/]\d)?)\s*-\s*((?:\d|½)(?:[.,\/]\d)?)(?![\d.,\/-])/, (m) => {
+        const parts = [m[1], m[2], m[3]].map(spRpDoseNum);
+        const on = parts.filter((p) => p !== "0");
+        return { n: on.length, num: on.length && on.every((p) => p === on[0]) ? on[0] : null, raw: parts.join("-"), pattern: true };
+      }]
+    ];
+    for (const [re, f] of pats) {
+      const m = s.match(re);
+      if (!m) continue;
+      const r = f(m);
+      if (!(r.n >= 1)) continue;
+      let at = m.index, len = m[0].length;
+      if (r.pattern) { const k = m[0].search(/[\d½]/); at += k; len -= k; }
+      const doseGiven = !!r.num;
+      const dosis = r.pattern && !r.num ? r.raw : doseGiven ? spRpDoseText(r.num, r.unit, r.pre) : "1";
+      return { at, len, n: Math.round(r.n), dosis, doseGiven: doseGiven || (r.pattern && !!r.raw), unit: r.pre || r.unit || "", raw: r.raw || "" };
+    }
+    return null;
+  }
+
+  const SP_RP_WAKTU = [
+    ["SEBELUM MAKAN", /(?:^|[^a-z])(a\.?\s?c\.?|ante\s*cibum|(?:30\s*menit\s*)?(?:sebelum|sblm|sblum|sbl)\s*(?:makan|mkn))(?![a-z])/i],
+    ["SESUDAH MAKAN", /(?:^|[^a-z])(p\.?\s?c\.?|post\s*cibum|(?:sesudah|setelah|stlh|ssdh|sdh|habis)\s*(?:makan|mkn))(?![a-z])/i],
+    ["SAAT MAKAN", /(?:^|[^a-z])(d\.?\s?c\.?|durante\s*cibum|(?:saat|bersama|bersamaan)\s*(?:makan|mkn))(?![a-z])/i],
+    ["MALAM", /(?:^|[^a-z])(malam(?:\s*hari)?|h\.?\s?s\.?|vesp(?:ere)?|noct[eu]?|sebelum\s*tidur|mlm)(?![a-z])/i],
+    ["PAGI", /(?:^|[^a-z])(pagi(?:\s*hari)?)(?![a-z])/i]
+  ];
+  const SP_RP_PRN = /(?:^|[^a-z])(k\s*\/\s*p|kp|p\.?r\.?n\.?|(?:bila|jika|kalau|kl)\s*(?:perlu|prlu|nyeri|demam|sakit|mual|muntah|sesak|pusing|gatal)(?:\s*(?:saja|aja))?)(?![a-z])/i;
+
+  // Satu baris daftar -> { line, name, dosis, frekuensi, waktu, keterangan, jumlah, days, warn[], hasFreq, strength[], form }.
+  function spRpParseLine(line0) {
+    const line = String(line0 || "").replace(/\s+/g, " ").trim();
+    let s = line.replace(/^\s*(?:\d{1,2}\s*[.)]\s*|[-–•*·>]+\s*|R\s*\/\s*)+/i, "").replace(/^\s*R\s*\/\s*/i, "").trim();
+    if (!s || !/[a-z]{3}/i.test(s)) return null;
+    const out = { line, name: "", dosis: "", frekuensi: "", waktu: "", keterangan: "", jumlah: "", days: null, warn: [], hasFreq: false };
+    // Jumlah: No. X / No 10 / #10 / jml 10 / jumlah: 10 / qty 10
+    const no = s.match(/(?:^|[^A-Za-z])(?:[Nn][Oo]\.?\s*([IVXLC]+|\d{1,3})|#\s*(\d{1,3})|(?:jml|jumlah|qty)\.?\s*:?\s*(\d{1,3}))(?![A-Za-z0-9])/);
+    if (no) {
+      const q = no[1] ? (/^\d+$/.test(no[1]) ? +no[1] : spRoman(no[1])) : +(no[2] || no[3]);
+      if (q > 0) out.jumlah = String(q);
+      s = (s.slice(0, no.index) + " " + s.slice(no.index + no[0].length)).trim();
+    }
+    // Lama: selama 5 hari / 5 hr / 1 minggu
+    const dur = s.match(/(?:\b(?:selama|utk|untuk)\s*)?\b(\d{1,2})\s*(hari|hr|minggu|mgg)\b/i);
+    let durText = "";
+    if (dur) {
+      out.days = +dur[1] * (/^m/i.test(dur[2]) ? 7 : 1);
+      durText = `selama ${dur[1]} ${/^m/i.test(dur[2]) ? "minggu" : "hari"}`;
+      s = (s.slice(0, dur.index) + " " + s.slice(dur.index + dur[0].length)).trim();
+    }
+    const f = spRpFindFreq(s);
+    let name = s, tail = "";
+    if (f) {
+      out.hasFreq = true;
+      out.frekuensi = `${f.n} X SEHARI`;
+      out.dosis = f.dosis;
+      if (!f.doseGiven) out.warn.push("dosis tidak ditulis — diisi 1, cek");
+      if (f.raw && !/^\d/.test(out.dosis)) out.warn.push(`pola ${f.raw} — cek dosis`);
+      name = s.slice(0, f.at);
+      tail = s.slice(f.at + f.len);
+      out.doseUnit = f.unit;
+    }
+    name = name.replace(/\(([^)]*)\)/g, (m0, inner) => { tail = `${inner} ${tail}`; return " "; })
+      .replace(/[\s,:;\-–(]+$/g, "").replace(/\s+S\.?$/i, "").replace(/[\s,:;\-–]+$/g, "").trim();
+    // nama ditulis sesudah aturan pakai ("3x1 Paracetamol 500 mg")
+    if (!/[a-z]{3}/i.test(name) && /[a-z]{3}/i.test(tail)) {
+      const m = tail.match(/^[\s,:;\-–]*([A-Za-z][^,;()]*?)(?=\s*(?:[,;(]|$|\b(?:a\.?c|p\.?c|d\.?c|sebelum|sesudah|setelah|saat|bila|jika|k\/p|prn|malam|pagi)\b))/i);
+      if (m) { name = m[1].trim(); tail = tail.slice(m.index + m[0].length); }
+    }
+    if (!f) { // tanpa aturan pakai: "Paracetamol 500 mg k/p" -> k/p bukan bagian nama
+      const m = name.match(SP_RP_PRN);
+      if (m) { tail = `${name.slice(m.index)} ${tail}`; name = name.slice(0, m.index).replace(/[\s,:;\-–]+$/g, "").trim(); }
+    }
+    out.name = name;
+    for (const [w, re] of SP_RP_WAKTU) { const m = tail.match(re); if (m) { out.waktu = w; tail = tail.replace(m[1], " "); break; } }
+    const ket = [];
+    const prn = tail.match(SP_RP_PRN);
+    if (prn) { ket.push(/^(k\s*\/\s*p|kp|p\.?r\.?n\.?)$/i.test(prn[1]) ? "bila perlu" : prn[1].toLowerCase()); tail = tail.replace(prn[1], " "); }
+    if (durText) ket.push(durText);
+    const rest = tail.replace(/\b(tablet|tab|kapsul|kaps|capsul|caps|kaplet|butir|sehari|perhari|per hari|dd|s)\b/gi, " ")
+      .replace(/[()[\]{},.;:\-–/]+/g, " ").replace(/\s+/g, " ").trim();
+    if (rest.length >= 3 && /[a-z]{3}/i.test(rest)) ket.push(rest);
+    out.keterangan = ket.join(", ");
+    out.strength = spRpStrengths(name);
+    if (!out.strength.length && /^(mg|mcg|µg|g|gr|gram)$/i.test(out.doseUnit || "")) {
+      const n = Number(String(out.dosis).replace(",", ".").replace(/[^\d.]/g, ""));
+      if (n > 0) { out.strength = [n]; out.strengthFromDose = true; }
+    }
+    out.form = spRpForm(`${name} ${out.doseUnit || ""}`);
+    if (!out.hasFreq) out.warn.push("frekuensi tidak terbaca — isi sendiri");
+    return out;
+  }
+
+  // Daftar tempel -> baris obat. Satu baris boleh berisi beberapa obat dipisah ";" (atau "," bila ada >1 aturan pakai).
+  function spRpParseList(text) {
+    const lines = [];
+    for (const l of String(text || "").split(/\r?\n|;/)) {
+      const freqs = l.match(/\b[1-6]\s*(?:[x×]|d\.?d)/gi) || [];
+      if (freqs.length > 1) lines.push(...l.split(/,\s*(?=[A-Za-z])/)); else lines.push(l);
+    }
+    const rows = [], ignored = [];
+    for (const l of lines) {
+      if (!l.trim()) continue;
+      const p = spRpParseLine(l);
+      // Judul / catatan tanpa aturan pakai & tanpa kekuatan obat ("Obat pulang:", "Kontrol poli 1 minggu") tidak dianggap obat.
+      if (!p || (!p.hasFreq && !p.strength.length && !p.form && !/bila perlu/.test(p.keterangan)) || /:\s*$/.test(l.trim())) { ignored.push(l.trim()); continue; }
+      rows.push(p);
+    }
+    return { rows, ignored };
+  }
+
+  // Kekuatan obat di nama ("10 mg", "0,4", "125mg/5ml" -> [125, 5]); angka yang menempel huruf (B12, D3) bukan kekuatan.
+  function spRpStrengths(name) {
+    const out = [];
+    const re = /(?<![a-z\d.,])(\d+(?:[.,]\d+)?)\s*(?:mg|mcg|µg|g|gr|ml|iu|ui|%)?(?![a-z\d])/gi;
+    let m;
+    const t = String(name || "").replace(/\(\s*isi[^)]*\)|\bisi\s*\d+|\d+\s*'?\s*s\b/gi, " ");
+    while ((m = re.exec(t))) { const n = Number(m[1].replace(",", ".")); if (n > 0 && !out.includes(n)) out.push(n); }
+    return out;
+  }
+  // Golongan sediaan: cair / padat / luar / tetes mata / inhaler / supp / suntik ("" = tidak tertulis).
+  function spRpForm(s) {
+    const t = String(s || "").toLowerCase();
+    if (/tetes mata|eye ?drop|\bed\b|minidose/.test(t)) return "mata";
+    if (/salep|cream|krim|\bgel\b|zalf|oint|lotion|\bcr\b/.test(t)) return "luar";
+    if (/inhaler|turbuhaler|\bmdi\b|respules|nebu/.test(t)) return "inhal";
+    if (/\bsupp|suppositoria/.test(t)) return "supp";
+    if (/\binj|flexpen|\bpen\b|vial|ampul/.test(t)) return "suntik";
+    if (/\b(syr|syrup|sirup|susp|suspensi|suspension|drop|drops|elixir|emulsi|ml|cc|c|cth|sendok\w*|tetes|gtt)\b|dry ?syr|\d\s*(cc|ml)\b/.test(t)) return "cair";
+    if (/\b(tab|tablet|tabs|kaplet|kaps|kapsul|caps|capsul|capsule|cap|fct|fc|sachet|sach|puyer|pulv)\b/.test(t)) return "padat";
+    return "";
+  }
+
+  const SP_RP_NAME_SKIP = /^(tab|tablet|tabs|kaplet|kaps|kapsul|caps|capsul|capsule|cap|fct|fc|syr|syrup|sirup|susp|suspensi|drop|drops|dry|mg|mcg|ml|cc|gr|iu|gen|ogb|forte|hexpharm|dexa|isi|strip|botol|btl|inj|obat)$/;
+  // Kata nama obat (tanpa kekuatan/sediaan) untuk pencocokan.
+  function spRpNameWords(name) {
+    return String(name || "").toLowerCase().replace(/\([^)]*\)/g, " ").replace(/\*/g, " ")
+      .split(/[^a-z0-9]+/).filter((w) => w.length >= 2 && /[a-z]/.test(w) && !/^\d/.test(w) && !SP_RP_NAME_SKIP.test(w));
+  }
+  // Ejaan disamakan: c/k/s, ph/f, x/ks, y/i, huruf ganda, akhiran e/a (amlodipin = amlodipine, furosemid = furosemida).
+  function spRpPhon(w) {
+    return String(w || "").toLowerCase().replace(/ph/g, "f").replace(/th/g, "t").replace(/c(?=[eiy])/g, "s").replace(/[cq]/g, "k")
+      .replace(/x/g, "ks").replace(/z/g, "s").replace(/y/g, "i").replace(/(.)\1+/g, "$1").replace(/[ae]$/, "");
+  }
+  function spRpWordMatch(a, b) {
+    if (a === b) return true;
+    if (/\d/.test(a) || /\d/.test(b)) return a === b;
+    const pa = spRpPhon(a), pb = spRpPhon(b);
+    if (pa === pb) return true;
+    const short = pa.length <= pb.length ? pa : pb, long = short === pa ? pb : pa;
+    return short.length >= 3 && long.startsWith(short) && (short.length >= 5 || short === spRpPhon(a));
+  }
+  // Kata yang dikirim ke pencarian master obat (LIKE): beberapa ejaan dari kata nama pertama.
+  function spRpSearchTerms(p) {
+    const words = spRpNameWords(p.name);
+    const w = words[0] || "";
+    if (!w) return [];
+    const variants = [w, w.replace(/s(?=[ei])/g, "c"), w.replace(/c(?=[ei])/g, "s"), w.replace(/k/g, "c"), w.replace(/c/g, "k"),
+      w.replace(/f/g, "ph"), w.replace(/i/g, "y"), w.replace(/y/g, "i"), w.replace(/ks/g, "x")];
+    const terms = [];
+    for (const v of variants) for (const t of [v.slice(0, 6), v.slice(0, 4)]) if (t.length >= 3 && !terms.includes(t)) terms.push(t);
+    if (words[1] && words[1].length >= 4) terms.push(words[1].slice(0, 6));
+    return terms;
+  }
+  // Pilih obat master untuk satu baris. cands = [{ name, jenis }]. Hasil: { status, pick, options[], note }
+  // status: "ok" (cocok), "pilih" (beberapa kekuatan/sediaan — dokter memilih), "beda" (kekuatan tidak ada), "none".
+  // Tidak pernah memilih obat dengan kekuatan atau sediaan berbeda dari yang ditulis.
+  function spRpMatch(p, cands, usage) {
+    const words = spRpNameWords(p.name);
+    if (!words.length) return { status: "none", pick: "", options: [], note: "nama obat tidak terbaca" };
+    const seen = new Set();
+    const named = (cands || []).filter((c) => {
+      const k = spDrugKey(c.name);
+      if (!c.name || seen.has(k)) return false;
+      seen.add(k);
+      const cw = spRpNameWords(c.name);
+      return words.every((w) => cw.some((x) => spRpWordMatch(w, x)));
+    }).map((c) => ({ ...c, st: spRpStrengths(c.name), form: spRpForm(c.name), oral: /oral/i.test(c.jenis || "") }));
+    if (!named.length) return { status: "none", pick: "", options: [], note: "tidak ditemukan di master obat — cari manual" };
+    const formOk = (c) => !p.form || !c.form || c.form === p.form;
+    const strOk = (c) => !p.strength.length || p.strength.every((n) => c.st.includes(n));
+    const use = (c) => (usage ? usage(c.name) : 0) || 0;
+    const sortFn = (a, b) => use(b) - use(a) || (b.oral - a.oral) || a.name.length - b.name.length;
+    // Varian kemasan obat yang sama (nama inti + kekuatan + sediaan sama) boleh dipilih otomatis; selain itu dokter memilih.
+    const sig = (c) => `${spRpNameWords(c.name).join(" ")}|${c.st.join("/")}`;
+    const oneProduct = (list) => list.every((c) => sig(c) === sig(list[0])) && new Set(list.map((c) => c.form).filter(Boolean)).size <= 1;
+    let good = named.filter((c) => formOk(c) && strOk(c)).sort(sortFn);
+    let note = "";
+    // Master tanpa kekuatan di nama (mis. "EPERISONE TAB*") dan tidak ada varian berkekuatan lain -> dipilih, ditandai cek.
+    if (!good.length && p.strength.length && !p.strengthFromDose && named.every((c) => !c.st.length)) {
+      good = named.filter(formOk).sort(sortFn);
+      note = `⚠ kekuatan ${p.strength.join("/")} tidak tertulis di master — cek`;
+    }
+    const options = [...good, ...named.filter((c) => !good.includes(c)).sort(sortFn)].map((c) => c.name);
+    if (!good.length) {
+      if (p.strengthFromDose) return { status: "pilih", pick: "", options, note: "pilih sediaan (kekuatan tidak tertulis di nama)" };
+      const have = [...new Set(named.map((c) => c.st.join("/")).filter(Boolean))].join(", ");
+      return { status: "beda", pick: "", options, note: `${p.strength.length ? `kekuatan ${p.strength.join("/")} ` : ""}${p.form ? `sediaan ${p.form} ` : ""}tidak ada${have ? ` (tersedia: ${have})` : ""} — pilih sendiri` };
+    }
+    if (oneProduct(good)) {
+      return { status: note ? "cek" : "ok", pick: good[0].name, options,
+        note: note || (good.length > 1 ? `cocok · ${good.length} varian kemasan, cek pilihan` : "cocok") };
+    }
+    return { status: "pilih", pick: "", options, note: `${good.length} pilihan kekuatan/sediaan — pilih sendiri` };
+  }
 
   // Kata kunci keluhan di Assesment GADAR (keluhan utama, RPS, diagnosis, masalah). Kata yang dinegasikan
   // ("demam (-)", "tidak demam", "demam disangkal", "alergi: tidak ada") tidak dihitung.
@@ -8982,6 +9235,35 @@
       #${MENU_ID} .sp-rp-hit b{display:block;font-size:12.5px;}
       #${MENU_ID} .sp-rp-hit span{display:block;font-size:11px;color:#6b7280;margin-top:1px;}
       #${MENU_ID} #sp-rp-routine .sp-pill{margin:2px 3px 2px 0;font-size:11.5px;padding:3px 9px;}
+      /* v3.84.0: RESEP PULANG - tempel daftar obat */
+      #${MENU_ID} .sp-rpp-open{display:block;width:100%!important;margin:6px 0 4px!important;padding:9px 11px!important;text-align:left!important;background:#ecfdf5!important;color:#065f46!important;border:1px dashed #10b981!important;border-radius:9px!important;font:700 13px Arial,sans-serif!important;cursor:pointer;}
+      #${MENU_ID} .sp-rpp-text{display:block;width:100%!important;box-sizing:border-box;min-height:130px;margin:8px 0 6px;padding:9px 11px!important;border:1px solid #c7d2fe!important;border-radius:9px!important;font:13.5px/1.45 Consolas,Menlo,monospace!important;background:#fff!important;color:#111827!important;resize:vertical;}
+      #${MENU_ID} .sp-rpp-bar{flex-wrap:wrap;align-items:center;gap:6px 10px;}
+      #${MENU_ID} .sp-rpp-row{margin:7px 0;padding:8px 9px;background:#fff;border:1px solid #e7e3f3;border-left:5px solid #a78bfa;border-radius:10px;}
+      #${MENU_ID} .sp-rpp-row.st-ok{border-left-color:#10b981;}
+      #${MENU_ID} .sp-rpp-row.st-warn{border-left-color:#f59e0b;background:#fffbeb;}
+      #${MENU_ID} .sp-rpp-row.st-bad{border-left-color:#ef4444;background:#fff5f5;}
+      #${MENU_ID} .sp-rpp-row.st-off{opacity:.5;border-left-color:#d1d5db;}
+      #${MENU_ID} .sp-rpp-head{display:flex;align-items:flex-start;gap:8px;justify-content:space-between;margin-bottom:5px;}
+      #${MENU_ID} .sp-rpp-head label{display:flex;gap:6px;align-items:flex-start;font-size:12.5px;color:#374151;cursor:pointer;}
+      #${MENU_ID} .sp-rpp-line{font-family:Consolas,Menlo,monospace;word-break:break-word;}
+      #${MENU_ID} .sp-rpp-badge{flex:0 0 auto;font-size:11px;font-weight:700;white-space:nowrap;}
+      #${MENU_ID} .st-ok .sp-rpp-badge{color:#047857;} #${MENU_ID} .st-warn .sp-rpp-badge{color:#b45309;} #${MENU_ID} .st-bad .sp-rpp-badge{color:#b91c1c;}
+      #${MENU_ID} .sp-rpp-row select, #${MENU_ID} .sp-rpp-q{display:block;width:100%!important;box-sizing:border-box;margin:3px 0!important;padding:6px 8px!important;border:1px solid #ddd6fe!important;border-radius:7px!important;font:700 12.5px Arial,sans-serif!important;background:#fff!important;color:#111827!important;}
+      #${MENU_ID} .sp-rpp-q{font-weight:400!important;}
+      #${MENU_ID} .sp-rpp-row select.sp-rp-empty, #${MENU_ID} .sp-rpp-grid input.sp-rp-empty{border-color:#f87171!important;background:#fff5f5!important;}
+      #${MENU_ID} .sp-rpp-note{font-size:11px;color:#b45309;margin:2px 0 4px;}
+      #${MENU_ID} .sp-rpp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:5px 7px;}
+      #${MENU_ID} .sp-rpp-grid label{display:flex;flex-direction:column;font-size:10.5px;color:#6b7280;gap:2px;}
+      #${MENU_ID} .sp-rpp-grid .sp-rpp-ket{grid-column:1/-1;}
+      #${MENU_ID} .sp-rpp-grid input{width:100%!important;box-sizing:border-box;padding:5px 7px!important;border:1px solid #ddd6fe!important;border-radius:6px!important;font:12.5px Arial,sans-serif!important;background:#fff!important;color:#111827!important;}
+      #${MENU_ID} .sp-rpp-ign{margin:6px 0;font-size:11px;color:#6b7280;}
+      #${MENU_ID} .sp-rpp-ign span{font-family:Consolas,Menlo,monospace;}
+      #${MENU_ID} .sp-rpp-sum{margin:0 0 6px;font-size:12px;}
+      #${MENU_ID} .sp-rpp-sum .sp-rp-warn{color:#b45309;font-weight:700;}
+      #${MENU_ID} .sp-rpp-btn-table{background:#6b7280!important;}
+      #${MENU_ID}.sp-mfit .sp-rpp-text, #${MENU_ID}.sp-mfit .sp-rpp-grid input, #${MENU_ID}.sp-mfit .sp-rpp-row select, #${MENU_ID}.sp-mfit .sp-rpp-q{font-size:16px!important;}
+      #${MENU_ID}.sp-mfit .sp-rpp-open{padding:13px 12px!important;font-size:15px!important;}
       /* v3.45.0: MULTIPLE VISIT / PULANG */
       #${MENU_ID} .sp-mv-q{width:100%!important;margin:0 0 8px!important;padding:9px 11px!important;border:1px solid #c7d2fe!important;border-radius:9px!important;font:14px Arial,sans-serif!important;background:#fff!important;}
       #${MENU_ID} .sp-mv-results{display:flex;flex-direction:column;gap:5px;margin-bottom:6px;}
@@ -10980,6 +11262,7 @@
           <label class="sp-mv-inc"><input type="radio" name="sp-rp-when" value="2" ${spRp.when === "2" ? "checked" : ""}> Besok</label>
         </div>
         <div id="sp-rp-routine" class="sp-pkg-sugnote">⏳ Membaca obat rutin pasien dari poli spesialis…</div>
+        <button type="button" id="sp-rp-paste" class="sp-rpp-open">📋 Tempel daftar obat pulang (dibaca otomatis, preview dulu)</button>
         <div class="sp-rp-search">
           <input id="sp-rp-q" type="search" autocomplete="off" placeholder="🔍 Ketik nama obat (min. 3 huruf) lalu klik untuk menambahkan…">
           <div id="sp-rp-results" class="sp-rp-results"></div>
@@ -11087,6 +11370,7 @@
       menu.querySelector("#sp-rp-cppt").addEventListener("change", (e) => { spRp.withCppt = e.target.checked; });
       menu.querySelector("#sp-rp-save").addEventListener("click", () => spExclusive("RESEP PULANG", () => runResepPulang(true)));
       menu.querySelector("#sp-rp-fill").addEventListener("click", () => spExclusive("RESEP PULANG", () => runResepPulang(false)));
+      menu.querySelector("#sp-rp-paste").addEventListener("click", () => renderResepPulangPaste());
       refreshAll();
       q.focus();
 
@@ -11106,6 +11390,220 @@
           if (kg && inp && inp.isConnected && !inp.value) { inp.value = String(kg); inp.dispatchEvent(new Event("change")); }
         }).catch(() => {});
       }
+    }
+
+    // =========================
+    // v3.84.0 (permintaan dokter 12 Okt 2026): 📋 TEMPEL DAFTAR OBAT PULANG. Dokter menempel daftar obat -> tiap baris dibaca
+    // (spRpParseList: nama, dosis & frekuensi persis seperti ditulis) -> nama dicocokkan ke master obat Smartplus (spRpMatch;
+    // tidak pernah mengganti obat/kekuatan, yang ragu ditandai ⚠ dan dipilih dokter) -> PREVIEW (bisa diedit) -> dokter menekan
+    // OK -> obat masuk tabel RESEP PULANG lalu e-resep lewat runResepPulang (Simpan hanya lewat tombol 💾 + konfirmasi, izin 5 Okt).
+    // =========================
+    const spRpMasterCache = new Map();
+    function spRpFetchMaster(term) {
+      const k = String(term || "").toLowerCase();
+      if (spRpMasterCache.has(k)) return spRpMasterCache.get(k);
+      const pr = spFetch(`${spSmartplusBase()}/soap_eresep/inner_get_data_autocomplet_obat?term=${encodeURIComponent(term)}`, { credentials: "same-origin" }, 15000)
+        .then((r) => r.json())
+        .then((list) => (Array.isArray(list) ? list : []).map((x) => ({ name: String(x.label || x.name || "").trim(), jenis: String(x.jenis_obat || "") })).filter((x) => x.name));
+      spRpMasterCache.set(k, pr);
+      pr.catch(() => spRpMasterCache.delete(k));
+      return pr;
+    }
+    const spRpUsage = (n) => (RP_DOSE_STATS[spDrugKey(n)] || [])[3] || 0;
+
+    async function spRpMatchRow(row) {
+      let all = [], best = null;
+      for (const t of spRpSearchTerms(row)) {
+        all = all.concat(await spRpFetchMaster(t));
+        best = spRpMatch(row, all, spRpUsage);
+        if (best.status !== "none") break;
+      }
+      return best || { status: "none", pick: "", options: [], note: "nama obat tidak terbaca — cari manual" };
+    }
+
+    // Jumlah bila tidak ditulis: sirup/drop = 1 botol, tablet = dosis × frekuensi × lama (hari baris atau lama bawaan).
+    function spRppQty(row) {
+      if (!row.obat) return "";
+      return spRpQty({ obat: row.obat, dosis: row.dosis, frekuensi: row.frekuensi || "1 X SEHARI", days: row.days || null });
+    }
+    function spRppChoose(row, name) {
+      row.obat = name || "";
+      if (!row.qtyGiven) row.jumlah = spRppQty(row);
+      // Waktu tidak ditulis -> pola tersering obat itu di riwayat resep (ditandai "bawaan").
+      if (!row.waktuGiven) { const st = row.obat ? spRpStat(row.obat) : null; row.waktu = st ? st[2] : ""; }
+    }
+
+    function renderResepPulangPaste() {
+      if (!spRp) spRp = spRpNew();
+      if (!spRp.patient) { renderResepPulangPatientPicker(); return; }
+      menu.classList.add("sp-package-modal");
+      const st = spRp.paste || (spRp.paste = { text: "", rows: [], ignored: [], gen: 0 });
+      menu.innerHTML = `
+        <div class="sp-title">📋 RESEP PULANG — tempel daftar obat</div>
+        <div class="sp-rp-patient">👤 <b>${spMvEsc(spRp.patient.name || spRp.patient.noreg)}</b>
+          <span class="sp-pkg-muted">${spMvEsc(spRp.patient.noreg)}</span></div>
+        <textarea id="sp-rpp-text" class="sp-rpp-text" spellcheck="false" placeholder="Tempel daftar obat pulang, satu obat per baris. Contoh:
+Amlodipine 10 mg 1x1
+Lansoprazole 30 mg 2x1 ac
+Sukralfat syr 3 x C I
+Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
+        <div class="sp-pkg-actions sp-rpp-bar">
+          <button type="button" id="sp-rpp-read" class="sp-pkg-tool" style="font-weight:700">🔎 Baca daftar</button>
+          <label class="sp-pkg-bb">Lama bila tak ditulis <input id="sp-rpp-days" type="text" inputmode="numeric" value="${spRp.days}"> hari</label>
+          <label class="sp-mv-inc"><input type="radio" name="sp-rpp-when" value="1" ${spRp.when === "1" ? "checked" : ""}> Pulang hari ini</label>
+          <label class="sp-mv-inc"><input type="radio" name="sp-rpp-when" value="2" ${spRp.when === "2" ? "checked" : ""}> Besok</label>
+        </div>
+        <div id="sp-rpp-rows"></div>
+        <div class="sp-pkg-foot">
+          <div id="sp-rpp-sum" class="sp-pkg-muted sp-rpp-sum"></div>
+          <div class="sp-pkg-actions">
+            <button type="button" class="sp-pkg-back" id="sp-rpp-back" title="Kembali ke RESEP PULANG">←</button>
+            <button type="button" id="sp-rpp-table" class="sp-rp-btn sp-rpp-btn-table" title="Masukkan ke tabel RESEP PULANG untuk diedit dulu">➕ Ke tabel</button>
+            <button type="button" id="sp-rpp-fill" class="sp-rp-btn sp-rp-btn-fill" title="Masukkan ke e-resep tanpa menyimpan">✅ OK, masukkan</button>
+            <button type="button" id="sp-rpp-save" class="sp-rp-btn sp-rp-btn-save" title="Masukkan ke e-resep lalu simpan (ada konfirmasi)">💾 OK & simpan</button>
+          </div>
+        </div>`;
+      const ta = menu.querySelector("#sp-rpp-text");
+      const box = menu.querySelector("#sp-rpp-rows");
+      const badge = (r) => !r.match ? ["⏳ mencari di master…", "st-wait"]
+        : r.match.status === "error" ? ["⚠ pencarian gagal", "st-bad"]
+        : r.obat && r.picked ? ["✓ dipilih dokter", "st-ok"]
+        : r.match.status === "ok" ? ["✓ cocok", "st-ok"]
+        : r.match.status === "cek" ? ["⚠ cek", "st-warn"]
+        : r.match.status === "pilih" ? ["⚠ pilih obat", "st-warn"]
+        : r.match.status === "beda" ? ["⚠ kekuatan/sediaan tidak ada", "st-bad"]
+        : ["✗ tidak ditemukan", "st-bad"];
+      const rowHtml = (r, i) => {
+        const [bt, bc] = badge(r);
+        const opts = [...new Set([...(r.obat ? [r.obat] : []), ...((r.match && r.match.options) || []), ...(r.extra || [])])];
+        const notes = [...(r.match && r.match.note && r.match.status !== "ok" && !r.picked ? [r.match.note] : []), ...r.warn,
+          ...(!r.waktuGiven && r.waktu ? ["waktu = pola tersering (tidak ditulis)"] : []),
+          ...(r.obat && !r.qtyGiven && /\b(mg|mcg|g|gr)\b/i.test(r.dosis) && !spIsLiquid(r.obat) ? ["jumlah dihitung 1 tablet per dosis — cek"] : [])];
+        return `<div class="sp-rpp-row ${r.include ? bc : "st-off"}" data-i="${i}">
+          <div class="sp-rpp-head"><label><input type="checkbox" data-rpp-inc ${r.include ? "checked" : ""}> <span class="sp-rpp-line">${spMvEsc(r.line)}</span></label>
+            <span class="sp-rpp-badge">${bt}</span></div>
+          <select data-rpp-obat class="${r.obat ? "" : "sp-rp-empty"}"><option value="">— pilih obat master —</option>${opts.map((n) => `<option value="${spMvEsc(n)}" ${n === r.obat ? "selected" : ""}>${spMvEsc(n)}</option>`).join("")}</select>
+          ${r.match && r.match.status !== "ok" && !r.picked ? `<input data-rpp-q class="sp-rpp-q" type="search" autocomplete="off" placeholder="🔍 cari nama lain di master obat (min. 3 huruf)">` : ""}
+          ${notes.length ? `<div class="sp-rpp-note">${notes.map(spMvEsc).join(" · ")}</div>` : ""}
+          <div class="sp-rpp-grid">
+            <label>Dosis<input data-f="dosis" value="${spMvEsc(r.dosis)}" class="${r.dosis ? "" : "sp-rp-empty"}"></label>
+            <label>Frekuensi<input data-f="frekuensi" value="${spMvEsc(r.frekuensi)}" class="${r.frekuensi ? "" : "sp-rp-empty"}" placeholder="mis. 2 X SEHARI"></label>
+            <label>Waktu<input data-f="waktu" value="${spMvEsc(r.waktu)}"></label>
+            <label>Jumlah<input data-f="jumlah" value="${spMvEsc(r.jumlah)}" class="${r.jumlah ? "" : "sp-rp-empty"}"></label>
+            <label class="sp-rpp-ket">Keterangan<input data-f="keterangan" value="${spMvEsc(r.keterangan)}"></label>
+          </div></div>`;
+      };
+      const problems = () => {
+        const inc = st.rows.filter((r) => r.include);
+        return { inc, bad: inc.filter((r) => !r.obat || !String(r.dosis).trim() || !String(r.frekuensi).trim() || !String(r.jumlah).trim()) };
+      };
+      const renderSum = () => {
+        const { inc, bad } = problems();
+        const others = spRp.items.filter((x) => !inc.some((r) => r.obat && spDrugKey(r.obat) === spDrugKey(x.obat))).length;
+        const waiting = st.rows.some((r) => !r.match);
+        menu.querySelector("#sp-rpp-sum").innerHTML = !st.rows.length ? "Tempel daftar obat lalu tekan 🔎 Baca daftar."
+          : `<b>${inc.length - bad.length} obat siap</b>${bad.length ? ` · <span class="sp-rp-warn">${bad.length} perlu dipilih/dilengkapi</span>` : ""}${waiting ? " · ⏳ mencocokkan…" : ""}` +
+            `${others ? ` · tabel RESEP PULANG sudah berisi ${others} obat lain (ikut dimasukkan)` : ""}`;
+        const dis = !inc.length || bad.length > 0 || waiting;
+        ["#sp-rpp-fill", "#sp-rpp-save", "#sp-rpp-table"].forEach((s) => { menu.querySelector(s).disabled = dis; });
+      };
+      const renderRow = (i) => {
+        const el = box.querySelector(`.sp-rpp-row[data-i="${i}"]`);
+        if (el) el.outerHTML = rowHtml(st.rows[i], i);
+        renderSum();
+      };
+      const renderRows = () => {
+        box.innerHTML = (st.rows.length ? st.rows.map(rowHtml).join("") : "") +
+          (st.ignored.length ? `<div class="sp-rpp-ign">Baris tidak dibaca sebagai obat: ${st.ignored.map((l) => `<span>${spMvEsc(l)}</span>`).join(" · ")}</div>` : "") +
+          (st.text && !st.rows.length ? '<div class="sp-pkg-empty">Tidak ada obat yang terbaca — satu obat per baris, mis. "Amlodipine 10 mg 1x1".</div>' : "");
+        renderSum();
+      };
+      const matchAll = async () => {
+        const gen = ++st.gen;
+        for (let i = 0; i < st.rows.length; i++) {
+          const r = st.rows[i];
+          if (r.match) continue;
+          let m;
+          try { m = await spRpMatchRow(r); } catch (err) { m = { status: "error", pick: "", options: [], note: `pencarian gagal: ${err.message || err}` }; }
+          if (gen !== st.gen || spRp.paste !== st) return;
+          r.match = m;
+          spRppChoose(r, m.pick);
+          if (box.isConnected) renderRow(i);
+        }
+      };
+      const read = () => {
+        st.text = ta.value;
+        const { rows, ignored } = spRpParseList(st.text);
+        st.rows = rows.map((p) => ({ ...p, include: true, match: null, obat: "", picked: false, extra: [], qtyGiven: !!p.jumlah, waktuGiven: !!p.waktu }));
+        st.ignored = ignored;
+        renderRows();
+        matchAll();
+      };
+      menu.querySelector("#sp-rpp-read").addEventListener("click", read);
+      ta.addEventListener("input", () => { st.text = ta.value; });
+      menu.querySelector("#sp-rpp-days").addEventListener("input", (e) => {
+        const d = parseInt(e.target.value, 10);
+        if (!(d > 0 && d < 100)) return;
+        spRp.days = d;
+        st.rows.forEach((r, i) => { if (r.obat && !r.qtyGiven) { r.jumlah = spRppQty(r); const q = box.querySelector(`.sp-rpp-row[data-i="${i}"] [data-f="jumlah"]`); if (q) q.value = r.jumlah; } });
+        spRp.items.forEach((r) => { if (!r.qtyEdited) r.jumlah = spRpQty(r); });
+        renderSum();
+      });
+      menu.querySelectorAll('input[name="sp-rpp-when"]').forEach((el) => el.addEventListener("change", () => { if (el.checked) spRp.when = el.value; }));
+      box.addEventListener("change", (e) => {
+        const rowEl = e.target.closest(".sp-rpp-row"); if (!rowEl) return;
+        const i = Number(rowEl.dataset.i), r = st.rows[i];
+        if (e.target.matches("[data-rpp-inc]")) { r.include = e.target.checked; renderRow(i); }
+        else if (e.target.matches("[data-rpp-obat]")) { r.picked = !!e.target.value; spRppChoose(r, e.target.value); renderRow(i); }
+      });
+      box.addEventListener("input", (e) => {
+        const rowEl = e.target.closest(".sp-rpp-row"); if (!rowEl) return;
+        const i = Number(rowEl.dataset.i), r = st.rows[i];
+        const f = e.target.dataset.f;
+        if (f) {
+          r[f] = e.target.value;
+          e.target.classList.toggle("sp-rp-empty", !e.target.value.trim() && f !== "waktu" && f !== "keterangan");
+          if (f === "jumlah") r.qtyGiven = true;
+          if (f === "waktu") r.waktuGiven = true;
+          if ((f === "dosis" || f === "frekuensi") && !r.qtyGiven && r.obat) { r.jumlah = spRppQty(r); const q = rowEl.querySelector('[data-f="jumlah"]'); if (q) q.value = r.jumlah; }
+          renderSum();
+          return;
+        }
+        if (e.target.matches("[data-rpp-q]")) {
+          clearTimeout(r.qTimer);
+          const term = e.target.value.trim();
+          if (term.length < 3) return;
+          r.qTimer = setTimeout(async () => {
+            try {
+              const list = await spRpFetchMaster(term);
+              if (spRp.paste !== st) return;
+              r.extra = list.map((x) => x.name);
+              const sel = box.querySelector(`.sp-rpp-row[data-i="${i}"] [data-rpp-obat]`);
+              if (sel) sel.innerHTML = `<option value="">— pilih obat master (${list.length} hasil "${spMvEsc(term)}") —</option>` +
+                [...new Set([...(r.extra || []), ...((r.match && r.match.options) || [])])].map((n) => `<option value="${spMvEsc(n)}">${spMvEsc(n)}</option>`).join("");
+            } catch (err) { toast(`Pencarian obat gagal: ${err.message || err}`); }
+          }, 300);
+        }
+      });
+      // OK -> obat masuk tabel RESEP PULANG (menggantikan obat yang sama), lalu e-resep / tabel.
+      const apply = () => {
+        const { inc, bad } = problems();
+        if (!inc.length || bad.length) return false;
+        const keys = new Set(inc.map((r) => spDrugKey(r.obat)));
+        spRp.items = spRp.items.filter((x) => !keys.has(spDrugKey(x.obat))).concat(inc.map((r) => ({
+          obat: r.obat, dosis: String(r.dosis).trim(), frekuensi: String(r.frekuensi).trim(), waktu: String(r.waktu || "").trim(),
+          keterangan: String(r.keterangan || "").trim(), jumlah: String(r.jumlah).trim(), days: r.days || null,
+          qtyEdited: true, doseEdited: true, src: `📋 dari daftar: ${r.line}`
+        })));
+        return true;
+      };
+      menu.querySelector("#sp-rpp-table").addEventListener("click", () => { if (apply()) renderResepPulangMenu(); });
+      menu.querySelector("#sp-rpp-fill").addEventListener("click", () => { if (apply()) spExclusive("RESEP PULANG", () => runResepPulang(false)); });
+      menu.querySelector("#sp-rpp-save").addEventListener("click", () => { if (apply()) spExclusive("RESEP PULANG", () => runResepPulang(true)); });
+      menu.querySelector("#sp-rpp-back").addEventListener("click", () => renderResepPulangMenu());
+      renderRows();
+      if (st.rows.some((r) => !r.match)) matchAll();
+      if (!st.rows.length) ta.focus();
     }
 
     // Satu obat ke kotak e-resep TERTENTU (pakai ID kolom di dalam kotak, bukan cari label di seluruh halaman: form CPPT
@@ -11315,7 +11813,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.83.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.84.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
