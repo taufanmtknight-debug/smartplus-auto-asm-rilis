@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.72.2
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.73.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.72.2
-// @description  v3.72.2: ASISTEN Multiple visit — perbaikan laporan dokter: kata biasa tidak lagi terbaca sebagai nama pasien lain ("mau tanya" ≠ Tania, "pasien saat ini" ≠ Satria); satu kata tanpa "pasien/Pak/Bu" tidak pernah memulai pasien baru, satu kata setelah pemicu harus hampir persis, panggilan pendek minimal 4 huruf. v3.72.1: ASISTEN mode ⚡ Cepat (bawaan, instruksi dokter) — isian Multiple visit langsung tampil tanpa menunggu konteks klinis, peringatan ⚠ dari konteks menyusul di tiap kartu tanpa mengganggu isian/ketikan; IGD menunggu konteks maks 2,5 dtk; pilihan 📚 Lengkap (tunggu konteks dulu) di ⚙️. v3.72.0: ASISTEN SUARA membaca KONTEKS KLINIS pasien (pilihan dokter, tanpa nama/No.RM) — Multiple visit: ringkasan rawat inap (keluhan & TTV sebelumnya, pemfis, diagnosis, terapi berjalan, advis spesialis) + hasil lab terbaru tiap pasien; mode percakapan IGD: umur + lab kunjungan ini. Claude memakai konteks untuk memahami ucapan (salah dengar, perbandingan dengan sebelumnya) tetapi kolom tetap hanya dari ucapan; ⚠ PERINGATAN keamanan (lab kritis, TTV memburuk, bertentangan dengan terapi/alergi, dosis tidak lazim) tampil sebagai catatan saja, tidak diisi ke form; konteks yang dibaca bisa dilihat di tiap kartu; ganti pasien = Claude dipanggil ulang untuk kartu itu. v3.71.0: ASISTEN SUARA lebih akurat (pilihan dokter) — mode Multiple visit menampilkan pasien yang dikenali secara langsung saat bicara (✓ yakin / ⚠ tidak yakin, nama yang tidak tertangkap bisa segera diulang); daftar obat RS ikut dikirim ke Claude supaya nama obat yang salah dengar dibetulkan (tanpa mengganti obat/dosis); asisten belajar dari koreksi dokter — perubahan dokter pada isian asisten saat Simpan GADAR / Save multiple visit disimpan sebagai contoh gaya HANYA di browser ini (tanpa identitas, bisa dihapus di ⚙️). v3.70.0: ASISTEN SUARA — mode "Dikte dokter" diganti 🏥 Multiple visit: dokter menyebut nama pasien lalu visit (TTV/pemfis tidak normal & instruksi tambahan bila ada), lalu pasien berikutnya, dst.; ⏹ -> nama dicocokkan di browser dengan daftar pasien dirawat (nama tidak dikirim ke Claude, hanya PASIEN_1, PASIEN_2…), nama yang tidak persis dicari yang paling mungkin dan bisa diganti di tiap kartu; preview MULTIPLE VISIT terisi otomatis (bawaan multiple visit + temuan yang diucapkan), simpan tetap lewat "Save multiple visit" + konfirmasi; nama tidak yakin tidak dicentang. v3.69.0: fitur 🎙️ Rekam v3.68.0 (tab perekam GitHub Pages + layanan suara OpenAI) dihapus atas permintaan dokter — di tablet/HP tanpa dikte browser pakai 🎤 di keyboard layar; kunci OpenAI yang pernah disimpan dihapus otomatis dari browser. v3.68.0 (dihapus di v3.69.0): ASISTEN 🎙️ Rekam lewat tab perekam. v3.67.0: tombol 🎤 / Alt+V DIKTE SUARA terpisah dihapus (dikte tetap lewat panel ASISTEN 🧠); ASISTEN untuk IGD ramai — Claude hanya memakai ucapan yang nyambung dengan pasien yang diperiksa, mengabaikan suara bed sebelah/perawat/TV dan menampilkan potongan yang diabaikan (🔇) di pratinjau, ucapan yang kurang yakin dikenali ditandai "(?)" di mode percakapan, TTV ganda tanpa koreksi dikosongkan & ditanyakan. v3.66.0: audit fitur — ASISTEN: kesadaran yang diucapkan kini benar terpilih saat memakai template (dulu nilai pilihan Compos Mentis ikut berubah) dan GCS yang diucapkan tidak lagi tertimpa GCS template, perkiraan Claude tidak menimpa kesadaran/GCS yang sudah dipilih dokter, pemfis perkiraan Claude tidak menimpa pemfis yang sudah ditulis dokter (hanya temuan yang diucapkan ditambahkan), Terapkan yang tertekan dua kali tidak membuka form GADAR dua kali, keterangan pratinjau sesuai cara pengisian, order penunjang ditandai ✗ bila tombol Save tidak ditekan, diagnosis order memakai diagnosis template bila tidak diucapkan, nilai lab seperti "trombosit 150000" tidak lagi ikut disaring, batas tunggu Claude 90 dtk; DIKTE: Esc menghentikan dikte tanpa menutup form GADAR; tombol 🎤 & 🧠 pindah ke kiri tombol AUTO ASM (dulu menutupi menu). v3.65.0: ASISTEN — bila tidak ada template ASGADAR yang mendekati, kolom yang tidak diucapkan diisi perkiraan Claude (data paling mungkin untuk kasus itu, pemfis per sistem; tanpa obat/dosis baru), tampil terpisah di pratinjau & hanya mengisi kolom yang masih kosong; GADAR tetap Save manual. v3.64.0: ASISTEN — kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (dipilih Claude, bisa diganti di pratinjau; membuka form GADAR baru), pemfis template + temuan yang diucapkan, Riwayat Penyakit Sekarang lama diganti hasil terbaru; GADAR tetap Save manual. v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
+// @version      3.73.0
+// @description  v3.73.0: HP/tablet — preview MULTIPLE VISIT, panel 🧠 dan menu AUTO ASM diperbesar sesuai layar dan memenuhi layar (dulu kotak kecil di samping saat dibuka dari ASISTEN SUARA); perbaikan: pasien kartu diganti tidak lagi membawa isian/peringatan pasien sebelumnya, galat Claude per kartu, tidak bisa menyusun preview baru selama Save multiple berjalan (cegah CPPT dobel), ketikan tidak hilang saat kartu lain diperbarui. v3.72.2: ASISTEN Multiple visit — perbaikan laporan dokter: kata biasa tidak lagi terbaca sebagai nama pasien lain ("mau tanya" ≠ Tania, "pasien saat ini" ≠ Satria); satu kata tanpa "pasien/Pak/Bu" tidak pernah memulai pasien baru, satu kata setelah pemicu harus hampir persis, panggilan pendek minimal 4 huruf. v3.72.1: ASISTEN mode ⚡ Cepat (bawaan, instruksi dokter) — isian Multiple visit langsung tampil tanpa menunggu konteks klinis, peringatan ⚠ dari konteks menyusul di tiap kartu tanpa mengganggu isian/ketikan; IGD menunggu konteks maks 2,5 dtk; pilihan 📚 Lengkap (tunggu konteks dulu) di ⚙️. v3.72.0: ASISTEN SUARA membaca KONTEKS KLINIS pasien (pilihan dokter, tanpa nama/No.RM) — Multiple visit: ringkasan rawat inap (keluhan & TTV sebelumnya, pemfis, diagnosis, terapi berjalan, advis spesialis) + hasil lab terbaru tiap pasien; mode percakapan IGD: umur + lab kunjungan ini. Claude memakai konteks untuk memahami ucapan (salah dengar, perbandingan dengan sebelumnya) tetapi kolom tetap hanya dari ucapan; ⚠ PERINGATAN keamanan (lab kritis, TTV memburuk, bertentangan dengan terapi/alergi, dosis tidak lazim) tampil sebagai catatan saja, tidak diisi ke form; konteks yang dibaca bisa dilihat di tiap kartu; ganti pasien = Claude dipanggil ulang untuk kartu itu. v3.71.0: ASISTEN SUARA lebih akurat (pilihan dokter) — mode Multiple visit menampilkan pasien yang dikenali secara langsung saat bicara (✓ yakin / ⚠ tidak yakin, nama yang tidak tertangkap bisa segera diulang); daftar obat RS ikut dikirim ke Claude supaya nama obat yang salah dengar dibetulkan (tanpa mengganti obat/dosis); asisten belajar dari koreksi dokter — perubahan dokter pada isian asisten saat Simpan GADAR / Save multiple visit disimpan sebagai contoh gaya HANYA di browser ini (tanpa identitas, bisa dihapus di ⚙️). v3.70.0: ASISTEN SUARA — mode "Dikte dokter" diganti 🏥 Multiple visit: dokter menyebut nama pasien lalu visit (TTV/pemfis tidak normal & instruksi tambahan bila ada), lalu pasien berikutnya, dst.; ⏹ -> nama dicocokkan di browser dengan daftar pasien dirawat (nama tidak dikirim ke Claude, hanya PASIEN_1, PASIEN_2…), nama yang tidak persis dicari yang paling mungkin dan bisa diganti di tiap kartu; preview MULTIPLE VISIT terisi otomatis (bawaan multiple visit + temuan yang diucapkan), simpan tetap lewat "Save multiple visit" + konfirmasi; nama tidak yakin tidak dicentang. v3.69.0: fitur 🎙️ Rekam v3.68.0 (tab perekam GitHub Pages + layanan suara OpenAI) dihapus atas permintaan dokter — di tablet/HP tanpa dikte browser pakai 🎤 di keyboard layar; kunci OpenAI yang pernah disimpan dihapus otomatis dari browser. v3.68.0 (dihapus di v3.69.0): ASISTEN 🎙️ Rekam lewat tab perekam. v3.67.0: tombol 🎤 / Alt+V DIKTE SUARA terpisah dihapus (dikte tetap lewat panel ASISTEN 🧠); ASISTEN untuk IGD ramai — Claude hanya memakai ucapan yang nyambung dengan pasien yang diperiksa, mengabaikan suara bed sebelah/perawat/TV dan menampilkan potongan yang diabaikan (🔇) di pratinjau, ucapan yang kurang yakin dikenali ditandai "(?)" di mode percakapan, TTV ganda tanpa koreksi dikosongkan & ditanyakan. v3.66.0: audit fitur — ASISTEN: kesadaran yang diucapkan kini benar terpilih saat memakai template (dulu nilai pilihan Compos Mentis ikut berubah) dan GCS yang diucapkan tidak lagi tertimpa GCS template, perkiraan Claude tidak menimpa kesadaran/GCS yang sudah dipilih dokter, pemfis perkiraan Claude tidak menimpa pemfis yang sudah ditulis dokter (hanya temuan yang diucapkan ditambahkan), Terapkan yang tertekan dua kali tidak membuka form GADAR dua kali, keterangan pratinjau sesuai cara pengisian, order penunjang ditandai ✗ bila tombol Save tidak ditekan, diagnosis order memakai diagnosis template bila tidak diucapkan, nilai lab seperti "trombosit 150000" tidak lagi ikut disaring, batas tunggu Claude 90 dtk; DIKTE: Esc menghentikan dikte tanpa menutup form GADAR; tombol 🎤 & 🧠 pindah ke kiri tombol AUTO ASM (dulu menutupi menu). v3.65.0: ASISTEN — bila tidak ada template ASGADAR yang mendekati, kolom yang tidak diucapkan diisi perkiraan Claude (data paling mungkin untuk kasus itu, pemfis per sistem; tanpa obat/dosis baru), tampil terpisah di pratinjau & hanya mengisi kolom yang masih kosong; GADAR tetap Save manual. v3.64.0: ASISTEN — kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (dipilih Claude, bisa diganti di pratinjau; membuka form GADAR baru), pemfis template + temuan yang diucapkan, Riwayat Penyakit Sekarang lama diganti hasil terbaru; GADAR tetap Save manual. v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @match        http://*/*
@@ -42,7 +42,7 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + window.__SP_AUTO_ASM_LOADED__ + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.72.2";
+  window.__SP_AUTO_ASM_LOADED__ = "3.73.0";
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -88,6 +88,8 @@
   let spRpResumePayload = null;
   // v3.70.0: hasil ASISTEN SUARA mode MULTIPLE VISIT untuk preview MULTIPLE VISIT (openMenu("mv-voice")).
   let spMvVoicePayload = null;
+  // v3.73.0: Save multiple visit/pulang sedang berjalan (tetap jalan walau menu ditutup) -> jangan susun preview baru (cegah CPPT dobel).
+  let spMvSaveBusy = false;
   // v3.54.0 (audit): isian RESEP PULANG disimpan di luar menu. Dulu dibuat ulang tiap menu dibuka -> pilihan obat & dosis
   // yang sudah diedit hilang bila menu tertutup, termasuk saat proses Simpan gagal di tengah jalan (menu ditutup dulu).
   // Tetap dikosongkan setelah resep tersimpan. { items:[], days, when, withCppt, routine:[], kg, months, years, child }
@@ -8247,6 +8249,38 @@
       #${MENU_ID} .sp-mv-f input:disabled, #${MENU_ID} .sp-mv-f textarea:disabled{background:#f3f4f6!important;color:#6b7280!important;}
       #${MENU_ID} .sp-mv-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 8px;}
       #${MENU_ID} .sp-mv-src{font-size:10.5px;color:#7c7c8a;margin-top:2px;}
+      /* v3.73.0: HP/tablet (spFitApply) — huruf & tombol lebih besar, kolom 2 bila sempit. */
+      #${MENU_ID}.sp-mfit{font-size:15px!important;box-shadow:none!important;}
+      /* HP: Chrome Android memperbesar teks otomatis (font boosting) pada halaman tanpa viewport -> matikan di kotak ini. */
+      #${MENU_ID}.sp-mfit, #${MENU_ID}.sp-mfit *{-webkit-text-size-adjust:100%!important;text-size-adjust:100%!important;}
+      #${MENU_ID}.sp-mfit.sp-package-modal > .sp-title{font-size:16px;padding:12px 104px 11px 12px!important;}
+      #${MENU_ID}.sp-mfit .sp-win-ctrl button{width:46px!important;height:40px!important;font-size:19px!important;}
+      #${MENU_ID}.sp-mfit:not(.sp-package-modal) button:not(.sp-min-btn):not(.sp-close-btn){padding:11px 12px!important;font-size:14.5px!important;}
+      #${MENU_ID}.sp-mfit .sp-pkg-muted{font-size:13px;}
+      #${MENU_ID}.sp-mfit .sp-mv-card{padding:11px 12px;}
+      #${MENU_ID}.sp-mfit .sp-mv-inc{font-size:15.5px;}
+      #${MENU_ID}.sp-mfit .sp-mv-inc input{width:24px;height:24px;}
+      #${MENU_ID}.sp-mfit .sp-mv-status{font-size:13px;}
+      #${MENU_ID}.sp-mfit .sp-mv-f{font-size:13px;gap:3px;margin-bottom:9px;}
+      #${MENU_ID}.sp-mfit .sp-mv-f input, #${MENU_ID}.sp-mfit .sp-mv-f textarea{font-size:16px!important;padding:9px 10px!important;}
+      #${MENU_ID}.sp-mfit .sp-mv-voice{font-size:14px!important;line-height:1.45;}
+      #${MENU_ID}.sp-mfit .sp-mv-voice select{font-size:16px!important;padding:10px 8px!important;}
+      #${MENU_ID}.sp-mfit .sp-mv-voice summary{padding:6px 0;}
+      #${MENU_ID}.sp-mfit .sp-mv-src{font-size:12px;}
+      #${MENU_ID}.sp-mfit .sp-mv-q{font-size:16px!important;padding:12px!important;}
+      #${MENU_ID}.sp-mfit .sp-mv-item{padding:11px 12px!important;}
+      #${MENU_ID}.sp-mfit .sp-mv-item-name{font-size:15.5px;}
+      #${MENU_ID}.sp-mfit .sp-mv-item-sub{font-size:13px;}
+      #${MENU_ID}.sp-mfit .sp-pkg-acc, #${MENU_ID}.sp-mfit .sp-rp-btn{padding:15px 14px!important;font-size:16.5px!important;}
+      #${MENU_ID}.sp-mfit .sp-pkg-back{width:56px!important;padding:14px 0!important;font-size:18px!important;}
+      #${MENU_ID}.sp-mfit .sp-pkg-foot{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));}
+      #${MENU_ID}.sp-mfit .sp-rp-table input, #${MENU_ID}.sp-mfit .sp-rp-search input, #${MENU_ID}.sp-mfit .sp-pkg-bb input{font-size:16px!important;padding:8px!important;}
+      #${MENU_ID}.sp-mfit-narrow .sp-mv-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+      #${MENU_ID}.sp-mfit-narrow .sp-pkg-row{grid-template-columns:1fr;gap:5px;}
+      #${MENU_ID}.sp-mfit-narrow .sp-pkg-row-label{padding-top:0;}
+      #${MENU_ID}.sp-mfit-narrow .sp-pkg-sugrow{flex-wrap:wrap;}
+      #${MENU_ID}.sp-mfit .sp-pill{font-size:14px;padding:8px 12px;}
+      #${MENU_ID}.sp-mfit-narrow .sp-check-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
       @media(max-width:600px){
         #${MENU_ID} .sp-mv-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
         #${MENU_ID} .sp-pkg-row{grid-template-columns:1fr;gap:5px;}
@@ -8311,6 +8345,7 @@
   const spKeyOf = (key) => (typeof key === "function" ? key() : key);
 
   function spApplyPanelPos(el, key) {
+    if (el.classList.contains("sp-mfit")) return; // v3.73.0: HP — posisi diatur spFitApply (memenuhi layar)
     const st = spPanelState[spKeyOf(key)];
     if (!st || st.left == null) {
       // Belum pernah digeser: pakai posisi bawaan kotak. Hanya hapus properti yang dulu dipasang oleh fungsi ini
@@ -8375,6 +8410,7 @@
       b.textContent = min ? "▢" : "—";
       b.title = min ? "Tampilkan lagi" : "Kecilkan kotak";
     });
+    if (el.classList.contains("sp-mfit")) spFitApply(el, el.dataset.spFit || "full", true);
   }
 
   function spMinButton(el, key, keepSel) {
@@ -8443,6 +8479,107 @@
     if (!h.title) h.title = "Tahan & geser untuk memindahkan kotak";
   }
 
+  // v3.73.0 (instruksi dokter 12 Okt 2026): HP/tablet — Smartplus tampil versi desktop (lebar ±980 px) sehingga kotak
+  // AUTO ASM jadi sangat kecil di pojok. Di layar sentuh kecil, kotak diperbesar sesuai layar (CSS zoom) dan
+  // memenuhi layar yang terlihat. kind: "full" (preview MULTIPLE VISIT dll), "side" (panel 🧠), "menu" (menu utama).
+  const SP_FIT_CAP = { full: 860, side: 520, menu: 380 };
+  let spFitLast = { w: 0 };
+  function spIsTouchSmall() {
+    try { return matchMedia("(pointer:coarse)").matches && Math.min(screen.width, screen.height) <= 900; } catch (_) { return false; }
+  }
+  function spFitScale() {
+    const vv = window.visualViewport;
+    const vw = vv ? vv.width : window.innerWidth;
+    const landscape = window.innerWidth > window.innerHeight;
+    const sw = landscape ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
+    const f = vw / Math.max(280, sw || vw);
+    let zoomOk = false;
+    try { zoomOk = CSS.supports("zoom", "2"); } catch (_) {}
+    return zoomOk && f > 1.08 ? Math.min(f, 4) : 1;
+  }
+  const SP_FIT_PROPS = ["zoom", "box-sizing", "left", "top", "right", "bottom", "width", "height", "max-width", "max-height", "transform", "border-radius"];
+  function spFitOff(el) {
+    if (!el || !el.classList.contains("sp-mfit")) return;
+    SP_FIT_PROPS.forEach((p) => el.style.removeProperty(p));
+    el.classList.remove("sp-mfit", "sp-mfit-narrow");
+    delete el.dataset.spFit;
+  }
+  // keepScale: pertahankan perbesaran (keyboard HP muncul / hilang hanya mengubah tinggi).
+  function spFitApply(el, kind, keepScale) {
+    if (!el) return;
+    if (!spIsTouchSmall()) { spFitOff(el); return; }
+    const vv = window.visualViewport;
+    const vw = vv ? vv.width : window.innerWidth, vh = vv ? vv.height : window.innerHeight;
+    const ox = vv ? vv.offsetLeft : 0, oy = vv ? vv.offsetTop : 0;
+    const f = keepScale && Number(el.dataset.spFitF) > 0 ? Number(el.dataset.spFitF) : spFitScale();
+    const set = (p, v) => el.style.setProperty(p, v, "important");
+    const px = (n) => Math.round((n / f) * 10) / 10 + "px";
+    const gap = kind === "full" ? 0 : 8 * f;
+    const w = Math.min(vw - 2 * gap, SP_FIT_CAP[kind] * f);
+    if (!el.classList.contains("sp-mfit")) el.classList.add("sp-mfit"); // add() tanpa perubahan tetap memicu MutationObserver
+    el.classList.toggle("sp-mfit-narrow", w / f < 620);
+    el.dataset.spFit = kind;
+    el.dataset.spFitF = String(f);
+    set("zoom", String(f));
+    set("box-sizing", "border-box");
+    set("transform", "none");
+    set("right", "auto");
+    set("bottom", "auto");
+    set("max-width", "none");
+    set("width", px(w));
+    if (kind === "full") {
+      const minimized = !!el.querySelector(":scope > [data-sp-hid]");
+      set("left", px(ox + (vw - w) / 2));
+      set("top", px(oy));
+      set("height", minimized ? "auto" : px(vh));
+      set("max-height", px(vh));
+      set("border-radius", "0");
+    } else if (kind === "side") {
+      set("left", px(ox + vw - w - gap));
+      set("top", px(oy + gap));
+      set("height", "auto");
+      set("max-height", px(vh - 2 * gap));
+      el.style.removeProperty("border-radius");
+    } else {
+      // Menu utama: di atas tombol AUTO ASM (pojok kanan bawah layar yang terlihat).
+      set("left", px(ox + vw - w - gap));
+      set("top", "auto");
+      set("bottom", px(Math.max(0, window.innerHeight - (oy + vh)) + 70 * f));
+      set("height", "auto");
+      set("max-height", px(vh - 90 * f));
+      el.style.removeProperty("border-radius");
+    }
+    spFitLast = { w: vw };
+  }
+  function spFitAll(keepScale) {
+    document.querySelectorAll(".sp-mfit").forEach((el) => {
+      if (el.style.display === "none") return;
+      spFitApply(el, el.dataset.spFit || "full", keepScale);
+    });
+  }
+  let spFitBound = false;
+  function spFitBind() {
+    if (spFitBound) return;
+    spFitBound = true;
+    let raf = 0;
+    const later = (keep) => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => spFitAll(keep)); };
+    window.addEventListener("resize", () => later(false));
+    window.addEventListener("orientationchange", () => setTimeout(() => later(false), 250));
+    // Keyboard HP: lebar sama, tinggi berubah -> sesuaikan tinggi. Lebar berubah (dokter mencubit layar) -> biarkan,
+    // supaya dokter tetap bisa memperbesar tulisan dengan dua jari.
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", () => {
+        if (Math.abs(window.visualViewport.width - spFitLast.w) <= Math.max(2, spFitLast.w * 0.02)) later(true);
+      });
+    }
+  }
+  function spFitMenu(menu) {
+    if (!spIsTouchSmall()) { spFitOff(menu); return false; }
+    spFitBind();
+    spFitApply(menu, menu.classList.contains("sp-package-modal") ? "full" : "menu", menu.dataset.spFit === (menu.classList.contains("sp-package-modal") ? "full" : "menu"));
+    return true;
+  }
+
   // Menu AUTO ASM: isinya diganti tiap pindah menu (innerHTML), jadi judul dihias ulang setiap kali berubah.
   function spSetupMenuBox(menu) {
     const key = () => MENU_ID + (menu.classList.contains("sp-package-modal") ? ":pkg" : "");
@@ -8460,7 +8597,7 @@
         spWindowControls(menu, key, ".sp-title", title, () => closeMenu());
       }
       spApplyMinimized(menu, key, ".sp-title");
-      spApplyPanelPos(menu, key);
+      if (!spFitMenu(menu)) spApplyPanelPos(menu, key);
     };
     spMakeDraggable(menu, key, (t) => !!t.closest(".sp-title"));
     decorate();
@@ -9397,6 +9534,8 @@
     async function buildMultiCpptDrafts() {
       const isVisit = spMv.mode !== 'pulang';
       const pats = [...spMv.selected.values()];
+      if (spMvSaveBusy) { alert('Multiple visit/pulang sebelumnya masih menyimpan. Tunggu selesai dulu supaya CPPT tidak dobel.'); return; }
+      menu.classList.add('sp-package-modal'); // v3.73.0: dari ASISTEN SUARA (openMenu("mv-voice")) dulu tetap kotak kecil di samping
       menu.innerHTML = `
         <div class="sp-title">${isVisit ? '👥 MULTIPLE VISIT' : '🏠 MULTIPLE PULANG'} — preview</div>
         <div class="sp-pkg-bar"><span class="sp-pkg-badge">${pats.length} PASIEN</span><span id="sp-mv-prog" class="sp-pkg-muted">⏳ Menyusun CPPT 0/${pats.length}…</span></div>
@@ -9410,6 +9549,7 @@
           </div>
         </div>`;
       menu.querySelector('#sp-mv-back').addEventListener('click', () => {
+        if (spMv.saving) return; // v3.73.0: sedang menyimpan
         if (spMv.voice && !window.confirm('Kembali ke pilih pasien? Hasil suara visit tidak dipakai (transkrip tetap ada di panel 🧠).')) return;
         spMv.voice = null;
         renderMultiCpptMenu(spMv.mode);
@@ -9438,12 +9578,15 @@
     // tiap kartu diperbarui di tempat (isian / ketikan dokter tidak disentuh).
     async function spMvVoiceWarn(only = null) {
       const v = spMv.voice;
-      const list = (only || spMv.drafts).filter((d) => d.voice && d.values && d.warnState === 'pending');
+      let list = (only || spMv.drafts).filter((d) => d.voice && d.values && d.warnState === 'pending');
       if (!list.length) return;
       const voice = v;
+      const gens = new Map(list.map((d) => [d, d.gen || 0]));
+      const same = (d) => gens.get(d) === (d.gen || 0); // v3.73.0: pasien kartu tidak diganti selama menunggu
       spMvRefreshVoiceBits();
       await Promise.all(list.map((d) => d.ctxJob || null));
       if (spMv.voice !== voice) return;
+      list = list.filter(same);
       const clean = (t) => spAsistenScrub(spVisitMask(t, v.patients)).text;
       const withCtx = list.filter((d) => d.ctxText);
       list.filter((d) => !d.ctxText).forEach((d) => { d.warnState = 'none'; });
@@ -9455,13 +9598,13 @@
         });
         try {
           const { result } = await spAsistenCallClaude("PERIKSA PERINGATAN SAJA: isi hanya id dan peringatan; semua kolom lain string kosong. CPPT sementara di bawah = isian saat ini.\n\n" + spVisitPrompt(items), 'visit');
-          withCtx.forEach((d) => {
+          withCtx.filter(same).forEach((d) => {
             const r = result.byId[d.voice.id];
             d.ai = Object.assign({}, d.ai || {}, { peringatan: r ? r.peringatan : '' });
             d.warnState = 'done';
           });
         } catch (err) {
-          withCtx.forEach((d) => { d.warnState = 'error'; d.warnError = err.message || String(err); });
+          withCtx.filter(same).forEach((d) => { d.warnState = 'error'; d.warnError = err.message || String(err); });
         }
       }
       if (spMv.voice === voice) spMvRefreshVoiceBits();
@@ -9492,6 +9635,10 @@
       const doctorName = spLoggedDoctorName();
       const today = new Date(); today.setHours(0, 0, 0, 0);
       const { p } = dr;
+      // v3.73.0: pasien kartu bisa diganti selagi disusun -> hasil lama tidak boleh menimpa kartu (gen = urutan penyusunan).
+      const gen = dr.gen || 0;
+      const real = dr;
+      dr = { warn: '', include: true, values: null, src: '', error: '', ageMonths: null };
       try {
         const ctx = { noreg: p.noreg, normRm: p.normRm, base: spMv.base };
         dr.ageMonths = await spFetchRanapAgeMonths(spMv.base, p.noreg);
@@ -9516,15 +9663,19 @@
         dr.error = err.message || String(err);
         dr.include = false;
       }
+      if ((real.gen || 0) !== gen || real.p !== p) return false;
+      Object.assign(real, dr);
+      dr = real;
       if (dr.voice) {
         dr.base = dr.values ? Object.assign({}, dr.values) : null;
         // v3.72.0: konteks klinis pasien (ringkasan rawat inap + lab) untuk Claude; gagal dibaca = tanpa konteks.
         dr.ctxText = '';
         dr.warnState = '';
         if (dr.values) {
-          const job = spVisitBuildContext(p, spMv.base).then((t) => { if (dr.p === p) dr.ctxText = t; }).catch((err) => console.warn('[ASISTEN] konteks', err));
+          const job = spVisitBuildContext(p, spMv.base).then((t) => { if (dr.p === p && (dr.gen || 0) === gen) dr.ctxText = t; }).catch((err) => console.warn('[ASISTEN] konteks', err));
           // v3.72.1: mode cepat -> konteks dibaca di belakang (dipakai untuk peringatan yang menyusul).
           if (spAsistenCtxMode() === 'lengkap') await job; else dr.ctxJob = job;
+          if ((dr.gen || 0) !== gen) return false;
         }
         // Nama tidak yakin -> tidak dicentang sampai dokter memastikan pasiennya (cegah CPPT masuk ke pasien lain).
         if (!dr.voice.sure && !dr.voice.manual && dr.values) {
@@ -9533,14 +9684,16 @@
         }
         if (dr.values && spMv.voice && spMv.voice.ai) spMvApplyAi(dr);
       }
+      return true;
     }
 
     // v3.70.0: ucapan visit tiap pasien -> Claude (PASIEN_n, tanpa nama) -> digabung ke CPPT sementara.
     // only = kartu tertentu saja (v3.72.0: pasien diganti -> konteks pasien baru dikirim ulang untuk kartu itu).
     async function spMvVoiceAi(only = null) {
       const v = spMv.voice;
-      const list = only || spMv.drafts;
-      const items = list.filter((d) => d.voice && d.base).map((d) => {
+      const gens = new Map((only || spMv.drafts).map((d) => [d, d.gen || 0]));
+      const fresh = () => (only || spMv.drafts).filter((d) => gens.get(d) === (d.gen || 0) && spMv.voice === v);
+      const items = (only || spMv.drafts).filter((d) => d.voice && d.base).map((d) => {
         const clean = (t) => spAsistenScrub(spVisitMask(t, v.patients)).text;
         const b = {};
         Object.keys(d.base).forEach((k) => { b[k] = clean(d.base[k]); });
@@ -9549,17 +9702,27 @@
       if (!items.length) return;
       const prog = menu.querySelector('#sp-mv-prog');
       if (prog) prog.textContent = `🧠 Claude merangkum ucapan visit ${items.length} pasien…`;
+      // v3.73.0: hasil/galat Claude per kartu (dulu satu v.aiError untuk semua kartu) & hanya untuk kartu yang pasiennya
+      // belum diganti selama menunggu Claude.
+      let error = '';
+      let byId = {};
       try {
         const { result } = await spAsistenCallClaude(spVisitPrompt(items), 'visit');
-        v.ai = Object.assign({}, only && v.ai ? v.ai : {}, result.byId);
-        v.aiError = '';
+        byId = result.byId || {};
       } catch (err) {
-        if (!only) v.ai = null;
-        v.aiError = err.message || String(err);
+        error = err.message || String(err);
       }
-      list.forEach((d) => { if (d.voice && d.values) spMvApplyAi(d); });
-      if (spAsistenCtxMode() === 'cepat') list.forEach((d) => { if (d.voice && d.values && !v.aiError) d.warnState = 'pending'; });
-      if (prog && menu.isConnected) prog.textContent = v.aiError ? `⚠ Claude gagal: ${v.aiError} — CPPT bawaan dipakai, isi temuan dari transkrip.` : 'Cek & edit tiap CPPT di bawah. Belum ada yang disimpan.';
+      const list = fresh();
+      v.ai = Object.assign({}, v.ai || {});
+      list.forEach((d) => {
+        if (!d.voice) return;
+        if (error) delete v.ai[d.voice.id]; else v.ai[d.voice.id] = byId[d.voice.id];
+        d.aiError = error;
+        if (d.values) spMvApplyAi(d);
+        if (spAsistenCtxMode() === 'cepat' && d.values && !error) d.warnState = 'pending';
+      });
+      v.aiError = error;
+      if (prog && menu.isConnected) prog.textContent = error ? `⚠ Claude gagal: ${error} — CPPT bawaan dipakai, isi temuan dari transkrip.` : 'Cek & edit tiap CPPT di bawah. Belum ada yang disimpan.';
     }
 
     function spMvApplyAi(dr) {
@@ -9570,6 +9733,8 @@
       dr.aiVals = {}; // v3.71.0 (C): isian dari ucapan, dibandingkan saat Save
       m.changed.forEach((k) => { dr.aiVals[k] = m.values[k]; });
       dr.ai = ai;
+      // v3.73.0: keluhan diisi dari ucapan -> peringatan "Keluhan kosong" tidak relevan lagi.
+      if (String(dr.values.keluhan_utama || '').trim() && dr.warn) dr.warn = dr.warn.replace(/\s*Keluhan kosong — isi dulu\./, '').trim();
     }
 
     // v3.70.0: pasien kartu diganti dokter (nama salah dengar / beda orang) -> CPPT sementara disusun ulang untuk pasien itu.
@@ -9580,12 +9745,17 @@
       if (dup) { alert(`${p.name} sudah ada di kartu lain. Ganti dulu pasien di kartu itu, atau hilangkan centangnya.`); renderMultiCpptCards(); return; }
       spMv.selected.delete(dr.p.noreg);
       spMv.selected.set(p.noreg, p);
-      Object.assign(dr, { p, values: null, error: '', warn: '', src: '', ageMonths: null, include: true, status: '', tried: false, firstTryAt: 0 });
+      // v3.73.0: semua hasil pasien sebelumnya dibuang (isian Claude, peringatan, konteks) supaya tidak terbawa ke pasien baru.
+      const gen = dr.gen = (dr.gen || 0) + 1;
+      if (spMv.voice && spMv.voice.ai && dr.voice) delete spMv.voice.ai[dr.voice.id];
+      Object.assign(dr, { p, values: null, base: null, error: '', warn: '', src: '', ageMonths: null, include: true, status: '', tried: false, firstTryAt: 0,
+        ai: null, aiChanged: [], aiVals: {}, aiError: '', ctxText: '', ctxJob: null, warnState: '', warnError: '' });
       dr.voice.manual = true;
       renderMultiCpptCards();
-      await spMvBuildBase(dr);
-      if (dr.values && spMv.voice.ai) { dr.ai = null; await spMvVoiceAi([dr]); } // konteks & peringatan untuk pasien yang benar
-      if (menu.isConnected) renderMultiCpptCards();
+      if (!(await spMvBuildBase(dr)) || dr.gen !== gen) return;
+      if (dr.values && spMv.voice) await spMvVoiceAi([dr]); // isian, konteks & peringatan untuk pasien yang benar
+      if (dr.gen !== gen || !menu.isConnected) return;
+      renderMultiCpptCards();
       if (spAsistenCtxMode() === 'cepat') spMvVoiceWarn([dr]);
     }
 
@@ -9594,6 +9764,11 @@
       const box = menu.querySelector('#sp-mv-cards');
       if (!box) return;
       const F = (dr, k, label, cls = '') => `<label class="sp-mv-f ${cls}"><span>${label}</span><input type="text" data-f="${k}" value="${spMvEsc(dr.values?.[k] || '')}"></label>`;
+      // v3.73.0: kartu digambar ulang (mis. pasien kartu lain diganti) -> ketikan, posisi gulir & bagian terbuka tetap.
+      const act = document.activeElement && box.contains(document.activeElement) ? document.activeElement : null;
+      const keep = act && act.dataset.f && act.closest('[data-card]') ? { card: act.closest('[data-card]').dataset.card, f: act.dataset.f, s: act.selectionStart, e: act.selectionEnd } : null;
+      const scrollTop = menu.scrollTop;
+      const openDet = new Set([...box.querySelectorAll('details[open][data-det]')].map((d) => d.dataset.det));
       box.innerHTML = spMv.drafts.map((dr, i) => {
         const p = dr.p;
         const head = `<div class="sp-mv-head">
@@ -9619,8 +9794,14 @@
       box.querySelectorAll('[data-card]').forEach((card) => {
         const dr = spMv.drafts[Number(card.dataset.card)];
         card.querySelectorAll('[data-f]').forEach((el) => el.addEventListener('input', () => { dr.values[el.dataset.f] = el.value; }));
-        if (dr.status === 'ok') card.querySelectorAll('input, textarea').forEach((el) => { el.disabled = true; });
+        if (dr.status === 'ok' || spMv.saving) card.querySelectorAll('input, textarea, select').forEach((el) => { el.disabled = true; });
       });
+      box.querySelectorAll('details[data-det]').forEach((d) => { if (openDet.has(d.dataset.det)) d.open = true; });
+      menu.scrollTop = scrollTop;
+      if (keep) {
+        const el = box.querySelector(`[data-card="${keep.card}"] [data-f="${keep.f}"]`);
+        if (el && !el.disabled) { try { el.focus({ preventScroll: true }); if (keep.s != null) el.setSelectionRange(keep.s, keep.e); } catch (_) {} }
+      }
       box.querySelectorAll('[data-inc]').forEach((cb) => cb.addEventListener('change', () => { spMv.drafts[Number(cb.dataset.inc)].include = cb.checked; spMvFooter(); }));
       box.querySelectorAll('[data-mv-who]').forEach((sel) => sel.addEventListener('change', () => {
         if (spMv.saving) { renderMultiCpptCards(); return; }
@@ -9641,7 +9822,7 @@
       const topSet = new Set(top.map((c) => c.noreg));
       const opt = (p, extra) => `<option value="${spMvEsc(p.noreg)}"${p.noreg === dr.p.noreg ? ' selected' : ''}>${spMvEsc(p.name)} · ${spMvEsc(p.kamar)} ${spMvEsc(p.noKamar)}/${spMvEsc(p.bed)}${extra || ''}</option>`;
       const others = spMv.patients.filter((p) => !topSet.has(p.noreg)).sort((a, b) => a.name.localeCompare(b.name));
-      const locked = dr.status === 'ok' || spMv.saving;
+      const locked = dr.status === 'ok' || spMv.saving || (!dr.values && !dr.error); // v3.73.0: tunggu CPPT pasien sebelumnya selesai disusun
       const labels = { keluhan_utama: 'keluhan', objective: 'pemfis', td: 'TD', nadi: 'nadi', suhu: 'suhu', nafas: 'RR', gcs: 'GCS', kesadaran: 'kesadaran', keadaan_umum: 'KU', p_instruksi: 'instruksi' };
       const ch = (dr.aiChanged || []).map((k) => labels[k] || k);
       return `<div class="sp-mv-voice" style="margin:0 0 6px;padding:6px 8px;background:#f5f3ff;border-radius:8px;font-size:12px;color:#374151">
@@ -9651,12 +9832,12 @@
             ${!top.some((c) => c.noreg === dr.p.noreg) && byNoreg.has(dr.p.noreg) ? `<optgroup label="Dipilih">${opt(byNoreg.get(dr.p.noreg))}</optgroup>` : ''}
             <optgroup label="Semua pasien dirawat">${others.filter((p) => p.noreg !== dr.p.noreg).map((p) => opt(p)).join('')}</optgroup>
           </select>
-          ${dr.values ? `<div>${v.aiError ? '⚠ Claude gagal — isi temuan dari transkrip di bawah.' : ch.length ? `Dari ucapan: <b>${spMvEsc(ch.join(', '))}</b> (lainnya bawaan multiple visit)` : 'Tidak ada temuan khusus diucapkan — isi bawaan multiple visit.'}</div>` : ''}
+          ${dr.values ? `<div>${dr.aiError ? '⚠ Claude gagal — isi temuan dari transkrip di bawah.' : ch.length ? `Dari ucapan: <b>${spMvEsc(ch.join(', '))}</b> (lainnya bawaan multiple visit)` : 'Tidak ada temuan khusus diucapkan — isi bawaan multiple visit.'}</div>` : ''}
           <div data-mv-warn="${i}">${spMvWarnHtml(dr)}</div>
           ${dr.ai && dr.ai.catatan ? `<div style="color:#92400e">❓ ${spMvEsc(dr.ai.catatan)}</div>` : ''}
           ${dr.ai && dr.ai.diabaikan ? `<div style="color:#6b7280">🔇 Diabaikan: ${spMvEsc(dr.ai.diabaikan)}</div>` : ''}
           <div data-mv-ctx="${i}">${spMvCtxHtml(dr)}</div>
-          <details><summary style="cursor:pointer;color:#6d28d9">Transkrip pasien ini</summary><div style="white-space:pre-wrap;margin-top:3px">${spMvEsc(sg.text || '(tidak ada ucapan)')}</div></details>
+          <details data-det="t${i}"><summary style="cursor:pointer;color:#6d28d9">Transkrip pasien ini</summary><div style="white-space:pre-wrap;margin-top:3px">${spMvEsc(sg.text || '(tidak ada ucapan)')}</div></details>
         </div>`;
     }
 
@@ -9689,20 +9870,25 @@
         if (diffs.length) spAsistenLearnAdd('visit', diffs);
       } catch (err) { console.warn('[ASISTEN] belajar koreksi', err); }
       spMv.saving = true;
+      spMvSaveBusy = true;
+      todo.forEach((d) => { d.status = '⏳ menunggu…'; });
       spMvFooter();
-      menu.querySelectorAll('#sp-mv-cards input, #sp-mv-cards textarea').forEach((el) => { el.disabled = true; });
+      menu.querySelectorAll('#sp-mv-cards input, #sp-mv-cards textarea, #sp-mv-cards select').forEach((el) => { el.disabled = true; });
+      const backBtn = menu.querySelector('#sp-mv-back'); if (backBtn) backBtn.disabled = true;
       let ok = 0, fail = 0;
+      try {
       for (const dr of todo) {
         const idx = spMv.drafts.indexOf(dr);
-        const st = menu.querySelector(`[data-status="${idx}"]`);
-        if (st) st.textContent = '⏳ menyimpan…';
+        const stEl = () => menu.querySelector(`[data-status="${idx}"]`); // v3.73.0: kartu bisa digambar ulang selama menyimpan
+        dr.status = '⏳ menyimpan…';
+        if (stEl()) stEl().textContent = dr.status;
         // v3.46.0 (audit): waktu percobaan PERTAMA dipakai untuk cek dobel. Bila percobaan sebelumnya error (mis. habis
         // waktu) server mungkin sudah menyimpan -> cek daftar CPPT dulu sebelum mengirim lagi.
         if (!dr.firstTryAt) dr.firstTryAt = Date.now();
         try {
           if (dr.tried) {
             const prev = await spCpptFindSaved(spMv.base, dr.p.noreg, dr.firstTryAt, dr.values.keluhan_utama).catch(() => null);
-            if (prev) { dr.status = 'ok'; ok++; if (st) st.textContent = '✅ Tersimpan'; continue; }
+            if (prev) { dr.status = 'ok'; ok++; if (stEl()) stEl().textContent = '✅ Tersimpan'; continue; }
           }
           dr.tried = true;
           const resp = await spCpptSaveDirect(spMv.base, dr.p.noreg, dr.values);
@@ -9716,9 +9902,14 @@
           else { dr.status = `❌ gagal: ${err.message || err}`; fail++; }
         }
         console.log('[MULTIPLE CPPT]', spMv.mode, dr.p.name, dr.status);
-        if (st) st.textContent = dr.status === 'ok' ? '✅ Tersimpan' : dr.status;
+        if (stEl()) stEl().textContent = dr.status === 'ok' ? '✅ Tersimpan' : dr.status;
       }
-      spMv.saving = false;
+      } finally {
+        todo.forEach((d) => { if (d.status === '⏳ menunggu…' || d.status === '⏳ menyimpan…') d.status = ''; });
+        spMv.saving = false;
+        spMvSaveBusy = false;
+      }
+      if (!menu.isConnected) { toast(`MULTIPLE ${isVisit ? 'VISIT' : 'PULANG'}: ${ok} tersimpan${fail ? `, ${fail} perlu dicek` : ''}.`); return; }
       renderMultiCpptCards();
       const warn = menu.querySelector('#sp-pkg-warn');
       if (warn) { warn.style.display = ''; warn.textContent = fail ? `${ok} tersimpan, ${fail} perlu dicek (lihat status merah/kuning).` : `✅ ${ok} CPPT tersimpan.`; warn.style.color = fail ? '#b91c1c' : '#15803d'; }
@@ -10221,7 +10412,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.72.2</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.73.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -10251,7 +10442,7 @@
         </button>
 
         <div class="sp-note">
-          Resep dari KOMBINASI masuk sebagai draft — review lalu Simpan manual. Pintasan keyboard: Alt + A.<br>🧠 Asisten suara (uji coba): tombol 🧠 atau Alt + Q — bicara bebas (🗣️ Dikte) atau rekam anamnesa (👥 Percakapan), Claude menyiapkan isian GADAR, Terapkan, lalu Simpan manual.
+          Resep dari KOMBINASI masuk sebagai draft — review lalu Simpan manual. Pintasan keyboard: Alt + A.<br>🧠 Asisten suara (uji coba): tombol 🧠 atau Alt + Q — visit banyak pasien (🏥 Multiple visit) atau rekam anamnesa IGD (👥 Percakapan); Claude menyiapkan isian, dokter cek lalu Simpan.
         </div>
       `;
     }
@@ -10628,10 +10819,12 @@
     if (view === "mv-voice" && spMvVoicePayload) {
       const v = spMvVoicePayload;
       spMvVoicePayload = null;
+      if (spMvSaveBusy) { renderMain(); alert("Multiple visit sebelumnya masih menyimpan. Tunggu selesai, lalu tekan 📋 Buka preview MULTIPLE VISIT di panel 🧠."); } else {
       const byNoreg = new Map(v.patients.map((p) => [p.noreg, p]));
       spMv = { mode: 'visit', base: v.base, patients: v.patients, drafts: [], voice: v,
         selected: new Map(v.segments.map((sg) => [sg.noreg, byNoreg.get(sg.noreg)]).filter((x) => x[1])) };
       buildMultiCpptDrafts();
+      }
     } else
     if (view === "disease") renderDiseaseMenu();
     else if (view === "package") renderPackageRecipeMenu();
@@ -12444,6 +12637,8 @@
 
   function spAsistenVisitOpenPreview() {
     if (!spAs.visit) return;
+    // v3.73.0: preview yang sedang terbuka (mungkin sudah diedit) tidak diganti diam-diam.
+    if (document.querySelector(`#${MENU_ID} #sp-mv-cards`) && !window.confirm("Preview MULTIPLE VISIT yang sedang terbuka (beserta editannya) akan diganti dengan hasil baru. Lanjutkan?")) return;
     spMvVoicePayload = spAs.visit;
     const panel = document.getElementById(SP_AS_PANEL_ID);
     if (panel) panel.style.display = "none"; // dibuka lagi dengan 🧠 / Alt+Q (transkrip tetap ada)
@@ -12496,7 +12691,8 @@
   }
 
   async function spAsistenUnderstand() {
-    if (spAs.busy) { spAs.again = true; return; } // diproses ulang setelah permintaan yang sedang jalan selesai
+    // v3.73.0: mode Multiple visit tidak diproses ulang otomatis (dulu tanda "again" tertinggal -> Pahami GADAR berikutnya 2x).
+    if (spAs.busy) { if (spAsistenGetMode() !== "visit") spAs.again = true; return; } // diproses ulang setelah permintaan yang sedang jalan selesai
     const ta = document.querySelector(`#${SP_AS_PANEL_ID} textarea`);
     const raw = ta ? ta.value.trim() : "";
     if (!raw) { spAsistenSetStatus("Bicara (🎤) atau ketik dulu temuan pasien di kotak di atas.", "#b71c1c"); return; }
@@ -12784,6 +12980,13 @@
       `<button type="button" data-as="del-learn" style="margin-top:4px;width:100%;background:#78909c">Hapus contoh koreksi</button>`;
   }
 
+  // v3.73.0: HP/tablet — panel 🧠 diperbesar sesuai layar (lihat spFitApply); di HP selebar layar.
+  function spAsistenFit(panel) {
+    if (!spIsTouchSmall()) { spFitOff(panel); return; }
+    spFitBind();
+    spFitApply(panel, "side", panel.dataset.spFit === "side");
+  }
+
   function spAsistenOpen() {
     let panel = document.getElementById(SP_AS_PANEL_ID);
     if (panel) {
@@ -12791,6 +12994,7 @@
       if (panel.style.display === "block") {
         // v3.71.0: tampil di atas menu AUTO ASM (preview MULTIPLE VISIT) yang dibuka sesudah panel.
         if (document.documentElement.lastElementChild !== panel) document.documentElement.appendChild(panel);
+        spAsistenFit(panel);
         const ta = panel.querySelector("textarea"); if (ta) ta.focus();
       }
       return;
@@ -12805,7 +13009,11 @@
       // v3.62.0: HP — panel selebar layar, tombol & kotak centang lebih besar, huruf 16px (iPhone tidak memperbesar halaman).
       `@media (max-width:640px){#${SP_AS_PANEL_ID}{left:8px!important;right:8px!important;top:8px!important;width:auto!important;max-height:calc(100vh - 16px)!important;font-size:14px!important}` +
       `#${SP_AS_PANEL_ID} button{min-height:42px;font-size:14px}#${SP_AS_PANEL_ID} textarea{font-size:16px!important}` +
-      `#${SP_AS_PANEL_ID} input[type=checkbox]{width:20px;height:20px}}</style>` +
+      `#${SP_AS_PANEL_ID} input[type=checkbox]{width:20px;height:20px}}` +
+      // v3.73.0: HP/tablet versi desktop (spFitApply) — media query di atas tidak terpicu, jadi pakai kelas .sp-mfit.
+      `#${SP_AS_PANEL_ID}.sp-mfit,#${SP_AS_PANEL_ID}.sp-mfit *{-webkit-text-size-adjust:100%!important;text-size-adjust:100%!important}#${SP_AS_PANEL_ID}.sp-mfit{font-size:15px!important}#${SP_AS_PANEL_ID}.sp-mfit button{min-height:44px;font-size:15px;padding:9px 12px}` +
+      `#${SP_AS_PANEL_ID}.sp-mfit textarea,#${SP_AS_PANEL_ID}.sp-mfit input[type=text],#${SP_AS_PANEL_ID}.sp-mfit input[type=password],#${SP_AS_PANEL_ID}.sp-mfit select{font-size:16px!important;padding:9px!important}` +
+      `#${SP_AS_PANEL_ID}.sp-mfit input[type=checkbox]{width:22px;height:22px}#${SP_AS_PANEL_ID}.sp-mfit .sp-as-status{font-size:14px!important}</style>` +
       `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">` +
       `<div style="font-weight:800;flex:1">🧠 ASISTEN SUARA <span style="font-weight:400;color:#78909c">(uji coba)</span></div>` +
       `<button type="button" data-as="settings" title="Setelan" style="background:#78909c">⚙️</button>` +
@@ -12824,6 +13032,7 @@
       `<div class="sp-as-status" style="margin-top:6px;font-size:12px"></div>` +
       `<div class="sp-as-plan"></div>`;
     (document.body || document.documentElement).appendChild(panel);
+    spAsistenFit(panel);
     // Modal GADAR (Bootstrap) merebut fokus kembali ke dalam modal (lihat v3.20.0): focusin dari panel tidak diteruskan ke
     // document supaya kotak asisten tetap bisa diketik / didikte saat form GADAR terbuka.
     panel.addEventListener("focusin", (e) => e.stopPropagation());
