@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.78.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.79.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.78.0
-// @description  v3.78.0: tombol Advis WA — advis yang sedang dilihat diutamakan + semua advis 24 jam ke belakang (yang termuat di WA) tampil sebagai kartu (tiap kartu pasien & isi sendiri) lalu dikirim sekaligus; di Smartplus banyak pasien jadi antrean di panel ADVIS SPESIALIS (Simpan -> otomatis ke pasien berikutnya); advis yang sudah tertulis di Rencana tidak ditulis ulang, advis berubah / dari spesialis lain tetap ditambahkan; pesan sendiri & pertanyaan tidak lagi terbaca sebagai advis. v3.77.0: tombol Advis WA — advis yang tidak mengutip konsul: pasien diambil dari pesan konsul/baris pasien terdekat di atasnya; kotak pasien bisa diketik untuk mencari/memperbaiki dengan pilihan dari pasien di chat + daftar pasien IGD 48 jam Smartplus; nama tanpa No. RM yang cocok lebih dari satu tidak dipilih otomatis. v3.76.0: tombol Advis WA — pesan advis tercentang otomatis (balasan atas konsul / berisi terapi), pasien penerima advis dikenali dari pesan konsul (nama/No. RM): form GADAR pasien yang sama diisi, pasien lain -> panel ADVIS SPESIALIS dengan pasien itu terpilih otomatis; pesan balasan yang mengutip konsul kini membaca isi advis, bukan kutipannya. v3.75.0: ASISTEN Multiple visit — deteksi nama lebih akurat (ejaan Rasyid/Rasheed, Syifa/Shifa; "Pak Bagus"; salah dengar dicoba lagi lebih longgar sebagai "tidak yakin"); nama tidak terdeteksi -> preview tetap terbuka dengan ➕ Tambah pasien (ucapan sudah terisi), pasien terlewat bisa ditambah, transkrip kartu bisa diedit lalu disusun ulang. v3.74.0: ADVIS DPJP dari WhatsApp Web langsung ke Rencana ASGADAR — tombol "📤 Advis → ASGADAR" di WA Web: pilih pesan, pratinjau, Kirim; tab Smartplus (browser yang sama) menambahkannya di bawah Rencana form GADAR yang terbuka (ada Batalkan) atau membuka panel ADVIS SPESIALIS; tidak disimpan otomatis. v3.73.0: HP/tablet — preview MULTIPLE VISIT, panel 🧠 dan menu AUTO ASM diperbesar sesuai layar dan memenuhi layar (dulu kotak kecil di samping saat dibuka dari ASISTEN SUARA); perbaikan: pasien kartu diganti tidak lagi membawa isian/peringatan pasien sebelumnya, galat Claude per kartu, tidak bisa menyusun preview baru selama Save multiple berjalan (cegah CPPT dobel), ketikan tidak hilang saat kartu lain diperbarui. v3.72.2: ASISTEN Multiple visit — perbaikan laporan dokter: kata biasa tidak lagi terbaca sebagai nama pasien lain ("mau tanya" ≠ Tania, "pasien saat ini" ≠ Satria); satu kata tanpa "pasien/Pak/Bu" tidak pernah memulai pasien baru, satu kata setelah pemicu harus hampir persis, panggilan pendek minimal 4 huruf. v3.72.1: ASISTEN mode ⚡ Cepat (bawaan, instruksi dokter) — isian Multiple visit langsung tampil tanpa menunggu konteks klinis, peringatan ⚠ dari konteks menyusul di tiap kartu tanpa mengganggu isian/ketikan; IGD menunggu konteks maks 2,5 dtk; pilihan 📚 Lengkap (tunggu konteks dulu) di ⚙️. v3.72.0: ASISTEN SUARA membaca KONTEKS KLINIS pasien (pilihan dokter, tanpa nama/No.RM) — Multiple visit: ringkasan rawat inap (keluhan & TTV sebelumnya, pemfis, diagnosis, terapi berjalan, advis spesialis) + hasil lab terbaru tiap pasien; mode percakapan IGD: umur + lab kunjungan ini. Claude memakai konteks untuk memahami ucapan (salah dengar, perbandingan dengan sebelumnya) tetapi kolom tetap hanya dari ucapan; ⚠ PERINGATAN keamanan (lab kritis, TTV memburuk, bertentangan dengan terapi/alergi, dosis tidak lazim) tampil sebagai catatan saja, tidak diisi ke form; konteks yang dibaca bisa dilihat di tiap kartu; ganti pasien = Claude dipanggil ulang untuk kartu itu. v3.71.0: ASISTEN SUARA lebih akurat (pilihan dokter) — mode Multiple visit menampilkan pasien yang dikenali secara langsung saat bicara (✓ yakin / ⚠ tidak yakin, nama yang tidak tertangkap bisa segera diulang); daftar obat RS ikut dikirim ke Claude supaya nama obat yang salah dengar dibetulkan (tanpa mengganti obat/dosis); asisten belajar dari koreksi dokter — perubahan dokter pada isian asisten saat Simpan GADAR / Save multiple visit disimpan sebagai contoh gaya HANYA di browser ini (tanpa identitas, bisa dihapus di ⚙️). v3.70.0: ASISTEN SUARA — mode "Dikte dokter" diganti 🏥 Multiple visit: dokter menyebut nama pasien lalu visit (TTV/pemfis tidak normal & instruksi tambahan bila ada), lalu pasien berikutnya, dst.; ⏹ -> nama dicocokkan di browser dengan daftar pasien dirawat (nama tidak dikirim ke Claude, hanya PASIEN_1, PASIEN_2…), nama yang tidak persis dicari yang paling mungkin dan bisa diganti di tiap kartu; preview MULTIPLE VISIT terisi otomatis (bawaan multiple visit + temuan yang diucapkan), simpan tetap lewat "Save multiple visit" + konfirmasi; nama tidak yakin tidak dicentang. v3.69.0: fitur 🎙️ Rekam v3.68.0 (tab perekam GitHub Pages + layanan suara OpenAI) dihapus atas permintaan dokter — di tablet/HP tanpa dikte browser pakai 🎤 di keyboard layar; kunci OpenAI yang pernah disimpan dihapus otomatis dari browser. v3.68.0 (dihapus di v3.69.0): ASISTEN 🎙️ Rekam lewat tab perekam. v3.67.0: tombol 🎤 / Alt+V DIKTE SUARA terpisah dihapus (dikte tetap lewat panel ASISTEN 🧠); ASISTEN untuk IGD ramai — Claude hanya memakai ucapan yang nyambung dengan pasien yang diperiksa, mengabaikan suara bed sebelah/perawat/TV dan menampilkan potongan yang diabaikan (🔇) di pratinjau, ucapan yang kurang yakin dikenali ditandai "(?)" di mode percakapan, TTV ganda tanpa koreksi dikosongkan & ditanyakan. v3.66.0: audit fitur — ASISTEN: kesadaran yang diucapkan kini benar terpilih saat memakai template (dulu nilai pilihan Compos Mentis ikut berubah) dan GCS yang diucapkan tidak lagi tertimpa GCS template, perkiraan Claude tidak menimpa kesadaran/GCS yang sudah dipilih dokter, pemfis perkiraan Claude tidak menimpa pemfis yang sudah ditulis dokter (hanya temuan yang diucapkan ditambahkan), Terapkan yang tertekan dua kali tidak membuka form GADAR dua kali, keterangan pratinjau sesuai cara pengisian, order penunjang ditandai ✗ bila tombol Save tidak ditekan, diagnosis order memakai diagnosis template bila tidak diucapkan, nilai lab seperti "trombosit 150000" tidak lagi ikut disaring, batas tunggu Claude 90 dtk; DIKTE: Esc menghentikan dikte tanpa menutup form GADAR; tombol 🎤 & 🧠 pindah ke kiri tombol AUTO ASM (dulu menutupi menu). v3.65.0: ASISTEN — bila tidak ada template ASGADAR yang mendekati, kolom yang tidak diucapkan diisi perkiraan Claude (data paling mungkin untuk kasus itu, pemfis per sistem; tanpa obat/dosis baru), tampil terpisah di pratinjau & hanya mengisi kolom yang masih kosong; GADAR tetap Save manual. v3.64.0: ASISTEN — kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (dipilih Claude, bisa diganti di pratinjau; membuka form GADAR baru), pemfis template + temuan yang diucapkan, Riwayat Penyakit Sekarang lama diganti hasil terbaru; GADAR tetap Save manual. v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
+// @version      3.79.0
+// @description  v3.79.0: HP/tablet — menu AUTO ASM layar penuh seperti PAKET KONSUL RANAP; kelompok fitur (ASGADAR, Penunjang, Resep, IGD, Rawat Inap) tiap halaman bisa DIGESER kiri/kanan atau dipilih dari tab di atas, kembali dari sub-menu ke halaman yang sama; tombol & fungsi tidak berubah, desktop tidak berubah. v3.78.0: tombol Advis WA — advis yang sedang dilihat diutamakan + semua advis 24 jam ke belakang (yang termuat di WA) tampil sebagai kartu (tiap kartu pasien & isi sendiri) lalu dikirim sekaligus; di Smartplus banyak pasien jadi antrean di panel ADVIS SPESIALIS (Simpan -> otomatis ke pasien berikutnya); advis yang sudah tertulis di Rencana tidak ditulis ulang, advis berubah / dari spesialis lain tetap ditambahkan; pesan sendiri & pertanyaan tidak lagi terbaca sebagai advis. v3.77.0: tombol Advis WA — advis yang tidak mengutip konsul: pasien diambil dari pesan konsul/baris pasien terdekat di atasnya; kotak pasien bisa diketik untuk mencari/memperbaiki dengan pilihan dari pasien di chat + daftar pasien IGD 48 jam Smartplus; nama tanpa No. RM yang cocok lebih dari satu tidak dipilih otomatis. v3.76.0: tombol Advis WA — pesan advis tercentang otomatis (balasan atas konsul / berisi terapi), pasien penerima advis dikenali dari pesan konsul (nama/No. RM): form GADAR pasien yang sama diisi, pasien lain -> panel ADVIS SPESIALIS dengan pasien itu terpilih otomatis; pesan balasan yang mengutip konsul kini membaca isi advis, bukan kutipannya. v3.75.0: ASISTEN Multiple visit — deteksi nama lebih akurat (ejaan Rasyid/Rasheed, Syifa/Shifa; "Pak Bagus"; salah dengar dicoba lagi lebih longgar sebagai "tidak yakin"); nama tidak terdeteksi -> preview tetap terbuka dengan ➕ Tambah pasien (ucapan sudah terisi), pasien terlewat bisa ditambah, transkrip kartu bisa diedit lalu disusun ulang. v3.74.0: ADVIS DPJP dari WhatsApp Web langsung ke Rencana ASGADAR — tombol "📤 Advis → ASGADAR" di WA Web: pilih pesan, pratinjau, Kirim; tab Smartplus (browser yang sama) menambahkannya di bawah Rencana form GADAR yang terbuka (ada Batalkan) atau membuka panel ADVIS SPESIALIS; tidak disimpan otomatis. v3.73.0: HP/tablet — preview MULTIPLE VISIT, panel 🧠 dan menu AUTO ASM diperbesar sesuai layar dan memenuhi layar (dulu kotak kecil di samping saat dibuka dari ASISTEN SUARA); perbaikan: pasien kartu diganti tidak lagi membawa isian/peringatan pasien sebelumnya, galat Claude per kartu, tidak bisa menyusun preview baru selama Save multiple berjalan (cegah CPPT dobel), ketikan tidak hilang saat kartu lain diperbarui. v3.72.2: ASISTEN Multiple visit — perbaikan laporan dokter: kata biasa tidak lagi terbaca sebagai nama pasien lain ("mau tanya" ≠ Tania, "pasien saat ini" ≠ Satria); satu kata tanpa "pasien/Pak/Bu" tidak pernah memulai pasien baru, satu kata setelah pemicu harus hampir persis, panggilan pendek minimal 4 huruf. v3.72.1: ASISTEN mode ⚡ Cepat (bawaan, instruksi dokter) — isian Multiple visit langsung tampil tanpa menunggu konteks klinis, peringatan ⚠ dari konteks menyusul di tiap kartu tanpa mengganggu isian/ketikan; IGD menunggu konteks maks 2,5 dtk; pilihan 📚 Lengkap (tunggu konteks dulu) di ⚙️. v3.72.0: ASISTEN SUARA membaca KONTEKS KLINIS pasien (pilihan dokter, tanpa nama/No.RM) — Multiple visit: ringkasan rawat inap (keluhan & TTV sebelumnya, pemfis, diagnosis, terapi berjalan, advis spesialis) + hasil lab terbaru tiap pasien; mode percakapan IGD: umur + lab kunjungan ini. Claude memakai konteks untuk memahami ucapan (salah dengar, perbandingan dengan sebelumnya) tetapi kolom tetap hanya dari ucapan; ⚠ PERINGATAN keamanan (lab kritis, TTV memburuk, bertentangan dengan terapi/alergi, dosis tidak lazim) tampil sebagai catatan saja, tidak diisi ke form; konteks yang dibaca bisa dilihat di tiap kartu; ganti pasien = Claude dipanggil ulang untuk kartu itu. v3.71.0: ASISTEN SUARA lebih akurat (pilihan dokter) — mode Multiple visit menampilkan pasien yang dikenali secara langsung saat bicara (✓ yakin / ⚠ tidak yakin, nama yang tidak tertangkap bisa segera diulang); daftar obat RS ikut dikirim ke Claude supaya nama obat yang salah dengar dibetulkan (tanpa mengganti obat/dosis); asisten belajar dari koreksi dokter — perubahan dokter pada isian asisten saat Simpan GADAR / Save multiple visit disimpan sebagai contoh gaya HANYA di browser ini (tanpa identitas, bisa dihapus di ⚙️). v3.70.0: ASISTEN SUARA — mode "Dikte dokter" diganti 🏥 Multiple visit: dokter menyebut nama pasien lalu visit (TTV/pemfis tidak normal & instruksi tambahan bila ada), lalu pasien berikutnya, dst.; ⏹ -> nama dicocokkan di browser dengan daftar pasien dirawat (nama tidak dikirim ke Claude, hanya PASIEN_1, PASIEN_2…), nama yang tidak persis dicari yang paling mungkin dan bisa diganti di tiap kartu; preview MULTIPLE VISIT terisi otomatis (bawaan multiple visit + temuan yang diucapkan), simpan tetap lewat "Save multiple visit" + konfirmasi; nama tidak yakin tidak dicentang. v3.69.0: fitur 🎙️ Rekam v3.68.0 (tab perekam GitHub Pages + layanan suara OpenAI) dihapus atas permintaan dokter — di tablet/HP tanpa dikte browser pakai 🎤 di keyboard layar; kunci OpenAI yang pernah disimpan dihapus otomatis dari browser. v3.68.0 (dihapus di v3.69.0): ASISTEN 🎙️ Rekam lewat tab perekam. v3.67.0: tombol 🎤 / Alt+V DIKTE SUARA terpisah dihapus (dikte tetap lewat panel ASISTEN 🧠); ASISTEN untuk IGD ramai — Claude hanya memakai ucapan yang nyambung dengan pasien yang diperiksa, mengabaikan suara bed sebelah/perawat/TV dan menampilkan potongan yang diabaikan (🔇) di pratinjau, ucapan yang kurang yakin dikenali ditandai "(?)" di mode percakapan, TTV ganda tanpa koreksi dikosongkan & ditanyakan. v3.66.0: audit fitur — ASISTEN: kesadaran yang diucapkan kini benar terpilih saat memakai template (dulu nilai pilihan Compos Mentis ikut berubah) dan GCS yang diucapkan tidak lagi tertimpa GCS template, perkiraan Claude tidak menimpa kesadaran/GCS yang sudah dipilih dokter, pemfis perkiraan Claude tidak menimpa pemfis yang sudah ditulis dokter (hanya temuan yang diucapkan ditambahkan), Terapkan yang tertekan dua kali tidak membuka form GADAR dua kali, keterangan pratinjau sesuai cara pengisian, order penunjang ditandai ✗ bila tombol Save tidak ditekan, diagnosis order memakai diagnosis template bila tidak diucapkan, nilai lab seperti "trombosit 150000" tidak lagi ikut disaring, batas tunggu Claude 90 dtk; DIKTE: Esc menghentikan dikte tanpa menutup form GADAR; tombol 🎤 & 🧠 pindah ke kiri tombol AUTO ASM (dulu menutupi menu). v3.65.0: ASISTEN — bila tidak ada template ASGADAR yang mendekati, kolom yang tidak diucapkan diisi perkiraan Claude (data paling mungkin untuk kasus itu, pemfis per sistem; tanpa obat/dosis baru), tampil terpisah di pratinjau & hanya mengisi kolom yang masih kosong; GADAR tetap Save manual. v3.64.0: ASISTEN — kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (dipilih Claude, bisa diganti di pratinjau; membuka form GADAR baru), pemfis template + temuan yang diucapkan, Riwayat Penyakit Sekarang lama diganti hasil terbaru; GADAR tetap Save manual. v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @match        http://*/*
@@ -52,8 +52,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.78.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.78.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.79.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.79.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -8884,6 +8884,26 @@
       #${MENU_ID}.sp-mfit-narrow .sp-pkg-sugrow{flex-wrap:wrap;}
       #${MENU_ID}.sp-mfit .sp-pill{font-size:14px;padding:8px 12px;}
       #${MENU_ID}.sp-mfit-narrow .sp-check-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+      /* v3.79.0: HP — menu utama layar penuh, kelompok fitur digeser kiri/kanan (scroll-snap), tab di atas, titik di bawah. */
+      #${MENU_ID}.sp-deck{display:flex!important;flex-direction:column!important;overflow:hidden!important;}
+      #${MENU_ID}.sp-deck > *{flex:0 0 auto;}
+      #${MENU_ID} .sp-deck-tabs{display:flex;gap:6px;overflow-x:auto;padding:9px 0 7px;scrollbar-width:none;}
+      #${MENU_ID} .sp-deck-tabs::-webkit-scrollbar{display:none;}
+      #${MENU_ID} button.sp-deck-tab{flex:0 0 auto;display:inline-block;width:auto!important;margin:0!important;padding:8px 13px!important;border:1px solid #ddd6fe!important;border-radius:999px!important;background:#fff!important;color:#4c1d95!important;font:700 13.5px/1.2 Arial,sans-serif!important;white-space:nowrap;text-align:center;}
+      #${MENU_ID} button.sp-deck-tab.is-on{background:#6d28d9!important;border-color:#6d28d9!important;color:#fff!important;}
+      #${MENU_ID}.sp-deck > .sp-deck-track{flex:1 1 auto;min-height:0;}
+      #${MENU_ID} .sp-deck-track{display:flex;margin:0 -12px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:none;}
+      #${MENU_ID} .sp-deck-track::-webkit-scrollbar{display:none;}
+      #${MENU_ID} .sp-deck-page{flex:0 0 100%;width:100%;min-width:100%;scroll-snap-align:start;scroll-snap-stop:always;overflow-y:auto;overscroll-behavior-y:contain;padding:2px 12px 14px;}
+      #${MENU_ID} .sp-deck-head{margin:2px 0 8px;padding:10px 12px;background:#fff;border:1px solid #e7e3f3;border-left:4px solid #8b5cf6;border-radius:10px;color:#4c1d95;font:800 15px/1.3 Arial,sans-serif;}
+      #${MENU_ID} .sp-deck-page button{margin:0 0 7px;padding:12px 13px;background:#fff;border:1px solid #e7e3f3;border-left:4px solid #a78bfa;border-radius:10px;color:#1f2937;font:600 15px/1.35 Arial,sans-serif;}
+      #${MENU_ID} .sp-deck-page button:hover{background:#f5f3ff;}
+      #${MENU_ID} .sp-deck-page .sp-note{font-size:13px;}
+      #${MENU_ID} .sp-deck-page .sp-section-title{font-size:12px;margin:12px 2px 5px;}
+      #${MENU_ID} .sp-deck-foot{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 -12px;padding:8px 12px calc(9px + env(safe-area-inset-bottom,0px));background:#faf9ff;border-top:1px solid #ddd6fe;color:#7c7c8a;font:12px Arial,sans-serif;}
+      #${MENU_ID} .sp-deck-dot{display:inline-block;width:7px;height:7px;border-radius:999px;background:#d4d0e6;transition:width .15s ease;}
+      #${MENU_ID} .sp-deck-dot.is-on{width:18px;background:#6d28d9;}
+      #${MENU_ID} .sp-deck-hint{margin-left:6px;}
       @media(max-width:600px){
         #${MENU_ID} .sp-mv-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
         #${MENU_ID} .sp-pkg-row{grid-template-columns:1fr;gap:5px;}
@@ -9090,6 +9110,13 @@
   function spIsTouchSmall() {
     try { return matchMedia("(pointer:coarse)").matches && Math.min(screen.width, screen.height) <= 900; } catch (_) { return false; }
   }
+  // v3.79.0: halaman menu geser (HP) yang terakhir dilihat — dibuka lagi di halaman yang sama (hanya di browser ini).
+  let spDeckPage = (() => { try { return Number(localStorage.getItem("sp-auto-asm-deck-page")) || 0; } catch (_) { return 0; } })();
+  function spDeckSetPage(i) {
+    if (!(i >= 0)) return;
+    spDeckPage = i;
+    try { localStorage.setItem("sp-auto-asm-deck-page", String(i)); } catch (_) {}
+  }
   function spFitScale() {
     const vv = window.visualViewport;
     const vw = vv ? vv.width : window.innerWidth;
@@ -9187,6 +9214,9 @@
   function spSetupMenuBox(menu) {
     const key = () => MENU_ID + (menu.classList.contains("sp-package-modal") ? ":pkg" : "");
     const decorate = () => {
+      // v3.79.0: kelas tata letak menu geser (HP) hanya selama isinya menu geser.
+      const deck = !!menu.querySelector(":scope > .sp-deck-track");
+      if (deck !== menu.classList.contains("sp-deck")) menu.classList.toggle("sp-deck", deck);
       const title = menu.querySelector(":scope > .sp-title");
       if (title && !title.querySelector(".sp-min-btn")) {
         spStyleHandle(title);
@@ -11015,6 +11045,7 @@
     }
 
     function renderCpptMenu() {
+      if (spDeckGo("ranap")) return; // v3.79.0: HP -> halaman RAWAT INAP di menu geser
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
         <div class="sp-title">🛏️ RAWAT INAP</div>
@@ -11063,6 +11094,7 @@
 
     // v3.19.0: order penunjang dikelompokkan (Lab, Ro Thorax, USG, CT Brain non kontras).
     function renderPenunjangMenu() {
+      if (spDeckGo("penunjang")) return; // v3.79.0
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
         <div class="sp-title">🧾 AUTO PENUNJANG</div>
@@ -11080,6 +11112,7 @@
 
     // v3.63.0: AUTO IGD — PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM (dulu langsung di menu utama).
     function renderIgdMenu() {
+      if (spDeckGo("igd")) return; // v3.79.0
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
         <div class="sp-title">🚑 AUTO IGD</div>
@@ -11100,10 +11133,81 @@
       `;
     }
 
+    // v3.79.0 (permintaan dokter 12 Okt 2026): di HP/tablet menu utama tampil layar penuh seperti PAKET KONSUL RANAP,
+    // tiap kelompok fitur = satu halaman yang bisa DIGESER kiri/kanan (atau ketuk tab di atas). Isi tiap halaman diambil
+    // dari menu kelompok yang sudah ada (tombol & fungsinya sama persis). Desktop tidak berubah.
+    const SP_DECK = [
+      { key: "asgadar", tab: "🩺 ASGADAR", head: "🩺 ASGADAR PENYAKIT", fn: () => renderDiseaseMenu() },
+      { key: "penunjang", tab: "🧾 Penunjang", head: "🧾 AUTO PENUNJANG", fn: () => renderPenunjangMenu() },
+      { key: "resep", tab: "📦 Resep", head: "📦 KOMBINASI RESEP", html: `
+        <div class="sp-note">Pilih obat per golongan (💡 saran dari keluhan di Assesment GADAR) dan tindakan, lalu ACC.
+          Resep masuk sebagai draft — review lalu Simpan manual.</div>
+        <button type="button" data-package-menu="1">📦 Buka KOMBINASI RESEP</button>
+        <div class="sp-note">🧠 Asisten suara (uji coba): tombol 🧠 — visit banyak pasien (🏥 Multiple visit) atau rekam anamnesa IGD (👥 Percakapan); Claude menyiapkan isian, dokter cek lalu Simpan.</div>` },
+      { key: "igd", tab: "🚑 IGD", head: "🚑 AUTO IGD", fn: () => renderIgdMenu() },
+      { key: "ranap", tab: "🛏️ Rawat Inap", head: "🛏️ RAWAT INAP", fn: () => renderCpptMenu() }
+    ];
+    let spDeckHarvesting = false;
+    // HP: menu kelompok dibuka langsung (tombol ← kembali dari sub-menu, openMenu("disease")) -> tampilkan halamannya di menu geser.
+    function spDeckGo(key) {
+      if (spDeckHarvesting || !spIsTouchSmall()) return false;
+      spDeckSetPage(SP_DECK.findIndex((d) => d.key === key));
+      renderMain();
+      return true;
+    }
+    function spDeckBody(fn) {
+      spDeckHarvesting = true;
+      try { fn(); } finally { spDeckHarvesting = false; }
+      const tmp = document.createElement("div");
+      tmp.innerHTML = menu.innerHTML;
+      tmp.querySelectorAll(":scope > .sp-title, .sp-back").forEach((n) => n.remove());
+      return tmp.innerHTML;
+    }
+    function renderMainDeck() {
+      const pages = SP_DECK.map((d) => ({ ...d, body: d.fn ? spDeckBody(d.fn) : d.html }));
+      let cur = Math.min(Math.max(0, spDeckPage), pages.length - 1);
+      menu.classList.add("sp-package-modal", "sp-deck");
+      menu.innerHTML = `
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.79.0</span></div>
+        <div class="sp-deck-tabs">${pages.map((d, i) => `<button type="button" class="sp-deck-tab" data-deck-tab="${i}">${d.tab}</button>`).join("")}</div>
+        <div class="sp-deck-track">${pages.map((d, i) => `<section class="sp-deck-page" data-deck-page="${i}"><div class="sp-deck-head">${d.head}</div>${d.body}</section>`).join("")}</div>
+        <div class="sp-deck-foot"><span>←</span>${pages.map(() => '<span class="sp-deck-dot"></span>').join("")}<span>→</span><span class="sp-deck-hint">geser untuk pindah fitur</span></div>`;
+      const track = menu.querySelector(".sp-deck-track");
+      const tabBox = menu.querySelector(".sp-deck-tabs");
+      const tabs = [...tabBox.children];
+      const dots = [...menu.querySelectorAll(".sp-deck-dot")];
+      const mark = (i) => {
+        cur = i;
+        spDeckSetPage(i);
+        tabs.forEach((t, k) => t.classList.toggle("is-on", k === i));
+        dots.forEach((t, k) => t.classList.toggle("is-on", k === i));
+        const t = tabs[i];
+        if (t && tabBox.scrollWidth > tabBox.clientWidth) tabBox.scrollLeft = t.offsetLeft - (tabBox.clientWidth - t.offsetWidth) / 2;
+      };
+      const go = (i, smooth) => {
+        mark(i);
+        const left = i * track.clientWidth;
+        try { track.scrollTo({ left, behavior: smooth ? "smooth" : "auto" }); } catch (_) { track.scrollLeft = left; }
+      };
+      track.addEventListener("scroll", () => {
+        const i = Math.round(track.scrollLeft / Math.max(1, track.clientWidth));
+        if (i !== cur && i >= 0 && i < pages.length) mark(i);
+      }, { passive: true });
+      tabBox.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-deck-tab]");
+        e.stopPropagation(); // bukan tombol fitur -> jangan diteruskan ke penangan klik menu
+        if (b) go(Number(b.dataset.deckTab), true);
+      });
+      mark(cur);
+      // Lebar kotak baru diatur setelah dipasang (spFitApply) -> geser ke halaman terakhir sesudah tata letak siap.
+      requestAnimationFrame(() => requestAnimationFrame(() => { if (track.isConnected) go(cur, false); }));
+    }
+
     function renderMain() {
+      if (spIsTouchSmall()) { renderMainDeck(); return; }
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.78.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.79.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -11139,6 +11243,7 @@
     }
 
     function renderDiseaseMenu() {
+      if (spDeckGo("asgadar")) return; // v3.79.0
       menu.classList.remove("sp-package-modal");
       // v3.63.0 (instruksi dokter): Febris ec VI dd BI paling atas.
       const diseaseEntries = Object.entries(TEMPLATES)
