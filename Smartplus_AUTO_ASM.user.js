@@ -53,7 +53,7 @@
     return;
   }
   window.__SP_AUTO_ASM_LOADED__ = "3.75.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.74.1");
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.75.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -4975,6 +4975,59 @@
     }).filter(Boolean).join("\n\n");
   }
 
+  // v3.75.0 (instruksi dokter): pesan advis tercentang otomatis & pasien penerima advis dikenali dari pesan konsul.
+  // Identitas pasien hanya dibaca dari chat yang terbuka di browser dokter lalu dititipkan ke tab Smartplus (tidak ditulis di script).
+  // "1. NAMA PASIEN, An / 00xxxxxx / 7 thn" atau "NAMA, TN (Laki-laki) / tgl lahir ( umur )" -> { nama, title, rm }
+  function spWaFindPatient(text) {
+    const re = /^\s*(?:\d{1,2}[.)]\s*)?\*?([A-Za-z][A-Za-z .'`’-]{2,60}?)\s*,\s*(Tn|Ny|Nn|An|By|Sdr|Sdri|Nona|Mr|Mrs)\b\.?\*?(.*)$/im;
+    const m = String(text || "").replace(/\r/g, "").match(re);
+    if (!m) return null;
+    const nama = m[1].replace(/\s+/g, " ").trim().toUpperCase();
+    if (/^(advis|keluhan|rps|rpd|diagnosis|terapi|assalamualaikum)\b/i.test(nama)) return null;
+    const rm = ((m[3] || "").match(/(?:^|[\s\/|])(\d{6,8})(?=$|[\s\/|])/) || [])[1] || "";
+    const title = m[2].charAt(0).toUpperCase() + m[2].slice(1).toLowerCase();
+    return { nama, title, rm, label: `${nama}, ${title}${rm ? " / " + rm : ""}` };
+  }
+  // fungsi (bukan const): dipakai juga di WhatsApp Web yang berjalan sebelum konstanta modul dibuat.
+  function spWaIsAck(t) { return /^(ok(e|ey)?|siap|baik|iya|sip|noted|terima ?kasih|makasih|trims|thx|thanks)\b[\s\w,.!]{0,20}$/i.test(String(t || "").trim()); }
+  // Pesan masuk yang berupa advis: balasan atas pesan konsul, atau berisi istilah terapi/tindakan.
+  function spWaIsAdvis(m) {
+    if (!m || m.out || !String(m.text || "").trim() || spWaIsAck(m.text)) return false;
+    if (/konsul/i.test(m.quote || "")) return true;
+    return /\b(inj|injeksi|infus|ivfd|iv|im|po|drip|mg|mcg|gr|cc|ml|tpm|nebul\w*|tab|syr|sirup|sachet|puyer|cek|periksa|lab|ro|usg|ct|rawat|ranap|pulang|kontrol|terapi|lanjut\w*|acc|stop|diet|observasi|o2|oksigen|transfusi|operasi|puasa|advis|bila perlu|x\s?\d|\d\s?x)\b/i.test(m.text);
+  }
+  // Bawaan tercentang: advis masuk TERAKHIR + advis sebelumnya dari pengirim yang sama yang bersambung
+  // (ucapan singkat dilewati; berhenti di pesan kita / pengirim lain / pesan bukan advis).
+  function spWaPickDefault(msgs) {
+    const who = (m) => (String(m.pre || "").match(/\]\s*([^:]+):/) || [])[1] || "";
+    let last = -1;
+    for (let i = msgs.length - 1; i >= 0; i--) if (spWaIsAdvis(msgs[i])) { last = i; break; }
+    if (last < 0) {
+      for (let i = msgs.length - 1; i >= 0; i--) if (!msgs[i].out && !spWaIsAck(msgs[i].text)) { last = i; break; }
+      return last < 0 ? [] : [last];
+    }
+    const out = [last], s = who(msgs[last]);
+    for (let i = last - 1; i >= 0; i--) {
+      const m = msgs[i];
+      if (m.out || who(m) !== s) break;
+      if (spWaIsAck(m.text)) continue;
+      if (!spWaIsAdvis(m)) break;
+      out.unshift(i);
+    }
+    return out;
+  }
+  // Pasien untuk pesan terpilih: kutipan pesan konsul -> isi pesan -> pesan konsul terdekat sebelumnya di chat.
+  function spWaPatientFor(msgs, idxs) {
+    for (const i of idxs) { const m = msgs[i]; const p = m && (spWaFindPatient(m.quote) || spWaFindPatient(m.text)); if (p) return p; }
+    const first = idxs.length ? Math.min(...idxs) : msgs.length;
+    for (let i = first - 1; i >= 0; i--) {
+      if (!/konsul/i.test(msgs[i].text || "")) continue;
+      const p = spWaFindPatient(msgs[i].text);
+      if (p) return p;
+    }
+    return null;
+  }
+
   // Sisi WhatsApp Web (berdiri sendiri: tidak memakai fungsi/konstanta Smartplus selain spWaBuildAdvis & SP_WA_*).
   function runWaAdvisBridge() {
     if (document.documentElement.hasAttribute("data-sp-wa-advis")) return;
@@ -5012,13 +5065,14 @@
       const pre = n.getAttribute("data-pre-plain-text") || "";
       const text = plain(msgBody(n));
       const box = n.closest(".message-in, .message-out");
-      return { pre, text, out: !!(box && box.classList.contains("message-out")) };
-    }).filter((m) => m.text).slice(-15);
+      const q = n.querySelector('[role="button"] .quoted-mention, .quoted-mention, [role="button"]');
+      return { pre, text, quote: q ? plain(q) : "", out: !!(box && box.classList.contains("message-out")) };
+    }).filter((m) => m.text).slice(-40); // 40 untuk mencari pesan konsul; daftar menampilkan 15 terakhir
     let pickedSel = "";
 
     function openPanel() {
       document.getElementById(PANEL)?.remove();
-      const msgs = readMsgs();
+      const all = readMsgs(), msgs = all.slice(-15), off = all.length - msgs.length;
       const p = el("div", "position:fixed;right:16px;bottom:140px;z-index:2147483647;width:min(94vw,480px);max-height:78vh;overflow:auto;background:#fff;color:#222;border:2px solid #e91e63;border-radius:12px;padding:12px;box-shadow:0 8px 30px rgba(0,0,0,.35);font:13px/1.45 Arial,sans-serif;");
       p.id = PANEL;
       const top = el("div", "display:flex;align-items:center;gap:8px;border-bottom:1px solid #eee;padding-bottom:6px;margin-bottom:6px");
@@ -5031,17 +5085,8 @@
       p.append(el("div", "font-weight:600", pickedSel ? "Teks yang Anda blok:" : "Pilih pesan advis (centang):"));
       const list = el("div", "max-height:220px;overflow:auto;border:1px solid #eee;border-radius:6px;margin:3px 0 8px");
       const boxes = [];
-      // Bawaan: rangkaian pesan MASUK terakhir dari pengirim yang sama (sampai pesan Anda / pengirim lain).
-      let defSender = null;
-      for (let i = msgs.length - 1; i >= 0 && !pickedSel; i--) {
-        const s = (msgs[i].pre.match(/\]\s*([^:]+):/) || [])[1] || "";
-        if (msgs[i].out) { if (defSender !== null) break; continue; }
-        // ucapan singkat ("terimakasih dokter", "ok siap") bukan advis -> dilewati saat memilih bawaan
-        if (defSender === null && /^(ok(e|ey)?|siap|baik|iya|sip|noted|terima ?kasih|makasih|trims|thx|thanks)\b[\s\w,.!]{0,20}$/i.test(msgs[i].text)) continue;
-        if (defSender === null) defSender = s;
-        if (s !== defSender) break;
-        msgs[i].def = true;
-      }
+      // Bawaan: pesan advis masuk terakhir (+ lanjutannya dari pengirim yang sama), lihat spWaPickDefault.
+      if (!pickedSel) spWaPickDefault(msgs).forEach((i) => { msgs[i].def = true; });
       if (pickedSel) list.append(el("div", "padding:6px;white-space:pre-wrap", pickedSel));
       else if (!msgs.length) list.append(el("div", "padding:6px;color:#777", "Belum ada pesan terbaca. Buka chat DPJP-nya dulu, atau blok teks advis lalu tekan tombol lagi."));
       msgs.forEach((m) => {
@@ -5056,6 +5101,12 @@
         cb.onchange = rebuild;
       });
       p.append(list);
+      p.append(el("div", "font-weight:600", "Pasien penerima advis (otomatis dari pesan konsul, bisa diedit):"));
+      const pin = el("input", "width:100%;box-sizing:border-box;font:13px Arial,sans-serif;border:1px solid #ccc;border-radius:6px;padding:6px;margin:3px 0 8px");
+      pin.placeholder = "Tidak terdeteksi — pilih pasien di Smartplus";
+      let pinEdited = false;
+      pin.oninput = () => { pinEdited = true; };
+      p.append(pin);
       p.append(el("div", "font-weight:600", "Yang akan masuk ke Rencana (bisa diedit):"));
       const ta = el("textarea", "width:100%;box-sizing:border-box;min-height:130px;font:13px/1.45 Arial,sans-serif;border:1px solid #ccc;border-radius:6px;padding:7px;resize:vertical");
       p.append(ta);
@@ -5068,6 +5119,11 @@
           const hhmm = new Date().toTimeString().slice(0, 5).replace(":", ".");
           ta.value = spWaBuildAdvis([{ pre: `[${hhmm}] ${chatName() || "DPJP"}: `, text: pickedSel }]);
         } else ta.value = spWaBuildAdvis(boxes.filter(([cb]) => cb.checked).map(([, m]) => m));
+        if (!pinEdited) {
+          const idx = pickedSel ? [] : boxes.map(([cb], i) => (cb.checked ? i + off : -1)).filter((i) => i >= 0);
+          const pt = pickedSel ? (spWaFindPatient(pickedSel) || spWaPatientFor(all, [all.length])) : spWaPatientFor(all, idx);
+          pin.value = pt ? pt.label : "";
+        }
       }
       rebuild();
       go.onclick = () => {
@@ -5080,13 +5136,13 @@
           if (!v || v.id !== id || done) return;
           done = true;
           msg.style.color = "#2e7d32";
-          msg.textContent = "✅ Masuk ke Smartplus: " + (v.where || "") + ". Buka tab Smartplus, periksa, lalu Save.";
+          msg.textContent = (v.warn ? "⚠️ " : "✅ ") + "Masuk ke Smartplus: " + (v.where || "") + ". Buka tab Smartplus, periksa, lalu Save.";
           go.textContent = "📤 Kirim lagi";
           try { if (typeof GM_removeValueChangeListener === "function") GM_removeValueChangeListener(lid); } catch (_) {}
         }) : null;
         msg.style.color = "#555";
         msg.textContent = "⏳ Mengirim ke tab Smartplus...";
-        GM_setValue(KEY, { id, ts: Date.now(), text, chat: chatName().slice(0, 60) });
+        GM_setValue(KEY, { id, ts: Date.now(), text, chat: chatName().slice(0, 60), patient: spWaFindPatient(pin.value.trim()) });
         setTimeout(() => {
           if (done) return;
           msg.style.color = "#c62828";
@@ -5129,23 +5185,35 @@
     spWaAdvisInit.done = true;
     GM_addValueChangeListener(SP_WA_KEY, (n, o, v) => { spWaAdvisReceive(v).catch((e) => console.warn("[ADVIS WA]", e)); });
   }
+  // Pasien dari pesan WA ({nama, rm}) sama dengan pasien Smartplus ({nama, norm})? No. RM didahulukan, lalu nama.
+  function spWaSamePatient(pt, x) {
+    if (!pt || !x) return false;
+    const rm = (v) => String(v || "").replace(/\D/g, "").replace(/^0+/, "");
+    const a = rm(pt.rm || pt.norm), b = rm(x.norm || x.rm);
+    if (a && b) return a === b;
+    const nm = (v) => String(v || "").toUpperCase().replace(/,.*$/, "").replace(/[^A-Z]+/g, " ").trim();
+    const p = nm(pt.nama), q = nm(x.nama);
+    return !!(p && q && (p === q || p.startsWith(q + " ") || q.startsWith(p + " ")));
+  }
   async function spWaAdvisReceive(v) {
     if (!v || !v.id || !String(v.text || "").trim() || Date.now() - (v.ts || 0) > SP_WA_MAX_AGE) return;
     if (/\/auth\//i.test(location.pathname)) return; // halaman login
+    const pt = v.patient && v.patient.nama ? v.patient : null;
     const modal = document.getElementById("modal_form_gadar");
     const formOpen = !!(modal && visible(modal) && document.querySelector('#form_gadar [name="rencana_tindakan"]'));
-    // Beberapa tab Smartplus bisa terbuka: tab dengan form GADAR terbuka didahulukan, lalu halaman pasien, lalu lainnya.
-    const prio = formOpen ? 0 : getCurrentNoregAny() ? 1 : 2;
+    const here = { nama: spWaPatientName(), norm: decodeURIComponent((location.pathname.match(/pasien_detail\/[^/]+\/([^/?#]+)/i) || [])[1] || "") };
+    const match = !!(pt && getCurrentNoregAny() && spWaSamePatient(pt, here));
+    // Beberapa tab Smartplus bisa terbuka: tab pasien yang sama + form GADAR terbuka didahulukan, lalu halaman pasien, lalu lainnya.
+    const prio = formOpen && (match || !pt) ? 0 : match ? 1 : getCurrentNoregAny() ? 2 : 3;
     await recipeSleep(prio * 600 + Math.random() * 200);
     try {
       if (localStorage.getItem("sp_wa_advis_done") === v.id) return;
       localStorage.setItem("sp_wa_advis_done", v.id);
     } catch (_) {}
     const text = String(v.text).replace(/\r/g, "").replace(/\s+$/, "");
-    const nama = spWaPatientName();
-    let where;
+    let where, warn = false;
     const ren = document.querySelector('#form_gadar [name="rencana_tindakan"]');
-    if (formOpen && ren && visible(modal)) {
+    if (formOpen && ren && visible(modal) && (!pt || match)) {
       const old = ren.value;
       if (!spNl(old).includes(spNl(text))) {
         const nv = spNl(old).replace(/\s+$/, "") + (old.trim() ? "\n\n" : "") + text;
@@ -5153,16 +5221,18 @@
         ren.style.outline = "3px solid #e91e63";
         setTimeout(() => { ren.style.outline = ""; }, 15000);
         try { ren.scrollIntoView({ block: "center" }); ren.scrollTop = ren.scrollHeight; } catch (_) {}
-        spWaUndoBar(ren, old, nv, nama);
+        spWaUndoBar(ren, old, nv, here.nama);
       }
-      where = "kolom Rencana form ASGADAR yang terbuka" + (nama ? " — " + nama : "");
+      where = "kolom Rencana form ASGADAR yang terbuka" + (here.nama ? " — " + here.nama : "");
+      if (!pt) { warn = true; where += " (pasien tidak terdeteksi dari chat, pastikan pasiennya benar)"; }
     } else {
+      // Form pasien lain yang terbuka TIDAK disentuh; advis ke panel ADVIS SPESIALIS untuk pasien dari pesan konsul.
       const panel = document.getElementById("sp-advis-panel");
-      if (panel && typeof panel.__spWaAdd === "function") panel.__spWaAdd(text);
-      else runAdvisSpesialis({ waText: text });
-      where = "panel ADVIS SPESIALIS" + (nama ? " — " + nama : " (pilih pasien)");
+      if (!(panel && typeof panel.__spWaAdd === "function" && panel.__spWaAdd(text, pt))) runAdvisSpesialis({ waText: text, waPatient: pt });
+      where = "panel ADVIS SPESIALIS — " + (pt ? pt.label : "pasien tidak terdeteksi, pilih pasien");
+      warn = !pt;
     }
-    try { GM_setValue(SP_WA_ACK_KEY, { id: v.id, ts: Date.now(), where }); } catch (_) {}
+    try { GM_setValue(SP_WA_ACK_KEY, { id: v.id, ts: Date.now(), where, warn }); } catch (_) {}
     toast("📩 Advis WA masuk ke " + where + ". Periksa lalu Save sendiri (tidak disimpan otomatis).");
     if (document.hidden && !/^📩/.test(document.title)) {
       const t0 = document.title;
@@ -5285,7 +5355,13 @@
       ren.setSelectionRange(ren.value.length, ren.value.length);
       ren.scrollTop = ren.scrollHeight;
     };
-    panel.__spWaAdd = (t) => { waAdds.push(String(t)); applyWa(); };
+    // v3.75.0: advis WA untuk pasien LAIN -> false (pemanggil membuka panel baru untuk pasien itu).
+    const waPt = opts.waPatient || null;
+    panel.__spWaAdd = (t, pt) => {
+      if (pt && (!waPt || !spWaSamePatient(pt, waPt))) return false;
+      waAdds.push(String(t)); applyWa(); return true;
+    };
+    const waFind = (list) => (waPt ? (list || []).find((x) => spWaSamePatient(waPt, { nama: x.nama, norm: x.norm })) : null);
     applyWa();
 
     const choose = async (p) => {
@@ -5331,8 +5407,16 @@
       });
     }
     pq.addEventListener("input", () => { chosen = null; gadarInfo = null; loadSeq++; psel.textContent = ""; box.style.display = "none"; msg.textContent = ""; showList(); });
-    spAdvisLoadPatients(base, (part) => { patients = part; showList(); })
-      .then((r) => { patients = r; loading = false; showList(); if (curNoreg && !chosen) { const p = r.find((x) => x.noreg === curNoreg); if (p) choose(p); } })
+    spAdvisLoadPatients(base, (part) => { patients = part; if (waPt && !chosen) { const p = waFind(part); if (p) { choose(p); return; } } showList(); })
+      .then((r) => {
+        patients = r; loading = false;
+        if (waPt) {
+          // v3.75.0: pasien dari pesan konsul WA dipilih otomatis; bila tidak ketemu, nama diketik di kotak cari.
+          if (!chosen) { const p = waFind(r); if (p) choose(p); else { pq.value = waPt.nama; showList(); waBox.style.display = "block"; waBox.textContent = `📩 Advis WA untuk ${waPt.label} — pasien tidak ditemukan otomatis di daftar IGD 48 jam, pilih dari daftar.`; } }
+          return;
+        }
+        showList(); if (curNoreg && !chosen) { const p = r.find((x) => x.noreg === curNoreg); if (p) choose(p); }
+      })
       .catch(() => { patients = patients || []; loading = false; showList(); });
     setTimeout(() => pq.focus(), 50);
 
