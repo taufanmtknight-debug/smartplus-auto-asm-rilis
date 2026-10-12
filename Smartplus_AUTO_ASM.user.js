@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.87.3
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.88.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.87.3
-// @description  v3.87.3: uji ASISTEN SUARA dengan Claude di Chrome asli — Multiple visit: sapaan (bu/pak/dek/bayi) memilih pasien yang sesuai bila nama ibu & bayinya sama; pemfis bawaan tidak hilang bila Claude hanya menulis temuan; Percakapan anamnesa: temuan yang diucapkan selalu masuk pemfis gabungan template; mode asisten diingat per halaman (pasien IGD = Percakapan anamnesa, rawat inap = Multiple visit). v3.87.2: uji panel Advis di WA asli — panel tidak lagi terpotong di bawah layar saat isinya bertambah; tombol Kirim selalu terlihat walau panel diperkecil; tombol "📤 Advis → ASGADAR" membesarkan panel yang sedang dikecilkan (isi & centang tetap). v3.87.1: panel Advis WA — lebar & tinggi bisa diperbesar/diperkecil dengan menarik pegangan di sudut kanan bawah (mouse/sentuh); ukuran diingat, tetap utuh saat dikecilkan lalu dibesarkan lagi. v3.87.0: panel "📤 Advis → Rencana ASGADAR" di WhatsApp Web punya tombol — (kecilkan menjadi judul saja, ▢ besarkan) dan bisa digeser lewat judulnya (mouse/sentuh) supaya chat WA tetap terbaca; posisi diingat di browser ini. v3.86.1: uji ulang di Chrome asli — Advis WA: tombol ditekan saat chat baru dibuka kini menunggu pesan termuat (dulu panel kosong "Belum ada advis"); MULTIPLE VISIT: bila Claude gagal (kunci salah/jaringan) TTV yang diucapkan (tensi/nadi/suhu/napas) tetap diisi dari transkrip, bukan TTV lama. v3.86.0: uji di Smartplus & WhatsApp Web asli — Advis WA: pesan rujukan/presentasi kasus (salam + "izin rencana rujuk", baris S:/O:, Nama:/Umur:) tidak lagi tercentang sebagai advis; pasien konsul format "1.Tn Nama, 63 THN" (sapaan di depan) kini terbaca; daftar pasien IGD dari tab Smartplus di latar ditunggu s.d. 90 dtk & diingat 5 menit; RESEP PULANG tempel: satuan "sdt"/"sdm" terbaca sebagai dosis cair. v3.85.0: HP/tablet — kotak fitur (menu AUTO ASM, preview MULTIPLE VISIT/KOMBINASI/RESEP PULANG, panel 🧠, dll.) tidak lagi diperbesar memenuhi layar; kembali ke ukuran seperti sebelum v3.73.0 atas permintaan dokter (bisa dicubit untuk memperbesar); fungsi tidak berubah. v3.84.0: RESEP PULANG — 📋 Tempel daftar obat pulang: tiap baris dibaca (nama, dosis & frekuensi persis seperti ditulis: 3x1, 2 x 1/2, S 2 dd I, 3 x C I, 1-0-1, No. X, ac/pc, k/p, selama 5 hari), dicocokkan ke master obat (obat/kekuatan tidak pernah diganti; yang ragu ⚠ dipilih dokter), preview bisa diedit, OK -> masuk e-resep (Simpan tetap lewat konfirmasi). v3.83.0: PAKET KONSUL IGD dari DAFTAR pasien IGD (belum membuka pasien) — ketik nama / No. RM, pilih pasien IGD 48 jam, konfirmasi, lalu halaman pasien dibuka dan PAKET KONSUL (SOAP + penunjang) berjalan otomatis seperti biasa; di halaman pasien tetap langsung berjalan; tidak menyimpan apa pun. v3.82.0: tombol Advis WA — aturan baru (instruksi dokter): semua advis 24 jam TERAKHIR sejak tombol ditekan (bukan lagi 24 jam sebelum advis yang dilihat; yang dilihat hanya ditandai); pemuatan chat lama lebih andal (naik selayar demi selayar, menunggu WA memuat lebih sabar) supaya advis lama tidak terlewat; laporan dokter jaga ("Izin ro sedang proses dok") dan pesan pengirim konsul tidak lagi dianggap advis; bila ada DPJP "Sp." di grup, hanya pesannya yang tercentang. v3.81.0: menu AUTO ASM di HP/tablet dikembalikan seperti sebelum v3.79.0 (daftar kelompok ▶ di kotak menu, tanpa halaman geser) atas permintaan dokter; fitur lain tidak berubah. v3.80.0: tombol Advis WA — chat digulir otomatis ke atas untuk memuat pesan 24 jam sebelum advis yang dilihat (WA hanya memuat pesan di sekitar layar) lalu kembali; pesan yang pernah terbaca diingat; nama pasien di kutipan kini terbaca (penulis & isi kutipan dulu menempel jadi satu baris). v3.79.0: HP/tablet — menu AUTO ASM layar penuh seperti PAKET KONSUL RANAP; kelompok fitur (ASGADAR, Penunjang, Resep, IGD, Rawat Inap) tiap halaman bisa DIGESER kiri/kanan atau dipilih dari tab di atas, kembali dari sub-menu ke halaman yang sama; tombol & fungsi tidak berubah, desktop tidak berubah. v3.78.0: tombol Advis WA — advis yang sedang dilihat diutamakan + semua advis 24 jam ke belakang (yang termuat di WA) tampil sebagai kartu (tiap kartu pasien & isi sendiri) lalu dikirim sekaligus; di Smartplus banyak pasien jadi antrean di panel ADVIS SPESIALIS (Simpan -> otomatis ke pasien berikutnya); advis yang sudah tertulis di Rencana tidak ditulis ulang, advis berubah / dari spesialis lain tetap ditambahkan; pesan sendiri & pertanyaan tidak lagi terbaca sebagai advis. v3.77.0: tombol Advis WA — advis yang tidak mengutip konsul: pasien diambil dari pesan konsul/baris pasien terdekat di atasnya; kotak pasien bisa diketik untuk mencari/memperbaiki dengan pilihan dari pasien di chat + daftar pasien IGD 48 jam Smartplus; nama tanpa No. RM yang cocok lebih dari satu tidak dipilih otomatis. v3.76.0: tombol Advis WA — pesan advis tercentang otomatis (balasan atas konsul / berisi terapi), pasien penerima advis dikenali dari pesan konsul (nama/No. RM): form GADAR pasien yang sama diisi, pasien lain -> panel ADVIS SPESIALIS dengan pasien itu terpilih otomatis; pesan balasan yang mengutip konsul kini membaca isi advis, bukan kutipannya. v3.75.0: ASISTEN Multiple visit — deteksi nama lebih akurat (ejaan Rasyid/Rasheed, Syifa/Shifa; "Pak Bagus"; salah dengar dicoba lagi lebih longgar sebagai "tidak yakin"); nama tidak terdeteksi -> preview tetap terbuka dengan ➕ Tambah pasien (ucapan sudah terisi), pasien terlewat bisa ditambah, transkrip kartu bisa diedit lalu disusun ulang. v3.74.0: ADVIS DPJP dari WhatsApp Web langsung ke Rencana ASGADAR — tombol "📤 Advis → ASGADAR" di WA Web: pilih pesan, pratinjau, Kirim; tab Smartplus (browser yang sama) menambahkannya di bawah Rencana form GADAR yang terbuka (ada Batalkan) atau membuka panel ADVIS SPESIALIS; tidak disimpan otomatis. v3.73.0: HP/tablet — preview MULTIPLE VISIT, panel 🧠 dan menu AUTO ASM diperbesar sesuai layar dan memenuhi layar (dulu kotak kecil di samping saat dibuka dari ASISTEN SUARA); perbaikan: pasien kartu diganti tidak lagi membawa isian/peringatan pasien sebelumnya, galat Claude per kartu, tidak bisa menyusun preview baru selama Save multiple berjalan (cegah CPPT dobel), ketikan tidak hilang saat kartu lain diperbarui. v3.72.2: ASISTEN Multiple visit — perbaikan laporan dokter: kata biasa tidak lagi terbaca sebagai nama pasien lain ("mau tanya" ≠ Tania, "pasien saat ini" ≠ Satria); satu kata tanpa "pasien/Pak/Bu" tidak pernah memulai pasien baru, satu kata setelah pemicu harus hampir persis, panggilan pendek minimal 4 huruf. v3.72.1: ASISTEN mode ⚡ Cepat (bawaan, instruksi dokter) — isian Multiple visit langsung tampil tanpa menunggu konteks klinis, peringatan ⚠ dari konteks menyusul di tiap kartu tanpa mengganggu isian/ketikan; IGD menunggu konteks maks 2,5 dtk; pilihan 📚 Lengkap (tunggu konteks dulu) di ⚙️. v3.72.0: ASISTEN SUARA membaca KONTEKS KLINIS pasien (pilihan dokter, tanpa nama/No.RM) — Multiple visit: ringkasan rawat inap (keluhan & TTV sebelumnya, pemfis, diagnosis, terapi berjalan, advis spesialis) + hasil lab terbaru tiap pasien; mode percakapan IGD: umur + lab kunjungan ini. Claude memakai konteks untuk memahami ucapan (salah dengar, perbandingan dengan sebelumnya) tetapi kolom tetap hanya dari ucapan; ⚠ PERINGATAN keamanan (lab kritis, TTV memburuk, bertentangan dengan terapi/alergi, dosis tidak lazim) tampil sebagai catatan saja, tidak diisi ke form; konteks yang dibaca bisa dilihat di tiap kartu; ganti pasien = Claude dipanggil ulang untuk kartu itu. v3.71.0: ASISTEN SUARA lebih akurat (pilihan dokter) — mode Multiple visit menampilkan pasien yang dikenali secara langsung saat bicara (✓ yakin / ⚠ tidak yakin, nama yang tidak tertangkap bisa segera diulang); daftar obat RS ikut dikirim ke Claude supaya nama obat yang salah dengar dibetulkan (tanpa mengganti obat/dosis); asisten belajar dari koreksi dokter — perubahan dokter pada isian asisten saat Simpan GADAR / Save multiple visit disimpan sebagai contoh gaya HANYA di browser ini (tanpa identitas, bisa dihapus di ⚙️). v3.70.0: ASISTEN SUARA — mode "Dikte dokter" diganti 🏥 Multiple visit: dokter menyebut nama pasien lalu visit (TTV/pemfis tidak normal & instruksi tambahan bila ada), lalu pasien berikutnya, dst.; ⏹ -> nama dicocokkan di browser dengan daftar pasien dirawat (nama tidak dikirim ke Claude, hanya PASIEN_1, PASIEN_2…), nama yang tidak persis dicari yang paling mungkin dan bisa diganti di tiap kartu; preview MULTIPLE VISIT terisi otomatis (bawaan multiple visit + temuan yang diucapkan), simpan tetap lewat "Save multiple visit" + konfirmasi; nama tidak yakin tidak dicentang. v3.69.0: fitur 🎙️ Rekam v3.68.0 (tab perekam GitHub Pages + layanan suara OpenAI) dihapus atas permintaan dokter — di tablet/HP tanpa dikte browser pakai 🎤 di keyboard layar; kunci OpenAI yang pernah disimpan dihapus otomatis dari browser. v3.68.0 (dihapus di v3.69.0): ASISTEN 🎙️ Rekam lewat tab perekam. v3.67.0: tombol 🎤 / Alt+V DIKTE SUARA terpisah dihapus (dikte tetap lewat panel ASISTEN 🧠); ASISTEN untuk IGD ramai — Claude hanya memakai ucapan yang nyambung dengan pasien yang diperiksa, mengabaikan suara bed sebelah/perawat/TV dan menampilkan potongan yang diabaikan (🔇) di pratinjau, ucapan yang kurang yakin dikenali ditandai "(?)" di mode percakapan, TTV ganda tanpa koreksi dikosongkan & ditanyakan. v3.66.0: audit fitur — ASISTEN: kesadaran yang diucapkan kini benar terpilih saat memakai template (dulu nilai pilihan Compos Mentis ikut berubah) dan GCS yang diucapkan tidak lagi tertimpa GCS template, perkiraan Claude tidak menimpa kesadaran/GCS yang sudah dipilih dokter, pemfis perkiraan Claude tidak menimpa pemfis yang sudah ditulis dokter (hanya temuan yang diucapkan ditambahkan), Terapkan yang tertekan dua kali tidak membuka form GADAR dua kali, keterangan pratinjau sesuai cara pengisian, order penunjang ditandai ✗ bila tombol Save tidak ditekan, diagnosis order memakai diagnosis template bila tidak diucapkan, nilai lab seperti "trombosit 150000" tidak lagi ikut disaring, batas tunggu Claude 90 dtk; DIKTE: Esc menghentikan dikte tanpa menutup form GADAR; tombol 🎤 & 🧠 pindah ke kiri tombol AUTO ASM (dulu menutupi menu). v3.65.0: ASISTEN — bila tidak ada template ASGADAR yang mendekati, kolom yang tidak diucapkan diisi perkiraan Claude (data paling mungkin untuk kasus itu, pemfis per sistem; tanpa obat/dosis baru), tampil terpisah di pratinjau & hanya mengisi kolom yang masih kosong; GADAR tetap Save manual. v3.64.0: ASISTEN — kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (dipilih Claude, bisa diganti di pratinjau; membuka form GADAR baru), pemfis template + temuan yang diucapkan, Riwayat Penyakit Sekarang lama diganti hasil terbaru; GADAR tetap Save manual. v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
+// @version      3.88.0
+// @description  v3.88.0: BASIS PENGETAHUAN KLINIS (permintaan dokter) — menu baru 📚 REFERENSI KLINIS: cari keluhan / diagnosis / ICD-10 / obat / merek / istilah awam; 100 diagnosis IGD lazim (ICD-10, gejala khas, tanda bahaya, penunjang, terapi IGD referensi, obat pulang KOMBINASI RESEP, tombol template ASGADAR & KOMBINASI RESEP), 125 obat generik (golongan, merek, dosis dewasa lazim, perhatian, nama di master RS), 84 istilah awam -> medis; di halaman pasien IGD diagnosis yang cocok dengan Assesment GADAR tampil paling atas; hanya dibaca/disalin, tidak mengisi atau menyimpan apa pun. ASISTEN SUARA ikut memakai pengetahuan ini (istilah awam, singkatan, nama diagnosis, merek -> generik) untuk memahami ucapan, tanpa menambah obat/dosis. RESEP PULANG tempel: nama MEREK yang tidak ada di master (mis. Lasix 40 mg) dicari generiknya dengan kekuatan sama, selalu ⚠ cek dokter. KOMBINASI RESEP mengenali istilah awam keluhan (sumeng, encok, ingusan, bengek, berak cair, kencing perih, dunia berputar). Template & dosis yang sudah disetujui tidak diubah. v3.87.3: uji ASISTEN SUARA dengan Claude di Chrome asli — Multiple visit: sapaan (bu/pak/dek/bayi) memilih pasien yang sesuai bila nama ibu & bayinya sama; pemfis bawaan tidak hilang bila Claude hanya menulis temuan; Percakapan anamnesa: temuan yang diucapkan selalu masuk pemfis gabungan template; mode asisten diingat per halaman (pasien IGD = Percakapan anamnesa, rawat inap = Multiple visit). v3.87.2: uji panel Advis di WA asli — panel tidak lagi terpotong di bawah layar saat isinya bertambah; tombol Kirim selalu terlihat walau panel diperkecil; tombol "📤 Advis → ASGADAR" membesarkan panel yang sedang dikecilkan (isi & centang tetap). v3.87.1: panel Advis WA — lebar & tinggi bisa diperbesar/diperkecil dengan menarik pegangan di sudut kanan bawah (mouse/sentuh); ukuran diingat, tetap utuh saat dikecilkan lalu dibesarkan lagi. v3.87.0: panel "📤 Advis → Rencana ASGADAR" di WhatsApp Web punya tombol — (kecilkan menjadi judul saja, ▢ besarkan) dan bisa digeser lewat judulnya (mouse/sentuh) supaya chat WA tetap terbaca; posisi diingat di browser ini. v3.86.1: uji ulang di Chrome asli — Advis WA: tombol ditekan saat chat baru dibuka kini menunggu pesan termuat (dulu panel kosong "Belum ada advis"); MULTIPLE VISIT: bila Claude gagal (kunci salah/jaringan) TTV yang diucapkan (tensi/nadi/suhu/napas) tetap diisi dari transkrip, bukan TTV lama. v3.86.0: uji di Smartplus & WhatsApp Web asli — Advis WA: pesan rujukan/presentasi kasus (salam + "izin rencana rujuk", baris S:/O:, Nama:/Umur:) tidak lagi tercentang sebagai advis; pasien konsul format "1.Tn Nama, 63 THN" (sapaan di depan) kini terbaca; daftar pasien IGD dari tab Smartplus di latar ditunggu s.d. 90 dtk & diingat 5 menit; RESEP PULANG tempel: satuan "sdt"/"sdm" terbaca sebagai dosis cair. v3.85.0: HP/tablet — kotak fitur (menu AUTO ASM, preview MULTIPLE VISIT/KOMBINASI/RESEP PULANG, panel 🧠, dll.) tidak lagi diperbesar memenuhi layar; kembali ke ukuran seperti sebelum v3.73.0 atas permintaan dokter (bisa dicubit untuk memperbesar); fungsi tidak berubah. v3.84.0: RESEP PULANG — 📋 Tempel daftar obat pulang: tiap baris dibaca (nama, dosis & frekuensi persis seperti ditulis: 3x1, 2 x 1/2, S 2 dd I, 3 x C I, 1-0-1, No. X, ac/pc, k/p, selama 5 hari), dicocokkan ke master obat (obat/kekuatan tidak pernah diganti; yang ragu ⚠ dipilih dokter), preview bisa diedit, OK -> masuk e-resep (Simpan tetap lewat konfirmasi). v3.83.0: PAKET KONSUL IGD dari DAFTAR pasien IGD (belum membuka pasien) — ketik nama / No. RM, pilih pasien IGD 48 jam, konfirmasi, lalu halaman pasien dibuka dan PAKET KONSUL (SOAP + penunjang) berjalan otomatis seperti biasa; di halaman pasien tetap langsung berjalan; tidak menyimpan apa pun. v3.82.0: tombol Advis WA — aturan baru (instruksi dokter): semua advis 24 jam TERAKHIR sejak tombol ditekan (bukan lagi 24 jam sebelum advis yang dilihat; yang dilihat hanya ditandai); pemuatan chat lama lebih andal (naik selayar demi selayar, menunggu WA memuat lebih sabar) supaya advis lama tidak terlewat; laporan dokter jaga ("Izin ro sedang proses dok") dan pesan pengirim konsul tidak lagi dianggap advis; bila ada DPJP "Sp." di grup, hanya pesannya yang tercentang. v3.81.0: menu AUTO ASM di HP/tablet dikembalikan seperti sebelum v3.79.0 (daftar kelompok ▶ di kotak menu, tanpa halaman geser) atas permintaan dokter; fitur lain tidak berubah. v3.80.0: tombol Advis WA — chat digulir otomatis ke atas untuk memuat pesan 24 jam sebelum advis yang dilihat (WA hanya memuat pesan di sekitar layar) lalu kembali; pesan yang pernah terbaca diingat; nama pasien di kutipan kini terbaca (penulis & isi kutipan dulu menempel jadi satu baris). v3.79.0: HP/tablet — menu AUTO ASM layar penuh seperti PAKET KONSUL RANAP; kelompok fitur (ASGADAR, Penunjang, Resep, IGD, Rawat Inap) tiap halaman bisa DIGESER kiri/kanan atau dipilih dari tab di atas, kembali dari sub-menu ke halaman yang sama; tombol & fungsi tidak berubah, desktop tidak berubah. v3.78.0: tombol Advis WA — advis yang sedang dilihat diutamakan + semua advis 24 jam ke belakang (yang termuat di WA) tampil sebagai kartu (tiap kartu pasien & isi sendiri) lalu dikirim sekaligus; di Smartplus banyak pasien jadi antrean di panel ADVIS SPESIALIS (Simpan -> otomatis ke pasien berikutnya); advis yang sudah tertulis di Rencana tidak ditulis ulang, advis berubah / dari spesialis lain tetap ditambahkan; pesan sendiri & pertanyaan tidak lagi terbaca sebagai advis. v3.77.0: tombol Advis WA — advis yang tidak mengutip konsul: pasien diambil dari pesan konsul/baris pasien terdekat di atasnya; kotak pasien bisa diketik untuk mencari/memperbaiki dengan pilihan dari pasien di chat + daftar pasien IGD 48 jam Smartplus; nama tanpa No. RM yang cocok lebih dari satu tidak dipilih otomatis. v3.76.0: tombol Advis WA — pesan advis tercentang otomatis (balasan atas konsul / berisi terapi), pasien penerima advis dikenali dari pesan konsul (nama/No. RM): form GADAR pasien yang sama diisi, pasien lain -> panel ADVIS SPESIALIS dengan pasien itu terpilih otomatis; pesan balasan yang mengutip konsul kini membaca isi advis, bukan kutipannya. v3.75.0: ASISTEN Multiple visit — deteksi nama lebih akurat (ejaan Rasyid/Rasheed, Syifa/Shifa; "Pak Bagus"; salah dengar dicoba lagi lebih longgar sebagai "tidak yakin"); nama tidak terdeteksi -> preview tetap terbuka dengan ➕ Tambah pasien (ucapan sudah terisi), pasien terlewat bisa ditambah, transkrip kartu bisa diedit lalu disusun ulang. v3.74.0: ADVIS DPJP dari WhatsApp Web langsung ke Rencana ASGADAR — tombol "📤 Advis → ASGADAR" di WA Web: pilih pesan, pratinjau, Kirim; tab Smartplus (browser yang sama) menambahkannya di bawah Rencana form GADAR yang terbuka (ada Batalkan) atau membuka panel ADVIS SPESIALIS; tidak disimpan otomatis. v3.73.0: HP/tablet — preview MULTIPLE VISIT, panel 🧠 dan menu AUTO ASM diperbesar sesuai layar dan memenuhi layar (dulu kotak kecil di samping saat dibuka dari ASISTEN SUARA); perbaikan: pasien kartu diganti tidak lagi membawa isian/peringatan pasien sebelumnya, galat Claude per kartu, tidak bisa menyusun preview baru selama Save multiple berjalan (cegah CPPT dobel), ketikan tidak hilang saat kartu lain diperbarui. v3.72.2: ASISTEN Multiple visit — perbaikan laporan dokter: kata biasa tidak lagi terbaca sebagai nama pasien lain ("mau tanya" ≠ Tania, "pasien saat ini" ≠ Satria); satu kata tanpa "pasien/Pak/Bu" tidak pernah memulai pasien baru, satu kata setelah pemicu harus hampir persis, panggilan pendek minimal 4 huruf. v3.72.1: ASISTEN mode ⚡ Cepat (bawaan, instruksi dokter) — isian Multiple visit langsung tampil tanpa menunggu konteks klinis, peringatan ⚠ dari konteks menyusul di tiap kartu tanpa mengganggu isian/ketikan; IGD menunggu konteks maks 2,5 dtk; pilihan 📚 Lengkap (tunggu konteks dulu) di ⚙️. v3.72.0: ASISTEN SUARA membaca KONTEKS KLINIS pasien (pilihan dokter, tanpa nama/No.RM) — Multiple visit: ringkasan rawat inap (keluhan & TTV sebelumnya, pemfis, diagnosis, terapi berjalan, advis spesialis) + hasil lab terbaru tiap pasien; mode percakapan IGD: umur + lab kunjungan ini. Claude memakai konteks untuk memahami ucapan (salah dengar, perbandingan dengan sebelumnya) tetapi kolom tetap hanya dari ucapan; ⚠ PERINGATAN keamanan (lab kritis, TTV memburuk, bertentangan dengan terapi/alergi, dosis tidak lazim) tampil sebagai catatan saja, tidak diisi ke form; konteks yang dibaca bisa dilihat di tiap kartu; ganti pasien = Claude dipanggil ulang untuk kartu itu. v3.71.0: ASISTEN SUARA lebih akurat (pilihan dokter) — mode Multiple visit menampilkan pasien yang dikenali secara langsung saat bicara (✓ yakin / ⚠ tidak yakin, nama yang tidak tertangkap bisa segera diulang); daftar obat RS ikut dikirim ke Claude supaya nama obat yang salah dengar dibetulkan (tanpa mengganti obat/dosis); asisten belajar dari koreksi dokter — perubahan dokter pada isian asisten saat Simpan GADAR / Save multiple visit disimpan sebagai contoh gaya HANYA di browser ini (tanpa identitas, bisa dihapus di ⚙️). v3.70.0: ASISTEN SUARA — mode "Dikte dokter" diganti 🏥 Multiple visit: dokter menyebut nama pasien lalu visit (TTV/pemfis tidak normal & instruksi tambahan bila ada), lalu pasien berikutnya, dst.; ⏹ -> nama dicocokkan di browser dengan daftar pasien dirawat (nama tidak dikirim ke Claude, hanya PASIEN_1, PASIEN_2…), nama yang tidak persis dicari yang paling mungkin dan bisa diganti di tiap kartu; preview MULTIPLE VISIT terisi otomatis (bawaan multiple visit + temuan yang diucapkan), simpan tetap lewat "Save multiple visit" + konfirmasi; nama tidak yakin tidak dicentang. v3.69.0: fitur 🎙️ Rekam v3.68.0 (tab perekam GitHub Pages + layanan suara OpenAI) dihapus atas permintaan dokter — di tablet/HP tanpa dikte browser pakai 🎤 di keyboard layar; kunci OpenAI yang pernah disimpan dihapus otomatis dari browser. v3.68.0 (dihapus di v3.69.0): ASISTEN 🎙️ Rekam lewat tab perekam. v3.67.0: tombol 🎤 / Alt+V DIKTE SUARA terpisah dihapus (dikte tetap lewat panel ASISTEN 🧠); ASISTEN untuk IGD ramai — Claude hanya memakai ucapan yang nyambung dengan pasien yang diperiksa, mengabaikan suara bed sebelah/perawat/TV dan menampilkan potongan yang diabaikan (🔇) di pratinjau, ucapan yang kurang yakin dikenali ditandai "(?)" di mode percakapan, TTV ganda tanpa koreksi dikosongkan & ditanyakan. v3.66.0: audit fitur — ASISTEN: kesadaran yang diucapkan kini benar terpilih saat memakai template (dulu nilai pilihan Compos Mentis ikut berubah) dan GCS yang diucapkan tidak lagi tertimpa GCS template, perkiraan Claude tidak menimpa kesadaran/GCS yang sudah dipilih dokter, pemfis perkiraan Claude tidak menimpa pemfis yang sudah ditulis dokter (hanya temuan yang diucapkan ditambahkan), Terapkan yang tertekan dua kali tidak membuka form GADAR dua kali, keterangan pratinjau sesuai cara pengisian, order penunjang ditandai ✗ bila tombol Save tidak ditekan, diagnosis order memakai diagnosis template bila tidak diucapkan, nilai lab seperti "trombosit 150000" tidak lagi ikut disaring, batas tunggu Claude 90 dtk; DIKTE: Esc menghentikan dikte tanpa menutup form GADAR; tombol 🎤 & 🧠 pindah ke kiri tombol AUTO ASM (dulu menutupi menu). v3.65.0: ASISTEN — bila tidak ada template ASGADAR yang mendekati, kolom yang tidak diucapkan diisi perkiraan Claude (data paling mungkin untuk kasus itu, pemfis per sistem; tanpa obat/dosis baru), tampil terpisah di pratinjau & hanya mengisi kolom yang masih kosong; GADAR tetap Save manual. v3.64.0: ASISTEN — kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (dipilih Claude, bisa diganti di pratinjau; membuka form GADAR baru), pemfis template + temuan yang diucapkan, Riwayat Penyakit Sekarang lama diganti hasil terbaru; GADAR tetap Save manual. v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @match        http://*/*
@@ -52,8 +52,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.87.3";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.87.3");
+  window.__SP_AUTO_ASM_LOADED__ = "3.88.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.88.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -2202,21 +2202,22 @@
   // Kata kunci keluhan di Assesment GADAR (keluhan utama, RPS, diagnosis, masalah). Kata yang dinegasikan
   // ("demam (-)", "tidak demam", "demam disangkal", "alergi: tidak ada") tidak dihitung.
   // v3.40.0 (instruksi dokter 5 Okt 2026): kamus keluhan diperluas untuk obat-obat KOMBINASI RESEP.
+  // v3.88.0: + istilah awam (sumeng, encok, ingusan, bengek, berak cair, kencing perih, dunia berputar, …).
   const SP_COMPLAINT_KEYWORDS = {
-    DEMAM: /demam|febris|febrile|panas badan|badan panas|badan hangat|meriang|hiperpireksia|hipertermi|\bfever|\bobs\.? febris|\bvf\b|\bdbd\b|\bdhf\b|dengue/gi,
+    DEMAM: /demam|febris|febrile|panas badan|badan panas|badan hangat|meriang|hiperpireksia|hipertermi|sumeng|\bfever|\bobs\.? febris|\bvf\b|\bdbd\b|\bdhf\b|dengue/gi,
     // v3.57.0: sakit kepala dipisah dari nyeri umum (sakit kepala -> Ibuprofen, nyeri lain -> Ketorolac).
     NYERI: /nyeri(?!\s+kepala)|kolik|vulnus|luka|cedera|trauma|sakit gigi|odontalgia|pulpitis|dismenore|nyeri haid/gi,
     SAKIT_KEPALA: /sakit kepala|nyeri kepala|kepala (terasa )?(sakit|nyeri|pusing|berat)|pusing|cephal|sefal|migren|migrain|\btth\b|tension type/gi,
-    NYERI_OTOT: /myalgia|mialgia|nyeri otot|pegal|nyeri sendi|ngilu|linu|artralgia|arthralgia|arthritis|artritis|\bgout\b|asam urat|hiperurisemi|\blbp\b|low back pain|nyeri pinggang|nyeri punggung|sakit pinggang|ischialgia|iskialgia|hnp|keseleo|terkilir|sprain|strain|kontusi|memar|trauma tumpul|jatuh|\bkll\b|kecelakaan|fraktur|dislokasi|tendinitis|myofascial|osteoarthritis/gi,
+    NYERI_OTOT: /myalgia|mialgia|nyeri otot|pegal|nyeri sendi|ngilu|linu|artralgia|arthralgia|arthritis|artritis|\bgout\b|asam urat|hiperurisemi|\blbp\b|low back pain|nyeri pinggang|nyeri punggung|sakit pinggang|ischialgia|iskialgia|hnp|keseleo|terkilir|sprain|strain|kontusi|memar|trauma tumpul|jatuh|\bkll\b|kecelakaan|fraktur|dislokasi|tendinitis|myofascial|osteoarthritis|encok|kecetit/gi,
     MUAL_MUNTAH: /mual|muntah|vomit|nausea|emesis|eneg/gi,
     // v3.57.0: muntah hebat = >= 4x (dulu "muntah 2x" pun dianggap hebat -> ondansetron; muntah biasa -> domperidon).
     MUNTAH_HEBAT: /hiperemesis|muntah[^.,;\n]{0,15}(terus|hebat|berkali|sering|>\s*\d|\b([4-9]|\d{2,})\s*x|\b([4-9]|\d{2,})\s*kali)|muntah-muntah|muntah muntah|tidak bisa makan minum/gi,
-    BATUK_PILEK: /batuk|pilek|\bbapil\b|\bflu\b|influenza|ispa|rhinit|rinit|common cold|commond cold|bersin|hidung tersumbat|hidung meler|nasofaringit/gi,
+    BATUK_PILEK: /batuk|pilek|\bbapil\b|\bflu\b|influenza|ispa|rhinit|rinit|common cold|commond cold|bersin|hidung tersumbat|hidung meler|nasofaringit|ingusan|selesma/gi,
     BATUK_KERING: /batuk kering|batuk tidak berdahak|batuk tanpa dahak|batuk gatal|batuk non ?produktif/gi,
-    RADANG_BENGKAK: /bengkak|radang|tonsil|faringit|laringit|edema|inflamasi|sakit menelan|nyeri telan|odinofagi|stomatitis|sariawan|gusi bengkak/gi,
+    RADANG_BENGKAK: /bengkak|radang|tonsil|faringit|laringit|edema|inflamasi|sakit menelan|nyeri telan|odinofagi|stomatitis|sariawan|gusi bengkak|amandel/gi,
     ALERGI: /gatal|biduran|urtikaria|urticaria|alergi|allergy|ruam|bentol|kaligata|dermatitis|eksim|eczema|pruritus|erupsi obat|reaksi obat|rhinitis alergi|rinitis alergi|konjungtivitis alergi|digigit serangga|gigitan serangga|insect bite/gi,
-    ASMA: /asma|asthma|\bppok\b|\bcopd\b|mengi|wheez|bronkospasme|eksaserbasi akut|angioedema|bronkitis asmatik/gi,
-    DIARE: /diare|mencret|bab cair|\bgea\b|\bge\b|gastroenteritis|disentri|dysentri|bab encer|buang air besar cair/gi,
+    ASMA: /asma|asthma|\bppok\b|\bcopd\b|mengi|wheez|bronkospasme|eksaserbasi akut|angioedema|bronkitis asmatik|bengek|ngik-ngik/gi,
+    DIARE: /diare|mencret|bab cair|\bgea\b|\bge\b|gastroenteritis|disentri|dysentri|bab encer|buang air besar cair|berak cair|muntaber/gi,
     DIARE_NONINFEKSI: /diare (non ?infeksi|fungsional|akut tanpa (demam|lendir|darah))|\bibs\b|irritable bowel/gi,
     NYERI_ULU_HATI: /ulu hati|epigastri|dispepsia|dyspepsia|gastritis|maag|perih|sebah/gi,
     GERD: /\bgerd\b|refluks|reflux|heartburn|dada (terasa )?terbakar|panas di dada|rasa panas di dada|asam lambung naik|sendawa|regurgitasi|pahit di mulut/gi,
@@ -2224,8 +2225,8 @@
     KEMBUNG: /kembung|begah|flatulen|distensi|perut penuh|banyak gas/gi,
     INFEKSI_BAKTERI: /\bBP\b|bronko?pneumoni|pneumoni|ispa|faringit|tonsil|otitis|\bomsk\b|\boma\b|sinusit|rhinosinusit|bronkit|vulnus|luka robek|luka terbuka|abses gigi|gigi berlubang|infeksi bakteri|bacterial infection|leukositosis/gi,
     INFEKSI_KULIT: /abses|selulit|furunkel|furunkul|karbunkel|bisul|impetigo|paronikia|erisipelas|luka (terinfeksi|bernanah|infeksi)|bernanah|\bpus\b|ulkus (diabetik|dm|pedis)|ulkus kaki|gangren|pioderma|folikulitis/gi,
-    ISK_TIFOID: /\bisk\b|\buti\b|infeksi saluran kemih|disuria|dysuria|anyang|nyeri (saat )?(bak|kencing)|sakit (saat )?(bak|kencing)|sistitis|pielonefritis|urin keruh|tifoid|typhoid|thypoid|typhus|tipes|tifus|\bwidal\b|salmonell|demam enterik/gi,
-    VERTIGO: /vertigo|pusing berputar|kepala berputar|sekeliling berputar|dizzi|\bbppv\b|sempoyongan|kliyengan|tinnitus|telinga berdenging|meniere/gi,
+    ISK_TIFOID: /\bisk\b|\buti\b|infeksi saluran kemih|disuria|dysuria|anyang|nyeri (saat )?(bak|kencing)|sakit (saat )?(bak|kencing)|sistitis|pielonefritis|urin keruh|kencing (sakit|perih|panas)|tifoid|typhoid|thypoid|typhus|tipes|tifus|\bwidal\b|salmonell|demam enterik/gi,
+    VERTIGO: /vertigo|pusing berputar|kepala berputar|sekeliling berputar|dunia berputar|dizzi|\bbppv\b|sempoyongan|kliyengan|tinnitus|telinga berdenging|meniere/gi,
     MABUK: /mabuk perjalanan|mabuk kendaraan|mabuk laut|motion sickness|mabuk darat/gi,
     HIPERTENSI: /hipertensi|hypertension|\bht\b|\bhtn\b|tekanan darah tinggi|darah tinggi|urgensi hipertensi|hipertensi urgensi|tensi tinggi/gi,
     DM: /diabetes|\bdm\b|\bdmt2\b|kencing manis|hiperglikemi|hyperglycemi|gula darah tinggi|\bgds\s*(tinggi|>\s*2\d\d)/gi,
@@ -2306,6 +2307,608 @@
     if (!spSuggestDrugKeys(branchKey, complaintHits).includes(key)) return [];
     const map = SP_SUGGEST_ONE[branchKey] || {};
     return [...new Set(Object.entries(map).filter(([c, keys]) => keys.includes(key) && complaintHits[c]).map(([c]) => complaintHits[c]))];
+  }
+
+  // =========================
+  // v3.88.0 (permintaan dokter 12 Okt 2026): BASIS PENGETAHUAN KLINIS — keluhan, diagnosis (ICD-10), terapi IGD,
+  // obat pulang, daftar obat & merek. Dipakai sebagai REFERENSI: panel 📚 REFERENSI KLINIS (cari/baca, salin), saran
+  // KOMBINASI RESEP (sinonim keluhan), ASISTEN SUARA (istilah awam, singkatan, merek -> generik untuk membetulkan salah
+  // dengar), RESEP PULANG tempel (merek -> generik, tetap ⚠ cek dokter). TIDAK PERNAH mengisi form, terapi, atau dosis
+  // secara otomatis; template ASGADAR/resep & dosis yang sudah disetujui dokter TIDAK diubah.
+  // Terapi IGD = referensi umum DEWASA (kecuali ditulis anak) dari pedoman lazim — selalu sesuaikan pasien & kebijakan RS.
+  // Fungsi murni, diuji di tests/uji_v3_88.js.
+  // =========================
+  // Diagnosis: [id, ICD-10, nama, alias (dipisah |, huruf kecil), kelompok, gejala khas, tanda bahaya, penunjang,
+  //             terapi IGD (referensi), obat pulang dewasa (key DRUG_OPTIONS.adult), obat pulang anak (key DRUG_OPTIONS.child),
+  //             template ASGADAR (key TEMPLATES) atau ""]
+  const SP_KB_DX = [
+    // ---- Respirasi / THT ----
+    ["COMMON_COLD", "J00", "Common cold (nasofaringitis akut)", "common cold|commond cold|nasofaringitis|rhinitis akut|rinitis akut|selesma|pilek|flu biasa", "Respirasi & THT",
+      "Pilek, hidung tersumbat, bersin, nyeri tenggorok ringan, ± demam ringan", "Sesak, demam tinggi >3 hari, batuk >2 minggu", "Klinis",
+      "Simptomatik; cukup minum; antibiotik TIDAK rutin", ["PCT", "CTM", "AMBROXOL"], ["PCT", "BAPIL"], ""],
+    ["ISPA", "J06.9", "ISPA (infeksi saluran pernapasan atas akut)", "ispa|urti|infeksi saluran pernapasan atas|infeksi saluran napas atas|bapil|batuk pilek", "Respirasi & THT",
+      "Batuk, pilek, nyeri tenggorok, demam", "Napas cepat/retraksi (curiga pneumonia), SpO2 <95%, sulit minum (anak)", "DL bila demam ≥3 hari",
+      "Simptomatik (PCT, mukolitik, antihistamin); antibiotik bila curiga bakteri", ["PCT", "AMBROXOL", "CTM"], ["PCT", "BAPIL"], "FEBRIS_VI_BI"],
+    ["FARINGITIS", "J02.9", "Faringitis akut", "faringitis|pharyngitis|radang tenggorok|radang tenggorokan|sakit menelan|nyeri telan|odinofagia", "Respirasi & THT",
+      "Nyeri tenggorok/menelan, faring hiperemis, demam", "Sulit membuka mulut/trismus, suara 'hot potato', drooling (abses peritonsil/epiglotitis)", "Klinis; skor Centor/McIsaac",
+      "Analgetik-antipiretik; Centor ≥3: amoxicillin 3x500 mg 10 hari (alergi penisilin: azitromisin)", ["PCT", "DEXA", "AMOX"], ["PCT", "RADANG", "AMOX"], ""],
+    ["TONSILITIS", "J03.9", "Tonsilitis akut", "tonsilitis|tonsillitis|tonsilofaringitis|amandel|radang amandel", "Respirasi & THT",
+      "Nyeri telan, tonsil membesar hiperemis ± detritus, demam", "Abses peritonsil (uvula terdorong, trismus), sumbatan napas", "Klinis; DL",
+      "Analgetik-antipiretik; antibiotik bila bakteri (amoxicillin 3x500 mg 10 hari)", ["PCT", "AMOX", "DEXA"], ["PCT", "AMOX", "RADANG"], ""],
+    ["SINUSITIS", "J01.9", "Rinosinusitis akut", "sinusitis|rinosinusitis|rhinosinusitis", "Respirasi & THT",
+      "Hidung tersumbat, sekret purulen, nyeri wajah/dahi, penciuman turun", "Edema periorbita, gangguan penglihatan, nyeri kepala hebat/kaku kuduk", "Klinis",
+      "Cuci hidung NaCl 0,9%, dekongestan, analgetik; antibiotik bila >10 hari / berat / memburuk (amoxicillin)", ["PCT", "CETIRIZINE", "AMOX"], ["PCT", "CETIRIZINE"], ""],
+    ["OMA", "H66.9", "Otitis media akut", "otitis media|\\boma\\b|congek|congekan|sakit telinga|nyeri telinga|otalgia", "Respirasi & THT",
+      "Nyeri telinga, demam, membran timpani hiperemis/bulging, ± otore", "Bengkak/nyeri belakang telinga (mastoiditis), paresis wajah, kaku kuduk", "Otoskopi",
+      "Analgetik; amoxicillin (dewasa 3x500 mg 5–7 hari; anak 80–90 mg/kg/hari); tetes telinga bila otore", ["PCT", "AMOX"], ["PCT", "AMOX"], ""],
+    ["EPISTAKSIS", "R04.0", "Epistaksis", "epistaksis|epistaxis|mimisan", "Respirasi & THT",
+      "Perdarahan dari hidung", "Perdarahan tidak berhenti >20 menit, hemodinamik tidak stabil, posterior, antikoagulan, TD sangat tinggi", "TD; DL & faal hemostasis bila berulang/berat",
+      "Duduk condong ke depan, tekan cuping hidung 10–15 menit, tampon anterior (± adrenalin/lidokain); asam traneksamat; atasi hipertensi", ["TRANEKSAMAT"], [], ""],
+    ["BRONKITIS", "J20.9", "Bronkitis akut", "bronkitis|bronchitis", "Respirasi & THT",
+      "Batuk ± dahak, ronki kasar, tanpa tanda pneumonia", "Sesak, SpO2 rendah, demam tinggi menetap", "Ro thorax bila curiga pneumonia",
+      "Simptomatik, mukolitik; nebu bila wheezing; antibiotik tidak rutin", ["AMBROXOL", "PCT"], ["BAPIL", "PCT"], ""],
+    ["PNEUMONIA", "J18.9", "Pneumonia / Bronkopneumonia", "pneumonia|pneumoni|bronkopneumonia|bronkopneumoni|bronchopneumonia|\\bbp\\b|\\bcap\\b|\\bhap\\b", "Respirasi & THT",
+      "Demam, batuk, sesak, napas cepat, ronki basah", "SpO2 <92%, RR >30, TD sistolik <90, penurunan kesadaran, CURB-65 ≥2", "DL, Ro thorax, AGD/elektrolit bila berat",
+      "O2 target SpO2 ≥94%; Ceftriaxon 1x2 g iv ± azitromisin 1x500 mg; nebu bila wheezing; antipiretik; anak: ceftriaxon/ampisilin sesuai BB", ["AMOX", "PCT", "AMBROXOL"], ["AMOX", "PCT"], "BP"],
+    ["BRONKIOLITIS", "J21.9", "Bronkiolitis (anak <2 th)", "bronkiolitis|bronchiolitis", "Respirasi & THT",
+      "Bayi: batuk, pilek, napas cepat, wheezing/ronki, retraksi", "Apnea, SpO2 <92%, sulit menyusu, dehidrasi, retraksi berat", "Klinis; SpO2",
+      "O2, suction hidung, cairan; nebu NaCl 3% bila perlu; bronkodilator/steroid tidak rutin", [], ["PCT"], ""],
+    ["ASMA", "J45.9", "Asma (serangan akut)", "asma|asthma|status asmatikus|serangan asma|mengi|bengek|sesak berbunyi", "Respirasi & THT",
+      "Sesak episodik, wheezing, batuk malam, riwayat asma", "Bicara kata per kata, silent chest, SpO2 <92%, sianosis, gelisah/penurunan kesadaran", "SpO2; AGD bila berat; Ro thorax bila curiga komplikasi",
+      "O2; nebu salbutamol 2,5–5 mg / combivent tiap 20 menit (3x dalam 1 jam); MP 62,5–125 mg iv atau dexametason 5–10 mg iv; MgSO4 2 g iv dalam 20 menit bila berat", ["MP4", "CETIRIZINE"], ["CETIRIZINE"], ""],
+    ["PPOK", "J44.1", "PPOK eksaserbasi akut", "ppok|copd|eksaserbasi ppok|bronkitis kronis|emfisema", "Respirasi & THT",
+      "Perokok, sesak memberat, dahak bertambah/purulen", "Penurunan kesadaran (retensi CO2), SpO2 <88%, otot bantu napas", "Ro thorax, AGD, DL, EKG",
+      "O2 target SpO2 88–92%; nebu combivent; MP 62,5 mg iv / prednison 40 mg 5 hari; antibiotik bila sputum purulen", ["MP4", "AMBROXOL"], [], ""],
+    ["INFLUENZA", "J11.1", "Influenza", "influenza|\\bflu\\b", "Respirasi & THT",
+      "Demam mendadak, mialgia, sakit kepala, batuk", "Sesak, nyeri dada, penurunan kesadaran, komorbid berat", "Klinis",
+      "Simptomatik, istirahat; oseltamivir 2x75 mg 5 hari bila risiko tinggi & <48 jam", ["PCT", "AMBROXOL"], ["PCT"], "FEBRIS_VI_BI"],
+    ["TB_PARU", "A16.2", "Tuberkulosis paru", "tb paru|tbc|tuberkulosis|tuberculosis|\\bkp\\b|koch pulmonum|\\btb\\b", "Respirasi & THT",
+      "Batuk >2 minggu, keringat malam, BB turun, hemoptisis", "Hemoptisis masif, sesak berat", "Ro thorax, TCM/BTA sputum",
+      "Masker & isolasi; jangan mulai OAT di IGD tanpa diagnosis; rujuk program TB/DOTS; hemoptisis: asam traneksamat", ["TRANEKSAMAT"], [], ""],
+    // ---- Kardiovaskular ----
+    ["HIPERTENSI", "I10", "Hipertensi (urgensi)", "hipertensi|hypertension|\\bht\\b|\\bhtn\\b|darah tinggi|tensi tinggi|urgensi hipertensi|hipertensi urgensi", "Kardiovaskular",
+      "TD ≥180/120 tanpa kerusakan organ target, sakit kepala/tengkuk berat", "Nyeri dada, sesak, defisit neurologis, penurunan kesadaran, gangguan penglihatan (EMERGENSI)", "EKG, urinalisis, ureum/kreatinin",
+      "Urgensi: obat oral (captopril 25 mg / amlodipin 5–10 mg), turunkan bertahap 24–48 jam. Emergensi: rawat, nicardipin drip, turunkan MAP ≤25% dalam 1 jam pertama", ["AMLODIPINE", "CAPTOPRIL"], [], ""],
+    ["ACS", "I21.9", "Sindrom koroner akut (STEMI/NSTEMI/UAP)", "acs|sindrom koroner akut|stemi|nstemi|uap|unstable angina|angina pektoris|infark miokard|ami\\b|nyeri dada tipikal|serangan jantung", "Kardiovaskular",
+      "Nyeri dada kiri seperti ditindih >20 menit, menjalar ke lengan/rahang, keringat dingin", "Hipotensi, edema paru, aritmia, syok", "EKG 12 sadapan <10 menit (ulang), troponin, DL, elektrolit, GDS",
+      "O2 bila SpO2 <90%; aspirin 160–320 mg kunyah; clopidogrel 300 mg; ISDN 5 mg SL bila TD sistolik >90; morfin 2–4 mg iv bila nyeri menetap; konsul jantung segera", [], [], ""],
+    ["CHF", "I50.0", "Gagal jantung akut / CHF", "chf|gagal jantung|decomp|dekompensasi kordis|edema paru|congestive heart failure|adhf", "Kardiovaskular",
+      "Sesak memberat saat berbaring/malam, edema tungkai, ronki basah, JVP meningkat", "SpO2 <90%, TD sistolik <90 (syok kardiogenik), nyeri dada", "EKG, Ro thorax, DL, ureum/kreatinin, elektrolit, troponin",
+      "Posisi duduk, O2; furosemid 40 mg iv (atau 1–2,5x dosis oral harian); nitrat bila TD >110; konsul jantung", [], [], ""],
+    ["AF", "I48", "Fibrilasi atrium", "atrial fibrilasi|fibrilasi atrium|\\baf\\b|afib|af rvr", "Kardiovaskular",
+      "Berdebar, nadi tidak teratur", "Hipotensi, nyeri dada, edema paru, penurunan kesadaran (tidak stabil -> kardioversi)", "EKG, elektrolit, TSH bila baru",
+      "Tidak stabil: kardioversi sinkron. Stabil: kontrol laju (bisoprolol / diltiazem / digoksin); antikoagulan sesuai DPJP", [], [], ""],
+    ["SVT", "I47.1", "Takikardia supraventrikular (SVT)", "svt|takikardia supraventrikular|psvt", "Kardiovaskular",
+      "Berdebar mendadak, nadi >150 teratur, QRS sempit", "Hipotensi, nyeri dada, sinkop", "EKG, elektrolit",
+      "Manuver vagal (modified Valsalva); adenosin 6 mg iv bolus cepat lalu 12 mg; tidak stabil: kardioversi sinkron", [], [], ""],
+    ["SINKOP", "R55", "Sinkop", "sinkop|syncope|pingsan|semaput", "Kardiovaskular",
+      "Hilang kesadaran sesaat, pulih spontan", "Saat aktivitas/berbaring, nyeri dada, berdebar, riwayat jantung, trauma kepala, usia lanjut", "EKG, GDS, DL, TD ortostatik",
+      "Posisi terlentang, cari penyebab (vasovagal/ortostatik/kardiak), GDS, rehidrasi bila perlu", [], [], ""],
+    ["STROKE_INFARK", "I63.9", "Stroke non hemoragik (infark)", "snh|stroke non hemoragik|stroke infark|stroke iskemik|cva infark|infark serebri|lemah separuh|hemiparesis|mulut mencong|bicara pelo", "Kardiovaskular",
+      "Defisit neurologis mendadak (lemah separuh, wajah mencong, bicara pelo)", "Penurunan kesadaran, onset <4,5 jam (kandidat trombolisis), muntah/sakit kepala hebat", "CT scan kepala non kontras segera, GDS, EKG, DL, faal hemostasis, elektrolit",
+      "ABC, kepala 30°, NS; JANGAN turunkan TD kecuali >220/120; jangan beri antiplatelet sebelum CT; GDS; konsul neurologi (onset <4,5 jam = segera)", [], [], ""],
+    ["STROKE_HEMORAGIK", "I61.9", "Stroke hemoragik (perdarahan intraserebral)", "sh\\b|stroke hemoragik|stroke perdarahan|ich\\b|perdarahan intraserebral|pis\\b", "Kardiovaskular",
+      "Defisit neurologis mendadak + sakit kepala hebat, muntah, penurunan kesadaran", "GCS turun, pupil anisokor, TD sangat tinggi", "CT scan kepala non kontras segera, faal hemostasis",
+      "ABC, kepala 30°; target TD sistolik ~140–160 (sesuai neuro); hentikan antikoagulan; konsul neurologi/bedah saraf", [], [], "PENURUNAN_KESADARAN"],
+    ["TIA", "G45.9", "Transient ischemic attack (TIA)", "tia\\b|transient ischemic|serangan iskemik sesaat", "Kardiovaskular",
+      "Defisit neurologis fokal sementara, pulih <24 jam", "Berulang, skor ABCD2 tinggi", "CT scan kepala, EKG, GDS, profil lipid",
+      "Konsul neurologi; antiplatelet setelah perdarahan disingkirkan (sesuai DPJP)", [], [], ""],
+    // ---- Saluran cerna ----
+    ["GEA", "A09", "Gastroenteritis akut / diare akut", "gea|gastroenteritis|diare akut|diare|mencret|muntaber|bab cair|bab encer|berak cair|gastro enteritis", "Saluran cerna",
+      "BAB cair ≥3x/hari, ± muntah, nyeri perut, demam", "Dehidrasi berat (letargi, mata cekung, turgor sangat lambat), BAB darah, demam tinggi, bayi <6 bulan", "DL, elektrolit bila dehidrasi sedang–berat, feses lengkap bila berdarah/berlendir",
+      "Rehidrasi sesuai derajat dehidrasi (oralit / RL); ondansetron 4 mg iv bila muntah; anak: zinc 10 hari + oralit (rencana A/B/C); antibiotik hanya bila disentri", ["DIATAB", "DOMPERIDON", "PCT"], ["ZINC", "ORALIT", "INTERZINC"], "GEA"],
+    ["DISENTRI", "A03.9", "Disentri", "disentri|dysentri|bab darah lendir|bab berdarah|berak darah", "Saluran cerna",
+      "BAB cair berdarah/berlendir, tenesmus, demam", "Dehidrasi, syok, anak gizi buruk", "Feses lengkap, DL",
+      "Rehidrasi; antibiotik (anak: cefixime; dewasa: ciprofloxacin 2x500 mg 3 hari); zinc pada anak", ["CEFIXIME", "PCT"], ["CEFIXIME", "ZINC", "ORALIT"], "GEA"],
+    ["DISPEPSIA", "K30", "Dispepsia", "dispepsia|dyspepsia|sindrom dispepsia|maag|sakit maag|lambung|ulu hati|nyeri ulu hati|epigastrium", "Saluran cerna",
+      "Nyeri/perih ulu hati, kembung, mual, cepat kenyang", "Usia >40 + nyeri dada (singkirkan ACS: EKG), melena/hematemesis, BB turun, muntah persisten", "EKG bila ada faktor risiko jantung",
+      "Omeprazol 40 mg iv atau ranitidin 50 mg iv; antasida; ondansetron 4 mg iv bila mual", ["RANITIDIN", "ANTASIDA_SUSP", "DOMPERIDON"], ["RANITIDIN"], "ABDOMINAL"],
+    ["GASTRITIS", "K29.7", "Gastritis", "gastritis|gastropati|radang lambung", "Saluran cerna",
+      "Nyeri ulu hati, mual, riwayat NSAID/telat makan", "Hematemesis/melena, nyeri hebat mendadak (perforasi)", "Klinis; EKG bila usia >40",
+      "Omeprazol 40 mg iv / ranitidin 50 mg iv; antasida; hentikan NSAID", ["OMEPRAZOLE", "ANTASIDA_SUSP", "SUKRALFAT"], ["RANITIDIN"], "ABDOMINAL"],
+    ["GERD", "K21.9", "GERD (refluks gastroesofagus)", "gerd|refluks|reflux|heartburn|asam lambung naik", "Saluran cerna",
+      "Rasa terbakar di dada/ulu hati, regurgitasi, pahit di mulut", "Disfagia, BB turun, nyeri dada tipikal (singkirkan ACS)", "EKG bila nyeri dada",
+      "PPI (omeprazol), antasida; posisi kepala lebih tinggi, hindari makan larut malam", ["OMEPRAZOLE", "ANTASIDA_SUSP"], ["RANITIDIN"], ""],
+    ["SCBA", "K92.2", "Perdarahan saluran cerna atas (hematemesis/melena)", "scba|perdarahan saluran cerna|hematemesis|melena|bab hitam|muntah darah|muntah hitam|ugib", "Saluran cerna",
+      "Muntah darah/kopi, BAB hitam lengket", "Takikardia, hipotensi, Hb turun, penurunan kesadaran", "DL, golongan darah & cross match, ureum/kreatinin, faal hemostasis",
+      "2 jalur iv, resusitasi cairan; omeprazol 80 mg iv bolus lalu 8 mg/jam (atau 40 mg iv 2x); puasa; transfusi bila Hb <7 (<8 penyakit jantung); konsul penyakit dalam", [], [], ""],
+    ["KOLIK_ABDOMEN", "R10.4", "Nyeri perut / kolik abdomen", "kolik abdomen|abdominal pain|nyeri perut|sakit perut|kram perut|mules|abdominal colic", "Saluran cerna",
+      "Nyeri perut hilang timbul", "Defans muskular, nyeri lepas, perut kaku/distensi, muntah hijau, hipotensi, kehamilan", "DL, urinalisis, tes kehamilan (wanita usia subur), USG abdomen",
+      "Hyoscine butylbromide 20 mg iv / ketorolac 30 mg iv; cari penyebab (apendisitis, batu, KET, dll.)", ["KETOROLAC", "ANTASIDA"], ["PCT"], "ABDOMINAL"],
+    ["APENDISITIS", "K35.9", "Apendisitis akut", "apendisitis|appendicitis|usus buntu|radang usus buntu|app akut", "Saluran cerna",
+      "Nyeri berpindah dari ulu hati ke kanan bawah, mual, demam, McBurney +", "Nyeri seluruh perut/defans (perforasi), syok", "DL, urinalisis, USG abdomen; skor Alvarado",
+      "Puasa, cairan iv, analgetik; antibiotik (ceftriaxon 1x2 g + metronidazol 3x500 mg iv) setelah konsul bedah", [], [], "ABDOMINAL"],
+    ["KOLELITIASIS", "K80.2", "Kolelitiasis / kolik bilier", "kolelitiasis|cholelithiasis|batu empedu|kolik bilier|kolesistitis|cholecystitis", "Saluran cerna",
+      "Nyeri kanan atas/ulu hati setelah makan berlemak, menjalar ke punggung kanan, Murphy +", "Demam + ikterik (kolangitis), nyeri menetap >6 jam (kolesistitis)", "DL, SGOT/SGPT, bilirubin, USG abdomen",
+      "Ketorolac 30 mg iv / hyoscine butylbromide 20 mg iv; puasa bila kolesistitis; konsul bedah", ["KETOROLAC"], [], "ABDOMINAL"],
+    ["ILEUS", "K56.6", "Ileus obstruktif", "ileus|obstruksi usus|tidak bisa kentut|tidak bisa bab", "Saluran cerna",
+      "Perut kembung, muntah, tidak BAB & flatus, nyeri kolik, BU meningkat/metalik", "Muntah fekal, peritonitis, syok, hernia inkarserata", "Ro BNO 3 posisi, DL, elektrolit",
+      "Puasa, NGT dekompresi, kateter urin, cairan iv, koreksi elektrolit; konsul bedah", [], [], ""],
+    ["HEMOROID", "I84.9", "Hemoroid", "hemoroid|haemorrhoid|ambeien|wasir|ambeyen", "Saluran cerna",
+      "BAB berdarah segar menetes, benjolan anus", "Perdarahan banyak, trombosis/nyeri hebat, anemia", "DL bila perdarahan banyak",
+      "Analgetik, pelunak feses (laktulosa), rendam air hangat, serat; konsul bedah bila prolaps/trombosis", ["PCT"], [], ""],
+    ["KONSTIPASI", "K59.0", "Konstipasi", "konstipasi|obstipasi|susah bab|sembelit|sulit bab", "Saluran cerna",
+      "BAB jarang/keras, mengedan", "Muntah, distensi, tidak flatus (ileus), BB turun, darah", "Ro BNO bila curiga obstruksi",
+      "Laktulosa 1x15 ml, bisakodil supp/microlax; serat & cairan", [], [], ""],
+    ["TIFOID", "A01.0", "Demam tifoid", "tifoid|typhoid|thypoid|tipes|tifus|typhus|demam enterik", "Saluran cerna",
+      "Demam ≥7 hari meningkat sore/malam, lidah kotor, gangguan BAB, nyeri perut", "Perdarahan/perforasi usus, penurunan kesadaran", "DL, Tubex/IgM Salmonella, kultur darah",
+      "Rawat bila berat: ceftriaxon 1x2 g iv; rawat jalan: cefixime 2x200 mg; antipiretik; diet lunak", ["CEFIXIME", "PCT"], ["CEFIXIME", "PCT"], "FEBRIS_VI_BI"],
+    ["HEPATITIS", "B17.9", "Hepatitis akut", "hepatitis|hepatitis a|hepatitis b|kuning|ikterus|ikterik", "Saluran cerna",
+      "Mata/kulit kuning, urin seperti teh, mual, nyeri kanan atas", "Penurunan kesadaran (ensefalopati), perdarahan, INR memanjang", "SGOT/SGPT, bilirubin, HBsAg, anti-HAV IgM",
+      "Suportif, cukup kalori; hindari obat hepatotoksik; konsul penyakit dalam", ["DOMPERIDON"], [], ""],
+    ["VOMITUS", "R11", "Mual muntah / vomitus", "vomitus|vomiting|muntah|mual muntah|nausea", "Saluran cerna",
+      "Mual & muntah", "Dehidrasi, muntah darah/hijau, nyeri kepala hebat, kehamilan", "Elektrolit bila sering; tes kehamilan",
+      "Ondansetron 4 mg iv / metoklopramid 10 mg iv; rehidrasi", ["DOMPERIDON", "ONDANSETRON"], ["DOMPERIDON"], ""],
+    // ---- Infeksi / tropis ----
+    ["FEBRIS", "R50.9", "Febris / observasi febris", "febris|obs febris|observasi febris|demam|panas|\\bvf\\b|infeksi virus|viral infection", "Infeksi & tropis",
+      "Demam", "Demam ≥3 hari (DBD/tifoid), kejang, penurunan kesadaran, petekie, sesak, kaku kuduk", "DL (+ NS1 hari 1–3 / IgG-IgM dengue hari ≥4), Widal/Tubex bila ≥5–7 hari, urinalisis",
+      "Antipiretik (PCT), cairan; cari sumber infeksi", ["PCT"], ["PCT"], "FEBRIS_VI_BI"],
+    ["DBD", "A91", "Demam berdarah dengue (DBD)", "dbd|dhf|demam berdarah|dengue hemorrhagic|dengue|df\\b|demam dengue", "Infeksi & tropis",
+      "Demam tinggi 2–7 hari, nyeri otot/sendi, petekie, trombosit turun", "Fase kritis (hari 3–6): nyeri perut, muntah persisten, perdarahan mukosa, letargi, hepatomegali, Hct naik + trombosit turun cepat, akral dingin", "DL serial (Hb, Ht, trombosit), NS1 / IgG-IgM dengue",
+      "Kristaloid sesuai fase & BB (pedoman WHO/Kemenkes), PCT; HINDARI NSAID & suntikan IM; pantau Ht/trombosit & diuresis", ["PCT"], ["PCT"], "FEBRIS_VI_BI"],
+    ["MALARIA", "B54", "Malaria", "malaria|plasmodium|falsiparum|vivax", "Infeksi & tropis",
+      "Demam menggigil berkala, riwayat ke daerah endemis", "Penurunan kesadaran, kejang, ikterik, anemia berat, hipoglikemia, syok", "Apusan darah tebal-tipis / RDT malaria, DL, GDS",
+      "Tanpa komplikasi: DHP sesuai BB + primakuin; berat: artesunat iv, rawat/rujuk", ["PCT"], ["PCT"], ""],
+    ["LEPTOSPIROSIS", "A27.9", "Leptospirosis", "leptospirosis|lepto\\b|kencing tikus", "Infeksi & tropis",
+      "Demam, nyeri betis, mata merah, riwayat banjir/kontak tikus", "Ikterik, oliguria, perdarahan paru (Weil)", "DL, ureum/kreatinin, SGOT/SGPT, bilirubin, IgM lepto",
+      "Ringan: doksisiklin 2x100 mg 7 hari; berat: ceftriaxon / penisilin iv, rawat", ["PCT"], [], ""],
+    ["SEPSIS", "A41.9", "Sepsis", "sepsis|syok septik|septic|urosepsis", "Infeksi & tropis",
+      "Infeksi + gangguan organ (qSOFA: RR ≥22, perubahan mental, TD sistolik ≤100)", "Hipotensi menetap, laktat ≥4, penurunan kesadaran", "DL, kultur darah (sebelum antibiotik), laktat, AGD, ureum/kreatinin, fungsi hati",
+      "Antibiotik empiris <1 jam; kristaloid 30 ml/kg bila hipotensi/laktat ≥4; norepinefrin bila MAP <65 setelah cairan; kontrol sumber infeksi", [], [], ""],
+    ["ISK", "N39.0", "Infeksi saluran kemih", "isk|uti\\b|infeksi saluran kemih|sistitis|anyang-anyangan|anyang anyangan|disuria|kencing sakit|nyeri bak|sakit kencing", "Infeksi & tropis",
+      "Nyeri/anyang saat kencing, sering kencing, nyeri suprapubik, urin keruh", "Demam tinggi + nyeri pinggang (pielonefritis), hamil, laki-laki, sepsis", "Urinalisis, DL",
+      "Sistitis tanpa komplikasi: cefixime 2x200 mg / ciprofloxacin 2x500 mg 3 hari; minum banyak", ["CEFIXIME", "PCT"], ["CEFIXIME", "PCT"], ""],
+    ["PIELONEFRITIS", "N10", "Pielonefritis akut", "pielonefritis|pyelonephritis", "Infeksi & tropis",
+      "Demam, menggigil, nyeri pinggang, nyeri ketok CVA, ± gejala ISK", "Sepsis, obstruksi, hamil", "Urinalisis, DL, ureum/kreatinin, USG ginjal",
+      "Ceftriaxon 1–2 g iv/24 jam; cairan; antipiretik", ["CEFIXIME", "PCT"], ["CEFIXIME", "PCT"], ""],
+    ["SELULITIS", "L03.9", "Selulitis", "selulitis|cellulitis|erisipelas", "Infeksi & tropis",
+      "Kulit merah, hangat, bengkak, nyeri, batas tidak tegas", "Krepitasi/nyeri tidak sebanding (fasiitis nekrotikans), sepsis, wajah/periorbita", "DL; GDS (DM)",
+      "Cefadroxil 2x500 mg 7 hari; berat: ceftriaxon / cefazolin iv; elevasi", ["CEFADROXIL", "PCT"], ["CEFADROXIL", "PCT"], ""],
+    ["ABSES", "L02.9", "Abses kulit / furunkel", "abses|furunkel|furunkul|bisul|karbunkel", "Infeksi & tropis",
+      "Benjolan merah nyeri berfluktuasi", "Demam tinggi, selulitis luas, DM tidak terkontrol, wajah segitiga bahaya", "GDS bila berulang",
+      "Insisi & drainase; antibiotik bila selulitis sekitar/demam (cefadroxil); analgetik", ["CEFADROXIL", "KETOROLAC"], ["CEFADROXIL", "PCT"], ""],
+    ["VARISELA", "B01.9", "Varisela (cacar air)", "varisela|varicella|cacar air|cacar", "Infeksi & tropis",
+      "Demam, vesikel menyebar (berbagai stadium), gatal", "Sesak (pneumonia), penurunan kesadaran, imunokompromais, hamil", "Klinis",
+      "Simptomatik, antihistamin, bedak salisil; asiklovir 5x800 mg 7 hari (dewasa, <72 jam)", ["PCT", "CETIRIZINE"], ["PCT", "CETIRIZINE"], ""],
+    ["HERPES_ZOSTER", "B02.9", "Herpes zoster", "herpes zoster|zoster|cacar api|cacar ular|dompo|shingles", "Infeksi & tropis",
+      "Nyeri/terbakar lalu vesikel berkelompok sesuai dermatom, satu sisi", "Mengenai mata (zoster oftalmikus), diseminata, imunokompromais", "Klinis",
+      "Asiklovir 5x800 mg 7 hari (<72 jam); analgetik", ["PCT", "IBUPROFEN"], ["PCT"], ""],
+    ["MORBILI", "B05.9", "Campak (morbili)", "morbili|campak|measles|gabagen", "Infeksi & tropis",
+      "Demam, batuk, pilek, mata merah, ruam makulopapular dari belakang telinga", "Pneumonia, diare dehidrasi, ensefalitis, gizi buruk", "Klinis",
+      "Simptomatik; vitamin A sesuai umur; isolasi", ["PCT"], ["PCT"], ""],
+    ["HFMD", "B08.4", "Hand, foot and mouth disease", "hfmd|flu singapura|hand foot mouth|hand foot and mouth", "Infeksi & tropis",
+      "Anak: demam, sariawan, ruam/vesikel telapak tangan-kaki", "Sulit minum (dehidrasi), kejang, letargi", "Klinis",
+      "Simptomatik, cukup minum", [], ["PCT"], ""],
+    ["SKABIES", "B86", "Skabies", "skabies|scabies|kudis|gudik", "Infeksi & tropis",
+      "Gatal hebat malam hari, papul/terowongan di sela jari, lipat paha; serumah sakit serupa", "Infeksi sekunder", "Klinis",
+      "Permetrin 5% krim dioles seluruh tubuh malam (8–12 jam), ulang 1 minggu; obati serumah; antihistamin", ["CETIRIZINE"], ["CETIRIZINE"], ""],
+    // ---- Neurologi ----
+    ["CEPHALGIA", "R51", "Cephalgia / sakit kepala", "cephalgia|cefalgia|sefalgia|sakit kepala|nyeri kepala|pusing|tension type|tth|tension headache", "Neurologi",
+      "Nyeri kepala (TTH: seperti diikat, bilateral)", "Thunderclap/terburuk seumur hidup, demam + kaku kuduk, defisit neurologis, onset baru usia >50, pasca trauma, kehamilan", "Klinis; CT kepala bila ada tanda bahaya",
+      "Analgetik (PCT / ibuprofen 400 mg / ketorolac 30 mg iv)", ["IBUPROFEN", "PCT"], ["PCT"], "CEPHALGIA"],
+    ["MIGREN", "G43.9", "Migren", "migren|migrain|migraine|sakit kepala sebelah", "Neurologi",
+      "Nyeri kepala berdenyut satu sisi, mual, fotofobia, ± aura", "Aura >1 jam, defisit menetap, pola baru", "Klinis",
+      "PCT / NSAID; metoklopramid 10 mg iv; ruang gelap tenang", ["IBUPROFEN", "DOMPERIDON"], ["PCT"], "CEPHALGIA"],
+    ["VERTIGO", "R42", "Vertigo (BPPV / perifer)", "vertigo|bppv|pusing berputar|kepala berputar|kliyengan|dizziness|meniere", "Neurologi",
+      "Pusing berputar dipicu posisi kepala, mual/muntah, nistagmus", "Tanda sentral (HINTS: head impulse normal, nistagmus vertikal/berganti arah, skew), ataksia, defisit neurologis, sakit kepala hebat", "Dix-Hallpike; GDS; CT bila curiga sentral",
+      "Manuver Epley (BPPV); betahistin 3x6 mg / flunarizin; dimenhidrinat; antiemetik", ["BETAHISTINE", "FLUNARIZINE", "DOMPERIDON"], [], ""],
+    ["KEJANG_DEMAM", "R56.0", "Kejang demam (anak)", "kejang demam|step|febrile seizure|kd\\b|kds\\b|kdk\\b", "Neurologi",
+      "Anak 6 bln–5 th, kejang saat demam, tanpa infeksi SSP", "Kejang >15 menit, fokal, berulang dalam 24 jam, penurunan kesadaran menetap, kaku kuduk", "DL, elektrolit, GDS; pungsi lumbal bila curiga meningitis",
+      "Diazepam rektal 5 mg (BB <12 kg) / 10 mg (BB ≥12 kg), ulang 1x setelah 5 menit; diazepam iv 0,2–0,5 mg/kg (maks 10 mg); antipiretik", [], ["PCT"], "KEJANG_DEMAM_ANAK"],
+    ["EPILEPSI", "G40.9", "Epilepsi / kejang tanpa demam", "epilepsi|epilepsy|ayan|kejang|bangkitan|status epileptikus", "Neurologi",
+      "Kejang berulang tanpa provokasi", "Status epileptikus (>5 menit / berulang tanpa sadar), cedera kepala, hipoglikemia", "GDS, elektrolit; CT bila kejang pertama/fokal",
+      "ABC, GDS; diazepam 10 mg iv (dapat diulang) lalu fenitoin 20 mg/kg iv (≤50 mg/menit); lanjut obat rutin", [], [], ""],
+    ["PENKES", "R40.2", "Penurunan kesadaran", "penurunan kesadaran|penkes|koma|somnolen|sopor|delirium|tidak sadar", "Neurologi",
+      "GCS menurun", "Jalan napas terancam, pupil anisokor, hipotensi", "GDS segera, DL, elektrolit, ureum/kreatinin, AGD, CT kepala",
+      "ABC, O2, posisi; GDS -> D40% bila hipoglikemia; cari penyebab (AIUEO-TIPS)", [], [], "PENURUNAN_KESADARAN"],
+    ["CKR", "S06.0", "Cedera kepala ringan", "ckr|cedera kepala ringan|commotio|komosio|kepala terbentur|trauma kepala|head injury|cks|ckb|cedera kepala", "Neurologi",
+      "Trauma kepala, GCS 13–15, ± pingsan sesaat/amnesia", "GCS turun, muntah ≥2x, kejang, anisokor, antikoagulan, usia ≥65, fraktur basis (racoon eyes, battle sign, otorea)", "CT kepala sesuai Canadian CT Head Rule",
+      "Observasi GCS/pupil; analgetik; edukasi tanda bahaya (lembar observasi di rumah)", ["PCT"], ["PCT"], ""],
+    ["BELLS_PALSY", "G51.0", "Bell's palsy", "bell's palsy|bells palsy|parese n vii|paresis nervus fasialis|wajah mencong|mulut mencong", "Neurologi",
+      "Kelemahan seluruh wajah satu sisi (dahi ikut), mendadak", "Dahi tidak ikut lemah (sentral/stroke), defisit lain", "Klinis",
+      "Prednison 1 mg/kgBB (maks 60 mg) 5 hari lalu tapering (<72 jam onset); pelindung & tetes mata buatan", ["MP4"], [], ""],
+    // ---- Muskuloskeletal & trauma ----
+    ["LBP", "M54.5", "Low back pain (nyeri pinggang)", "lbp|low back pain|nyeri pinggang|sakit pinggang|nyeri punggung bawah|ischialgia|iskialgia|hnp|encok", "Muskuloskeletal & trauma",
+      "Nyeri pinggang, ± menjalar ke tungkai", "Retensi urin/inkontinensia, saddle anestesi (cauda equina), demam, keganasan, trauma, defisit motorik", "Klinis; Ro lumbosakral bila trauma/usia lanjut",
+      "NSAID (ketorolac 30 mg iv / diklofenak), relaksan otot (eperison); aktif bertahap", ["KETOROLAC", "DIKLOFENAK"], [], "LBP"],
+    ["MIALGIA", "M79.1", "Mialgia", "mialgia|myalgia|nyeri otot|pegal|pegal linu|nyeri sendi|artralgia", "Muskuloskeletal & trauma",
+      "Nyeri/pegal otot", "Urin gelap (rabdomiolisis), kelemahan", "Klinis",
+      "Analgetik / NSAID", ["IBUPROFEN", "PCT"], ["PCT"], ""],
+    ["GOUT", "M10.9", "Artritis gout akut", "gout|asam urat|arthritis gout|artritis gout|pirai", "Muskuloskeletal & trauma",
+      "Sendi (sering ibu jari kaki) merah, bengkak, sangat nyeri mendadak", "Demam (artritis septik)", "Asam urat (bisa normal saat serangan), DL",
+      "NSAID / kolkisin 1 mg lalu 0,5 mg 1 jam kemudian / steroid; JANGAN mulai allopurinol saat serangan", ["DIKLOFENAK", "KETOROLAC"], [], ""],
+    ["VULNUS", "T14.1", "Vulnus laceratum / luka terbuka", "vulnus|vl\\b|luka robek|luka terbuka|luka sobek|laserasi|vulnus laceratum|vulnus punctum|luka tusuk|vulnus scissum", "Muskuloskeletal & trauma",
+      "Luka robek/terbuka", "Perdarahan arteri, cedera tendon/saraf, benda asing, luka kotor >6–8 jam", "Ro bila curiga benda asing/fraktur",
+      "Irigasi NaCl, eksplorasi, debridemen, jahit (hecting); profilaksis tetanus (TT ± ATS/HTIG sesuai status imunisasi); antibiotik bila kotor; analgetik", ["KETOROLAC", "CEFADROXIL"], ["PCT", "CEFADROXIL"], ""],
+    ["EKSKORIASI", "T14.0", "Vulnus ekskoriasi / kontusio", "ekskoriasi|vulnus excoriasi|vulnus ekskoriasi|lecet|luka lecet|kontusio|contusio|memar|jejas", "Muskuloskeletal & trauma",
+      "Luka lecet / memar", "Nyeri hebat, deformitas, hematom luas", "Klinis",
+      "Bersihkan luka, antiseptik, kompres dingin; profilaksis tetanus bila perlu; analgetik", ["KETOROLAC"], ["PCT"], ""],
+    ["FRAKTUR", "T14.2", "Fraktur (curiga)", "fraktur|fracture|patah tulang|dislokasi", "Muskuloskeletal & trauma",
+      "Nyeri, bengkak, deformitas, krepitasi, fungsi terganggu", "Fraktur terbuka, gangguan neurovaskular distal, sindrom kompartemen, fraktur femur/pelvis (syok)", "Ro 2 posisi (AP/lateral)",
+      "Imobilisasi/bidai, analgetik (ketorolac 30 mg iv); fraktur terbuka: antibiotik iv + profilaksis tetanus; konsul ortopedi", ["KETOROLAC"], ["PCT"], ""],
+    ["SPRAIN", "T14.3", "Sprain / keseleo", "sprain|keseleo|terkilir|strain|kram|kecetit", "Muskuloskeletal & trauma",
+      "Nyeri & bengkak sendi setelah terpelintir", "Tidak bisa menumpu 4 langkah, nyeri tulang (Ottawa rules -> Ro)", "Ro sesuai Ottawa ankle/knee rules",
+      "RICE (istirahat, kompres es, balut tekan, elevasi), NSAID", ["IBUPROFEN", "DIKLOFENAK"], ["PCT"], ""],
+    ["COMBUSTIO", "T30.0", "Luka bakar (combustio)", "combustio|luka bakar|kombustio|tersiram air panas|terbakar|burn", "Muskuloskeletal & trauma",
+      "Luka bakar", "Luas >20% (dewasa) / >10% (anak), wajah/leher/genital/sendi, trauma inhalasi (suara serak, jelaga), listrik/kimia", "DL, elektrolit bila luas",
+      "Dinginkan dengan air mengalir 20 menit; hitung luas (rule of nine); Parkland 4 ml × kgBB × %TBSA (separuh 8 jam pertama) bila luas; analgetik; rawat luka; profilaksis tetanus", ["KETOROLAC"], ["PCT"], ""],
+    ["GIGITAN_ANJING", "T14.1", "Gigitan hewan penular rabies (GHPR)", "gigitan anjing|digigit anjing|gigitan kucing|digigit kucing|gigitan monyet|ghpr|rabies", "Muskuloskeletal & trauma",
+      "Luka gigitan/cakaran hewan", "Luka di kepala/leher/jari, luka multipel/dalam (kategori III WHO)", "Klinis",
+      "Cuci luka sabun & air mengalir 15 menit, antiseptik; jangan dijahit primer (kecuali perlu); VAR ± SAR sesuai kategori WHO; profilaksis tetanus; antibiotik bila luka dalam", ["AMOX", "PCT"], ["AMOX", "PCT"], ""],
+    ["GIGITAN_ULAR", "T63.0", "Gigitan ular", "gigitan ular|digigit ular|snake bite", "Muskuloskeletal & trauma",
+      "Luka gigitan ular, bengkak lokal", "Perdarahan, ptosis/kelemahan otot napas (neurotoksik), WBCT20 tidak membeku", "DL, faal hemostasis, WBCT20, CK, urinalisis",
+      "Imobilisasi tungkai (jangan diikat/disayat/dihisap); observasi 24 jam; SABU bila ada tanda envenomasi; profilaksis tetanus", [], [], ""],
+    ["SENGATAN", "T63.4", "Gigitan / sengatan serangga", "sengatan|disengat|tawon|lebah|gigitan serangga|insect bite|digigit serangga|kalajengking|ulat bulu", "Muskuloskeletal & trauma",
+      "Bengkak, merah, gatal/nyeri lokal", "Tanda anafilaksis (sesak, hipotensi, bengkak bibir), sengatan multipel", "Klinis",
+      "Kompres dingin, antihistamin, steroid topikal; anafilaksis: epinefrin IM", ["CETIRIZINE", "DEXA"], ["CETIRIZINE"], ""],
+    // ---- Alergi & kulit ----
+    ["URTIKARIA", "L50.9", "Urtikaria", "urtikaria|urticaria|biduran|kaligata|bentol|bidur|alergi kulit|gatal-gatal|gatal gatal", "Alergi & kulit",
+      "Bentol merah gatal, berpindah", "Bengkak bibir/lidah, sesak, stridor, hipotensi (anafilaksis)", "Klinis",
+      "Cetirizine 1x10 mg; luas: difenhidramin 10–20 mg iv / dexametason 5 mg iv; hindari pencetus", ["CETIRIZINE", "DEXA"], ["CETIRIZINE"], ""],
+    ["ANAFILAKSIS", "T78.2", "Reaksi anafilaksis", "anafilaksis|anaphylaxis|syok anafilaktik|reaksi anafilaktik", "Alergi & kulit",
+      "Gejala kulit + sesak/hipotensi/gastrointestinal setelah paparan alergen", "Stridor, hipotensi, penurunan kesadaran", "Klinis",
+      "Epinefrin 0,3–0,5 mg IM (1:1000) paha anterolateral, ulang tiap 5–15 menit (anak 0,01 mg/kg, maks 0,3 mg); O2; NS 1–2 L cepat; difenhidramin iv; steroid iv; observasi ≥6 jam", [], [], ""],
+    ["ANGIOEDEMA", "T78.3", "Angioedema", "angioedema|angioedem|bengkak bibir|bengkak kelopak mata|mata bengkak", "Alergi & kulit",
+      "Bengkak bibir/kelopak/wajah", "Bengkak lidah/laring, stridor, sesak", "Klinis; riwayat ACE-inhibitor",
+      "Antihistamin + steroid iv; epinefrin IM bila jalan napas terancam; hentikan ACE-inhibitor", ["CETIRIZINE", "DEXA"], ["CETIRIZINE"], ""],
+    ["DERMATITIS", "L30.9", "Dermatitis / eksim", "dermatitis|eksim|eczema|eksema|dermatitis kontak|ruam", "Alergi & kulit",
+      "Ruam merah gatal, ± vesikel/skuama", "Infeksi sekunder luas, eritroderma", "Klinis",
+      "Hindari pencetus, kortikosteroid topikal, antihistamin oral", ["CETIRIZINE"], ["CETIRIZINE"], ""],
+    ["ERUPSI_OBAT", "L27.0", "Erupsi obat (drug eruption)", "erupsi obat|drug eruption|alergi obat|reaksi obat|fixed drug", "Alergi & kulit",
+      "Ruam setelah minum obat", "Lepuh luas, mukosa (mulut/mata/genital) terlibat (SJS/TEN), demam", "Klinis; DL",
+      "Hentikan obat tersangka (catat di alergi), antihistamin, steroid; SJS/TEN: rawat, konsul kulit", ["CETIRIZINE", "MP4"], ["CETIRIZINE"], ""],
+    ["KONJUNGTIVITIS", "H10.9", "Konjungtivitis", "konjungtivitis|conjunctivitis|belekan|mata merah|sakit mata", "Alergi & kulit",
+      "Mata merah, belek, gatal/berpasir, visus normal", "Visus turun, nyeri hebat, fotofobia (keratitis/uveitis/glaukoma akut), trauma kimia", "Visus",
+      "Bakteri: kloramfenikol tetes mata; virus: simptomatik; alergi: antihistamin; trauma kimia: irigasi segera", [], [], ""],
+    ["HORDEOLUM", "H00.0", "Hordeolum", "hordeolum|timbilan|bintitan|kalazion", "Alergi & kulit",
+      "Benjolan merah nyeri di tepi kelopak", "Selulitis periorbita", "Klinis",
+      "Kompres hangat, antibiotik salep mata; insisi bila tidak membaik", [], [], ""],
+    // ---- Metabolik & endokrin ----
+    ["HIPOGLIKEMIA", "E16.2", "Hipoglikemia", "hipoglikemia|hipoglikemi|hypoglycemia|gula darah rendah|gds rendah", "Metabolik & ginjal",
+      "GDS <70, keringat dingin, gemetar, bingung, penurunan kesadaran", "Penurunan kesadaran, kejang, pengguna sulfonilurea/insulin (berulang)", "GDS serial",
+      "Sadar: 15–20 g gula oral; tidak sadar: D40% 25–50 ml iv bolus lalu D10% rumatan; cek GDS tiap 15–30 menit; evaluasi obat DM", [], [], ""],
+    ["DM", "E11.9", "Diabetes melitus tipe 2 / hiperglikemia", "diabetes|dm tipe 2|\\bdm\\b|dmt2|kencing manis|hiperglikemia|hiperglikemi|gula darah tinggi", "Metabolik & ginjal",
+      "GDS tinggi, poliuria, polidipsia", "KAD/HHS (napas Kussmaul, dehidrasi, penurunan kesadaran), GDS >400", "GDS, keton urin, elektrolit, AGD bila curiga KAD",
+      "Rehidrasi; insulin sesuai GDS; lanjut obat rutin; cari pencetus (infeksi)", ["METFORMIN"], [], ""],
+    ["KAD", "E11.1", "Ketoasidosis diabetik (KAD)", "kad\\b|ketoasidosis|dka\\b|hhs\\b|hiperosmolar", "Metabolik & ginjal",
+      "GDS >250, keton +, asidosis, napas Kussmaul, dehidrasi", "Syok, penurunan kesadaran, K <3,3", "GDS tiap jam, elektrolit, AGD, keton, ureum/kreatinin",
+      "NS 1–1,5 L jam pertama; insulin drip 0,1 U/kg/jam setelah K ≥3,3; koreksi kalium; cari pencetus; rawat intensif", [], [], ""],
+    ["HIPOKALEMIA", "E87.6", "Hipokalemia", "hipokalemia|hypokalemia|kalium rendah", "Metabolik & ginjal",
+      "Lemas, kram otot, K <3,5", "K <2,5, aritmia, paralisis", "Elektrolit, EKG, Mg",
+      "KCl oral bila ringan; iv: maks 10 mEq/jam lewat vena perifer, dengan monitor", [], [], ""],
+    ["DEHIDRASI", "E86", "Dehidrasi", "dehidrasi|dehydration|kurang cairan", "Metabolik & ginjal",
+      "Haus, mukosa kering, turgor menurun, urin sedikit", "Letargi, syok, anuria", "Elektrolit, ureum/kreatinin",
+      "Rehidrasi oral / iv (RL) sesuai derajat", ["PCT"], ["ORALIT"], ""],
+    ["KOLIK_RENAL", "N23", "Kolik renal / urolitiasis", "kolik renal|kolik ginjal|batu ginjal|batu saluran kemih|urolitiasis|nefrolitiasis|ureterolitiasis|bsk", "Metabolik & ginjal",
+      "Nyeri pinggang kolik menjalar ke lipat paha, hematuria, nyeri ketok CVA", "Demam (obstruksi terinfeksi), anuria, ginjal tunggal", "Urinalisis, ureum/kreatinin, USG ginjal / BNO",
+      "Ketorolac 30 mg iv; cairan cukup; tamsulosin 0,4 mg untuk batu ureter distal (MET); konsul urologi bila obstruksi/infeksi", ["KETOROLAC"], [], ""],
+    ["RETENSI_URIN", "R33", "Retensi urin", "retensi urin|retensio urin|tidak bisa kencing|susah kencing|bph", "Metabolik & ginjal",
+      "Tidak bisa BAK, kandung kemih penuh, nyeri suprapubik", "Demam, hematuria, gagal ginjal", "Urinalisis, ureum/kreatinin, USG",
+      "Kateterisasi urin; tamsulosin bila BPH; konsul urologi", [], [], ""],
+    ["CKD", "N18.9", "Penyakit ginjal kronik (CKD)", "ckd|gagal ginjal kronik|penyakit ginjal kronik|crf\\b|hemodialisa|cuci darah|hd rutin", "Metabolik & ginjal",
+      "Riwayat CKD/HD, lemas, sesak, edema", "Hiperkalemia, edema paru, asidosis berat, uremia (penurunan kesadaran)", "Ureum/kreatinin, elektrolit (K), AGD, DL, EKG",
+      "Atasi kegawatan (hiperkalemia: Ca glukonas, insulin+dekstrosa; edema paru); konsul HD", [], [], ""],
+    ["AKI", "N17.9", "Gangguan ginjal akut (AKI)", "aki\\b|acute kidney injury|gagal ginjal akut|gga\\b", "Metabolik & ginjal",
+      "Kreatinin naik, urin berkurang", "Hiperkalemia, edema paru, asidosis", "Ureum/kreatinin, elektrolit, urinalisis, USG",
+      "Koreksi volume, hentikan obat nefrotoksik, pantau diuresis; konsul", [], [], ""],
+    ["ANEMIA", "D64.9", "Anemia", "anemia|anemis|kurang darah|hb rendah", "Metabolik & ginjal",
+      "Lemas, pucat, konjungtiva anemis", "Hb <7, sesak/nyeri dada, perdarahan aktif, hemodinamik tidak stabil", "DL, indeks eritrosit, apusan darah",
+      "Cari sumber; transfusi PRC bila Hb <7 (atau simtomatik/penyakit jantung); suplemen besi bila defisiensi", [], [], ""],
+    // ---- Obstetri & ginekologi ----
+    ["DISMENORE", "N94.6", "Dismenore", "dismenore|dysmenorrhea|nyeri haid|sakit haid", "Obstetri & ginekologi",
+      "Nyeri perut bawah saat haid", "Tes kehamilan + (KET), demam, nyeri hebat tidak biasa", "Tes kehamilan bila ragu",
+      "NSAID (asam mefenamat 3x500 mg / ibuprofen), kompres hangat", ["IBUPROFEN", "KETOROLAC"], [], ""],
+    ["ABORTUS", "O20.0", "Abortus imminens / perdarahan hamil muda", "abortus|abortus imminens|keguguran|flek hamil|perdarahan hamil", "Obstetri & ginekologi",
+      "Hamil muda dengan flek/perdarahan, ± kram perut", "Perdarahan banyak, nyeri hebat, syok (KET/abortus inkomplit)", "Tes kehamilan, DL, USG",
+      "Tirah baring, konsul obsgyn; syok: resusitasi", [], [], ""],
+    ["HEG", "O21.0", "Hiperemesis gravidarum", "hiperemesis gravidarum|hiperemesis|heg\\b|muntah hamil", "Obstetri & ginekologi",
+      "Hamil muda, muntah hebat, tidak bisa makan-minum", "Dehidrasi berat, ketonuria, gangguan elektrolit, BB turun >5%", "Elektrolit, keton urin, DL",
+      "Rehidrasi (RL/NS); antiemetik sesuai obsgyn (metoklopramid / ondansetron); vitamin B6; konsul obsgyn", [], [], ""],
+    ["PUA", "N93.9", "Perdarahan uterus abnormal", "pua\\b|aub\\b|perdarahan uterus|menoragia|menorrhagia|metroragia|haid banyak", "Obstetri & ginekologi",
+      "Perdarahan haid banyak/lama/tidak teratur", "Hemodinamik tidak stabil, Hb rendah, tes hamil +", "Tes kehamilan, DL",
+      "Asam traneksamat 3x500 mg; konsul obsgyn", ["TRANEKSAMAT"], [], ""],
+    // ---- Lain-lain ----
+    ["DISPNEA", "R06.0", "Sesak napas (dispnea)", "dispnea|dyspnea|sesak|sesak napas|sesak nafas|ngos-ngosan", "Lain-lain",
+      "Sesak", "SpO2 <92%, RR >30, otot bantu napas, penurunan kesadaran, sianosis", "SpO2, Ro thorax, EKG, AGD, DL",
+      "O2; posisi duduk; cari penyebab (asma/PPOK, pneumonia, CHF, ACS, emboli paru, asidosis)", [], [], "BP"],
+    ["NYERI_DADA", "R07.4", "Nyeri dada", "nyeri dada|sakit dada|chest pain|dada sakit", "Lain-lain",
+      "Nyeri dada", "Tipikal ACS, sesak, hipotensi, diaforesis, robekan aorta (nyeri merobek ke punggung, beda TD kanan-kiri)", "EKG <10 menit, troponin, Ro thorax",
+      "Singkirkan ACS/aorta/emboli/pneumotoraks dulu; lalu sesuai penyebab", [], [], ""],
+    ["ANSIETAS", "F41.0", "Serangan panik / ansietas", "serangan panik|panic attack|ansietas|anxiety|cemas|gangguan cemas|hiperventilasi", "Lain-lain",
+      "Berdebar, sesak, kesemutan, takut mati, tanpa kelainan organik", "Nyeri dada tipikal, SpO2 rendah, GDS abnormal (singkirkan organik dulu)", "EKG, GDS, SpO2",
+      "Tenangkan, latihan napas lambat; ansiolitik bila perlu sesuai kebijakan RS; rujuk psikiatri bila berulang", [], [], ""],
+    ["KERACUNAN_MAKANAN", "A05.9", "Keracunan makanan", "keracunan makanan|food poisoning|keracunan", "Lain-lain",
+      "Mual, muntah, diare setelah makan makanan yang sama dengan orang lain", "Dehidrasi berat, gejala neurologis (botulisme), kelompok besar (lapor)", "Elektrolit bila berat",
+      "Rehidrasi, antiemetik; catat & laporkan bila KLB", ["DOMPERIDON", "DIATAB"], ["DOMPERIDON", "ORALIT"], "GEA"],
+    ["INTOKSIKASI", "T50.9", "Intoksikasi obat / zat", "intoksikasi|overdosis|overdose|keracunan obat|minum racun|baygon|organofosfat|minyak tanah", "Lain-lain",
+      "Riwayat menelan obat/zat", "Penurunan kesadaran, kejang, aritmia, depresi napas, upaya bunuh diri", "GDS, elektrolit, AGD, EKG; kadar obat bila ada",
+      "ABC; identifikasi zat & waktu; arang aktif 1 g/kg bila <1 jam & jalan napas aman (bukan hidrokarbon/korosif); antidotum (NAC untuk paracetamol, atropin untuk organofosfat); konsul; asesmen risiko bunuh diri", [], [], ""],
+    ["SYOK_HIPOVOLEMIK", "R57.1", "Syok hipovolemik", "syok hipovolemik|syok hemoragik|hypovolemic shock|syok", "Lain-lain",
+      "Takikardia, hipotensi, akral dingin, CRT >2 detik, oliguria", "Kesadaran turun, perdarahan masif", "DL, golongan darah & cross match, laktat, AGD",
+      "2 jalur iv besar, kristaloid 1 L (anak 20 ml/kg) lalu evaluasi; hentikan perdarahan; transfusi", [], [], ""],
+    ["ODONTALGIA", "K08.8", "Odontalgia / pulpitis", "odontalgia|pulpitis|sakit gigi|gigi berlubang|karies|abses gigi|gusi bengkak", "Lain-lain",
+      "Nyeri gigi, ± bengkak gusi", "Bengkak menyebar ke dasar mulut/leher (Ludwig angina), trismus, demam", "Klinis",
+      "Analgetik (asam mefenamat / ibuprofen); abses: amoxicillin ± metronidazol; rujuk dokter gigi", ["IBUPROFEN", "AMOX"], ["PCT", "AMOX"], ""],
+    ["STOMATITIS", "K12.0", "Stomatitis aftosa (sariawan)", "stomatitis|sariawan|aftosa|aphthous", "Lain-lain",
+      "Luka bulat putih nyeri di mulut", "Sulit minum (dehidrasi), ulkus >3 minggu", "Klinis",
+      "Obat kumur antiseptik, triamsinolon oral paste, analgetik", ["PCT"], ["PCT"], ""]
+  ].map(([id, icd, nama, alias, grup, gejala, bahaya, penunjang, igd, pulang, anak, tpl]) =>
+    ({ id, icd, nama, alias: alias.split("|"), grup, gejala, bahaya, penunjang, igd, pulang: pulang || [], anak: anak || [], tpl: tpl || "" }));
+
+  // Daftar obat (generik): [generik, golongan, merek yang sering dipakai (|), dosis dewasa lazim (referensi), perhatian].
+  // Merek hanya dipakai untuk mengenali nama (salah dengar / resep pulang) — obat yang dipilih tetap dari master RS.
+  const SP_KB_OBAT = [
+    // Analgetik & antipiretik
+    ["Paracetamol", "Analgetik-antipiretik", "sanmol|pamol|panadol|tempra|praxion|dumin|fasidol|biogesic|termorex|pyrexin|naprex|sumagesic|pct", "500–1000 mg tiap 4–6 jam (maks 4 g/hari); iv 1 g/6 jam; anak 10–15 mg/kg", "Hati-hati gangguan hati"],
+    ["Ibuprofen", "NSAID", "proris|bufect|arfen|rhelafen", "200–400 mg 3–4x/hari sesudah makan; anak 5–10 mg/kg", "Hindari pada DBD, ulkus, gagal ginjal, hamil trimester 3"],
+    ["Asam mefenamat", "NSAID", "ponstan|mefinal|asmef|mectan|datan", "500 mg 3x/hari sesudah makan", "Hindari pada DBD, ulkus, gagal ginjal"],
+    ["Natrium diklofenak", "NSAID", "voltaren|cataflam|kaflam|flamar|deflamat|x-flam", "25–50 mg 2–3x/hari sesudah makan", "Hindari pada ulkus, gagal ginjal, gangguan jantung"],
+    ["Ketorolac", "NSAID", "toradol|remopain|xevolac|torasic", "iv/im 30 mg tiap 8 jam (maks 5 hari); oral 10 mg tiap 4–6 jam", "Hindari pada DBD, perdarahan, gagal ginjal, usia lanjut (dosis 15 mg)"],
+    ["Metamizol", "Analgetik", "antrain|novalgin|pronalges", "500–1000 mg iv/oral tiap 6–8 jam", "Risiko agranulositosis"],
+    ["Meloxicam", "NSAID", "mobic|movix|movicox", "7,5–15 mg 1x/hari", "Hindari pada ulkus, gagal ginjal"],
+    ["Etoricoxib", "NSAID COX-2", "arcoxia", "60–120 mg 1x/hari", "Hati-hati penyakit jantung"],
+    ["Celecoxib", "NSAID COX-2", "celebrex", "100–200 mg 1–2x/hari", "Hati-hati penyakit jantung, alergi sulfa"],
+    ["Tramadol", "Analgetik opioid lemah", "tramal|tradyl", "50–100 mg tiap 6–8 jam (maks 400 mg/hari)", "Obat keras/terbatas; kejang, mual"],
+    ["Eperisone", "Relaksan otot", "myonal|eperison", "50 mg 3x/hari", "Mengantuk"],
+    ["Kolkisin", "Antigout", "colchicine|recolfar", "Serangan: 1 mg lalu 0,5 mg 1 jam kemudian", "Diare; kurangi dosis pada gagal ginjal"],
+    ["Allopurinol", "Antigout", "zyloric", "100–300 mg 1x/hari", "Jangan dimulai saat serangan akut; reaksi kulit berat"],
+    // Saluran cerna
+    ["Omeprazole", "PPI", "omz|ozid|lokev|pumpitor|socid|inhipump", "20 mg 1–2x/hari sebelum makan; iv 40 mg 1–2x/hari", ""],
+    ["Lansoprazole", "PPI", "prosogan", "30 mg 1x/hari sebelum makan", ""],
+    ["Pantoprazole", "PPI", "pantozol|panloc|pranza", "40 mg 1x/hari; iv 40 mg 1–2x/hari", ""],
+    ["Esomeprazole", "PPI", "nexium", "20–40 mg 1x/hari; iv 40 mg", ""],
+    ["Ranitidin", "Antagonis H2", "zantac|rantin|radin|acran", "150 mg 2x/hari; iv 50 mg tiap 8–12 jam", "Sebagian produk ditarik (NDMA) — sesuai ketersediaan RS"],
+    ["Antasida", "Antasida", "mylanta|promag|polysilane|magasida|antasida doen", "1–2 tab dikunyah / 1 sdm 3–4x/hari", "Jarak 2 jam dengan obat lain"],
+    ["Sukralfat", "Pelindung mukosa", "inpepsa|propepsa|ulsidex|musin", "1 g (10 ml) 3–4x/hari sebelum makan", "Jarak 2 jam dengan obat lain"],
+    ["Domperidon", "Antiemetik", "motilium|vometa|dometa|vosea|domperidone", "10 mg 3x/hari sebelum makan (maks 30 mg/hari)", "Hati-hati QT memanjang"],
+    ["Ondansetron", "Antiemetik", "narfoz|vomceran|ondavell|invomit|zofran|cedantron", "4–8 mg oral/iv tiap 8–12 jam; anak 0,1–0,15 mg/kg", "QT memanjang"],
+    ["Metoklopramid", "Antiemetik", "primperan|vomitrol|praxiclon|metoclopramide", "10 mg oral/iv 3x/hari (maks 5 hari)", "Reaksi ekstrapiramidal (anak & dewasa muda)"],
+    ["Hyoscine butylbromide", "Antispasmodik", "buscopan|scopamin|hyospan|scopma", "10–20 mg oral 3–4x/hari; iv/im 20 mg", "Glaukoma sudut sempit, retensi urin"],
+    ["Attapulgit", "Antidiare", "new diatab|diatab|neo entrostop|entrostop|biodiar", "2 tab setiap BAB cair (maks 12 tab/hari)", "Bukan untuk anak <6 th"],
+    ["Loperamide", "Antidiare", "imodium|lodia|motilex|amerol", "4 mg awal lalu 2 mg tiap BAB cair (maks 16 mg/hari)", "JANGAN pada disentri/demam tinggi & anak"],
+    ["Zinc", "Antidiare anak", "interzinc|zinkid|zincpro|l-zinc|zinc", "<6 bulan 10 mg, ≥6 bulan 20 mg 1x/hari selama 10 hari", ""],
+    ["Oralit", "Rehidrasi oral", "oralit|pedialyte|renalyte", "Sesuai rencana terapi diare (A/B)", ""],
+    ["Probiotik", "Probiotik", "lacto-b|lacto b|lacidofil|l-bio|liprolac|probiokid", "1 sachet 1–2x/hari", ""],
+    ["Laktulosa", "Laksatif", "duphalac|lactulac|pralax|constipen", "15–30 ml 1x/hari", ""],
+    ["Bisakodil", "Laksatif", "dulcolax|laxacod|stolax", "5–10 mg oral malam / supp 10 mg", ""],
+    ["Simetikon", "Antiflatulen", "disflatyl|simethicone", "40–80 mg 3–4x/hari", ""],
+    ["Ursodeoxycholic acid", "Hepatobilier", "urdafalk|urdahex", "250 mg 2–3x/hari", ""],
+    // Respirasi
+    ["Ambroxol", "Mukolitik", "mucopect|epexol|mucos|broxal|silopect", "30 mg 3x/hari; anak 0,5 mg/kg 3x", ""],
+    ["Asetilsistein", "Mukolitik", "fluimucil|pectocil|acetylcysteine|n-acetylcysteine", "200 mg 3x/hari", ""],
+    ["Guaifenesin", "Ekspektoran", "gg|glyceryl guaiacolate|guaifenesin", "100–200 mg 3x/hari", ""],
+    ["Dekstrometorfan", "Antitusif", "dmp|dextromethorphan|vicks formula 44", "10–15 mg 3x/hari", "Bukan untuk batuk berdahak; anak <6 th tidak dianjurkan"],
+    ["OBH", "Obat batuk", "obh|obh combi|obh nellco|obh itra", "15 ml 3x/hari", ""],
+    ["Salbutamol", "Bronkodilator β2", "ventolin|salbuven|lasal|salbutamol", "Oral 2–4 mg 3x/hari; nebu 2,5–5 mg; inhaler 1–2 puff", "Tremor, takikardia"],
+    ["Ipratropium + salbutamol", "Bronkodilator nebu", "combivent|farbivent|respivent|ipratropium", "Nebu 1 respul (2,5 ml) 3–4x/hari; serangan: tiap 20 menit 3x", ""],
+    ["Budesonide", "Kortikosteroid inhalasi", "pulmicort|budesma|inflammide", "Nebu 0,5–1 mg 2x/hari", ""],
+    ["Fluticasone + salmeterol", "Inhaler kombinasi", "seretide|flutias", "1 puff/inhalasi 2x/hari", "Pengontrol, bukan pelega"],
+    ["Budesonide + formoterol", "Inhaler kombinasi", "symbicort|duoresp", "1–2 inhalasi 2x/hari", ""],
+    ["Aminofilin", "Bronkodilator", "aminophylline", "iv 5 mg/kg loading lalu 0,5 mg/kg/jam (bila tidak memakai teofilin)", "Rentang terapi sempit, aritmia"],
+    ["Cetirizine", "Antihistamin", "incidal od|ozen|cerini|cetirizin|zyrtec|ryvel", "10 mg 1x/hari; anak 0,2 mg/kg", "Mengantuk ringan"],
+    ["Loratadine", "Antihistamin", "claritin|lorihis|alloris", "10 mg 1x/hari", ""],
+    ["Klorfeniramin (CTM)", "Antihistamin", "ctm|chlorpheniramine|klorfeniramin", "4 mg 3x/hari", "Mengantuk"],
+    ["Difenhidramin", "Antihistamin", "diphenhydramine|dipenhidramin|benadryl", "iv/im 10–20 mg", "Mengantuk"],
+    ["Pseudoefedrin", "Dekongestan", "pseudoephedrine|pseudoefedrin", "60 mg 3x/hari", "Hindari pada hipertensi tidak terkontrol"],
+    // Kortikosteroid
+    ["Dexamethasone", "Kortikosteroid", "kalmethason|cortidex|dexa|dexametason", "Oral 0,5–1,5 mg 3x/hari; iv 5–10 mg", "Hiperglikemia, ulkus"],
+    ["Methylprednisolone", "Kortikosteroid", "medrol|lameson|intidrol|methylon|sanexon|somerol|mp\\b|methylprednisolon", "Oral 4–8 mg 3x/hari; iv 62,5–125 mg", "Hiperglikemia, ulkus"],
+    ["Prednison", "Kortikosteroid", "prednisone|prednison|pehacort", "5–60 mg/hari sesuai indikasi", ""],
+    ["Hidrokortison", "Kortikosteroid", "solu-cortef|hydrocortisone|hidrokortison", "iv 100–200 mg", ""],
+    // Antibiotik & antivirus
+    ["Amoxicillin", "Antibiotik penisilin", "amoxsan|kalmoxillin|amoxil|ospamox|intermoxil|amoksisilin", "500 mg 3x/hari; anak 25–50 mg/kg/hari dibagi 3", "Alergi penisilin"],
+    ["Amoxicillin-klavulanat", "Antibiotik penisilin", "augmentin|claneksi|danoclav|clavamox|amoclav", "500/125 mg 3x/hari", "Alergi penisilin"],
+    ["Ampisilin", "Antibiotik penisilin", "ampicillin|ampisilin|binotal", "iv 1–2 g tiap 6 jam; anak 50 mg/kg tiap 6 jam", "Alergi penisilin"],
+    ["Cefadroxil", "Antibiotik sefalosporin", "cefat|lapicef|renasistin|cefadroxil", "500 mg 2x/hari; anak 15 mg/kg 2x", ""],
+    ["Cefixime", "Antibiotik sefalosporin", "cefspan|tocef|sporetik|fixacep|cefixim", "200 mg 2x/hari; anak 4 mg/kg 2x", ""],
+    ["Ceftriaxone", "Antibiotik sefalosporin", "terfacef|cefxon|bioxon|broadced|elpicef|ceftriaxon", "iv 1–2 g 1x/hari; anak 50–80 mg/kg/hari (maks 2 g)", ""],
+    ["Cefotaxime", "Antibiotik sefalosporin", "claforan|taxegram|cefotaxim", "iv 1 g tiap 8–12 jam", ""],
+    ["Azithromycin", "Antibiotik makrolid", "zithromax|zibramax|azomax|aztrin|mezatrin|azithromisin", "500 mg 1x/hari 3 hari; anak 10 mg/kg", "QT memanjang"],
+    ["Ciprofloxacin", "Antibiotik kuinolon", "ciproxin|baquinor|ciprofloxazin", "500 mg 2x/hari", "Hindari anak & hamil; tendinitis"],
+    ["Levofloxacin", "Antibiotik kuinolon", "cravit|levocin|volequin|levofloxacin|lexa", "500–750 mg 1x/hari", "Hindari anak & hamil; QT memanjang"],
+    ["Metronidazole", "Antibiotik/antiprotozoa", "flagyl|trichodazol|farizol|metronidazol", "500 mg 3x/hari (oral/iv)", "Hindari alkohol"],
+    ["Kotrimoksazol", "Antibiotik", "bactrim|cotrimoxazole|sanprima|primadex|cotrimoxazol", "960 mg 2x/hari; anak 4 mg/kg (trimetoprim) 2x", "Alergi sulfa"],
+    ["Doksisiklin", "Antibiotik tetrasiklin", "doxycycline|doksisiklin|dohixat|interdoxin", "100 mg 2x/hari", "Hindari anak <8 th & hamil"],
+    ["Kloramfenikol tetes mata", "Antibiotik topikal mata", "cendo fenicol|chloramphenicol eye|kloramfenikol", "1–2 tetes tiap 2–4 jam", ""],
+    ["Asiklovir", "Antivirus", "zovirax|acyclovir|asiklovir|clinovir|zoter", "Zoster/varisela dewasa 800 mg 5x/hari 7 hari", "Sesuaikan dosis gagal ginjal"],
+    ["Oseltamivir", "Antivirus", "tamiflu|oseltamivir", "75 mg 2x/hari 5 hari", ""],
+    ["Permetrin krim 5%", "Antiskabies", "scabimite|permethrin|permetrin", "Dioles seluruh tubuh 8–12 jam, ulang 1 minggu", ""],
+    // Kardiovaskular & antitrombotik
+    ["Amlodipine", "CCB (antihipertensi)", "norvask|amdixal|tensivask|amlodipin", "5–10 mg 1x/hari", "Edema tungkai"],
+    ["Nifedipine", "CCB (antihipertensi)", "adalat|adalat oros|nifedipin|farmalat", "30–60 mg 1x/hari (lepas lambat)", "Jangan sublingual (hipotensi mendadak)"],
+    ["Captopril", "ACE-inhibitor", "capoten|tensobon|farmoten", "12,5–25 mg 2–3x/hari", "Batuk kering, angioedema, hiperkalemia; KI hamil"],
+    ["Ramipril", "ACE-inhibitor", "triatec|hyperil", "2,5–10 mg 1x/hari", "KI hamil; hiperkalemia"],
+    ["Lisinopril", "ACE-inhibitor", "noperten|zestril", "5–20 mg 1x/hari", "KI hamil"],
+    ["Candesartan", "ARB (antihipertensi)", "blopress|candefion|canderin|candesartan", "8–16 mg 1x/hari", "KI hamil; hiperkalemia"],
+    ["Valsartan", "ARB (antihipertensi)", "diovan|valesco", "80–160 mg 1x/hari", "KI hamil"],
+    ["Irbesartan", "ARB (antihipertensi)", "aprovel|irtan|irvell|irbesartan", "150–300 mg 1x/hari", "KI hamil"],
+    ["Telmisartan", "ARB (antihipertensi)", "micardis", "40–80 mg 1x/hari", "KI hamil"],
+    ["Bisoprolol", "Beta-blocker", "concor|maintate|bipro|beta-one|bisoprolol", "2,5–10 mg 1x/hari", "Bradikardia, asma"],
+    ["Propranolol", "Beta-blocker", "inderal|propranolol|farmadral", "10–40 mg 2–3x/hari", "Asma, bradikardia"],
+    ["Furosemide", "Diuretik loop", "lasix|uresix|furosemid|furosemida", "Oral 20–40 mg; iv 20–40 mg (edema paru 40 mg)", "Hipokalemia, dehidrasi"],
+    ["Spironolactone", "Diuretik hemat kalium", "aldactone|letonal|carpiaton|spironolakton", "25–100 mg 1x/hari", "Hiperkalemia"],
+    ["Hidroklorotiazid", "Diuretik tiazid", "hct|hydrochlorothiazide|hidroklorotiazid", "12,5–25 mg 1x/hari", "Hipokalemia, hiperurisemia"],
+    ["ISDN", "Nitrat", "cedocard|farsorbid|isosorbide dinitrate|isdn", "5 mg SL saat nyeri (maks 3x selang 5 menit)", "KI bila TD sistolik <90 atau pakai sildenafil"],
+    ["Nitrogliserin", "Nitrat", "nitrokaf|nitrogliserin|glyceryl trinitrate|ntg", "Oral lepas lambat 2,5 mg 2x/hari; iv titrasi", "Hipotensi"],
+    ["Asetosal (aspirin dosis rendah)", "Antiplatelet", "aspilets|ascardia|thrombo aspilets|miniaspi|cardio aspirin|aspirin", "80–160 mg 1x/hari; ACS: 160–320 mg kunyah", "Perdarahan, ulkus; hindari pada DBD"],
+    ["Clopidogrel", "Antiplatelet", "plavix|cpg|platogrix|vaclo", "75 mg 1x/hari; loading 300 mg", "Perdarahan"],
+    ["Atorvastatin", "Statin", "lipitor|atorsan|stator|atofar|atorvastatin", "10–40 mg 1x/hari (malam)", "Miopati"],
+    ["Simvastatin", "Statin", "zocor|simvastatin|lipinorm|valemia", "10–40 mg 1x/hari malam", "Miopati"],
+    ["Digoksin", "Glikosida jantung", "lanoxin|fargoxin|digoxin|digoksin", "0,125–0,25 mg 1x/hari", "Rentang terapi sempit"],
+    ["Nicardipine", "CCB iv", "perdipine|nicardipin", "Drip 5 mg/jam, titrasi 2,5 mg/jam tiap 5–15 menit (maks 15 mg/jam)", "Hipotensi"],
+    ["Enoxaparin", "Antikoagulan", "lovenox|enoxaparin", "1 mg/kg sc 2x/hari", "Perdarahan; sesuaikan gagal ginjal"],
+    ["Asam traneksamat", "Antifibrinolitik", "kalnex|transamin|nexitra|pytramic|asam traneksamat|tranexamic", "500 mg 3x/hari; iv 500–1000 mg", "Riwayat trombosis"],
+    // Endokrin
+    ["Metformin", "Antidiabetes biguanid", "glucophage|glumin|forbetes|benoformin|eraphage", "500 mg 2–3x/hari sesudah makan", "KI eGFR <30, asidosis, sebelum kontras"],
+    ["Glimepiride", "Sulfonilurea", "amaryl|gluvas|metrix|glimepirid", "1–4 mg 1x/hari sebelum makan", "Hipoglikemia (usia lanjut, gagal ginjal)"],
+    ["Gliclazide", "Sulfonilurea", "diamicron|zibet|glidabet|gliclazid", "MR 30–120 mg 1x/hari", "Hipoglikemia"],
+    ["Insulin", "Insulin", "novorapid|apidra|humalog|lantus|levemir|ezelin|actrapid|humulin|novomix|insulin", "Sesuai GDS & regimen", "Hipoglikemia"],
+    ["Levotiroksin", "Hormon tiroid", "euthyrox|thyrax|levothyroxine", "25–100 mcg 1x/hari pagi", ""],
+    ["Propiltiourasil", "Antitiroid", "ptu|propylthiouracil|propiltiourasil", "100 mg 3x/hari", "Hepatotoksik"],
+    ["Tiamazol", "Antitiroid", "thyrozol|methimazole|tiamazol", "10–30 mg 1x/hari", "Agranulositosis"],
+    // Saraf & vertigo
+    ["Betahistine", "Antivertigo", "merislon|betaserc|vastigo|betahistin", "6–12 mg 3x/hari", "Asma, ulkus"],
+    ["Flunarizine", "Antivertigo/antimigren", "sibelium|unalium|flunarizin|frego", "5–10 mg 1x/hari malam", "Mengantuk, ekstrapiramidal"],
+    ["Dimenhidrinat", "Antiemetik/antimabuk", "antimo|dramamine|dimenhydrinate|dimenhidrinat", "50 mg 3x/hari", "Mengantuk"],
+    ["Diazepam", "Antikonvulsan/ansiolitik", "valium|stesolid|diazepam|valisanbe", "Kejang iv 10 mg (anak 0,2–0,5 mg/kg); rektal 5/10 mg", "Depresi napas; psikotropika"],
+    ["Fenitoin", "Antikonvulsan", "dilantin|kutoin|phenytoin|fenitoin|ikaphen", "Loading 20 mg/kg iv (≤50 mg/menit)", "Aritmia, hipotensi bila cepat"],
+    ["Asam valproat", "Antikonvulsan", "depakote|depakene|valproate|valproat", "Sesuai DPJP", "Hepatotoksik, teratogenik"],
+    ["Mecobalamin", "Vitamin neurotropik", "methycobal|kalmeco|mecobalamin", "500 mcg 3x/hari", ""],
+    ["Gabapentin", "Nyeri neuropatik", "neurontin|alpentin|gabapentin|ganin", "300 mg 1–3x/hari", "Mengantuk"],
+    ["Pregabalin", "Nyeri neuropatik", "lyrica|pregabalin|pregaba", "75 mg 2x/hari", "Mengantuk"],
+    ["Citicoline", "Neuroprotektan", "brainact|nulab|citicoline", "500–1000 mg iv/oral 2x/hari", ""],
+    ["Piracetam", "Nootropik", "nootropil|piracetam|neurotam|lytrocetam", "Sesuai DPJP", ""],
+    // Lain-lain
+    ["Tamsulosin", "Alfa-blocker", "harnal|tamsulosin", "0,4 mg 1x/hari", "Hipotensi ortostatik"],
+    ["Kalium klorida", "Elektrolit", "ksr|kcl|kalium klorida", "Oral 600 mg 2–3x/hari; iv maks 10 mEq/jam (perifer)", "Hiperkalemia"],
+    ["Kalsium glukonas", "Elektrolit", "calcium gluconas|kalsium glukonas", "Hiperkalemia: 10 ml 10% iv pelan 5–10 menit", ""],
+    ["Magnesium sulfat", "Elektrolit/antikonvulsan", "mgso4|magnesium sulfat", "Asma berat 2 g iv 20 menit; eklampsia sesuai protokol", "Refleks patela, RR, diuresis"],
+    ["Natrium bikarbonat", "Alkali", "meylon|bicnat|natrium bikarbonat|nabic", "Oral 500 mg 2–3x/hari", ""],
+    ["Epinefrin", "Vasopresor/anafilaksis", "adrenalin|epinephrine|epinefrin", "Anafilaksis 0,3–0,5 mg IM (1:1000); henti jantung 1 mg iv tiap 3–5 menit", ""],
+    ["Norepinefrin", "Vasopresor", "vascon|raivas|norepinephrine|norepinefrin", "Drip 0,05–0,5 mcg/kg/menit titrasi MAP ≥65", "Ekstravasasi"],
+    ["Dekstrosa 40%", "Cairan/hipoglikemia", "d40|dextrose 40|dekstrosa 40", "Hipoglikemia 25–50 ml iv bolus", "Flebitis"],
+    ["Ringer laktat", "Cairan kristaloid", "rl|ringer laktat|ringer lactate|ringer", "Sesuai kebutuhan/resusitasi", ""],
+    ["NaCl 0,9%", "Cairan kristaloid", "nacl|ns|normal saline|nacl 0,9", "Sesuai kebutuhan/resusitasi", ""],
+    ["Vitamin B kompleks / neurotropik", "Vitamin", "neurobion|neurosanbe|becom-c|vitamin b komplek|b com", "1 tab 1x/hari", ""],
+    ["Asam folat", "Vitamin", "folic acid|asam folat|folavit", "1 mg 1x/hari", ""],
+    ["Sulfas ferosus", "Suplemen besi", "sf|sulfas ferosus|tablet tambah darah|ttd", "1 tab 1x/hari", "Feses hitam (normal)"]
+  ].map(([generik, gol, merek, dosis, perhatian]) => ({ generik, gol, merek: merek.split("|"), dosis, perhatian }));
+
+  // Istilah awam -> istilah medis (untuk ASISTEN SUARA & pencarian). [istilah awam (|), istilah medis]
+  const SP_KB_AWAM = [
+    ["ulu hati perih|perih ulu hati|lambung perih|maag kambuh", "nyeri epigastrium"],
+    ["sumeng|meriang|anget-anget|badan hangat", "subfebris"], ["panas tinggi|demam tinggi", "hiperpireksia/febris"],
+    ["mencret|berak cair|bab encer|bab cair", "diare"], ["muntaber", "gastroenteritis akut"], ["berak darah|bab darah", "hematokezia"],
+    ["bab hitam|berak hitam", "melena"], ["muntah darah|muntah hitam|muntah kopi", "hematemesis"], ["susah bab|sembelit", "konstipasi"],
+    ["kencing sakit|sakit kencing|anyang-anyangan|anyang anyangan", "disuria"], ["kencing darah", "hematuria"], ["sering kencing", "poliuria/frekuensi"],
+    ["tidak bisa kencing|susah kencing", "retensi urin"], ["sesak|ngos-ngosan|napas berat|nafas berat", "dispnea"],
+    ["mengi|ngik-ngik|bengek", "wheezing"], ["batuk darah", "hemoptisis"], ["dahak|riak", "sputum"], ["mimisan", "epistaksis"],
+    ["pusing berputar|kliyengan|kepala berputar|dunia berputar", "vertigo"], ["kunang-kunang|pandangan gelap", "presinkop"],
+    ["pingsan|semaput", "sinkop"], ["kejang|kelojotan|step", "kejang"], ["mulut mencong|wajah mencong|muka perot", "parese N. VII"],
+    ["lemah sebelah|lumpuh sebelah", "hemiparesis"], ["bicara pelo|pelo", "disartria"], ["kesemutan", "parestesia"], ["baal|kebas|mati rasa", "hipestesia"],
+    ["deg-degan|berdebar", "palpitasi"], ["dada ditindih|dada seperti ditekan|dada berat", "nyeri dada tipikal"], ["kembung|begah", "distensi/flatulensi"],
+    ["bengkak kaki|kaki bengkak", "edema tungkai"], ["mata kuning|badan kuning|kuning", "ikterik"], ["pucat|kurang darah", "anemis"],
+    ["biduran|kaligata|bentol-bentol|bidur", "urtikaria"], ["bisul", "furunkel"], ["cacar air", "varisela"], ["cacar api|cacar ular|dompo", "herpes zoster"],
+    ["gabagen|campak", "morbili"], ["keseleo|terkilir|kecetit", "sprain"], ["encok|sakit pinggang", "low back pain"], ["pegal linu|pegal-pegal", "mialgia"],
+    ["masuk angin", "(tanyakan: common cold / dispepsia / mialgia)"], ["turun berok", "hernia inguinalis"], ["ambeien|wasir|ambeyen", "hemoroid"],
+    ["tipes|tifus", "demam tifoid"], ["kencing manis|gula", "diabetes melitus"], ["darah tinggi|tensi tinggi", "hipertensi"], ["darah rendah|tensi rendah", "hipotensi"],
+    ["asam urat", "hiperurisemia/gout"], ["telinga berdenging|telinga berdengung", "tinnitus"], ["congek|congekan|telinga berair", "otore"],
+    ["belekan|mata merah berair", "konjungtivitis"], ["timbilan|bintitan", "hordeolum"], ["sariawan", "stomatitis aftosa"], ["radang tenggorokan", "faringitis"],
+    ["amandel", "tonsilitis"], ["sakit menelan", "odinofagia"], ["susah menelan|seret menelan", "disfagia"], ["flek", "spotting"],
+    ["telat haid|terlambat haid", "amenore"], ["nyeri haid|sakit haid", "dismenore"], ["keputihan", "fluor albus"], ["kudis|gudik", "skabies"],
+    ["panu", "pitiriasis versikolor"], ["kurap", "tinea korporis"], ["gatal selangkangan", "tinea kruris"], ["rewel|menangis terus", "iritabel (anak)"],
+    ["lemas|lemes|lesu", "malaise"], ["tidak nafsu makan|tidak mau makan|susah makan", "anoreksia/intake turun"], ["haus terus", "polidipsia"],
+    ["keringat dingin", "diaforesis"], ["menggigil", "rigor/menggigil"], ["ngorok", "snoring/gurgling (cek jalan napas)"], ["mulut berbusa", "hipersalivasi"],
+    ["kencing tikus", "leptospirosis"], ["flu singapura", "hand foot mouth disease"], ["usus buntu", "apendisitis"], ["batu empedu", "kolelitiasis"],
+    ["batu ginjal|kencing batu", "urolitiasis"], ["kena air panas|tersiram air panas", "luka bakar (combustio)"], ["luka lecet|lecet", "vulnus ekskoriasi"],
+    ["luka robek|luka sobek", "vulnus laceratum"], ["luka tusuk", "vulnus punctum"], ["benjol|benjolan di kepala", "hematoma (kepala)"]
+  ].map(([awam, medis]) => ({ awam: awam.split("|"), medis }));
+
+  // Singkatan rekam medis yang sering dipakai di IGD (untuk ASISTEN SUARA: dibaca/dieja oleh pengenal suara).
+  const SP_KB_SINGKATAN = "VI = infeksi virus; BI = infeksi bakteri; OF/obs febris = observasi febris; DHF/DBD = demam berdarah dengue; DF = demam dengue; " +
+    "GEA = gastroenteritis akut; BP = bronkopneumonia; ISPA; ISK = infeksi saluran kemih; SNH = stroke non hemoragik; SH = stroke hemoragik; " +
+    "CKR/CKS/CKB = cedera kepala ringan/sedang/berat; VL = vulnus laceratum; LBP = low back pain; TTH = tension type headache; HT = hipertensi; " +
+    "DM = diabetes melitus; KAD = ketoasidosis diabetik; CHF = gagal jantung kongestif; ACS = sindrom koroner akut; UAP = angina pektoris tidak stabil; " +
+    "CKD = penyakit ginjal kronik; PPOK = penyakit paru obstruktif kronik; SCBA = saluran cerna bagian atas; KDS/KDK = kejang demam sederhana/kompleks; " +
+    "HEG = hiperemesis gravidarum; PUA = perdarahan uterus abnormal; nte = nyeri tekan epigastrium; rh = ronki; wh = wheezing; ca = konjungtiva anemis; " +
+    "si = sklera ikterik; crt = capillary refill time; bu = bising usus; KU = keadaan umum; CM = compos mentis; TSS/TSB/TSR = tampak sakit sedang/berat/ringan; " +
+    "DL = darah lengkap; GDS = gula darah sewaktu; Ro = rontgen; IVFD = infus; k/p = kalau perlu; SL = sublingual.";
+
+  function spKbNorm(s) {
+    return String(s || "").toLowerCase().replace(/[’']/g, "'").replace(/[^a-z0-9.'\/ -]+/g, " ").replace(/\.(?!\d)/g, " ").replace(/\s+/g, " ").trim();
+  }
+  // Pola kata/frasa (alias boleh memuat \\b atau ditulis biasa); dicocokkan di awal kata.
+  const spKbAliasCache = new Map();
+  function spKbAliasRe(a) {
+    let re = spKbAliasCache.get(a);
+    if (!re) {
+      const src = /\\b|\\s/.test(a) ? a : a.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      re = new RegExp("(?:^|[^a-z0-9])(" + src + ")(?![a-z])", "i");
+      spKbAliasCache.set(a, re);
+    }
+    return re;
+  }
+  const SP_KB_NEG_BEFORE = /(tidak|tdk|tanpa|tak|bukan|negatif|disangkal|riwayat|r\/|rpd|riw)\s*(ada\s*)?$/i;
+  const SP_KB_NEG_AFTER = /^[\s:=]*(\(\s*-\s*\)|-(?![\w>])|disangkal|tidak ada|tdk ada|negatif)/i;
+
+  // Diagnosis yang paling cocok dengan teks (keluhan/diagnosis GADAR, ucapan, atau kata cari). Kata yang dinegasikan
+  // ("demam (-)", "tidak sesak", "riwayat HT") tidak dihitung. Hasil: [{ dx, skor, kata[] }] urut skor.
+  function spKbMatchDx(text, max = 6) {
+    const t = " " + spKbNorm(text) + " ";
+    if (t.trim().length < 2) return [];
+    const out = [];
+    for (const dx of SP_KB_DX) {
+      let skor = 0, pos = 1e9;
+      const kata = [];
+      if (new RegExp("(?:^|\\s)" + dx.icd.toLowerCase().replace(".", "\\.") + "(?![0-9])").test(t)) { skor += 5; kata.push(dx.icd); }
+      const namaHit = spKbAliasRe(spKbNorm(dx.nama.split(" (")[0]).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b");
+      dx.alias.forEach((a, i) => {
+        const m = spKbAliasRe(a).exec(t);
+        if (!m) return;
+        const at = m.index + m[0].indexOf(m[1]);
+        if (SP_KB_NEG_BEFORE.test(t.slice(Math.max(0, at - 14), at))) return;
+        if (SP_KB_NEG_AFTER.test(t.slice(at + m[1].length, at + m[1].length + 20))) return;
+        // Alias pertama = nama/singkatan utama (bobot lebih besar); alias panjang lebih spesifik dari kata umum.
+        skor += i === 0 ? 3 : 1 + (m[1].length >= 8 ? 1 : 0);
+        kata.push(m[1].trim());
+        pos = Math.min(pos, at);
+      });
+      if (namaHit.test(t) && !kata.length) { skor += 2; kata.push(dx.nama); }
+      if (skor) out.push({ dx, skor, pos, kata: [...new Set(kata)] });
+    }
+    // Skor sama -> yang disebut lebih dulu (diagnosis utama biasanya ditulis pertama).
+    return out.sort((a, b) => b.skor - a.skor || a.pos - b.pos).slice(0, max).map(({ dx, skor, kata }) => ({ dx, skor, kata }));
+  }
+
+  // Generik dari nama merek di awal nama obat ("Lasix 40 mg" -> Furosemide). null bila bukan merek yang dikenal
+  // atau nama sudah generik.
+  function spKbGenericOf(name) {
+    const t = spKbNorm(name).replace(/\b(tab|tablet|kaplet|kaps|kapsul|caps|syr|sirup|syrup|susp|drop|forte|inj)\b/g, " ").replace(/\s+/g, " ").trim();
+    if (!t) return null;
+    for (const o of SP_KB_OBAT) {
+      // Kombinasi / vitamin campuran tidak dipakai (generiknya bukan satu nama yang bisa dicari di master).
+      if (/[\/+]/.test(o.generik) || o.gol === "Vitamin") continue;
+      const gen = spKbNorm(o.generik);
+      if (t.startsWith(gen.split(" ")[0])) return null; // sudah generik
+      for (const b of o.merek) {
+        if (b.length < 3 || /\\/.test(b)) continue;
+        if (t === b || t.startsWith(b + " ")) return { generik: o.generik, merek: b, gol: o.gol };
+      }
+    }
+    return null;
+  }
+
+  // Cari di basis pengetahuan (diagnosis, ICD, gejala, obat/merek, istilah awam). Hasil { dx[], obat[], awam[] }.
+  function spKbSearch(q) {
+    const t = spKbNorm(q);
+    if (t.length < 2) return { dx: [], obat: [], awam: [] };
+    const words = t.split(" ").filter((w) => w.length >= 2);
+    const has = (s) => { const x = spKbNorm(s); return words.every((w) => x.includes(w)); };
+    const byAlias = spKbMatchDx(q, 12).map((r) => r.dx);
+    const dx = [...byAlias, ...SP_KB_DX.filter((d) => !byAlias.includes(d) &&
+      (has(d.nama + " " + d.icd + " " + d.alias.join(" ")) || has(d.gejala) || has(d.grup)))].slice(0, 12);
+    const obat = SP_KB_OBAT.filter((o) => has(o.generik + " " + o.merek.join(" ") + " " + o.gol)).slice(0, 12);
+    const awam = SP_KB_AWAM.filter((a) => has(a.awam.join(" ") + " " + a.medis)).slice(0, 8);
+    return { dx, obat, awam };
+  }
+
+  // Ringkasan satu diagnosis untuk disalin (teks biasa).
+  function spKbDxText(dx) {
+    return [`${dx.nama} (ICD-10 ${dx.icd})`, `Gejala khas: ${dx.gejala}`, `Tanda bahaya: ${dx.bahaya}`,
+      `Penunjang: ${dx.penunjang}`, `Terapi IGD (referensi): ${dx.igd}`].join("\n");
+  }
+
+  // Bagian pengetahuan untuk instruksi ASISTEN SUARA (bagian tetap, di-cache server). Hanya untuk MEMAHAMI ucapan.
+  function spKbPromptText() {
+    const dx = SP_KB_DX.map((d) => `${d.nama} [${d.icd}]: ${d.alias.slice(0, 6).map((a) => a.replace(/\\b/g, "")).join(", ")}`).join("\n");
+    const awam = SP_KB_AWAM.map((a) => `${a.awam.join("/")} = ${a.medis}`).join("; ");
+    const merek = SP_KB_OBAT.map((o) => `${o.generik}: ${o.merek.filter((b) => !/\\/.test(b)).slice(0, 6).join(", ")}`).join("\n");
+    return "PENGETAHUAN KLINIS (v3.88.0) — HANYA untuk memahami ucapan & membetulkan salah dengar. Jangan menambah diagnosis, " +
+      "temuan, obat, atau dosis yang tidak diucapkan; diagnosis tetap seperti diucapkan dokter (boleh dibetulkan ejaannya ke nama baku di bawah).\n" +
+      "ISTILAH AWAM -> MEDIS (dipakai saat merangkum ucapan pasien): " + awam + "\n" +
+      "SINGKATAN: " + SP_KB_SINGKATAN + "\n" +
+      "DIAGNOSIS IGD LAZIM [ICD-10]: alias/singkatan\n" + dx + "\n" +
+      "MEREK -> GENERIK (nama obat yang terucap bisa merek):\n" + merek;
   }
 
   // v3.40.0 (instruksi dokter 5 Okt 2026): jumlah tablet/kapsul DEWASA untuk pulang maks 6, kecuali antibiotik
@@ -9384,6 +9987,16 @@
       #${MENU_ID} .sp-rp-hit b{display:block;font-size:12.5px;}
       #${MENU_ID} .sp-rp-hit span{display:block;font-size:11px;color:#6b7280;margin-top:1px;}
       #${MENU_ID} #sp-rp-routine .sp-pill{margin:2px 3px 2px 0;font-size:11.5px;padding:3px 9px;}
+      /* v3.88.0: REFERENSI KLINIS */
+      #${MENU_ID} .sp-kb-q{display:block;width:100%!important;box-sizing:border-box;margin:10px 0 4px;padding:9px 11px!important;border:1px solid #c7d2fe!important;border-radius:9px!important;font:14px Arial,sans-serif!important;background:#fff!important;color:#111827!important;}
+      #${MENU_ID} .sp-kb-card{margin:6px 0;padding:7px 10px;background:#fff;border:1px solid #e7e3f3;border-left:4px solid #8b5cf6;border-radius:10px;font-size:12.5px;line-height:1.45;color:#1f2937;}
+      #${MENU_ID} .sp-kb-card.sp-kb-obat{border-left-color:#0d9488;}
+      #${MENU_ID} .sp-kb-card summary{cursor:pointer;font-size:13px;}
+      #${MENU_ID} .sp-kb-icd{display:inline-block;padding:1px 7px;border-radius:999px;background:#ede9fe;color:#5b21b6;font:700 11px Arial,sans-serif;}
+      #${MENU_ID} .sp-kb-row{margin:4px 0;}
+      #${MENU_ID} .sp-kb-red{color:#9f1239;}
+      #${MENU_ID} .sp-kb-awam{padding:6px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:9px;}
+      #${MENU_ID} .sp-kb-tools{flex-wrap:wrap;margin-top:6px;}
       /* v3.84.0: RESEP PULANG - tempel daftar obat */
       #${MENU_ID} .sp-rpp-open{display:block;width:100%!important;margin:6px 0 4px!important;padding:9px 11px!important;text-align:left!important;background:#ecfdf5!important;color:#065f46!important;border:1px dashed #10b981!important;border-radius:9px!important;font:700 13px Arial,sans-serif!important;cursor:pointer;}
       #${MENU_ID} .sp-rpp-text{display:block;width:100%!important;box-sizing:border-box;min-height:130px;margin:8px 0 6px;padding:9px 11px!important;border:1px solid #c7d2fe!important;border-radius:9px!important;font:13.5px/1.45 Consolas,Menlo,monospace!important;background:#fff!important;color:#111827!important;resize:vertical;}
@@ -11573,6 +12186,23 @@
         best = spRpMatch(row, all, spRpUsage);
         if (best.status !== "none") break;
       }
+      // v3.88.0: nama MEREK yang tidak ada di master ("Lasix 40 mg") -> generiknya (Furosemide 40 mg) dicari dengan kekuatan &
+      // sediaan yang sama dan DITAWARKAN sebagai pilihan (aturan v3.84.0: obat tidak pernah diganti diam-diam -> dokter memilih).
+      if ((!best || best.status === "none") && typeof spKbGenericOf === "function") {
+        const g = spKbGenericOf(row.name);
+        if (g) {
+          const row2 = { ...row, name: row.name.replace(new RegExp(g.merek.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), g.generik) };
+          let all2 = [], b2 = null;
+          for (const t of spRpSearchTerms(row2)) {
+            all2 = all2.concat(await spRpFetchMaster(t));
+            b2 = spRpMatch(row2, all2, spRpUsage);
+            if (b2.status !== "none") break;
+          }
+          if (b2 && b2.status !== "none") {
+            return { status: "pilih", pick: "", options: b2.options, note: `merek ${g.merek} tidak ada di master — generiknya ${g.generik}: pilih sendiri` };
+          }
+        }
+      }
       return best || { status: "none", pick: "", options: [], note: "nama obat tidak terbaca — cari manual" };
     }
 
@@ -11943,6 +12573,107 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       `;
     }
 
+    // =========================
+    // v3.88.0: 📚 REFERENSI KLINIS — cari keluhan / diagnosis / ICD-10 / obat / merek / istilah awam di basis pengetahuan
+    // (SP_KB_*). Hanya untuk dibaca & disalin; tombol menuju fitur yang sudah ada (ASGADAR template, KOMBINASI RESEP).
+    // Tidak mengisi form dan tidak menyimpan apa pun.
+    // =========================
+    let spKbQuery = "";
+    let spKbGadarText = null; // keluhan + diagnosis GADAR pasien yang terbuka (dibaca sekali per halaman)
+    // Obat master RS yang namanya memuat generik ini (dari RESEP PULANG & KOMBINASI RESEP) + aturan pakai tersering.
+    function spKbRsDrugs(generik) {
+      const w = spRpNameWords(generik)[0] || "";
+      if (!w) return [];
+      const out = [];
+      const add = (obat, aturan) => {
+        if (!obat || out.some((x) => x.obat === obat)) return;
+        if (spRpNameWords(obat).some((x) => spRpWordMatch(w, x))) out.push({ obat, aturan });
+      };
+      RESEP_PULANG_DB.forEach((it) => add(it.obat, `${it.dosis} × ${it.frekuensi.toLowerCase()}${it.waktu ? " " + it.waktu.toLowerCase() : ""}`));
+      DRUG_OPTIONS.adult.forEach((o) => o.src && o.src.kind === "fixed" && add(o.src.item.obat, `${o.src.item.dosis} ${o.src.item.frekuensi}`));
+      return out.slice(0, 4);
+    }
+    function spKbDrugLabel(branch, key) {
+      const o = (DRUG_OPTIONS[branch] || []).find((x) => x.key === key);
+      if (!o) return "";
+      const it = o.src && o.src.kind === "fixed" ? o.src.item : null;
+      return it ? `${o.label} (${it.dosis} ${it.frekuensi}${it.keterangan ? ", " + it.keterangan : ""})` : o.label;
+    }
+    function spKbDxCard(dx, open, why) {
+      const age = getPatientAgeYears();
+      const showAdult = !(Number.isFinite(age) && age <= 17), showChild = !(Number.isFinite(age) && age > 17);
+      const adult = showAdult ? dx.pulang.map((k) => spKbDrugLabel("adult", k)).filter(Boolean) : [];
+      const child = showChild ? dx.anak.map((k) => spKbDrugLabel("child", k)).filter(Boolean) : [];
+      const tplName = dx.tpl && TEMPLATES[dx.tpl] ? (TEMPLATES[dx.tpl].diagnosis || dx.tpl) : "";
+      return `<details class="sp-kb-card"${open ? " open" : ""}>
+        <summary><b>${spEsc(dx.nama)}</b> <span class="sp-kb-icd">${spEsc(dx.icd)}</span>${why ? ` <span class="sp-pkg-muted">· ${spEsc(why)}</span>` : ""}</summary>
+        <div class="sp-kb-row"><b>Gejala khas:</b> ${spEsc(dx.gejala)}</div>
+        <div class="sp-kb-row sp-kb-red"><b>⚠ Tanda bahaya:</b> ${spEsc(dx.bahaya)}</div>
+        <div class="sp-kb-row"><b>Penunjang:</b> ${spEsc(dx.penunjang)}</div>
+        <div class="sp-kb-row"><b>Terapi IGD (referensi):</b> ${spEsc(dx.igd)}</div>
+        ${adult.length ? `<div class="sp-kb-row"><b>Obat pulang dewasa (KOMBINASI RESEP):</b> ${spEsc(adult.join("; "))}</div>` : ""}
+        ${child.length ? `<div class="sp-kb-row"><b>Obat pulang anak (dosis per BB di KOMBINASI RESEP):</b> ${spEsc(child.join("; "))}</div>` : ""}
+        <div class="sp-pkg-tools sp-kb-tools">
+          <button type="button" class="sp-pkg-tool" data-kb-copy="${spEsc(dx.id)}">📋 Salin</button>
+          ${tplName ? `<button type="button" class="sp-pkg-tool" data-template="${spEsc(dx.tpl)}" title="Isi Assesment GADAR dari template (tidak disimpan)">🩺 ASGADAR ${spEsc(tplName)}</button>` : ""}
+          ${adult.length || child.length ? '<button type="button" class="sp-pkg-tool" data-package-menu="1" title="Buka KOMBINASI RESEP (obat disarankan dari keluhan GADAR)">📦 KOMBINASI RESEP</button>' : ""}
+        </div>
+      </details>`;
+    }
+    function spKbObatCard(o) {
+      const rs = spKbRsDrugs(o.generik);
+      return `<details class="sp-kb-card sp-kb-obat">
+        <summary><b>💊 ${spEsc(o.generik)}</b> <span class="sp-pkg-muted">· ${spEsc(o.gol)}</span></summary>
+        <div class="sp-kb-row"><b>Merek:</b> ${spEsc(o.merek.filter((b) => !/\\/.test(b)).join(", "))}</div>
+        <div class="sp-kb-row"><b>Dosis dewasa lazim (referensi):</b> ${spEsc(o.dosis)}</div>
+        ${o.perhatian ? `<div class="sp-kb-row sp-kb-red"><b>⚠ Perhatian:</b> ${spEsc(o.perhatian)}</div>` : ""}
+        ${rs.length ? `<div class="sp-kb-row"><b>Di master RS:</b> ${rs.map((r) => `${spEsc(r.obat)} <span class="sp-pkg-muted">(${spEsc(r.aturan)})</span>`).join("; ")}</div>` : ""}
+      </details>`;
+    }
+    function spKbRenderResults() {
+      const box = menu.querySelector("#sp-kb-res");
+      if (!box) return;
+      const q = spKbQuery.trim();
+      if (!q) {
+        // Tanpa kata cari: saran dari GADAR pasien (bila ada) + daftar diagnosis per kelompok.
+        const sug = spKbGadarText ? spKbMatchDx(spKbGadarText, 4) : [];
+        const groups = [];
+        SP_KB_DX.forEach((d) => { let g = groups.find((x) => x.name === d.grup); if (!g) groups.push(g = { name: d.grup, list: [] }); g.list.push(d); });
+        box.innerHTML = (sug.length ? `<div class="sp-section-title">💡 Sesuai Assesment GADAR pasien ini</div>${sug.map((r, i) => spKbDxCard(r.dx, i === 0, "terbaca: " + r.kata.join(", "))).join("")}` : "") +
+          groups.map((g) => `<div class="sp-section-title">${spEsc(g.name)}</div><div class="sp-pkg-pills">${g.list.map((d) =>
+            `<button type="button" class="sp-pill" data-kb-q="${spEsc(d.nama.split(" (")[0])}" title="${spEsc(d.icd)}">${spEsc(d.nama.split(" (")[0])}</button>`).join("")}</div>`).join("");
+        return;
+      }
+      const r = spKbSearch(q);
+      const parts = [];
+      if (r.awam.length) parts.push(`<div class="sp-kb-row sp-kb-awam">🗣️ ${r.awam.map((a) => `<b>${spEsc(a.awam.join(" / "))}</b> = ${spEsc(a.medis)}`).join("<br>")}</div>`);
+      if (r.dx.length) parts.push(`<div class="sp-section-title">Diagnosis (${r.dx.length})</div>` + r.dx.map((d, i) => spKbDxCard(d, i === 0 && r.dx.length <= 3)).join(""));
+      if (r.obat.length) parts.push(`<div class="sp-section-title">Obat (${r.obat.length})</div>` + r.obat.map(spKbObatCard).join(""));
+      box.innerHTML = parts.join("") || `<div class="sp-note">Tidak ditemukan untuk "${spEsc(q)}". Coba kata lain (mis. nama awam, singkatan, ICD-10, merek obat).</div>`;
+    }
+    function renderKbMenu() {
+      menu.classList.add("sp-package-modal");
+      menu.innerHTML = `
+        <div class="sp-title">📚 REFERENSI KLINIS</div>
+        <input id="sp-kb-q" class="sp-kb-q" type="search" autocomplete="off" placeholder="Cari keluhan, diagnosis, ICD-10, obat / merek…" value="${spEsc(spKbQuery)}">
+        <div class="sp-note">${SP_KB_DX.length} diagnosis · ${SP_KB_OBAT.length} obat · ${SP_KB_AWAM.length} istilah awam. Referensi umum (dewasa kecuali disebut anak) — sesuaikan pasien & kebijakan RS. Tidak ada yang diisi atau disimpan otomatis.</div>
+        <div id="sp-kb-res"></div>
+        <button type="button" class="sp-back" data-back="main">← Kembali</button>
+      `;
+      const inp = menu.querySelector("#sp-kb-q");
+      let tm = null;
+      inp.addEventListener("input", () => { clearTimeout(tm); tm = setTimeout(() => { spKbQuery = inp.value; spKbRenderResults(); }, 150); });
+      spKbRenderResults();
+      // Saran dari GADAR pasien IGD yang terbuka (form terbuka atau GADAR terakhir kunjungan ini).
+      if (spKbGadarText === null && /pasien_detail\//i.test(location.pathname)) {
+        spKbGadarText = "";
+        const tmp = document.createElement("div");
+        tmp.style.display = "none";
+        menu.appendChild(tmp); // spLoadAnamnesisInto hanya membaca bila kotaknya masih di halaman
+        spLoadAnamnesisInto(tmp).then((text) => { tmp.remove(); spKbGadarText = text || ""; if (spKbGadarText && !spKbQuery.trim()) spKbRenderResults(); }).catch(() => {});
+      }
+    }
+
     // v3.63.0: AUTO IGD — PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM (dulu langsung di menu utama).
     function renderIgdMenu() {
       menu.classList.remove("sp-package-modal");
@@ -11968,7 +12699,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.87.3</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.88.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -11995,6 +12726,11 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
 
         <button type="button" data-cppt-menu="1">
           🛏️ RAWAT INAP ▶
+        </button>
+
+        <!-- v3.88.0: basis pengetahuan klinis (keluhan, diagnosis ICD-10, terapi, obat & merek) — hanya referensi. -->
+        <button type="button" data-kb-menu="1">
+          📚 REFERENSI KLINIS ▶
         </button>
 
         <div class="sp-note">
@@ -12460,6 +13196,24 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
 
       if (target.dataset?.igdMenu === "1") {
         renderIgdMenu();
+        return;
+      }
+
+      // v3.88.0: REFERENSI KLINIS
+      if (target.dataset?.kbMenu === "1") {
+        renderKbMenu();
+        return;
+      }
+      if (target.dataset?.kbQ) {
+        spKbQuery = target.dataset.kbQ;
+        const inp = menu.querySelector("#sp-kb-q");
+        if (inp) inp.value = spKbQuery;
+        spKbRenderResults();
+        return;
+      }
+      if (target.dataset?.kbCopy) {
+        const dx = SP_KB_DX.find((d) => d.id === target.dataset.kbCopy);
+        if (dx) toast((await copySoapText(spKbDxText(dx))) ? `📋 ${dx.nama} disalin.` : "Gagal menyalin — pilih teks manual.");
         return;
       }
 
@@ -14073,7 +14827,8 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       model,
       max_tokens: visit ? 16000 : 8000,
       // v3.71.0: instruksi + daftar obat RS (bagian tetap, di-cache server) lalu contoh koreksi dokter di pesan.
-      system: [{ type: "text", text: (visit ? SP_VISIT_SYSTEM : SP_AS_SYSTEM) + (spAsistenVocab() ? "\n\n" + spAsistenVocab() : ""), cache_control: { type: "ephemeral" } }],
+      // v3.88.0: + basis pengetahuan klinis (istilah awam, singkatan, diagnosis ICD-10, merek -> generik) untuk memahami ucapan.
+      system: [{ type: "text", text: (visit ? SP_VISIT_SYSTEM : SP_AS_SYSTEM) + (spAsistenVocab() ? "\n\n" + spAsistenVocab() : "") + "\n\n" + spKbPromptText(), cache_control: { type: "ephemeral" } }],
       messages: [{ role: "user", content: (learn ? learn + "\n\n" : "") +
         (ctx ? "KONTEKS PASIEN dari Smartplus (BUKAN ucapan; jangan disalin ke kolom):\n" + ctx + "\n\n" : "") + (visit ? text : mode === "percakapan"
         ? "MODE PERCAKAPAN. Transkrip percakapan anamnesa:\n" + text
