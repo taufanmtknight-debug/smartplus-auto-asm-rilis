@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.82.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.83.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.82.0
-// @description  v3.82.0: tombol Advis WA — aturan baru (instruksi dokter): semua advis 24 jam TERAKHIR sejak tombol ditekan (bukan lagi 24 jam sebelum advis yang dilihat; yang dilihat hanya ditandai); pemuatan chat lama lebih andal (naik selayar demi selayar, menunggu WA memuat lebih sabar) supaya advis lama tidak terlewat; laporan dokter jaga ("Izin ro sedang proses dok") dan pesan pengirim konsul tidak lagi dianggap advis; bila ada DPJP "Sp." di grup, hanya pesannya yang tercentang. v3.81.0: menu AUTO ASM di HP/tablet dikembalikan seperti sebelum v3.79.0 (daftar kelompok ▶ di kotak menu, tanpa halaman geser) atas permintaan dokter; fitur lain tidak berubah. v3.80.0: tombol Advis WA — chat digulir otomatis ke atas untuk memuat pesan 24 jam sebelum advis yang dilihat (WA hanya memuat pesan di sekitar layar) lalu kembali; pesan yang pernah terbaca diingat; nama pasien di kutipan kini terbaca (penulis & isi kutipan dulu menempel jadi satu baris). v3.79.0: HP/tablet — menu AUTO ASM layar penuh seperti PAKET KONSUL RANAP; kelompok fitur (ASGADAR, Penunjang, Resep, IGD, Rawat Inap) tiap halaman bisa DIGESER kiri/kanan atau dipilih dari tab di atas, kembali dari sub-menu ke halaman yang sama; tombol & fungsi tidak berubah, desktop tidak berubah. v3.78.0: tombol Advis WA — advis yang sedang dilihat diutamakan + semua advis 24 jam ke belakang (yang termuat di WA) tampil sebagai kartu (tiap kartu pasien & isi sendiri) lalu dikirim sekaligus; di Smartplus banyak pasien jadi antrean di panel ADVIS SPESIALIS (Simpan -> otomatis ke pasien berikutnya); advis yang sudah tertulis di Rencana tidak ditulis ulang, advis berubah / dari spesialis lain tetap ditambahkan; pesan sendiri & pertanyaan tidak lagi terbaca sebagai advis. v3.77.0: tombol Advis WA — advis yang tidak mengutip konsul: pasien diambil dari pesan konsul/baris pasien terdekat di atasnya; kotak pasien bisa diketik untuk mencari/memperbaiki dengan pilihan dari pasien di chat + daftar pasien IGD 48 jam Smartplus; nama tanpa No. RM yang cocok lebih dari satu tidak dipilih otomatis. v3.76.0: tombol Advis WA — pesan advis tercentang otomatis (balasan atas konsul / berisi terapi), pasien penerima advis dikenali dari pesan konsul (nama/No. RM): form GADAR pasien yang sama diisi, pasien lain -> panel ADVIS SPESIALIS dengan pasien itu terpilih otomatis; pesan balasan yang mengutip konsul kini membaca isi advis, bukan kutipannya. v3.75.0: ASISTEN Multiple visit — deteksi nama lebih akurat (ejaan Rasyid/Rasheed, Syifa/Shifa; "Pak Bagus"; salah dengar dicoba lagi lebih longgar sebagai "tidak yakin"); nama tidak terdeteksi -> preview tetap terbuka dengan ➕ Tambah pasien (ucapan sudah terisi), pasien terlewat bisa ditambah, transkrip kartu bisa diedit lalu disusun ulang. v3.74.0: ADVIS DPJP dari WhatsApp Web langsung ke Rencana ASGADAR — tombol "📤 Advis → ASGADAR" di WA Web: pilih pesan, pratinjau, Kirim; tab Smartplus (browser yang sama) menambahkannya di bawah Rencana form GADAR yang terbuka (ada Batalkan) atau membuka panel ADVIS SPESIALIS; tidak disimpan otomatis. v3.73.0: HP/tablet — preview MULTIPLE VISIT, panel 🧠 dan menu AUTO ASM diperbesar sesuai layar dan memenuhi layar (dulu kotak kecil di samping saat dibuka dari ASISTEN SUARA); perbaikan: pasien kartu diganti tidak lagi membawa isian/peringatan pasien sebelumnya, galat Claude per kartu, tidak bisa menyusun preview baru selama Save multiple berjalan (cegah CPPT dobel), ketikan tidak hilang saat kartu lain diperbarui. v3.72.2: ASISTEN Multiple visit — perbaikan laporan dokter: kata biasa tidak lagi terbaca sebagai nama pasien lain ("mau tanya" ≠ Tania, "pasien saat ini" ≠ Satria); satu kata tanpa "pasien/Pak/Bu" tidak pernah memulai pasien baru, satu kata setelah pemicu harus hampir persis, panggilan pendek minimal 4 huruf. v3.72.1: ASISTEN mode ⚡ Cepat (bawaan, instruksi dokter) — isian Multiple visit langsung tampil tanpa menunggu konteks klinis, peringatan ⚠ dari konteks menyusul di tiap kartu tanpa mengganggu isian/ketikan; IGD menunggu konteks maks 2,5 dtk; pilihan 📚 Lengkap (tunggu konteks dulu) di ⚙️. v3.72.0: ASISTEN SUARA membaca KONTEKS KLINIS pasien (pilihan dokter, tanpa nama/No.RM) — Multiple visit: ringkasan rawat inap (keluhan & TTV sebelumnya, pemfis, diagnosis, terapi berjalan, advis spesialis) + hasil lab terbaru tiap pasien; mode percakapan IGD: umur + lab kunjungan ini. Claude memakai konteks untuk memahami ucapan (salah dengar, perbandingan dengan sebelumnya) tetapi kolom tetap hanya dari ucapan; ⚠ PERINGATAN keamanan (lab kritis, TTV memburuk, bertentangan dengan terapi/alergi, dosis tidak lazim) tampil sebagai catatan saja, tidak diisi ke form; konteks yang dibaca bisa dilihat di tiap kartu; ganti pasien = Claude dipanggil ulang untuk kartu itu. v3.71.0: ASISTEN SUARA lebih akurat (pilihan dokter) — mode Multiple visit menampilkan pasien yang dikenali secara langsung saat bicara (✓ yakin / ⚠ tidak yakin, nama yang tidak tertangkap bisa segera diulang); daftar obat RS ikut dikirim ke Claude supaya nama obat yang salah dengar dibetulkan (tanpa mengganti obat/dosis); asisten belajar dari koreksi dokter — perubahan dokter pada isian asisten saat Simpan GADAR / Save multiple visit disimpan sebagai contoh gaya HANYA di browser ini (tanpa identitas, bisa dihapus di ⚙️). v3.70.0: ASISTEN SUARA — mode "Dikte dokter" diganti 🏥 Multiple visit: dokter menyebut nama pasien lalu visit (TTV/pemfis tidak normal & instruksi tambahan bila ada), lalu pasien berikutnya, dst.; ⏹ -> nama dicocokkan di browser dengan daftar pasien dirawat (nama tidak dikirim ke Claude, hanya PASIEN_1, PASIEN_2…), nama yang tidak persis dicari yang paling mungkin dan bisa diganti di tiap kartu; preview MULTIPLE VISIT terisi otomatis (bawaan multiple visit + temuan yang diucapkan), simpan tetap lewat "Save multiple visit" + konfirmasi; nama tidak yakin tidak dicentang. v3.69.0: fitur 🎙️ Rekam v3.68.0 (tab perekam GitHub Pages + layanan suara OpenAI) dihapus atas permintaan dokter — di tablet/HP tanpa dikte browser pakai 🎤 di keyboard layar; kunci OpenAI yang pernah disimpan dihapus otomatis dari browser. v3.68.0 (dihapus di v3.69.0): ASISTEN 🎙️ Rekam lewat tab perekam. v3.67.0: tombol 🎤 / Alt+V DIKTE SUARA terpisah dihapus (dikte tetap lewat panel ASISTEN 🧠); ASISTEN untuk IGD ramai — Claude hanya memakai ucapan yang nyambung dengan pasien yang diperiksa, mengabaikan suara bed sebelah/perawat/TV dan menampilkan potongan yang diabaikan (🔇) di pratinjau, ucapan yang kurang yakin dikenali ditandai "(?)" di mode percakapan, TTV ganda tanpa koreksi dikosongkan & ditanyakan. v3.66.0: audit fitur — ASISTEN: kesadaran yang diucapkan kini benar terpilih saat memakai template (dulu nilai pilihan Compos Mentis ikut berubah) dan GCS yang diucapkan tidak lagi tertimpa GCS template, perkiraan Claude tidak menimpa kesadaran/GCS yang sudah dipilih dokter, pemfis perkiraan Claude tidak menimpa pemfis yang sudah ditulis dokter (hanya temuan yang diucapkan ditambahkan), Terapkan yang tertekan dua kali tidak membuka form GADAR dua kali, keterangan pratinjau sesuai cara pengisian, order penunjang ditandai ✗ bila tombol Save tidak ditekan, diagnosis order memakai diagnosis template bila tidak diucapkan, nilai lab seperti "trombosit 150000" tidak lagi ikut disaring, batas tunggu Claude 90 dtk; DIKTE: Esc menghentikan dikte tanpa menutup form GADAR; tombol 🎤 & 🧠 pindah ke kiri tombol AUTO ASM (dulu menutupi menu). v3.65.0: ASISTEN — bila tidak ada template ASGADAR yang mendekati, kolom yang tidak diucapkan diisi perkiraan Claude (data paling mungkin untuk kasus itu, pemfis per sistem; tanpa obat/dosis baru), tampil terpisah di pratinjau & hanya mengisi kolom yang masih kosong; GADAR tetap Save manual. v3.64.0: ASISTEN — kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (dipilih Claude, bisa diganti di pratinjau; membuka form GADAR baru), pemfis template + temuan yang diucapkan, Riwayat Penyakit Sekarang lama diganti hasil terbaru; GADAR tetap Save manual. v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
+// @version      3.83.0
+// @description  v3.83.0: PAKET KONSUL IGD dari DAFTAR pasien IGD (belum membuka pasien) — ketik nama / No. RM, pilih pasien IGD 48 jam, konfirmasi, lalu halaman pasien dibuka dan PAKET KONSUL (SOAP + penunjang) berjalan otomatis seperti biasa; di halaman pasien tetap langsung berjalan; tidak menyimpan apa pun. v3.82.0: tombol Advis WA — aturan baru (instruksi dokter): semua advis 24 jam TERAKHIR sejak tombol ditekan (bukan lagi 24 jam sebelum advis yang dilihat; yang dilihat hanya ditandai); pemuatan chat lama lebih andal (naik selayar demi selayar, menunggu WA memuat lebih sabar) supaya advis lama tidak terlewat; laporan dokter jaga ("Izin ro sedang proses dok") dan pesan pengirim konsul tidak lagi dianggap advis; bila ada DPJP "Sp." di grup, hanya pesannya yang tercentang. v3.81.0: menu AUTO ASM di HP/tablet dikembalikan seperti sebelum v3.79.0 (daftar kelompok ▶ di kotak menu, tanpa halaman geser) atas permintaan dokter; fitur lain tidak berubah. v3.80.0: tombol Advis WA — chat digulir otomatis ke atas untuk memuat pesan 24 jam sebelum advis yang dilihat (WA hanya memuat pesan di sekitar layar) lalu kembali; pesan yang pernah terbaca diingat; nama pasien di kutipan kini terbaca (penulis & isi kutipan dulu menempel jadi satu baris). v3.79.0: HP/tablet — menu AUTO ASM layar penuh seperti PAKET KONSUL RANAP; kelompok fitur (ASGADAR, Penunjang, Resep, IGD, Rawat Inap) tiap halaman bisa DIGESER kiri/kanan atau dipilih dari tab di atas, kembali dari sub-menu ke halaman yang sama; tombol & fungsi tidak berubah, desktop tidak berubah. v3.78.0: tombol Advis WA — advis yang sedang dilihat diutamakan + semua advis 24 jam ke belakang (yang termuat di WA) tampil sebagai kartu (tiap kartu pasien & isi sendiri) lalu dikirim sekaligus; di Smartplus banyak pasien jadi antrean di panel ADVIS SPESIALIS (Simpan -> otomatis ke pasien berikutnya); advis yang sudah tertulis di Rencana tidak ditulis ulang, advis berubah / dari spesialis lain tetap ditambahkan; pesan sendiri & pertanyaan tidak lagi terbaca sebagai advis. v3.77.0: tombol Advis WA — advis yang tidak mengutip konsul: pasien diambil dari pesan konsul/baris pasien terdekat di atasnya; kotak pasien bisa diketik untuk mencari/memperbaiki dengan pilihan dari pasien di chat + daftar pasien IGD 48 jam Smartplus; nama tanpa No. RM yang cocok lebih dari satu tidak dipilih otomatis. v3.76.0: tombol Advis WA — pesan advis tercentang otomatis (balasan atas konsul / berisi terapi), pasien penerima advis dikenali dari pesan konsul (nama/No. RM): form GADAR pasien yang sama diisi, pasien lain -> panel ADVIS SPESIALIS dengan pasien itu terpilih otomatis; pesan balasan yang mengutip konsul kini membaca isi advis, bukan kutipannya. v3.75.0: ASISTEN Multiple visit — deteksi nama lebih akurat (ejaan Rasyid/Rasheed, Syifa/Shifa; "Pak Bagus"; salah dengar dicoba lagi lebih longgar sebagai "tidak yakin"); nama tidak terdeteksi -> preview tetap terbuka dengan ➕ Tambah pasien (ucapan sudah terisi), pasien terlewat bisa ditambah, transkrip kartu bisa diedit lalu disusun ulang. v3.74.0: ADVIS DPJP dari WhatsApp Web langsung ke Rencana ASGADAR — tombol "📤 Advis → ASGADAR" di WA Web: pilih pesan, pratinjau, Kirim; tab Smartplus (browser yang sama) menambahkannya di bawah Rencana form GADAR yang terbuka (ada Batalkan) atau membuka panel ADVIS SPESIALIS; tidak disimpan otomatis. v3.73.0: HP/tablet — preview MULTIPLE VISIT, panel 🧠 dan menu AUTO ASM diperbesar sesuai layar dan memenuhi layar (dulu kotak kecil di samping saat dibuka dari ASISTEN SUARA); perbaikan: pasien kartu diganti tidak lagi membawa isian/peringatan pasien sebelumnya, galat Claude per kartu, tidak bisa menyusun preview baru selama Save multiple berjalan (cegah CPPT dobel), ketikan tidak hilang saat kartu lain diperbarui. v3.72.2: ASISTEN Multiple visit — perbaikan laporan dokter: kata biasa tidak lagi terbaca sebagai nama pasien lain ("mau tanya" ≠ Tania, "pasien saat ini" ≠ Satria); satu kata tanpa "pasien/Pak/Bu" tidak pernah memulai pasien baru, satu kata setelah pemicu harus hampir persis, panggilan pendek minimal 4 huruf. v3.72.1: ASISTEN mode ⚡ Cepat (bawaan, instruksi dokter) — isian Multiple visit langsung tampil tanpa menunggu konteks klinis, peringatan ⚠ dari konteks menyusul di tiap kartu tanpa mengganggu isian/ketikan; IGD menunggu konteks maks 2,5 dtk; pilihan 📚 Lengkap (tunggu konteks dulu) di ⚙️. v3.72.0: ASISTEN SUARA membaca KONTEKS KLINIS pasien (pilihan dokter, tanpa nama/No.RM) — Multiple visit: ringkasan rawat inap (keluhan & TTV sebelumnya, pemfis, diagnosis, terapi berjalan, advis spesialis) + hasil lab terbaru tiap pasien; mode percakapan IGD: umur + lab kunjungan ini. Claude memakai konteks untuk memahami ucapan (salah dengar, perbandingan dengan sebelumnya) tetapi kolom tetap hanya dari ucapan; ⚠ PERINGATAN keamanan (lab kritis, TTV memburuk, bertentangan dengan terapi/alergi, dosis tidak lazim) tampil sebagai catatan saja, tidak diisi ke form; konteks yang dibaca bisa dilihat di tiap kartu; ganti pasien = Claude dipanggil ulang untuk kartu itu. v3.71.0: ASISTEN SUARA lebih akurat (pilihan dokter) — mode Multiple visit menampilkan pasien yang dikenali secara langsung saat bicara (✓ yakin / ⚠ tidak yakin, nama yang tidak tertangkap bisa segera diulang); daftar obat RS ikut dikirim ke Claude supaya nama obat yang salah dengar dibetulkan (tanpa mengganti obat/dosis); asisten belajar dari koreksi dokter — perubahan dokter pada isian asisten saat Simpan GADAR / Save multiple visit disimpan sebagai contoh gaya HANYA di browser ini (tanpa identitas, bisa dihapus di ⚙️). v3.70.0: ASISTEN SUARA — mode "Dikte dokter" diganti 🏥 Multiple visit: dokter menyebut nama pasien lalu visit (TTV/pemfis tidak normal & instruksi tambahan bila ada), lalu pasien berikutnya, dst.; ⏹ -> nama dicocokkan di browser dengan daftar pasien dirawat (nama tidak dikirim ke Claude, hanya PASIEN_1, PASIEN_2…), nama yang tidak persis dicari yang paling mungkin dan bisa diganti di tiap kartu; preview MULTIPLE VISIT terisi otomatis (bawaan multiple visit + temuan yang diucapkan), simpan tetap lewat "Save multiple visit" + konfirmasi; nama tidak yakin tidak dicentang. v3.69.0: fitur 🎙️ Rekam v3.68.0 (tab perekam GitHub Pages + layanan suara OpenAI) dihapus atas permintaan dokter — di tablet/HP tanpa dikte browser pakai 🎤 di keyboard layar; kunci OpenAI yang pernah disimpan dihapus otomatis dari browser. v3.68.0 (dihapus di v3.69.0): ASISTEN 🎙️ Rekam lewat tab perekam. v3.67.0: tombol 🎤 / Alt+V DIKTE SUARA terpisah dihapus (dikte tetap lewat panel ASISTEN 🧠); ASISTEN untuk IGD ramai — Claude hanya memakai ucapan yang nyambung dengan pasien yang diperiksa, mengabaikan suara bed sebelah/perawat/TV dan menampilkan potongan yang diabaikan (🔇) di pratinjau, ucapan yang kurang yakin dikenali ditandai "(?)" di mode percakapan, TTV ganda tanpa koreksi dikosongkan & ditanyakan. v3.66.0: audit fitur — ASISTEN: kesadaran yang diucapkan kini benar terpilih saat memakai template (dulu nilai pilihan Compos Mentis ikut berubah) dan GCS yang diucapkan tidak lagi tertimpa GCS template, perkiraan Claude tidak menimpa kesadaran/GCS yang sudah dipilih dokter, pemfis perkiraan Claude tidak menimpa pemfis yang sudah ditulis dokter (hanya temuan yang diucapkan ditambahkan), Terapkan yang tertekan dua kali tidak membuka form GADAR dua kali, keterangan pratinjau sesuai cara pengisian, order penunjang ditandai ✗ bila tombol Save tidak ditekan, diagnosis order memakai diagnosis template bila tidak diucapkan, nilai lab seperti "trombosit 150000" tidak lagi ikut disaring, batas tunggu Claude 90 dtk; DIKTE: Esc menghentikan dikte tanpa menutup form GADAR; tombol 🎤 & 🧠 pindah ke kiri tombol AUTO ASM (dulu menutupi menu). v3.65.0: ASISTEN — bila tidak ada template ASGADAR yang mendekati, kolom yang tidak diucapkan diisi perkiraan Claude (data paling mungkin untuk kasus itu, pemfis per sistem; tanpa obat/dosis baru), tampil terpisah di pratinjau & hanya mengisi kolom yang masih kosong; GADAR tetap Save manual. v3.64.0: ASISTEN — kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (dipilih Claude, bisa diganti di pratinjau; membuka form GADAR baru), pemfis template + temuan yang diucapkan, Riwayat Penyakit Sekarang lama diganti hasil terbaru; GADAR tetap Save manual. v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @match        http://*/*
@@ -52,8 +52,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.82.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.82.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.83.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.83.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -6738,6 +6738,36 @@
     });
   }
 
+  // v3.83.0: PAKET KONSUL IGD yang dimulai dari DAFTAR pasien IGD dititipkan di sessionStorage tab ini, lalu halaman
+  // pasien dibuka; di halaman itu PAKET KONSUL dijalankan otomatis (hanya bila No.Reg cocok & titipan < 3 menit).
+  const SP_PK_IGD_PENDING_KEY = "sp-auto-asm-pk-igd-pending";
+  // Cari pasien IGD: semua kata harus ada di nama / No. RM / No. Reg / dokter (fungsi murni, diuji di tests/uji_v3_83.js).
+  function spKonsulIgdFilter(list, query) {
+    const nz = (x) => String(x || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    const words = nz(query).split(" ").filter(Boolean);
+    if (!words.length) return [];
+    return (list || []).filter((p) => { const hay = nz(`${p.nama} ${p.norm} ${p.noreg} ${p.dok}`); return words.every((w) => hay.includes(w)); });
+  }
+  // "none" (tidak ada titipan) | "drop" (basi) | "wait" (bukan halaman pasien itu) | "run".
+  function spKonsulIgdResumeAction(p, pathname, now) {
+    if (!p || !p.noreg) return "none";
+    if (now - (p.ts || 0) > 180000) return "drop";
+    const m = String(pathname || "").match(/pasien_detail\/([^/?#]+)/i);
+    return m && decodeURIComponent(m[1]) === p.noreg ? "run" : "wait";
+  }
+  async function spResumePendingPaketKonsul() {
+    let p = null;
+    try { p = JSON.parse(sessionStorage.getItem(SP_PK_IGD_PENDING_KEY) || "null"); } catch (_) { p = null; }
+    const action = spKonsulIgdResumeAction(p, location.pathname, Date.now());
+    if (action === "none" || action === "wait") return;
+    try { sessionStorage.removeItem(SP_PK_IGD_PENDING_KEY); } catch (_) {}
+    if (action === "drop") return;
+    // Tunggu halaman pasien IGD siap (tombol GADAR & AUTO ASM).
+    await waitFor(() => (document.getElementById("new_gadar") || document.getElementById("box_gadar")) && document.getElementById(BUTTON_ID), 15000);
+    await recipeSleep(800);
+    await spExclusive("PAKET KONSUL", runPaketKonsul);
+  }
+
   // opts (dari PAKET KONSUL): soapText -> kotak teks SOAP + tombol Salin SOAP di panel.
   async function runAutoPenunjang(opts = {}) {
     // v3.50.0: opts.noreg = pasien yang dipilih dari daftar (PAKET KONSUL RANAP) tanpa membuka halamannya.
@@ -10870,6 +10900,66 @@
       }).catch((err) => { const i = menu.querySelector("#sp-kr-pinfo"); if (i) i.textContent = `⚠ Daftar pasien gagal dimuat: ${err.message || err}`; });
     }
 
+    // v3.83.0 (instruksi dokter 12 Okt 2026): PAKET KONSUL IGD dari DAFTAR pasien IGD (belum membuka pasien) -> ketik nama /
+    // No. RM, pilih pasien (daftar IGD 48 jam), konfirmasi, lalu halaman pasien dibuka dan PAKET KONSUL dilanjutkan otomatis
+    // (spResumePendingPaketKonsul). Hanya membaca & membuka halaman; GADAR tetap tidak disimpan.
+    function renderKonsulIgdPatientPicker() {
+      menu.classList.add("sp-package-modal");
+      menu.innerHTML = `
+        <div class="sp-title">📨 PAKET KONSUL IGD — pilih pasien</div>
+        <div class="sp-pkg-bar"><span class="sp-pkg-badge">IGD</span><span id="sp-ki-pinfo" class="sp-pkg-muted">⏳ Memuat daftar pasien IGD 48 jam…</span></div>
+        <input id="sp-ki-pq" class="sp-mv-q" type="search" autocomplete="off" placeholder="🔍 Ketik nama pasien atau No. RM…">
+        <div id="sp-ki-presults" class="sp-mv-results"></div>
+        <div class="sp-pkg-foot"><div class="sp-pkg-actions">
+          <button type="button" class="sp-pkg-back" data-igd-menu="1" title="Kembali ke menu AUTO IGD">←</button>
+          <span class="sp-pkg-muted" style="align-self:center">Pilih pasien IGD yang akan dikonsulkan — halaman pasien dibuka lalu PAKET KONSUL berjalan seperti biasa.</span>
+        </div></div>`;
+      const q = menu.querySelector("#sp-ki-pq");
+      const res = menu.querySelector("#sp-ki-presults");
+      const info = menu.querySelector("#sp-ki-pinfo");
+      let list = null;
+      let done = false;
+      const render = () => {
+        if (!list) return;
+        const hits = spKonsulIgdFilter(list, q.value);
+        const words = norm(q.value).split(" ").filter(Boolean);
+        res.innerHTML = !words.length ? `<div class="sp-pkg-empty">Ketik nama pasien / No. RM (${list.length} pasien IGD 48 jam${done ? "" : ", masih memuat…"}).</div>`
+          : hits.length ? hits.slice(0, 30).map((p) => `<button type="button" class="sp-mv-item" data-ki-pick="${spMvEsc(p.noreg)}">
+              <span class="sp-mv-item-name">${spMvEsc(p.nama)}</span>
+              <span class="sp-mv-item-sub">RM ${spMvEsc(p.norm)} · masuk ${spMvEsc(p.reg)}${p.st ? " · " + spMvEsc(p.st) : ""}</span>
+              <span class="sp-mv-item-sub">${spMvEsc(p.dok || "")}</span></button>`).join("")
+          : `<div class="sp-pkg-empty">${done ? "Tidak ada pasien IGD 48 jam yang cocok." : "⏳ Mencari…"}</div>`;
+      };
+      q.addEventListener("input", render);
+      res.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-ki-pick]"); if (!b) return;
+        const p = (list || []).find((x) => x.noreg === b.dataset.kiPick); if (!p) return;
+        // Konfirmasi pasien sebelum membuka halamannya.
+        res.innerHTML = `<div class="sp-rp-patient" style="margin:6px 0">👤 <b>${spMvEsc(p.nama)}</b>
+            <span class="sp-pkg-muted">RM ${spMvEsc(p.norm)} · masuk ${spMvEsc(p.reg)}${p.dok ? " · " + spMvEsc(p.dok) : ""}</span></div>
+          <div class="sp-pkg-actions" style="margin-top:6px">
+            <button type="button" class="sp-pkg-tool" id="sp-ki-go" style="font-weight:700">📨 Buka pasien & susun PAKET KONSUL</button>
+            <button type="button" class="sp-pkg-tool" id="sp-ki-chg">Ganti pasien</button></div>`;
+        res.querySelector("#sp-ki-chg").addEventListener("click", render);
+        res.querySelector("#sp-ki-go").addEventListener("click", () => {
+          try {
+            sessionStorage.setItem(SP_PK_IGD_PENDING_KEY, JSON.stringify({ noreg: p.noreg, norm: p.norm, ts: Date.now() }));
+          } catch (err) { toast(`PAKET KONSUL: gagal menyimpan sementara (${err.message || err}).`); return; }
+          closeMenu();
+          toast(`PAKET KONSUL: membuka halaman ${p.nama || p.noreg}… SOAP & penunjang disusun otomatis.`);
+          location.href = `${smartplusBaseUrl()}/soap_igd/pasien_detail/${encodeURIComponent(p.noreg)}/${encodeURIComponent(p.norm)}/0`;
+        });
+      });
+      spAdvisLoadPatients(smartplusBaseUrl(), (part) => { list = part; if (q.isConnected) { info.textContent = `${part.length} pasien IGD 48 jam (memuat…)`; render(); } })
+        .then((l) => {
+          list = l; done = true;
+          if (!q.isConnected) return;
+          info.textContent = `${l.length} pasien IGD 48 jam`;
+          render();
+        }).catch((err) => { done = true; if (info.isConnected) info.textContent = `⚠ Daftar pasien IGD gagal dimuat: ${err.message || err}`; });
+      q.focus();
+    }
+
     function renderResepPulangMenu() {
       if (!spRp) spRp = spRpNew();
       menu.classList.add("sp-package-modal");
@@ -11225,7 +11315,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.82.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.83.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -11726,6 +11816,8 @@
       }
 
       if (target.dataset?.paketKonsul === "1") {
+        // v3.83.0: belum di halaman pasien IGD (mis. daftar pasien IGD) -> pilih pasien dulu.
+        if (!/pasien_detail\//i.test(location.pathname)) { renderKonsulIgdPatientPicker(); return; }
         closeMenu();
         await spExclusive("PAKET KONSUL", runPaketKonsul);
         return;
@@ -14086,6 +14178,7 @@
   }
   spResumePendingResepPulang().catch((err) => console.warn("[RESEP PULANG] lanjutan gagal", err));
   spResumePendingAsgadar().catch((err) => console.warn("[ASGADAR] lanjutan gagal", err));
+  spResumePendingPaketKonsul().catch((err) => console.warn("[PAKET KONSUL] lanjutan gagal", err));
   spResumeAsistenJob().catch((err) => console.warn("[ASISTEN] lanjutan gagal", err));
   try { spWaAdvisInit(); } catch (err) { console.warn("[ADVIS WA] gagal dipasang", err); }
 
