@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.74.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.75.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.74.0
-// @description  v3.74.0: ADVIS DPJP dari WhatsApp Web langsung ke Rencana ASGADAR — tombol "📤 Advis → ASGADAR" di WA Web: pilih pesan, pratinjau, Kirim; tab Smartplus (browser yang sama) menambahkannya di bawah Rencana form GADAR yang terbuka (ada Batalkan) atau membuka panel ADVIS SPESIALIS; tidak disimpan otomatis. v3.73.0: HP/tablet — preview MULTIPLE VISIT, panel 🧠 dan menu AUTO ASM diperbesar sesuai layar dan memenuhi layar (dulu kotak kecil di samping saat dibuka dari ASISTEN SUARA); perbaikan: pasien kartu diganti tidak lagi membawa isian/peringatan pasien sebelumnya, galat Claude per kartu, tidak bisa menyusun preview baru selama Save multiple berjalan (cegah CPPT dobel), ketikan tidak hilang saat kartu lain diperbarui. v3.72.2: ASISTEN Multiple visit — perbaikan laporan dokter: kata biasa tidak lagi terbaca sebagai nama pasien lain ("mau tanya" ≠ Tania, "pasien saat ini" ≠ Satria); satu kata tanpa "pasien/Pak/Bu" tidak pernah memulai pasien baru, satu kata setelah pemicu harus hampir persis, panggilan pendek minimal 4 huruf. v3.72.1: ASISTEN mode ⚡ Cepat (bawaan, instruksi dokter) — isian Multiple visit langsung tampil tanpa menunggu konteks klinis, peringatan ⚠ dari konteks menyusul di tiap kartu tanpa mengganggu isian/ketikan; IGD menunggu konteks maks 2,5 dtk; pilihan 📚 Lengkap (tunggu konteks dulu) di ⚙️. v3.72.0: ASISTEN SUARA membaca KONTEKS KLINIS pasien (pilihan dokter, tanpa nama/No.RM) — Multiple visit: ringkasan rawat inap (keluhan & TTV sebelumnya, pemfis, diagnosis, terapi berjalan, advis spesialis) + hasil lab terbaru tiap pasien; mode percakapan IGD: umur + lab kunjungan ini. Claude memakai konteks untuk memahami ucapan (salah dengar, perbandingan dengan sebelumnya) tetapi kolom tetap hanya dari ucapan; ⚠ PERINGATAN keamanan (lab kritis, TTV memburuk, bertentangan dengan terapi/alergi, dosis tidak lazim) tampil sebagai catatan saja, tidak diisi ke form; konteks yang dibaca bisa dilihat di tiap kartu; ganti pasien = Claude dipanggil ulang untuk kartu itu. v3.71.0: ASISTEN SUARA lebih akurat (pilihan dokter) — mode Multiple visit menampilkan pasien yang dikenali secara langsung saat bicara (✓ yakin / ⚠ tidak yakin, nama yang tidak tertangkap bisa segera diulang); daftar obat RS ikut dikirim ke Claude supaya nama obat yang salah dengar dibetulkan (tanpa mengganti obat/dosis); asisten belajar dari koreksi dokter — perubahan dokter pada isian asisten saat Simpan GADAR / Save multiple visit disimpan sebagai contoh gaya HANYA di browser ini (tanpa identitas, bisa dihapus di ⚙️). v3.70.0: ASISTEN SUARA — mode "Dikte dokter" diganti 🏥 Multiple visit: dokter menyebut nama pasien lalu visit (TTV/pemfis tidak normal & instruksi tambahan bila ada), lalu pasien berikutnya, dst.; ⏹ -> nama dicocokkan di browser dengan daftar pasien dirawat (nama tidak dikirim ke Claude, hanya PASIEN_1, PASIEN_2…), nama yang tidak persis dicari yang paling mungkin dan bisa diganti di tiap kartu; preview MULTIPLE VISIT terisi otomatis (bawaan multiple visit + temuan yang diucapkan), simpan tetap lewat "Save multiple visit" + konfirmasi; nama tidak yakin tidak dicentang. v3.69.0: fitur 🎙️ Rekam v3.68.0 (tab perekam GitHub Pages + layanan suara OpenAI) dihapus atas permintaan dokter — di tablet/HP tanpa dikte browser pakai 🎤 di keyboard layar; kunci OpenAI yang pernah disimpan dihapus otomatis dari browser. v3.68.0 (dihapus di v3.69.0): ASISTEN 🎙️ Rekam lewat tab perekam. v3.67.0: tombol 🎤 / Alt+V DIKTE SUARA terpisah dihapus (dikte tetap lewat panel ASISTEN 🧠); ASISTEN untuk IGD ramai — Claude hanya memakai ucapan yang nyambung dengan pasien yang diperiksa, mengabaikan suara bed sebelah/perawat/TV dan menampilkan potongan yang diabaikan (🔇) di pratinjau, ucapan yang kurang yakin dikenali ditandai "(?)" di mode percakapan, TTV ganda tanpa koreksi dikosongkan & ditanyakan. v3.66.0: audit fitur — ASISTEN: kesadaran yang diucapkan kini benar terpilih saat memakai template (dulu nilai pilihan Compos Mentis ikut berubah) dan GCS yang diucapkan tidak lagi tertimpa GCS template, perkiraan Claude tidak menimpa kesadaran/GCS yang sudah dipilih dokter, pemfis perkiraan Claude tidak menimpa pemfis yang sudah ditulis dokter (hanya temuan yang diucapkan ditambahkan), Terapkan yang tertekan dua kali tidak membuka form GADAR dua kali, keterangan pratinjau sesuai cara pengisian, order penunjang ditandai ✗ bila tombol Save tidak ditekan, diagnosis order memakai diagnosis template bila tidak diucapkan, nilai lab seperti "trombosit 150000" tidak lagi ikut disaring, batas tunggu Claude 90 dtk; DIKTE: Esc menghentikan dikte tanpa menutup form GADAR; tombol 🎤 & 🧠 pindah ke kiri tombol AUTO ASM (dulu menutupi menu). v3.65.0: ASISTEN — bila tidak ada template ASGADAR yang mendekati, kolom yang tidak diucapkan diisi perkiraan Claude (data paling mungkin untuk kasus itu, pemfis per sistem; tanpa obat/dosis baru), tampil terpisah di pratinjau & hanya mengisi kolom yang masih kosong; GADAR tetap Save manual. v3.64.0: ASISTEN — kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (dipilih Claude, bisa diganti di pratinjau; membuka form GADAR baru), pemfis template + temuan yang diucapkan, Riwayat Penyakit Sekarang lama diganti hasil terbaru; GADAR tetap Save manual. v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
+// @version      3.75.0
+// @description  v3.75.0: ASISTEN Multiple visit — deteksi nama lebih akurat (ejaan Rasyid/Rasheed, Syifa/Shifa; "Pak Bagus"; salah dengar dicoba lagi lebih longgar sebagai "tidak yakin"); nama tidak terdeteksi -> preview tetap terbuka dengan ➕ Tambah pasien (ucapan sudah terisi), pasien terlewat bisa ditambah, transkrip kartu bisa diedit lalu disusun ulang. v3.74.0: ADVIS DPJP dari WhatsApp Web langsung ke Rencana ASGADAR — tombol "📤 Advis → ASGADAR" di WA Web: pilih pesan, pratinjau, Kirim; tab Smartplus (browser yang sama) menambahkannya di bawah Rencana form GADAR yang terbuka (ada Batalkan) atau membuka panel ADVIS SPESIALIS; tidak disimpan otomatis. v3.73.0: HP/tablet — preview MULTIPLE VISIT, panel 🧠 dan menu AUTO ASM diperbesar sesuai layar dan memenuhi layar (dulu kotak kecil di samping saat dibuka dari ASISTEN SUARA); perbaikan: pasien kartu diganti tidak lagi membawa isian/peringatan pasien sebelumnya, galat Claude per kartu, tidak bisa menyusun preview baru selama Save multiple berjalan (cegah CPPT dobel), ketikan tidak hilang saat kartu lain diperbarui. v3.72.2: ASISTEN Multiple visit — perbaikan laporan dokter: kata biasa tidak lagi terbaca sebagai nama pasien lain ("mau tanya" ≠ Tania, "pasien saat ini" ≠ Satria); satu kata tanpa "pasien/Pak/Bu" tidak pernah memulai pasien baru, satu kata setelah pemicu harus hampir persis, panggilan pendek minimal 4 huruf. v3.72.1: ASISTEN mode ⚡ Cepat (bawaan, instruksi dokter) — isian Multiple visit langsung tampil tanpa menunggu konteks klinis, peringatan ⚠ dari konteks menyusul di tiap kartu tanpa mengganggu isian/ketikan; IGD menunggu konteks maks 2,5 dtk; pilihan 📚 Lengkap (tunggu konteks dulu) di ⚙️. v3.72.0: ASISTEN SUARA membaca KONTEKS KLINIS pasien (pilihan dokter, tanpa nama/No.RM) — Multiple visit: ringkasan rawat inap (keluhan & TTV sebelumnya, pemfis, diagnosis, terapi berjalan, advis spesialis) + hasil lab terbaru tiap pasien; mode percakapan IGD: umur + lab kunjungan ini. Claude memakai konteks untuk memahami ucapan (salah dengar, perbandingan dengan sebelumnya) tetapi kolom tetap hanya dari ucapan; ⚠ PERINGATAN keamanan (lab kritis, TTV memburuk, bertentangan dengan terapi/alergi, dosis tidak lazim) tampil sebagai catatan saja, tidak diisi ke form; konteks yang dibaca bisa dilihat di tiap kartu; ganti pasien = Claude dipanggil ulang untuk kartu itu. v3.71.0: ASISTEN SUARA lebih akurat (pilihan dokter) — mode Multiple visit menampilkan pasien yang dikenali secara langsung saat bicara (✓ yakin / ⚠ tidak yakin, nama yang tidak tertangkap bisa segera diulang); daftar obat RS ikut dikirim ke Claude supaya nama obat yang salah dengar dibetulkan (tanpa mengganti obat/dosis); asisten belajar dari koreksi dokter — perubahan dokter pada isian asisten saat Simpan GADAR / Save multiple visit disimpan sebagai contoh gaya HANYA di browser ini (tanpa identitas, bisa dihapus di ⚙️). v3.70.0: ASISTEN SUARA — mode "Dikte dokter" diganti 🏥 Multiple visit: dokter menyebut nama pasien lalu visit (TTV/pemfis tidak normal & instruksi tambahan bila ada), lalu pasien berikutnya, dst.; ⏹ -> nama dicocokkan di browser dengan daftar pasien dirawat (nama tidak dikirim ke Claude, hanya PASIEN_1, PASIEN_2…), nama yang tidak persis dicari yang paling mungkin dan bisa diganti di tiap kartu; preview MULTIPLE VISIT terisi otomatis (bawaan multiple visit + temuan yang diucapkan), simpan tetap lewat "Save multiple visit" + konfirmasi; nama tidak yakin tidak dicentang. v3.69.0: fitur 🎙️ Rekam v3.68.0 (tab perekam GitHub Pages + layanan suara OpenAI) dihapus atas permintaan dokter — di tablet/HP tanpa dikte browser pakai 🎤 di keyboard layar; kunci OpenAI yang pernah disimpan dihapus otomatis dari browser. v3.68.0 (dihapus di v3.69.0): ASISTEN 🎙️ Rekam lewat tab perekam. v3.67.0: tombol 🎤 / Alt+V DIKTE SUARA terpisah dihapus (dikte tetap lewat panel ASISTEN 🧠); ASISTEN untuk IGD ramai — Claude hanya memakai ucapan yang nyambung dengan pasien yang diperiksa, mengabaikan suara bed sebelah/perawat/TV dan menampilkan potongan yang diabaikan (🔇) di pratinjau, ucapan yang kurang yakin dikenali ditandai "(?)" di mode percakapan, TTV ganda tanpa koreksi dikosongkan & ditanyakan. v3.66.0: audit fitur — ASISTEN: kesadaran yang diucapkan kini benar terpilih saat memakai template (dulu nilai pilihan Compos Mentis ikut berubah) dan GCS yang diucapkan tidak lagi tertimpa GCS template, perkiraan Claude tidak menimpa kesadaran/GCS yang sudah dipilih dokter, pemfis perkiraan Claude tidak menimpa pemfis yang sudah ditulis dokter (hanya temuan yang diucapkan ditambahkan), Terapkan yang tertekan dua kali tidak membuka form GADAR dua kali, keterangan pratinjau sesuai cara pengisian, order penunjang ditandai ✗ bila tombol Save tidak ditekan, diagnosis order memakai diagnosis template bila tidak diucapkan, nilai lab seperti "trombosit 150000" tidak lagi ikut disaring, batas tunggu Claude 90 dtk; DIKTE: Esc menghentikan dikte tanpa menutup form GADAR; tombol 🎤 & 🧠 pindah ke kiri tombol AUTO ASM (dulu menutupi menu). v3.65.0: ASISTEN — bila tidak ada template ASGADAR yang mendekati, kolom yang tidak diucapkan diisi perkiraan Claude (data paling mungkin untuk kasus itu, pemfis per sistem; tanpa obat/dosis baru), tampil terpisah di pratinjau & hanya mengisi kolom yang masih kosong; GADAR tetap Save manual. v3.64.0: ASISTEN — kolom yang tidak diucapkan diisi dari template ASGADAR terdekat (dipilih Claude, bisa diganti di pratinjau; membuka form GADAR baru), pemfis template + temuan yang diucapkan, Riwayat Penyakit Sekarang lama diganti hasil terbaru; GADAR tetap Save manual. v3.63.0: MENU disusun ulang — ASGADAR (Febris ec VI dd BI paling atas) -> AUTO PENUNJANG -> KOMBINASI RESEP -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP; fungsi tidak berubah. v3.62.1: ASISTEN — kolom Workspace ID (opsional) di ⚙️ untuk kunci API yang tidak terikat workspace + pesan galat yang jelas. v3.62.0: ASISTEN SUARA satu rekaman — anamnesa + dikte TTV/pemfis/diagnosis/rencana + ORDER PENUNJANG (Lab rutin, Lab Severe, Ro Thorax, USG abdomen, CT brain; dari daftar tetap, dicentang di pratinjau) dijalankan & di-Save lewat fungsi AUTO yang sudah diizinkan, lalu form GADAR baru diisi (GADAR tetap Save manual); lanjut otomatis setelah halaman dimuat ulang. Panel ramah HP: selebar layar, tombol besar, mic keyboard HP bila browser tanpa dikte. v3.61.0: ASISTEN SUARA mode 👥 Percakapan anamnesa — mic mendengar dialog dokter–pasien (satu baris per ucapan, tanpa perintah tanda baca), ⏹ Selesai -> Claude merangkum ke isian GADAR (keluhan disangkal, riwayat obat/keluarga) + 💡 saran pertanyaan yang belum ditanyakan; tetap pratinjau + Terapkan, tidak menyimpan. v3.60.0: ASISTEN SUARA (uji coba) — tombol 🧠 / Alt+Q: ucapan/ketikan bebas dipahami Claude lalu tampil sebagai pratinjau isian form Assesment GADAR; kolom diisi setelah dokter menekan Terapkan, TIDAK menyimpan. Identitas (nama, No.RM/No.Reg, tanggal, IP) disaring sebelum dikirim; kunci API disimpan di browser dokter, bukan di script. v3.59.0: DIKTE SUARA — klik kolom isian lalu tombol 🎤 / Alt+V, ucapan Bahasa Indonesia diketik di posisi kursor (Chrome/Edge; perintah "titik", "tanda koma", "baris baru", "stop dikte"; "120 per 80" -> 120/80). Tidak menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @match        http://*/*
@@ -52,7 +52,7 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.74.0";
+  window.__SP_AUTO_ASM_LOADED__ = "3.75.0";
   document.documentElement.setAttribute("data-sp-auto-asm", "3.74.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
@@ -8525,6 +8525,8 @@
       #${MENU_ID}.sp-mfit .sp-mv-f input, #${MENU_ID}.sp-mfit .sp-mv-f textarea{font-size:16px!important;padding:9px 10px!important;}
       #${MENU_ID}.sp-mfit .sp-mv-voice{font-size:14px!important;line-height:1.45;}
       #${MENU_ID}.sp-mfit .sp-mv-voice select{font-size:16px!important;padding:10px 8px!important;}
+      #${MENU_ID}.sp-mfit .sp-mv-voice textarea{font-size:16px!important;padding:9px 10px!important;}
+      #${MENU_ID}.sp-mfit .sp-mv-voice button{padding:10px 14px!important;font-size:15px!important;}
       #${MENU_ID}.sp-mfit .sp-mv-voice summary{padding:6px 0;}
       #${MENU_ID}.sp-mfit .sp-mv-src{font-size:12px;}
       #${MENU_ID}.sp-mfit .sp-mv-q{font-size:16px!important;padding:12px!important;}
@@ -9800,6 +9802,7 @@
         <div class="sp-title">${isVisit ? '👥 MULTIPLE VISIT' : '🏠 MULTIPLE PULANG'} — preview</div>
         <div class="sp-pkg-bar"><span class="sp-pkg-badge">${pats.length} PASIEN</span><span id="sp-mv-prog" class="sp-pkg-muted">⏳ Menyusun CPPT 0/${pats.length}…</span></div>
         <div id="sp-mv-cards"></div>
+        <div id="sp-mv-extra"></div>
         <div class="sp-pkg-foot">
           <div class="sp-pkg-foot-head"><b>Belum tersimpan</b><span id="sp-mv-n" class="sp-pkg-rcount">0</span><span class="sp-pkg-muted">cek & edit dulu, lalu simpan</span></div>
           <div id="sp-pkg-warn" class="sp-pkg-warn" style="display:none"></div>
@@ -9831,7 +9834,89 @@
       if (spMv.voice) await spMvVoiceAi();
       if (!menu.isConnected) return;
       renderMultiCpptCards();
+      spMvRenderExtra();
+      if (spMv.voice && !drafts.length) {
+        const prog = menu.querySelector('#sp-mv-prog');
+        if (prog) prog.textContent = '⚠ Nama pasien tidak terdeteksi dari ucapan — pilih pasiennya di ➕ Tambah pasien (ucapan sudah terisi).';
+      }
       if (spMv.voice && spAsistenCtxMode() === 'cepat') spMvVoiceWarn();
+    }
+
+    // v3.75.0 (permintaan dokter 12 Okt 2026): nama tidak terdeteksi / pasien terlewat -> dokter menambah pasien sendiri;
+    // ucapan yang belum masuk pasien mana pun sudah terisi dan bisa diedit sebelum ditambahkan.
+    function spMvRenderExtra() {
+      const box = menu.querySelector('#sp-mv-extra');
+      if (!box) return;
+      if (!spMv.voice) { box.innerHTML = ''; return; }
+      const v = spMv.voice;
+      const left = String(v.intro || '').trim();
+      const none = !spMv.drafts.length;
+      box.innerHTML = `<div class="sp-mv-card sp-mv-add" style="border-left-color:#f59e0b">
+          <div style="font-weight:700;margin-bottom:6px">➕ Tambah pasien <span class="sp-pkg-muted">${none ? 'nama tidak terdeteksi — pilih pasiennya' : 'nama tidak terdeteksi / pasien terlewat'}</span></div>
+          <label class="sp-mv-f sp-mv-wide"><span>Ucapan visit untuk pasien ini${left ? ' (terisi ucapan yang belum masuk pasien mana pun — hapus bagian yang bukan pasien ini)' : ' (ketik / tempel; boleh kosong = bawaan multiple visit)'}</span>
+            <textarea id="sp-mv-add-tx" rows="${left ? 4 : 2}">${spMvEsc(left)}</textarea></label>
+          <input id="sp-mv-add-q" class="sp-mv-q" type="search" autocomplete="off" placeholder="🔍 Cari nama pasien, No. RM, atau kamar…">
+          <div id="sp-mv-add-res" class="sp-mv-results"></div>
+        </div>`;
+      const q = box.querySelector('#sp-mv-add-q');
+      const res = box.querySelector('#sp-mv-add-res');
+      const draw = () => {
+        const words = norm(q.value).split(' ').filter(Boolean);
+        const have = new Set(spMv.drafts.map((d) => d.p.noreg));
+        const list = words.length ? v.patients.filter((p) => !have.has(p.noreg) && words.every((w) => norm(`${p.name} ${p.normRm} ${p.kamar} ${p.noKamar} ${p.bed} ${p.dx}`).includes(w))) : [];
+        res.innerHTML = !words.length ? `<div class="sp-pkg-empty">Ketik nama pasien (${v.patients.length} pasien dirawat).</div>`
+          : list.length ? list.slice(0, 8).map((p) => `<button type="button" class="sp-mv-item" data-mv-add="${spMvEsc(p.noreg)}">
+              <span class="sp-mv-item-name">${spMvEsc(p.name)}</span>
+              <span class="sp-mv-item-sub">${spMvEsc(p.kamar)} ${spMvEsc(p.noKamar)}/${spMvEsc(p.bed)} · ${spMvEsc(p.dx || '-')}</span></button>`).join('') + (list.length > 8 ? `<div class="sp-pkg-empty">… ${list.length - 8} lainnya, perjelas pencarian.</div>` : '')
+          : '<div class="sp-pkg-empty">Tidak ada pasien yang cocok (atau sudah ada di kartu).</div>';
+      };
+      q.addEventListener('input', draw);
+      draw();
+      res.addEventListener('click', (e) => {
+        const it = e.target.closest('[data-mv-add]');
+        if (!it) return;
+        const p = v.patients.find((x) => x.noreg === it.dataset.mvAdd);
+        if (p) spMvAddPatient(p, box.querySelector('#sp-mv-add-tx').value);
+      });
+    }
+
+    async function spMvAddPatient(p, text) {
+      if (spMv.saving || !spMv.voice) return;
+      if (spMv.drafts.some((d) => d.p.noreg === p.noreg)) { alert(`${p.name} sudah ada di kartu.`); return; }
+      const v = spMv.voice;
+      const n = Math.max(0, ...v.segments.map((sg) => Number(String(sg.id).replace(/\D/g, '')) || 0)) + 1;
+      const sg = { id: 'PASIEN_' + n, noreg: p.noreg, heard: '', added: true, score: 1, sure: true, manual: true, cands: [{ noreg: p.noreg, rank: 1, score: 1 }], text: String(text || '').trim() };
+      v.segments.push(sg);
+      if (sg.text && String(v.intro || '').trim()) v.intro = ''; // ucapan sisa sudah dipakai
+      spMv.selected.set(p.noreg, p);
+      const dr = { p, values: null, error: '', warn: '', src: '', ageMonths: null, include: true, status: '', voice: sg, gen: 0 };
+      spMv.drafts.push(dr);
+      renderMultiCpptCards();
+      spMvRenderExtra();
+      const card = menu.querySelectorAll('#sp-mv-cards .sp-mv-card')[spMv.drafts.length - 1];
+      if (card) card.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      if (!(await spMvBuildBase(dr)) || dr.gen !== 0 || !menu.isConnected) return;
+      if (dr.values && sg.text) await spMvVoiceAi([dr]);
+      if (dr.gen !== 0 || !menu.isConnected) return;
+      renderMultiCpptCards();
+      if (spAsistenCtxMode() === 'cepat') spMvVoiceWarn([dr]);
+    }
+
+    // v3.75.0: transkrip kartu diedit dokter -> isian kartu itu disusun ulang oleh Claude.
+    async function spMvRedoVoice(dr) {
+      if (spMv.saving || !dr.values || !dr.base || !spMv.voice) return;
+      if (!window.confirm('Susun ulang isian kartu ini dari transkrip? Editan Anda pada kolom kartu ini akan diganti.')) return;
+      const g0 = dr.gen || 0;
+      const tok = dr.redoTok = (dr.redoTok || 0) + 1;
+      if (spMv.voice.ai) delete spMv.voice.ai[dr.voice.id];
+      dr.warnState = '';
+      dr.ai = null;
+      const st = menu.querySelector(`[data-status="${spMv.drafts.indexOf(dr)}"]`);
+      if (st) st.textContent = '🧠 menyusun ulang…';
+      await spMvVoiceAi([dr]);
+      if ((dr.gen || 0) !== g0 || dr.redoTok !== tok || !menu.isConnected) return;
+      renderMultiCpptCards();
+      if (spAsistenCtxMode() === 'cepat') spMvVoiceWarn([dr]);
     }
 
     // v3.72.1: mode cepat — setelah isian tampil, konteks klinis dikirim untuk PERINGATAN saja; kotak peringatan & konteks
@@ -10026,7 +10111,8 @@
       const F = (dr, k, label, cls = '') => `<label class="sp-mv-f ${cls}"><span>${label}</span><input type="text" data-f="${k}" value="${spMvEsc(dr.values?.[k] || '')}"></label>`;
       // v3.73.0: kartu digambar ulang (mis. pasien kartu lain diganti) -> ketikan, posisi gulir & bagian terbuka tetap.
       const act = document.activeElement && box.contains(document.activeElement) ? document.activeElement : null;
-      const keep = act && act.dataset.f && act.closest('[data-card]') ? { card: act.closest('[data-card]').dataset.card, f: act.dataset.f, s: act.selectionStart, e: act.selectionEnd } : null;
+      const keep = act && act.dataset.f && act.closest('[data-card]') ? { card: act.closest('[data-card]').dataset.card, f: act.dataset.f, s: act.selectionStart, e: act.selectionEnd }
+        : act && act.dataset.mvTx ? { tx: act.dataset.mvTx, s: act.selectionStart, e: act.selectionEnd } : null;
       const scrollTop = menu.scrollTop;
       const openDet = new Set([...box.querySelectorAll('details[open][data-det]')].map((d) => d.dataset.det));
       box.innerHTML = spMv.drafts.map((dr, i) => {
@@ -10059,10 +10145,12 @@
       box.querySelectorAll('details[data-det]').forEach((d) => { if (openDet.has(d.dataset.det)) d.open = true; });
       menu.scrollTop = scrollTop;
       if (keep) {
-        const el = box.querySelector(`[data-card="${keep.card}"] [data-f="${keep.f}"]`);
+        const el = keep.tx != null ? box.querySelector(`[data-mv-tx="${keep.tx}"]`) : box.querySelector(`[data-card="${keep.card}"] [data-f="${keep.f}"]`);
         if (el && !el.disabled) { try { el.focus({ preventScroll: true }); if (keep.s != null) el.setSelectionRange(keep.s, keep.e); } catch (_) {} }
       }
       box.querySelectorAll('[data-inc]').forEach((cb) => cb.addEventListener('change', () => { spMv.drafts[Number(cb.dataset.inc)].include = cb.checked; spMvFooter(); }));
+      box.querySelectorAll('[data-mv-tx]').forEach((ta) => ta.addEventListener('input', () => { const d = spMv.drafts[Number(ta.dataset.mvTx)]; if (d && d.voice) d.voice.text = ta.value; }));
+      box.querySelectorAll('[data-mv-redo]').forEach((b) => b.addEventListener('click', () => spMvRedoVoice(spMv.drafts[Number(b.dataset.mvRedo)])));
       box.querySelectorAll('[data-mv-who]').forEach((sel) => sel.addEventListener('change', () => {
         if (spMv.saving) { renderMultiCpptCards(); return; }
         spMvChangePatient(spMv.drafts[Number(sel.dataset.mvWho)], sel.value);
@@ -10086,7 +10174,7 @@
       const labels = { keluhan_utama: 'keluhan', objective: 'pemfis', td: 'TD', nadi: 'nadi', suhu: 'suhu', nafas: 'RR', gcs: 'GCS', kesadaran: 'kesadaran', keadaan_umum: 'KU', p_instruksi: 'instruksi' };
       const ch = (dr.aiChanged || []).map((k) => labels[k] || k);
       return `<div class="sp-mv-voice" style="margin:0 0 6px;padding:6px 8px;background:#f5f3ff;border-radius:8px;font-size:12px;color:#374151">
-          <div>🎙️ Terdengar «<b>${spMvEsc(sg.heard)}</b>»${sg.sure || sg.manual ? '' : ' <span style="color:#c2410c;font-weight:700">⚠ tidak yakin</span>'} → pasien:</div>
+          <div>${sg.added ? '➕ Ditambahkan dokter' : `🎙️ Terdengar «<b>${spMvEsc(sg.heard)}</b>»`}${sg.sure || sg.manual ? '' : ' <span style="color:#c2410c;font-weight:700">⚠ tidak yakin</span>'} → pasien:</div>
           <select data-mv-who="${i}" ${locked ? 'disabled' : ''} style="width:100%;margin:3px 0;padding:6px;border:1px solid #c7d2fe;border-radius:7px;font-size:13px;background:#fff">
             <optgroup label="Paling mungkin">${top.map((c) => opt(byNoreg.get(c.noreg), ` (${Math.round(c.score * 100)}%)`)).join('')}</optgroup>
             ${!top.some((c) => c.noreg === dr.p.noreg) && byNoreg.has(dr.p.noreg) ? `<optgroup label="Dipilih">${opt(byNoreg.get(dr.p.noreg))}</optgroup>` : ''}
@@ -10097,7 +10185,9 @@
           ${dr.ai && dr.ai.catatan ? `<div style="color:#92400e">❓ ${spMvEsc(dr.ai.catatan)}</div>` : ''}
           ${dr.ai && dr.ai.diabaikan ? `<div style="color:#6b7280">🔇 Diabaikan: ${spMvEsc(dr.ai.diabaikan)}</div>` : ''}
           <div data-mv-ctx="${i}">${spMvCtxHtml(dr)}</div>
-          <details data-det="t${i}"><summary style="cursor:pointer;color:#6d28d9">Transkrip pasien ini</summary><div style="white-space:pre-wrap;margin-top:3px">${spMvEsc(sg.text || '(tidak ada ucapan)')}</div></details>
+          <details data-det="t${i}"${sg.added && !sg.text ? ' open' : ''}><summary style="cursor:pointer;color:#6d28d9">Transkrip pasien ini (bisa diedit)</summary>
+            <textarea data-mv-tx="${i}" rows="3" ${locked ? 'disabled' : ''} style="width:100%;margin-top:3px;padding:5px 7px;border:1px solid #ddd6fe;border-radius:7px;font:12.5px/1.4 Arial,sans-serif;background:#fff">${spMvEsc(sg.text || '')}</textarea>
+            <button type="button" data-mv-redo="${i}" ${locked || !dr.values ? 'disabled' : ''} style="margin-top:4px;padding:6px 10px;border:0;border-radius:7px;background:#6d28d9;color:#fff;font-weight:700;cursor:pointer">🧠 Susun ulang dari transkrip</button></details>
         </div>`;
     }
 
@@ -10672,7 +10762,7 @@
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.74.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.75.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -12258,6 +12348,8 @@
   function spVisitPhon(w) {
     return String(w || "").toLowerCase().replace(/[^a-z]/g, "")
       .replace(/oe/g, "u").replace(/dj/g, "j").replace(/tj/g, "c").replace(/ch/g, "k").replace(/kh/g, "k")
+      // v3.75.0: ejaan Arab/Inggris yang ditulis keyboard HP ala Indonesia (Rasheed/Rasyid, Syifa/Shifa, Dzaki/Zaki, Fathir/Fatir, Ee/I)
+      .replace(/sy/g, "s").replace(/sh/g, "s").replace(/dz/g, "z").replace(/th/g, "t").replace(/ee/g, "i").replace(/oo/g, "u")
       .replace(/ph/g, "f").replace(/q/g, "k").replace(/v/g, "f").replace(/x/g, "ks").replace(/y/g, "i").replace(/ae/g, "ai")
       .replace(/(.)\1+/g, "$1").replace(/(.)h$/, "$1");
   }
@@ -12302,6 +12394,16 @@
   // Hasil: { segments: [{ id, noreg, heard, score, sure, cands: [{ noreg, score }], text }], intro } — intro = ucapan
   // sebelum nama pertama (tidak dipakai). Pasien yang disebut lagi kemudian digabung ke potongannya sendiri.
   function spVisitSegment(raw, patients) {
+    // v3.75.0 (laporan dokter: nama sudah disebut tapi tidak terdeteksi): bila tidak ada satu nama pun yang dikenali,
+    // diulang sekali dengan ambang lebih longgar; hasilnya selalu "tidak yakin" (tidak dicentang, dokter memastikan).
+    const r = spVisitSegmentPass(raw, patients, false);
+    if (r.segments.length) return r;
+    const l = spVisitSegmentPass(raw, patients, true);
+    l.segments.forEach((sg) => { sg.sure = false; sg.loose = true; });
+    return l.segments.length ? l : r;
+  }
+
+  function spVisitSegmentPass(raw, patients, loose) {
     const text = String(raw || "");
     const pats = (patients || []).map((p) => ({ p, tokens: spVisitNameTokens(p.name) })).filter((x) => x.tokens.length);
     const words = [];
@@ -12309,6 +12411,10 @@
     let m;
     while ((m = re.exec(text))) words.push({ raw: m[0], start: m.index, end: m.index + m[0].length, w: spVisitPhon(m[0]), lw: m[0].toLowerCase().replace(/[^a-z]/g, "") });
     const isNameWord = (x) => x && x.w.length >= 3 && !SP_VISIT_COMMON.has(x.lw) && !SP_VISIT_STRONG.has(x.lw) && !SP_VISIT_WEAK.has(x.lw) && !SP_VISIT_TITLES.has(x.lw) && !/\d/.test(x.raw);
+    // v3.75.0: kata umum yang juga nama pasien ("Pak Bagus", "Bu Indah") boleh dipakai bila tepat setelah sapaan/pemicu
+    // dan persis sama dengan kata nama pasien dirawat.
+    const allTokens = new Set(pats.flatMap((x) => x.tokens));
+    const isNameAfterTrig = (x) => x && x.w.length >= 3 && SP_VISIT_COMMON.has(x.lw) && allTokens.has(x.w) && !/\d/.test(x.raw);
     const mentions = [];
     for (let i = 0; i < words.length; i++) {
       // Kamar: "kamar 305 (bed 2)".
@@ -12326,7 +12432,9 @@
           continue;
         }
       }
-      if (!isNameWord(words[i])) continue;
+      const prevLw = i > 0 ? words[i - 1].lw : "";
+      const afterTrig = SP_VISIT_STRONG.has(prevLw) || SP_VISIT_WEAK.has(prevLw);
+      if (!isNameWord(words[i]) && !(afterTrig && isNameAfterTrig(words[i]))) continue;
       // Pemicu di 1–4 kata sebelumnya.
       let trig = 0, cut = i;
       for (let b = i - 1; b >= Math.max(0, i - 4); b--) {
@@ -12341,7 +12449,7 @@
       const scores = new Map();
       for (let k = 1; k <= 3; k++) {
         const win = words.slice(i, i + k);
-        if (win.length < k || !win.every(isNameWord)) break;
+        if (win.length < k || !win.every((y, j) => isNameWord(y) || (j === 0 && afterTrig && isNameAfterTrig(y)))) break;
         for (const x of pats) {
           const s = spVisitScoreWords(win.map((y) => y.w), x.tokens);
           if (!s) continue;
@@ -12354,7 +12462,10 @@
       // v3.72.2 (laporan dokter): satu kata tanpa pemicu tidak pernah dianggap nama ("mau tanya" -> TANIA); satu kata setelah
       // pemicu harus hampir persis. Nama 2–3 kata boleh sedikit salah dengar.
       const one = best.k === 1;
-      const ok = trig === 2 ? best.s >= (one ? 0.75 : 0.6) : trig === 1 ? best.s >= (one ? 0.85 : 0.72) : !one && best.s >= 0.9;
+      const ok = loose
+        // v3.75.0: lintasan longgar (tidak ada nama yang dikenali sama sekali) — tetap tanpa satu kata tanpa pemicu yang tidak persis.
+        ? (trig === 2 ? best.s >= (one ? 0.62 : 0.55) : trig === 1 ? best.s >= (one ? 0.7 : 0.6) : one ? best.s >= 0.99 && best.x.tokens.some((t) => t === words[i].w && t.length >= 5) : best.s >= 0.78)
+        : trig === 2 ? best.s >= (one ? 0.75 : 0.6) : trig === 1 ? best.s >= (one ? 0.85 : 0.72) : !one && best.s >= 0.9;
       if (!ok) continue;
       // rank = skor + bonus kata lebih banyak ("Siti Aminah" > "Siti" saja); score = 0..1 untuk ditampilkan.
       const cands = [...scores.entries()].map(([noreg, s]) => ({ noreg, rank: Math.round(s * 100) / 100, score: Math.min(1, Math.round(s * 100) / 100) }))
@@ -12880,7 +12991,11 @@
       if (!list.length) throw new Error("daftar pasien dirawat kosong / tidak terbaca (sesi login Smartplus habis?)");
       const seg = spVisitSegment(raw, list);
       if (!seg.segments.length) {
-        spAsistenSetStatus("Tidak ada nama pasien dirawat yang dikenali. Sebut nama sebelum visit tiap pasien, mis. \"pasien Pak Budi\", \"berikutnya Bu Siti\", atau \"kamar 305\".", "#b71c1c");
+        // v3.75.0: ucapan tidak dibuang — preview tetap dibuka, dokter memilih pasiennya (➕ Tambah pasien), ucapan sudah terisi.
+        spAs.visit = { base, patients: list, segments: [], intro: raw.trim() };
+        spAsistenRenderPlan();
+        spAsistenSetStatus("Nama pasien tidak terdeteksi. Pilih pasiennya di preview (➕ Tambah pasien) — ucapan sudah terisi. Lain kali sebut mis. \"pasien Pak Budi\" atau \"kamar 305\".", "#e65100");
+        spAsistenVisitOpenPreview();
         return;
       }
       spAs.visit = { base, patients: list, segments: seg.segments, intro: seg.intro };
@@ -12946,7 +13061,7 @@
           `<span style="color:#78909c;font-size:11px">${spAsistenEsc(p.kamar || "")} ${spAsistenEsc(p.noKamar || "")}/${spAsistenEsc(p.bed || "")}</span>` +
           (s.sure ? "" : ` <span style="color:#e65100;font-size:11px">⚠ tidak yakin</span>`) + `</div>`;
       }).join("") +
-      (v.intro ? `<div style="margin-top:4px;color:#78909c;font-size:11px">Ucapan sebelum nama pasien pertama tidak dipakai: «${spAsistenEsc(v.intro.slice(0, 120))}»</div>` : "") +
+      (v.intro ? `<div style="margin-top:4px;color:#78909c;font-size:11px">${v.segments.length ? "Ucapan sebelum nama pasien pertama" : "Ucapan"} belum masuk pasien mana pun (bisa dipakai lewat ➕ Tambah pasien di preview): «${spAsistenEsc(v.intro.slice(0, 120))}»</div>` : "") +
       `<button type="button" data-as="visit-open" style="margin-top:8px;width:100%;background:#2e7d32">📋 Buka preview MULTIPLE VISIT</button>`;
   }
 
