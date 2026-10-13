@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.99.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.100.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.99.0
-// @description  v3.99.0 (pilihan dokter 13 Okt 2026): (1) PENGAMAN SIMPAN — bila server Smartplus error saat Simpan (mis. "No space left on device" = disk server penuh), muncul pita merah "BELUM TENTU TERSIMPAN" beserta alasannya dan isian yang dikirim dicadangkan di browser ini (24 jam); "↩ Pulihkan isian" mengisi kembali form yang terbuka, Simpan tetap ditekan dokter. (2) Script hanya dimuat di halaman Smartplus, WhatsApp Web dan viewer PACS (dulu di semua situs) — HP lebih ringan. (3) Rilis hanya terjadi bila semua uji otomatis lulus; kode dirapikan menjadi modul (src/), riwayat versi pindah ke CHANGELOG.md. Fitur lain tidak berubah.
+// @version      3.100.0
+// @description  v3.100.0 (permintaan dokter 13 Okt 2026): UBAH UKURAN KOTAK seperti jendela aplikasi laptop — semua kotak AUTO ASM (menu, preview RESEP PULANG/KOMBINASI/MULTIPLE VISIT, PAKET KONSUL, REVIEW GADAR, ADVIS, AUTO SCREENSHOT, ASISTEN 🧠, panel Advis WA) kini bisa diperbesar/diperkecil dari tepi kiri, kanan, atas, bawah dan keempat sudut; area tarik lebar (sedikit di luar bingkai, lebih lebar di HP) dengan kursor panah yang sesuai; tarik tepi kiri/atas membesar ke kiri/atas sementara sisi seberang diam; pegangan sudut kanan bawah kini di dalam sudut kotak (garis abu, merah muda saat disentuh); ketuk/klik 2x pegangan = kembali ke ukuran bawaan. Ukuran tetap diingat; kotak tetap popup biasa (tidak layar penuh). Fitur lain tidak berubah.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.99.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.99.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.100.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.100.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -6288,35 +6288,14 @@
         if (s && s.w >= 280 && s.h >= 110) Object.assign(p.style, { width: Math.min(s.w, innerWidth * 0.98) + "px", height: Math.min(s.h, innerHeight * 0.96) + "px", maxHeight: "96vh" });
       } catch (_) {}
     }
-    // Pegangan ubah ukuran di sudut kanan bawah (mouse & sentuh); dipasang setelah panel tampil.
+    // Ubah ukuran dari semua tepi & sudut (mouse & sentuh); dipasang setelah panel tampil. v3.100.0: memakai bingkai bersama
+    // spResizeFrame (seperti jendela aplikasi laptop) menggantikan pegangan kecil di sudut kanan bawah.
     function spWaPanelGrip(p) {
-      const g = el("div", "position:sticky;bottom:-10px;margin:4px -10px -10px auto;width:22px;height:22px;cursor:nwse-resize;touch-action:none;" +
-        "background:linear-gradient(135deg,transparent 45%,#e91e63 45% 53%,transparent 53% 66%,#e91e63 66% 74%,transparent 74%)");
-      g.title = "Tarik untuk mengubah lebar & tinggi panel";
-      g.addEventListener("pointerdown", (e) => {
-        if (e.button !== 0) return;
-        e.preventDefault();
-        g.setPointerCapture(e.pointerId);
-        const r = p.getBoundingClientRect(), x0 = e.clientX, y0 = e.clientY;
-        if (!p.style.left || p.style.left === "auto") placePanel(p, { left: r.left, top: r.top });
-        const move = (ev) => {
-          const q = p.getBoundingClientRect();
-          const w = Math.max(280, Math.min(innerWidth - q.left - 4, r.width + ev.clientX - x0));
-          const h = Math.max(110, Math.min(innerHeight - q.top - 4, r.height + ev.clientY - y0));
-          Object.assign(p.style, { width: w + "px", height: h + "px", maxHeight: "96vh" });
-        };
-        const up = () => {
-          g.removeEventListener("pointermove", move);
-          g.removeEventListener("pointerup", up);
-          g.removeEventListener("pointercancel", up);
-          const q = p.getBoundingClientRect();
-          try { localStorage.setItem(SIZE_KEY, JSON.stringify({ w: Math.round(q.width), h: Math.round(q.height) })); } catch (_) {}
-        };
-        g.addEventListener("pointermove", move);
-        g.addEventListener("pointerup", up);
-        g.addEventListener("pointercancel", up);
+      spResizeFrame(p, {
+        minW: 280, minH: 110, base: { w: "min(94vw,560px)", h: "" },
+        save: (s) => { try { localStorage.setItem(SIZE_KEY, JSON.stringify(s)); } catch (_) {} },
+        reset: () => { try { localStorage.removeItem(SIZE_KEY); } catch (_) {} },
       });
-      p.append(g);
     }
     function spWaPanelKeepIn(p) {
       const fit = () => {
@@ -10403,6 +10382,7 @@
 
   // isHandle(target) -> true bila titik tekan berada di bagian judul (tombol/isian tidak memulai geser).
   function spMakeDraggable(el, key, isHandle) {
+    el._spPosKey = key; // v3.100.0: ubah ukuran dari tepi kiri/atas ikut memperbarui posisi yang diingat
     el.addEventListener("pointerdown", (e) => {
       if (e.button !== undefined && e.button !== 0) return;
       const t = e.target;
@@ -10532,9 +10512,12 @@
     spImp(el, "box-sizing", "border-box");
     spImp(el, "max-width", Math.round(v.w - 8) + "px");
     spImp(el, "max-height", Math.round(v.h - 8) + "px");
-    if (s) spImp(el, "width", Math.round(Math.min(s.w, v.w - 8)) + "px");
-    if (s && el.dataset.spMin !== "1") spImp(el, "height", Math.round(Math.min(s.h, v.h - 8)) + "px");
-    else el.style.removeProperty("height");
+    // v3.100.0: selama tepi/sudut sedang ditarik, ukuran tidak ditimpa ukuran tersimpan.
+    if (!el._spRsBusy) {
+      if (s) spImp(el, "width", Math.round(Math.min(s.w, v.w - 8)) + "px");
+      if (s && el.dataset.spMin !== "1") spImp(el, "height", Math.round(Math.min(s.h, v.h - 8)) + "px");
+      else el.style.removeProperty("height");
+    }
     const r = el.getBoundingClientRect();
     if (!(r.width > 0)) return;
     const left = Math.min(Math.max(v.l + 4, r.left), Math.max(v.l + 4, v.l + v.w - r.width - 4));
@@ -10547,44 +10530,185 @@
     spImp(el, "transform", "none");
   }
 
-  function spResizeGrip(el) {
-    if (el.querySelector(":scope > .sp-rs-grip")) return;
-    const g = document.createElement("div");
-    g.className = "sp-rs-grip";
-    g.title = "Tarik untuk mengubah lebar & tinggi kotak";
-    const pr = parseFloat(getComputedStyle(el).paddingRight) || 0, pb = parseFloat(getComputedStyle(el).paddingBottom) || 0;
-    g.style.cssText = `position:sticky;bottom:${-pb}px;z-index:9;display:block;width:24px;height:24px;margin:-24px ${-pr}px ${-pb}px auto;` +
-      "cursor:nwse-resize;touch-action:none;pointer-events:auto;" +
-      "background:linear-gradient(135deg,transparent 45%,#e91e63 45% 53%,transparent 53% 66%,#e91e63 66% 74%,transparent 74%)";
-    g.addEventListener("pointerdown", (e) => {
-      if (e.button !== undefined && e.button !== 0) return;
-      e.preventDefault();
-      e.stopPropagation();
-      try { g.setPointerCapture(e.pointerId); } catch (_) {}
-      const r = el.getBoundingClientRect(), x0 = e.clientX, y0 = e.clientY;
-      // dipatok kiri-atas supaya membesar ke kanan/bawah
-      spImp(el, "left", Math.round(r.left) + "px"); spImp(el, "top", Math.round(r.top) + "px");
-      spImp(el, "right", "auto"); spImp(el, "bottom", "auto"); spImp(el, "transform", "none");
-      const move = (ev) => {
-        const v = spView();
-        const w = Math.max(240, Math.min(v.l + v.w - r.left - 4, r.width + ev.clientX - x0));
-        const h = Math.max(120, Math.min(v.t + v.h - r.top - 4, r.height + ev.clientY - y0));
-        spImp(el, "width", Math.round(w) + "px");
-        spImp(el, "height", Math.round(h) + "px");
-      };
-      const up = () => {
-        g.removeEventListener("pointermove", move);
-        g.removeEventListener("pointerup", up);
-        g.removeEventListener("pointercancel", up);
-        const q = el.getBoundingClientRect();
-        if (el.dataset.spSizeKey) spSizeSet(el.dataset.spSizeKey, { w: Math.round(q.width), h: Math.round(q.height) });
-      };
-      g.addEventListener("pointermove", move);
-      g.addEventListener("pointerup", up);
-      g.addEventListener("pointercancel", up);
+  // =========================
+  // v3.100.0 (permintaan dokter 13 Okt 2026: pegangan lama terlalu kecil & sulit dipilih, hasil ubah ukuran tidak seperti
+  // aplikasi laptop): ubah ukuran seperti jendela aplikasi biasa — tarik dari SEMUA TEPI (kiri, kanan, atas, bawah) dan
+  // SEMUA SUDUT, dengan area tangkap tak terlihat yang lebar (sedikit di luar & di dalam bingkai kotak; lebih lebar di layar
+  // sentuh) dan kursor panah yang sesuai. Sudut kanan bawah punya pegangan garis-garis yang terlihat. Tarik tepi kiri/atas
+  // membesar ke kiri/atas (sisi seberang diam). Dobel klik/ketuk pegangan sudut = kembali ke ukuran bawaan.
+  // Bingkai dipasang di LUAR kotak (saudara setelah kotak, position:fixed) supaya tidak ikut tergulir / tersembunyi isi kotak.
+  // =========================
+  // Panel Advis WA memakai ini dari WhatsApp Web, tempat script berhenti sebelum modul ini (const di sini belum ada):
+  // jadi data bersama disimpan pada fungsi (deklarasi fungsi sudah tersedia sejak awal).
+  function spRs() {
+    return spRs.v || (spRs.v = {
+      dirs: ["n", "s", "e", "w", "ne", "nw", "se", "sw"],
+      cur: { n: "ns-resize", s: "ns-resize", e: "ew-resize", w: "ew-resize", ne: "nesw-resize", sw: "nesw-resize", nw: "nwse-resize", se: "nwse-resize" },
+      frames: new Set(), last: 0,
     });
-    el.append(g);
   }
+  function spRsSet(el, p, v) { el.style.setProperty(p, v, "important"); }
+  function spRsCoarse() { try { return matchMedia("(pointer:coarse)").matches; } catch (_) { return false; } }
+  function spRsCss() {
+    if (document.getElementById("sp-rs-css")) return;
+    const st = document.createElement("style");
+    st.id = "sp-rs-css";
+    st.textContent = `
+      .sp-rs-frame{position:fixed!important;pointer-events:none!important;margin:0!important;padding:0!important;border:0!important;background:none!important;box-sizing:border-box!important;}
+      .sp-rs-frame>.sp-rs-h{position:absolute!important;box-sizing:border-box!important;pointer-events:auto!important;touch-action:none!important;background:transparent!important;margin:0!important;padding:0!important;border:0!important;}
+      .sp-rs-frame>.sp-rs-grip{display:flex!important;align-items:flex-end!important;justify-content:flex-end!important;}
+      .sp-rs-frame>.sp-rs-grip>i{display:block!important;width:14px!important;height:14px!important;margin:0!important;opacity:.75;transition:opacity .15s;
+        background:linear-gradient(135deg,transparent 0 46%,#78909c 46% 54%,transparent 54% 64%,#78909c 64% 72%,transparent 72% 82%,#78909c 82% 90%,transparent 90%)!important;}
+      .sp-rs-frame.sp-rs-touch>.sp-rs-grip>i{width:20px!important;height:20px!important;}
+      .sp-rs-frame>.sp-rs-grip:hover>i,.sp-rs-frame.sp-rs-on>.sp-rs-grip>i{opacity:1;background:linear-gradient(135deg,transparent 0 46%,#e91e63 46% 54%,transparent 54% 64%,#e91e63 64% 72%,transparent 72% 82%,#e91e63 82% 90%,transparent 90%)!important;}
+      html.sp-rs-drag, html.sp-rs-drag *{user-select:none!important;-webkit-user-select:none!important;}`;
+    document.documentElement.appendChild(st);
+  }
+  // Letak bingkai & area tangkap mengikuti kotak (dipanggil saat kotak bergeser/berubah ukuran/hilang).
+  function spRsSync(f) {
+    const el = f._spEl;
+    if (!el || !el.isConnected) { f.remove(); spRs().frames.delete(f); return; }
+    if (f.parentNode !== el.parentNode || f.previousSibling !== el) el.after(f);
+    const hide = el.style.display === "none" || el.dataset.spMin === "1" || el.dataset.min === "1" || el.classList.contains("sp-mfit");
+    const r = el.getBoundingClientRect();
+    if (hide || !(r.width > 0 && r.height > 0)) { f.style.setProperty("display", "none", "important"); return; }
+    const touch = spRsCoarse();
+    f.classList.toggle("sp-rs-touch", touch);
+    const O = touch ? 10 : 6, I = touch ? 8 : 4, C = touch ? 30 : 18; // luar, dalam, sudut
+    const z = getComputedStyle(el).zIndex;
+    f.style.setProperty("display", "block", "important");
+    f.style.setProperty("z-index", z && z !== "auto" ? z : "2147483000", "important");
+    f.style.setProperty("left", r.left - O + "px", "important");
+    f.style.setProperty("top", r.top - O + "px", "important");
+    f.style.setProperty("width", r.width + 2 * O + "px", "important");
+    f.style.setProperty("height", r.height + 2 * O + "px", "important");
+    const T = O + I, set = (h, l, t, w, hh) => {
+      [["left", l], ["top", t], ["width", w], ["height", hh]].forEach(([k, v]) => { if (v == null) h.style.removeProperty(k); else h.style.setProperty(k, typeof v === "number" ? v + "px" : v, "important"); });
+    };
+    for (const h of f.children) {
+      const d = h.dataset.dir;
+      // Tepi atas tipis di dalam (judul tetap mudah dipegang untuk menggeser kotak).
+      const tIn = d.includes("n") && d.length === 1 ? O + Math.min(I, 3) : T;
+      if (d === "n") set(h, C, 0, `calc(100% - ${2 * C}px)`, tIn);
+      else if (d === "s") set(h, C, `calc(100% - ${T}px)`, `calc(100% - ${2 * C}px)`, T);
+      else if (d === "w") set(h, 0, C, T, `calc(100% - ${2 * C}px)`);
+      else if (d === "e") set(h, `calc(100% - ${T}px)`, C, T, `calc(100% - ${2 * C}px)`);
+      else {
+        const sz = d === "se" ? C + (touch ? 8 : 10) : C;
+        set(h, d.includes("w") ? 0 : `calc(100% - ${sz}px)`, d.includes("n") ? 0 : `calc(100% - ${sz}px)`, sz, sz);
+        if (d === "se") h.style.setProperty("padding", `0 ${O + 5}px ${O + 5}px 0`, "important"); // garis pegangan di dalam sudut bulat kotak
+      }
+    }
+  }
+  function spRsSyncAll() {
+    cancelAnimationFrame(spRsSyncAll.raf);
+    spRsSyncAll.raf = requestAnimationFrame(() => spRs().frames.forEach(spRsSync));
+  }
+  // opts: { minW, minH, save(rect), reset() } — save/reset bawaan memakai ukuran tersimpan spSizeKey (lihat spPanelFit).
+  function spResizeFrame(el, opts) {
+    if (!el || el._spRsFrame) return el && el._spRsFrame;
+    opts = Object.assign({ minW: 240, minH: 120 }, opts || {});
+    spRsCss();
+    const f = document.createElement("div");
+    f.className = "sp-rs-frame";
+    f._spEl = el;
+    el._spRsFrame = f;
+    el._spRs0 = opts.base || { w: el.style.getPropertyValue("width"), h: el.style.getPropertyValue("height") };
+    for (const d of spRs().dirs) {
+      const h = document.createElement("div");
+      h.className = "sp-rs-h" + (d === "se" ? " sp-rs-grip" : "");
+      h.dataset.dir = d;
+      h.style.setProperty("cursor", spRs().cur[d], "important");
+      if (d === "se") { h.title = "Tarik untuk mengubah ukuran kotak (bisa juga dari tepi mana pun). Ketuk 2x = ukuran bawaan"; h.appendChild(document.createElement("i")); }
+      h.addEventListener("pointerdown", (e) => spRsStart(e, el, f, d, opts));
+      if (d === "se") h.addEventListener("dblclick", (e) => { e.preventDefault(); e.stopPropagation(); spRsReset(el, opts); });
+      f.appendChild(h);
+    }
+    el.after(f);
+    spRs().frames.add(f);
+    spRsSync(f);
+    if (typeof ResizeObserver === "function") new ResizeObserver(spRsSyncAll).observe(el);
+    new MutationObserver(spRsSyncAll).observe(el, { attributes: true, attributeFilter: ["style", "class", "data-sp-min", "data-min"] });
+    if (!spResizeFrame.bound) {
+      spResizeFrame.bound = true;
+      window.addEventListener("resize", spRsSyncAll);
+      window.addEventListener("scroll", spRsSyncAll, true);
+      if (window.visualViewport) { window.visualViewport.addEventListener("resize", spRsSyncAll); window.visualViewport.addEventListener("scroll", spRsSyncAll); }
+      // Kotak yang dihapus/disembunyikan halaman tanpa mengubah atributnya sendiri: bingkai ikut dibersihkan.
+      setInterval(() => { if (spRs().frames.size) spRs().frames.forEach(spRsSync); }, 800);
+    }
+    return f;
+  }
+  function spRsReset(el, opts) {
+    if (opts.reset) opts.reset();
+    else if (el.dataset.spSizeKey) {
+      try { const all = JSON.parse(localStorage.getItem(SP_SIZE_LS) || "{}") || {}; delete all[el.dataset.spSizeKey]; localStorage.setItem(SP_SIZE_LS, JSON.stringify(all)); } catch (_) {}
+    }
+    // Ukuran bawaan = lebar/tinggi yang tertulis saat kotak dibuat (sebelum ukuran tersimpan dipasang).
+    [["width", el._spRs0.w], ["height", el._spRs0.h]].forEach(([p, v]) => { if (v) el.style.setProperty(p, v); else el.style.removeProperty(p); });
+    if (el.dataset.spSizeKey) spKeepInView(el);
+    spRsSyncAll();
+  }
+  function spRsStart(e, el, f, d, opts) {
+    if (e.button !== undefined && e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    // Ketuk 2x di HP (dblclick tidak selalu muncul di layar sentuh) pada pegangan sudut = ukuran bawaan.
+    if (d === "se" && e.pointerType === "touch") {
+      const now = Date.now();
+      if (now - spRs().last < 350) { spRs().last = 0; spRsReset(el, opts); return; }
+      spRs().last = now;
+    }
+    const h = e.currentTarget;
+    try { h.setPointerCapture(e.pointerId); } catch (_) {}
+    const r = el.getBoundingClientRect(), x0 = e.clientX, y0 = e.clientY;
+    // Patok di kiri-atas (posisi absolut layar) supaya sisi seberang tetap diam.
+    spRsSet(el, "left", Math.round(r.left) + "px"); spRsSet(el, "top", Math.round(r.top) + "px");
+    spRsSet(el, "right", "auto"); spRsSet(el, "bottom", "auto"); spRsSet(el, "transform", "none");
+    spRsSet(el, "box-sizing", "border-box");
+    const minW = Math.min(opts.minW, r.width), minH = Math.min(opts.minH, r.height);
+    const lock = document.createElement("style");
+    lock.textContent = `html.sp-rs-drag, html.sp-rs-drag *{cursor:${spRs().cur[d]}!important;}`;
+    document.documentElement.appendChild(lock);
+    document.documentElement.classList.add("sp-rs-drag");
+    f.classList.add("sp-rs-on");
+    el._spRsBusy = true;
+    const move = (ev) => {
+      const v = spView(), dx = ev.clientX - x0, dy = ev.clientY - y0;
+      const L = v.l + 4, T = v.t + 4, R = v.l + v.w - 4, B = v.t + v.h - 4;
+      let left = r.left, top = r.top, w = r.width, hh = r.height;
+      if (d.includes("e")) w = Math.max(minW, Math.min(R - r.left, r.width + dx));
+      if (d.includes("s")) hh = Math.max(minH, Math.min(B - r.top, r.height + dy));
+      if (d.includes("w")) { w = Math.max(minW, Math.min(r.right - L, r.width - dx)); left = r.right - w; }
+      if (d.includes("n")) { hh = Math.max(minH, Math.min(r.bottom - T, r.height - dy)); top = r.bottom - hh; }
+      spRsSet(el, "left", Math.round(left) + "px");
+      spRsSet(el, "top", Math.round(top) + "px");
+      if (d.includes("e") || d.includes("w")) spRsSet(el, "width", Math.round(w) + "px");
+      if (d.includes("n") || d.includes("s")) spRsSet(el, "height", Math.round(hh) + "px");
+      spRsSync(f);
+    };
+    const up = () => {
+      h.removeEventListener("pointermove", move);
+      h.removeEventListener("pointerup", up);
+      h.removeEventListener("pointercancel", up);
+      lock.remove();
+      document.documentElement.classList.remove("sp-rs-drag");
+      f.classList.remove("sp-rs-on");
+      el._spRsBusy = false;
+      const q = el.getBoundingClientRect();
+      // Tinggi selalu ikut tersimpan (tarik tepi kiri/kanan saja juga mengingat tinggi yang sedang tampil).
+      const size = { w: Math.round(q.width), h: Math.round(q.height) };
+      if (opts.save) opts.save(size, q);
+      else if (el.dataset.spSizeKey) spSizeSet(el.dataset.spSizeKey, size);
+      // Posisi baru (tarik tepi kiri/atas menggeser sudut kiri-atas) diingat seperti saat kotak digeser lewat judul.
+      if (el._spPosKey) { const k = spKeyOf(el._spPosKey); spPanelState[k] = Object.assign({}, spPanelState[k], { left: Math.round(q.left), top: Math.round(q.top) }); }
+      spRsSync(f);
+    };
+    h.addEventListener("pointermove", move);
+    h.addEventListener("pointerup", up);
+    h.addEventListener("pointercancel", up);
+  }
+  function spResizeGrip(el) { spResizeFrame(el); }
 
   // Pasang pada kotak: sizeKey = jenis kotak (ukuran diingat per jenis). Aman dipanggil berulang (isi kotak dirender ulang).
   function spPanelFit(el, sizeKey) {
@@ -13133,7 +13257,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.99.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.100.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
