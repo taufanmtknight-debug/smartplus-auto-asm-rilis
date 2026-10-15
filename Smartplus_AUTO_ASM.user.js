@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.103.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.103.1
 // @namespace    smartplus-auto-asm-v221
-// @version      3.103.0
-// @description  v3.103.0 (permintaan dokter 15 Okt 2026): 🧠 TANYA AI 📎 Baca data pasien kini membaca SEMUA data pasien, bukan hanya form GADAR — IGD: form GADAR yang terbuka, Assesment GADAR tersimpan, CPPT, hasil lab, ekspertise radiologi, e-resep kunjungan ini, riwayat poli spesialis; rawat inap: ringkasan rawat inap (S/O/A/P saat ini & saat masuk IGD, terapi berjalan, advis spesialis), CPPT terbaru, lab, radiologi. Hanya dibaca (GET), nama pasien/No.RM/No.Reg disamarkan, tanggal ditulis tanpa tahun; isi yang dikirim bisa dilihat dulu. Tombol cepat baru "SOAP lengkap" mencentang 📎 otomatis dan meminta Claude merangkum semuanya menjadi SOAP lengkap siap salin. Tetap hanya menjawab: tidak mengisi atau menyimpan form.
+// @version      3.103.1
+// @description  v3.103.1 (uji Smartplus asli 15 Okt 2026): 🧠 TANYA AI 📎 Baca data pasien lebih lengkap & akurat — e-resep dipisah: resep kunjungan ini vs resep kunjungan SEBELUMNYA (dulu resep poli 2024–2025 terbaca sebagai "kunjungan ini"); tanggal lama diberi keterangan "(±N bln/th lalu)" (dulu tahun hilang sehingga Jan 2025 terbaca seperti tahun ini); dosis seperti "3x500mg" dan waktu pembekuan "12min00sec" tidak lagi terhapus penyaring identitas; ekspertise radiologi yang belum ditulis ("xx") ditandai belum ada; order lab yang hasilnya belum keluar ditulis; CPPT perawat diringkas (daftar intervensi SDKI dilewati) supaya data penting muat; sumber kosong ditulis "belum ada" supaya SOAP tidak mengarang.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.103.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.103.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.103.1";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.103.1");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -13257,7 +13257,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.103.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.103.1</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -14870,6 +14870,10 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       const digits = (tok.match(/\d/g) || []).length;
       const letters = /[A-Za-z]/.test(tok);
       if (!letters && digits <= 7 && labNum.test(str.slice(Math.max(0, off - 40), off + a.length))) return m;
+      // v3.103.1 (uji Smartplus asli: "asam tranexamat 3x500mg" -> "[nomor dihapus]"): dosis/frekuensi & lama ("3x500mg",
+      // "1000mg", "2x1gr", "8min30sec") bukan nomor identitas.
+      if (/^\d{1,4}(x\d{1,5}(\.\d+)?)?(mg|mcg|g|gr|gram|ml|cc|iu|ui|unit|tpm|amp|ampul|tab|kaps|cth|jam|mnt|menit|hari)?$/i.test(tok) && /x|[a-z]{2,}$/i.test(tok)) return m;
+      if (/^\d{1,3}min\d{1,2}sec$/i.test(tok)) return m;
       if (digits >= 6 || (letters && digits >= 4 && tok.length >= 7)) { removed++; return a + "[nomor dihapus]"; }
       return m;
     });
@@ -16523,9 +16527,13 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
   function spAiCpptText(rows, max = 6) {
     return (rows || []).slice(0, max).map((r) => {
       const who = r.isDoctor ? (spSpecialty(r.ppa) || "Dokter") : "Perawat/PPA lain";
+      // v3.103.1 (uji Smartplus asli): CPPT perawat berisi daftar intervensi SDKI panjang ("Tindakan : => Intervensi …") yang
+      // menghabiskan jatah teks -> untuk PPA non-dokter P intervensi dilewati & teks lain maks 250 huruf.
+      const lim = r.isDoctor ? 700 : 250;
       const sec = [["S", r.sText || r.keluhan], ["O", r.oText], ["A", r.diagnosis], ["P", r.pText], ["Instruksi", r.instruksi]]
-        .map(([k, t]) => [k, String(t || "").replace(/\s*\n\s*/g, "; ").trim()]).filter(([, t]) => t)
-        .map(([k, t]) => `  ${k}: ${t.length > 700 ? t.slice(0, 700) + " …" : t}`);
+        .map(([k, t]) => [k, String(t || "").replace(/\s*\n\s*/g, "; ").trim()])
+        .filter(([k, t]) => t && !(k === "P" && !r.isDoctor && /^(tindakan|;|=>|\s)*\s*(=>\s*)?(intervensi|implementasi)/i.test(t.replace(/^tindakan\s*:?\s*;?\s*/i, ""))))
+        .map(([k, t]) => `  ${k}: ${t.length > lim ? t.slice(0, lim) + " …" : t}`);
       const obat = (r.obat || []).map((o) => [o.nama, o.dosis, o.frek].filter(Boolean).join(" ")).filter(Boolean);
       if (obat.length) sec.push(`  e-Resep: ${obat.slice(0, 15).join("; ")}`);
       return sec.length ? `- ${r.timeText} ${r.type} (${who}):\n${sec.join("\n")}` : "";
@@ -16549,12 +16557,35 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     const out = await Promise.all(entries.map(async (e) => {
       try {
         const h = await spFetch(`${base}/hasil_rad/hasil_rad/inner_hasil_rad_detail/${encodeURIComponent(e.noreg)}/${encodeURIComponent(e.idTrx)}`, { credentials: "same-origin" }).then((r) => r.text());
-        const x = spParseRadExpertise(h);
-        return x.lines.length ? `- ${e.dateText} ${e.exam}:\n${x.lines.map((l) => "  " + l).join("\n")}` : "";
+        const lines = spAiRadLines(spParseRadExpertise(h).lines);
+        return `- ${e.dateText} ${e.exam}:\n${lines.length ? lines.map((l) => "  " + l).join("\n") : "  (ekspertise belum ada)"}`;
       } catch (_) { return ""; }
     }));
     return out.filter(Boolean).join("\n");
   }
+  // v3.103.1 (uji Smartplus asli): ekspertise tanpa salam "Teman Sejawat…"; isian sementara ("xx", "cc") = belum ada (fungsi murni, diuji).
+  function spAiRadLines(lines) {
+    const L = (lines || []).map((l) => String(l || "").trim())
+      .filter((l) => l && !/^(teman sejawat|yth\.?|dengan hormat|terima ?kasih|salam)\b/i.test(l));
+    return L.join(" ").replace(/[^A-Za-z]/g, "").length < 5 ? [] : L;
+  }
+  // v3.103.1 (uji Smartplus asli): order lab hari ini yang hasilnya belum keluar dulu tidak tertulis sama sekali ->
+  // "Order lab <tgl>: hasil belum keluar".
+  async function spAiLabText(base, noreg) {
+    const [entries, ctx] = await Promise.all([spFetchLabEntries(base, noreg).catch(() => []), spAsistenLabContext(base, noreg).catch(() => "")]);
+    if (ctx) return ctx;
+    const last = (entries || []).slice().sort((a, b) => String(b.sortKey).localeCompare(String(a.sortKey)))[0];
+    return last ? `- Order lab ${last.dateText}: hasil belum keluar / belum divalidasi` : "";
+  }
+  // "dd-mm-yyyy hh:mm" / "yyyy-mm-dd" -> waktu ms (fungsi murni, diuji).
+  function spAiDateMs(t) {
+    let m = String(t || "").match(/\b(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})\b/);
+    if (m) return new Date(+m[3], +m[2] - 1, +m[1]).getTime();
+    m = String(t || "").match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
+    return m ? new Date(+m[1], +m[2] - 1, +m[3]).getTime() : NaN;
+  }
+  // v3.103.1 (uji Smartplus asli: "e-Resep kunjungan ini" berisi resep poli 2024–2025): riwayat_resep memuat SEMUA kunjungan ->
+  // dipisah: resep sejak tanggal registrasi kunjungan ini, lalu maks 2 resep kunjungan sebelumnya (ditandai).
   async function spAiResepText(base, noreg, max = 6) {
     const rr = new DOMParser().parseFromString(await spFetch(`${base}/soap_eresep/riwayat_resep/${encodeURIComponent(noreg)}`, { credentials: "same-origin" }).then((r) => r.text()), "text/html");
     const list = [];
@@ -16563,13 +16594,32 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       const id = ((a.getAttribute("onclick") || "").match(/'(\d+)'/) || [])[1];
       if (id) list.push({ id, when: c[0] || a.textContent.trim(), unit: c[1] || "" });
     }
-    const det = await Promise.all(list.slice(0, max).map(async (r) => {
+    const reg = spAiDateMs((((document.body && document.body.textContent) || "").match(/Regdate\s*:\s*([0-9:\- ]+)/i) || [])[1] || "");
+    const since = Number.isFinite(reg) ? reg : Date.now() - 3 * 864e5;
+    const now = list.filter((r) => spAiDateMs(r.when) >= since).slice(0, max);
+    const old = list.filter((r) => !(spAiDateMs(r.when) >= since)).slice(0, 2);
+    const det = await Promise.all(now.concat(old).map(async (r) => {
       const d = new DOMParser().parseFromString(await spFetch(`${base}/soap_eresep/inner_resep_detail/${r.id}`, { credentials: "same-origin" }).then((x) => x.text()).catch(() => ""), "text/html");
       const items = [...d.querySelectorAll("tr")].map((tr) => [...tr.querySelectorAll("td")].map((x) => x.textContent.replace(/\s+/g, " ").trim()))
         .filter((c) => c.length >= 4 && c[0]).map((c) => [c[0], c[3], c[4]].filter((x) => x && x !== "-").join(" "));
       return items.length ? `- ${r.when}${r.unit ? " " + r.unit : ""}: ${items.join("; ")}` : "";
     }));
-    return det.filter(Boolean).join("\n");
+    const a = det.slice(0, now.length).filter(Boolean), b = det.slice(now.length).filter(Boolean);
+    return [a.length ? a.join("\n") : "- (belum ada e-resep di kunjungan ini)",
+      b.length ? `Resep kunjungan SEBELUMNYA (bukan kunjungan ini):\n${b.join("\n")}` : ""].filter(Boolean).join("\n");
+  }
+  // v3.103.1 (uji Smartplus asli): tanggal tahun lalu dulu kehilangan tahunnya ("08-01" = Jan 2025 terbaca seperti tahun ini)
+  // -> "dd-mm (±N bln/th lalu)"; tahun ini tetap "dd-mm". Tanpa tahun lengkap supaya tetap lolos penyaring identitas (fungsi murni, diuji).
+  function spAiDatesRelative(text, now) {
+    // Uji SOAP lengkap: CT "15-07" (3 bulan lalu, tahun ini) dikira tanggal salah -> catatan "lalu" juga untuk tanggal ≥ 30 hari.
+    const fmt = (d, m, y) => {
+      const days = Math.floor((now.getTime() - new Date(+y, +m - 1, +d).getTime()) / 864e5);
+      if (days < 30) return `${d}-${m}`;
+      const mon = Math.max(1, Math.round(days / 30.4));
+      return `${d}-${m} (±${mon >= 24 ? Math.round(mon / 12) + " th" : mon + " bln"} lalu)`;
+    };
+    return String(text || "").replace(/\b(\d{1,2})[-/.](\d{1,2})[-/.](20\d{2})\b/g, (x, d, m, y) => fmt(d, m, y))
+      .replace(/\b(20\d{2})-(\d{2})-(\d{2})\b/g, (x, y, m, d) => fmt(d, m, y));
   }
   // Kumpulkan semua bagian; tiap sumber dibatasi waktu & gagal diam-diam. Hasil: { text, parts: [judul…] }.
   async function spAiPatientData() {
@@ -16596,33 +16646,34 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       const [g, cppt, lab, rad, resep, poli] = await Promise.all([
         timed(getLatestGadarData()),
         timed(spFetch(`${base}/nurse_station/eranap/cppt_viewer/${encodeURIComponent(noreg)}`, { credentials: "same-origin" }).then((r) => r.ok ? r.text() : "").then((h) => spAiCpptText(spParseCpptViewer(h)))),
-        timed(spAsistenLabContext(base, noreg)),
+        timed(spAiLabText(base, noreg)),
         timed(spAiRadText(base, noreg)),
         timed(spAiResepText(base, noreg)),
         timed(spBuildRiwayatPoliLines().then((x) => (x.lines || []).join("\n")))
       ]);
       add(`Assesment GADAR tersimpan kunjungan ini${g && g.data && g.data.gadar_date ? " (" + g.data.gadar_date + ")" : ""}`, g ? spAiGadarText(g.data) : "");
-      add("CPPT kunjungan ini (terbaru dulu)", cppt);
-      add("Hasil laboratorium ('!' = abnormal)", lab);
-      add("Hasil radiologi (ekspertise)", rad);
-      add("e-Resep kunjungan ini", resep);
+      // v3.103.1: bagian kosong ditulis "belum ada" supaya SOAP tidak mengarang & dokter tahu sumber itu sudah dibaca.
+      add("CPPT kunjungan ini (terbaru dulu)", cppt || "- (belum ada CPPT)");
+      add("Hasil laboratorium ('!' = abnormal)", lab || "- (belum ada hasil lab / belum terbaca)");
+      add("Hasil radiologi (ekspertise)", rad || "- (belum ada)");
+      add("e-Resep", resep);
       add("Riwayat poli spesialis (dx & terapi terakhir)", poli);
     } else if (kind === "ranap") {
       const ctx = spRanapContext();
       const [k, cppt, lab, rad] = await Promise.all([
         timed(spBuildKonsulRanap({ ...ctx, noShots: true }), 25000),
         timed(spFetch(`${base}/nurse_station/eranap/cppt_viewer/${encodeURIComponent(ctx.noreg)}`, { credentials: "same-origin" }).then((r) => r.text()).then((h) => spAiCpptText(spParseCpptViewer(h)))),
-        timed(spAsistenLabContext(base, ctx.noreg)),
+        timed(spAiLabText(base, ctx.noreg)),
         timed(spAiRadText(base, ctx.noreg))
       ]);
       add("Ringkasan rawat inap (S/O/A/P saat ini & saat masuk, terapi berjalan, advis spesialis)", k ? spVisitContextText(k.text, k.notes, "", 6000) : "");
-      add("CPPT terbaru (semua PPA, terbaru dulu)", cppt);
-      add("Hasil laboratorium ('!' = abnormal)", lab);
-      add("Hasil radiologi (ekspertise)", rad);
+      add("CPPT terbaru (semua PPA, terbaru dulu)", cppt || "- (belum ada CPPT / belum terbaca)");
+      add("Hasil laboratorium ('!' = abnormal)", lab || "- (belum ada hasil lab / belum terbaca)");
+      add("Hasil radiologi (ekspertise)", rad || "- (belum ada)");
     }
     let text = sec.map(([t, b]) => `## ${t}\n${b}`).join("\n\n");
     // Tanggal kejadian 20xx ditulis tanpa tahun (urutan waktu tetap terbaca; penyaring menghapus tanggal lengkap).
-    text = text.replace(/\b(\d{1,2})[-/.](\d{1,2})[-/.]20\d{2}\b/g, "$1-$2").replace(/\b20\d{2}-(\d{2})-(\d{2})\b/g, "$2-$1");
+    text = spAiDatesRelative(text, new Date());
     text = spAsistenScrub(spAiMaskName(text, spAiPatientName())).text;
     if (text.length > SP_AI_CTX_MAX) text = text.slice(0, SP_AI_CTX_MAX) + "\n[… dipotong]";
     return text;
