@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.103.1
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.104.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.103.1
-// @description  v3.103.1 (uji Smartplus asli 15 Okt 2026): 🧠 TANYA AI 📎 Baca data pasien lebih lengkap & akurat — e-resep dipisah: resep kunjungan ini vs resep kunjungan SEBELUMNYA (dulu resep poli 2024–2025 terbaca sebagai "kunjungan ini"); tanggal lama diberi keterangan "(±N bln/th lalu)" (dulu tahun hilang sehingga Jan 2025 terbaca seperti tahun ini); dosis seperti "3x500mg" dan waktu pembekuan "12min00sec" tidak lagi terhapus penyaring identitas; ekspertise radiologi yang belum ditulis ("xx") ditandai belum ada; order lab yang hasilnya belum keluar ditulis; CPPT perawat diringkas (daftar intervensi SDKI dilewati) supaya data penting muat; sumber kosong ditulis "belum ada" supaya SOAP tidak mengarang.
+// @version      3.104.0
+// @description  v3.104.0 (permintaan dokter 15 Okt 2026): 🧠 TANYA AI bisa memakai ChatGPT (OpenAI) selain Claude — di ⚙ Pengaturan kini ada kotak API key OpenAI (ChatGPT) di bawah API key Anthropic, caranya sama: buat kunci di platform.openai.com → API keys, tempel, Simpan (disimpan di browser ini saja, tidak pernah ada di script). Daftar Model kini dua grup: Claude (Opus/Sonnet/Haiku 5.5) dan ChatGPT (GPT-5.6 Sol/Terra/Luna, dengan perkiraan biaya); setelah kunci ChatGPT disimpan dan belum ada kunci Claude, model otomatis GPT-5.6 Luna (termurah). 📎 Baca data pasien, 📷 foto, tombol cepat, SOAP lengkap, riwayat percakapan & Salin tetap sama untuk ChatGPT. Hanya menjawab, tidak mengisi/menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.103.1";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.103.1");
+  window.__SP_AUTO_ASM_LOADED__ = "3.104.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.104.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -13257,7 +13257,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.103.1</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.104.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -16325,17 +16325,27 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
   // rujuk, edukasi), 📎 Baca data pasien (identitas disamarkan, bisa dilihat dulu), 📷 lampiran foto, Ctrl+Enter, – perkecil,
   // ＋ percakapan baru, Salin. Kunci API sama dengan ASISTEN SUARA (localStorage browser ini).
   // Hanya menjawab: tidak mengisi atau menyimpan form apa pun.
+  // v3.104.0 (permintaan dokter 15 Okt 2026): bisa juga memakai ChatGPT (OpenAI). Kunci OpenAI ditempel di ⚙ seperti kunci
+  // Claude dan disimpan di localStorage browser ini saja (tidak pernah ada di script). Model ChatGPT dipilih di daftar Model.
   // =========================
   const SP_AI_BTN_ID = "sp-auto-asm-tanya-ai-btn";
   const SP_AI_PANEL_ID = "sp-auto-asm-tanya-ai-panel";
   const SP_AI_MODEL_LS = "sp-auto-asm-tanya-ai-model";
   const SP_AI_BOX_LS = "sp-auto-asm-tanya-ai-box";
-  // Harga USD per 1 juta token (input, output) — sama dengan AUTO KLINIK.
+  const SP_AI_OPENAI_LS = "sp-auto-asm-tanya-ai-openai-key";
+  // Harga USD per 1 juta token (input, output) — Claude sama dengan AUTO KLINIK; ChatGPT dari harga OpenAI (Okt 2026).
   const SP_AI_MODELS = [
-    { id: "claude-opus-5-5", label: "Opus 5.5", hint: "terbaik", inUsd: 4, outUsd: 20, fallback: true },
-    { id: "claude-sonnet-5-5", label: "Sonnet 5.5", hint: "± ½ biaya Opus", inUsd: 2, outUsd: 10, fallback: true },
-    { id: "claude-haiku-5-5", label: "Haiku 5.5", hint: "paling murah", inUsd: 0.1, outUsd: 0.5, fallback: false }
+    { id: "claude-opus-5-5", label: "Opus 5.5", hint: "terbaik", inUsd: 4, outUsd: 20, fallback: true, prov: "claude" },
+    { id: "claude-sonnet-5-5", label: "Sonnet 5.5", hint: "± ½ biaya Opus", inUsd: 2, outUsd: 10, fallback: true, prov: "claude" },
+    { id: "claude-haiku-5-5", label: "Haiku 5.5", hint: "paling murah", inUsd: 0.1, outUsd: 0.5, fallback: false, prov: "claude" },
+    { id: "gpt-5.6-sol", label: "GPT-5.6 Sol", hint: "ChatGPT terbaik", inUsd: 5, outUsd: 30, prov: "openai" },
+    { id: "gpt-5.6-terra", label: "GPT-5.6 Terra", hint: "ChatGPT menengah", inUsd: 2, outUsd: 12, prov: "openai" },
+    { id: "gpt-5.6-luna", label: "GPT-5.6 Luna", hint: "ChatGPT paling murah", inUsd: 0.2, outUsd: 1.2, prov: "openai" }
   ];
+  const SP_AI_PROV = {
+    claude: { name: "Anthropic (Claude)", prefix: "sk-ant-", url: "https://console.anthropic.com/settings/keys", site: "console.anthropic.com" },
+    openai: { name: "OpenAI (ChatGPT)", prefix: "sk-", url: "https://platform.openai.com/api-keys", site: "platform.openai.com" }
+  };
   const SP_AI_MODEL = "claude-haiku-5-5"; // bawaan sama dengan AUTO KLINIK (paling hemat)
   const SP_AI_MAX_IMAGES = 4;
   const SP_AI_QUICK = [
@@ -16347,6 +16357,9 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     ["SOAP lengkap", "Rangkum semua data pasien di atas menjadi SOAP lengkap siap salin: S (keluhan utama, RPS, RPD, riwayat obat, alergi), O (KU, kesadaran, TTV, pemeriksaan fisik per sistem, lab & radiologi yang relevan dengan nilai abnormal), A (diagnosis kerja + banding, dengan ICD-10 bila jelas), P (terapi yang sedang berjalan + rencana/tindak lanjut). Pakai hanya data yang ada; tulis 'belum ada data' bila kosong, jangan mengarang."]
   ];
   const spAiModelInfo = (id) => SP_AI_MODELS.find((m) => m.id === id) || SP_AI_MODELS.find((m) => m.id === SP_AI_MODEL);
+  // Label model yang menjawab (API mengembalikan id + tanggal, mis. gpt-5.6-luna-2026-09-30).
+  const spAiServedLabel = (served, fallbackId) =>
+    (SP_AI_MODELS.find((m) => served && (served === m.id || String(served).startsWith(`${m.id}-`))) || spAiModelInfo(fallbackId)).label;
 
   // Biaya satu jawaban dari `usage` API, dalam USD (fungsi murni, diuji). Token cache dihitung tarif input biasa.
   function spAiCostUsd(modelId, usage) {
@@ -16402,9 +16415,36 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     return { headers, body };
   }
 
+  // Riwayat (format Claude) -> pesan Chat Completions OpenAI (fungsi murni, diuji). Foto jadi data URL.
+  function spAiOpenAiMessages(messages) {
+    const toText = (c) => (Array.isArray(c) ? c.filter((b) => b && b.type === "text").map((b) => b.text).join("") : String(c || ""));
+    return [{ role: "system", content: spAiSystemPrompt() }].concat((messages || []).map((m) => {
+      if (m.role !== "user" || !Array.isArray(m.content)) return { role: m.role, content: toText(m.content) };
+      return {
+        role: "user",
+        content: m.content.map((b) => (b.type === "image"
+          ? { type: "image_url", image_url: { url: `data:${b.source.media_type};base64,${b.source.data}` } }
+          : { type: "text", text: b.text }))
+      };
+    }));
+  }
+  function spAiOpenAiRequest(messages, kunci, { model } = {}) {
+    return {
+      headers: { "content-type": "application/json", authorization: `Bearer ${String(kunci || "").trim()}` },
+      body: { model: spAiModelInfo(model).id, max_completion_tokens: 16000, messages: spAiOpenAiMessages(messages) }
+    };
+  }
+
   // Pesan error API -> kalimat untuk dokter (fungsi murni, diuji).
-  function spAiErrorMessage(status, payload) {
+  function spAiErrorMessage(status, payload, prov = "claude") {
     const msg = String((payload && payload.error && payload.error.message) || "");
+    if (prov === "openai") {
+      const code = String((payload && payload.error && (payload.error.code || payload.error.type)) || "");
+      if (status === 401) return "API key OpenAI salah atau sudah dicabut. Buka ⚙ Pengaturan dan tempel ulang API key OpenAI.";
+      if (/insufficient_quota|billing|quota/i.test(code + " " + msg)) return "Saldo/kuota API OpenAI habis. Isi saldo di platform.openai.com → Billing.";
+      if (status === 404 || /model_not_found|does not exist/i.test(code + " " + msg)) return "Model ChatGPT ini belum tersedia untuk akun OpenAI Anda. Pilih model ChatGPT lain di ⚙ Pengaturan.";
+      if (status === 403) return "API key OpenAI tidak punya izin memakai model ini. Cek di platform.openai.com.";
+    }
     if (status === 401) return "API key salah atau sudah dicabut. Buka ⚙ Pengaturan dan tempel ulang API key.";
     if (status === 403) return "API key tidak punya izin memakai model ini. Cek di console.anthropic.com.";
     if (/workspace/i.test(msg)) return "API key ini tidak terikat workspace. Isi Workspace ID di ⚙️ panel 🎙️ ASISTEN SUARA.";
@@ -16422,6 +16462,19 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     const content = Array.isArray(payload && payload.content) ? payload.content : [];
     const text = content.filter((b) => b && b.type === "text").map((b) => b.text).join("").trim();
     return { text, content, refused: payload.stop_reason === "refusal", truncated: payload.stop_reason === "max_tokens", usage: payload.usage || null, model: payload.model || "" };
+  }
+
+  // Jawaban Chat Completions -> bentuk yang sama dengan spAiParse (fungsi murni, diuji).
+  function spAiOpenAiParse(status, payload) {
+    if (status < 200 || status >= 300) throw new Error(spAiErrorMessage(status, payload, "openai"));
+    const ch = (payload && Array.isArray(payload.choices) && payload.choices[0]) || {};
+    const msg = ch.message || {};
+    const text = String(msg.content || "").trim();
+    const u = (payload && payload.usage) || null;
+    return {
+      text, content: text, refused: !!msg.refusal || ch.finish_reason === "content_filter", truncated: ch.finish_reason === "length",
+      usage: u ? { input_tokens: u.prompt_tokens || 0, output_tokens: u.completion_tokens || 0 } : null, model: (payload && payload.model) || ""
+    };
   }
 
   // Markdown sederhana -> HTML aman (fungsi murni, diuji). Semua teks di-escape dulu.
@@ -16447,13 +16500,18 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     const k = String(key || "");
     return k.length > 12 ? `${k.slice(0, 7)}…${k.slice(-4)}` : k ? "••••" : "";
   }
-  function spAiSetKey(k) { try { if (k) localStorage.setItem(SP_AS_KEY_LS, k); else localStorage.removeItem(SP_AS_KEY_LS); } catch (_) {} }
+  const spAiKeySlot = (prov) => (prov === "openai" ? SP_AI_OPENAI_LS : SP_AS_KEY_LS);
+  function spAiSetKey(k, prov = "claude") { try { if (k) localStorage.setItem(spAiKeySlot(prov), k); else localStorage.removeItem(spAiKeySlot(prov)); } catch (_) {} }
+  function spAiGetKey(prov = "claude") {
+    if (prov !== "openai") return spAsistenGetKey();
+    try { return (localStorage.getItem(SP_AI_OPENAI_LS) || "").trim(); } catch (_) { return ""; }
+  }
   function spAiGetModel() { try { return spAiModelInfo(localStorage.getItem(SP_AI_MODEL_LS) || SP_AI_MODEL).id; } catch (_) { return SP_AI_MODEL; } }
   function spAiSetModel(id) { try { localStorage.setItem(SP_AI_MODEL_LS, spAiModelInfo(id).id); } catch (_) {} }
 
-  async function spAiPost(req) {
+  async function spAiPost(req, url = "https://api.anthropic.com/v1/messages") {
     try {
-      const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: req.headers, body: JSON.stringify(req.body), credentials: "omit" });
+      const r = await fetch(url, { method: "POST", headers: req.headers, body: JSON.stringify(req.body), credentials: "omit" });
       let payload = null;
       try { payload = await r.json(); } catch (_) {}
       return { status: r.status, payload };
@@ -16461,6 +16519,10 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
   }
 
   async function spAiAsk(messages, kunci, model) {
+    if (spAiModelInfo(model).prov === "openai") {
+      const r = await spAiPost(spAiOpenAiRequest(messages, kunci, { model }), "https://api.openai.com/v1/chat/completions");
+      return spAiOpenAiParse(r.status, r.payload);
+    }
     let ws = "";
     try { ws = (localStorage.getItem(SP_AS_WS_LS) || "").trim(); } catch (_) {}
     let res = await spAiPost(spAiRequest(messages, kunci, { model, ws }));
@@ -16853,17 +16915,21 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     <div class="ak-ai-head-btns">
       <button type="button" class="ak-ai-iconbtn" data-act="min" title="Perkecil / buka">–</button>
       <button type="button" class="ak-ai-iconbtn" data-act="new" title="Percakapan baru">＋</button>
-      <button type="button" class="ak-ai-iconbtn" data-act="settings" title="Pengaturan: API key & model">⚙</button>
+      <button type="button" class="ak-ai-iconbtn" data-act="settings" title="Pengaturan: API key Claude/ChatGPT & model">⚙</button>
       <button type="button" class="ak-ai-iconbtn" data-act="close" title="Tutup">×</button>
     </div>
   </div>
   <div class="ak-ai-settings" hidden>
-    <div class="ak-ai-set-title">API key Anthropic</div>
+    <div class="ak-ai-set-title">API key Anthropic (Claude)</div>
     <div class="ak-ai-set-note">Buat di <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com → API Keys</a>, lalu tempel di sini. Disimpan di browser ini saja (dipakai juga oleh 🎙️ ASISTEN SUARA).</div>
-    <div class="ak-ai-set-row"><input type="password" class="ak-ai-key" placeholder="sk-ant-..." autocomplete="off" spellcheck="false"><button type="button" data-act="savekey">Simpan</button></div>
-    <div class="ak-ai-set-row ak-ai-key-status"></div>
+    <div class="ak-ai-set-row"><input type="password" class="ak-ai-key" data-prov="claude" placeholder="sk-ant-..." autocomplete="off" spellcheck="false"><button type="button" data-act="savekey" data-prov="claude">Simpan</button></div>
+    <div class="ak-ai-set-row ak-ai-key-status" data-prov="claude"></div>
+    <div class="ak-ai-set-title">API key OpenAI (ChatGPT)</div>
+    <div class="ak-ai-set-note">Buat di <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com → API keys</a>, lalu tempel di sini. Disimpan di browser ini saja. Cukup isi salah satu kunci, lalu pilih modelnya di bawah.</div>
+    <div class="ak-ai-set-row"><input type="password" class="ak-ai-key" data-prov="openai" placeholder="sk-..." autocomplete="off" spellcheck="false"><button type="button" data-act="savekey" data-prov="openai">Simpan</button></div>
+    <div class="ak-ai-set-row ak-ai-key-status" data-prov="openai"></div>
     <div class="ak-ai-set-title">Model (ganti model = percakapan baru)</div>
-    <div class="ak-ai-set-row"><select class="ak-ai-model">${SP_AI_MODELS.map((m) => `<option value="${m.id}">${escapeHtmlText(`${m.label} · ${m.hint}`)}</option>`).join("")}</select></div>
+    <div class="ak-ai-set-row"><select class="ak-ai-model">${["claude", "openai"].map((pv) => `<optgroup label="${pv === "openai" ? "ChatGPT (OpenAI)" : "Claude (Anthropic)"}">${SP_AI_MODELS.filter((m) => m.prov === pv).map((m) => `<option value="${m.id}">${escapeHtmlText(`${m.label} · ${m.hint}`)}</option>`).join("")}</optgroup>`).join("")}</select></div>
   </div>
   <div class="ak-ai-privacy">⚠ Dikirim ke AI di luar Smartplus. Jangan tulis nama/No. RM pasien; nama/No.RM/No.Reg/tanggal disamarkan otomatis.</div>
   <div class="ak-ai-log" aria-live="polite"></div>
@@ -16883,17 +16949,21 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
 
     const $ = (sel) => panel.querySelector(sel);
     const log = $(".ak-ai-log"), input = $(".ak-ai-input"), ctxCheck = $(".ak-ai-ctx-check"), ctxPreview = $(".ak-ai-ctx-preview");
-    const settings = $(".ak-ai-settings"), keyInput = $(".ak-ai-key"), keyStatus = $(".ak-ai-key-status"), sendBtn = $(".ak-ai-send"), thumbs = $(".ak-ai-thumbs");
+    const settings = $(".ak-ai-settings"), sendBtn = $(".ak-ai-send"), thumbs = $(".ak-ai-thumbs");
 
     // Tombol keyboard & fokus di panel tidak diteruskan ke halaman (modal GADAR merebut fokus).
     panel.addEventListener("keydown", (ev) => ev.stopPropagation());
     panel.addEventListener("focusin", (ev) => ev.stopPropagation());
 
+    const keyInput = (pv) => $(`.ak-ai-key[data-prov="${pv}"]`);
+    const curProv = () => spAiModelInfo(spAiGetModel()).prov;
     const refreshKey = () => {
-      const k = spAsistenGetKey();
-      keyStatus.textContent = k ? `Tersimpan: ${spAiMaskKey(k)}` : "Belum ada API key.";
-      if (k) keyStatus.insertAdjacentHTML("beforeend", ' <button type="button" data-act="delkey">Hapus</button>');
-      if (!k) settings.hidden = false;
+      ["claude", "openai"].forEach((pv) => {
+        const k = spAiGetKey(pv), st = $(`.ak-ai-key-status[data-prov="${pv}"]`);
+        st.textContent = k ? `Tersimpan: ${spAiMaskKey(k)}` : "Belum ada API key.";
+        if (k) st.insertAdjacentHTML("beforeend", ` <button type="button" data-act="delkey" data-prov="${pv}">Hapus</button>`);
+      });
+      if (!spAiGetKey(curProv())) settings.hidden = false;
     };
     refreshKey();
 
@@ -16926,6 +16996,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       if (spAiChat.busy) { modelSelect.value = spAiGetModel(); return; }
       spAiSetModel(modelSelect.value);
       sub.textContent = spAiModelInfo(modelSelect.value).label;
+      refreshKey();
       if (spAiChat.messages.length && spAiChat.convModel && spAiChat.convModel !== modelSelect.value) {
         const lastQ = (spAiChat.view.slice().reverse().find((m) => m.role === "user") || {}).text || "";
         spAiChat.messages = [];
@@ -16952,8 +17023,9 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       if (spAiChat.busy) return;
       const raw = input.value.trim();
       if (!raw && !spAiChat.images.length) { input.focus(); return; }
-      const kunci = spAsistenGetKey();
-      if (!kunci) { settings.hidden = false; keyInput.focus(); toast("Tempel API key Anthropic dulu (⚙ Pengaturan)."); return; }
+      const pv = curProv();
+      const kunci = spAiGetKey(pv);
+      if (!kunci) { settings.hidden = false; keyInput(pv).focus(); toast(`Tempel API key ${SP_AI_PROV[pv].name} dulu (⚙ Pengaturan), atau pilih model lain.`); return; }
       const { text: question, removed } = spAsistenScrub(raw);
       const images = spAiChat.images.slice();
       spAiChat.images = [];
@@ -16981,7 +17053,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
         } else {
           spAiChat.messages.push({ role: "assistant", content: res.content });
           const cost = res.usage ? spAiCostUsd(model, res.usage) : null;
-          const served = (SP_AI_MODELS.find((m) => m.id === res.model) || spAiModelInfo(model)).label;
+          const served = spAiServedLabel(res.model, model);
           spAiChat.view.push({
             role: "bot", text: res.text,
             note: res.truncated ? "Jawaban terpotong karena terlalu panjang." : "",
@@ -17013,11 +17085,15 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
         renderThumbs(); renderLog(); return;
       }
       if (act === "savekey") {
-        const k = keyInput.value.trim();
-        if (!/^sk-ant-/.test(k)) { toast("API key Anthropic diawali sk-ant-…"); return; }
-        spAiSetKey(k); keyInput.value = ""; refreshKey(); settings.hidden = true; toast("API key tersimpan."); return;
+        const pv = t.dataset.prov || "claude", inp = keyInput(pv), k = inp.value.trim(), P = SP_AI_PROV[pv];
+        if (!k.startsWith(P.prefix) || (pv === "openai" && k.startsWith("sk-ant-"))) { toast(`API key ${P.name} diawali ${P.prefix}…`); return; }
+        spAiSetKey(k, pv); inp.value = ""; refreshKey();
+        // Kunci ChatGPT baru dan model masih Claude tanpa kunci -> langsung pilih ChatGPT termurah.
+        if (pv === "openai" && !spAiGetKey(curProv())) { modelSelect.value = "gpt-5.6-luna"; modelSelect.dispatchEvent(new Event("change")); }
+        if (spAiGetKey(curProv())) settings.hidden = true;
+        toast("API key tersimpan."); return;
       }
-      if (act === "delkey") { spAiSetKey(""); refreshKey(); return; }
+      if (act === "delkey") { spAiSetKey("", t.dataset.prov || "claude"); refreshKey(); return; }
       if (t.dataset.chip != null) {
         const q = SP_AI_QUICK[Number(t.dataset.chip)];
         input.value = q[1];
@@ -17046,7 +17122,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     input.addEventListener("keydown", (ev) => {
       if (ev.key === "Enter" && (ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); send(); }
     });
-    if (spAsistenGetKey()) input.focus();
+    if (spAiGetKey(curProv())) input.focus();
   }
 
   // Tombol 🧠: buka / tutup panel (panel yang diperkecil dibuka lagi) — sama dengan AUTO KLINIK.
