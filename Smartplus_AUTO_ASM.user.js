@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.101.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.102.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.101.0
-// @description  v3.101.0 (permintaan dokter 15 Okt 2026): tombol ASISTEN SUARA kini bergambar 🎙️ (fungsi & Alt+Q sama). Tombol 🧠 di sebelahnya = fitur baru TANYA AI: tanya jawab klinis bebas dengan Claude seperti Claude chat (dosis, tata laksana, diagnosis banding, interpretasi lab, edukasi) — jawaban tampil bertahap, bisa berlanjut beberapa giliran, 📋 Salin, 🗑 Baru, ⏹ Stop. Memakai kunci API & model yang sama dengan asisten; nama/No.RM/No.Reg/tanggal disaring sebelum dikirim. Hanya menjawab: tidak mengisi atau menyimpan form. Kotak popup biasa, bisa digeser & diubah ukurannya.
+// @version      3.102.0
+// @description  v3.102.0 (permintaan dokter 15 Okt 2026): 🧠 TANYA AI kini SAMA fungsi, bentuk & warnanya dengan Tanya AI di AUTO KLINIK — panel ungu-gelap kecil (±317 px, 30% tinggi layar) yang bisa digeser, diubah ukurannya dari sudut kiri bawah, diperkecil (–) dan diingat posisinya; pilihan model (Opus/Sonnet/Haiku, bawaan Haiku) + perkiraan biaya tiap jawaban; tombol cepat Diagnosis banding / Terapi & dosis / Kapan rujuk / Edukasi pasien; 📎 Baca data pasien (isi form GADAR + umur & lab kunjungan ini, identitas disamarkan, bisa dilihat dulu); 📷 lampiran foto (lesi, lab, EKG); Ctrl+Enter kirim; ＋ percakapan baru; Salin. Tombol 🧠 ungu bulat seperti AUTO KLINIK. Kunci API sama dengan 🎙️ ASISTEN SUARA. Hanya menjawab: tidak mengisi atau menyimpan form.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.101.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.101.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.102.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.102.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -13257,7 +13257,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.101.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.102.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -13287,7 +13287,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
         </button>
 
         <div class="sp-note">
-          Resep dari KOMBINASI masuk sebagai draft — review lalu Simpan manual. Pintasan keyboard: Alt + A.<br>🎙️ Asisten suara (uji coba): tombol 🎙️ atau Alt + Q — visit banyak pasien (🏥 Multiple visit) atau rekam anamnesa IGD (👥 Percakapan); Claude menyiapkan isian, dokter cek lalu Simpan.<br>🧠 Tanya AI: tombol 🧠 — tanya jawab klinis bebas dengan Claude (seperti Claude chat); hanya menjawab, tidak mengisi form.
+          Resep dari KOMBINASI masuk sebagai draft — review lalu Simpan manual. Pintasan keyboard: Alt + A.<br>🎙️ Asisten suara (uji coba): tombol 🎙️ atau Alt + Q — visit banyak pasien (🏥 Multiple visit) atau rekam anamnesa IGD (👥 Percakapan); Claude menyiapkan isian, dokter cek lalu Simpan.<br>🧠 Tanya AI: tombol 🧠 — tanya jawab klinis dengan Claude seperti di AUTO KLINIK (model, 📎 data pasien tersamar, 📷 foto); hanya menjawab, tidak mengisi form.
         </div>
       `;
     }
@@ -16315,351 +16315,582 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
   }, true);
 
   // =========================
-  // v3.101.0 (permintaan dokter 15 Okt 2026): 🧠 TANYA AI — obrolan bebas dengan Claude (seperti Claude chat) untuk
-  // pertanyaan klinis Dokter (dosis, tata laksana, diagnosis banding, interpretasi lab, edukasi pasien, dsb.).
-  // Tombol 🧠 di samping 🎙️ ASISTEN SUARA. Memakai kunci API & model yang sama dengan asisten (⚙️ asisten / di panel ini).
-  // Hanya menjawab: tidak mengisi atau menyimpan form apa pun. Setiap pertanyaan disaring identitasnya (spAsistenScrub)
-  // sebelum dikirim; percakapan hanya di memori tab ini (sessionStorage), tidak dikirim ke tempat lain selain API Claude.
+  // v3.101.0 (permintaan dokter 15 Okt 2026): 🧠 TANYA AI — tanya jawab dengan Claude (seperti Claude chat), tombol 🧠 di
+  // samping 🎙️ ASISTEN SUARA. v3.102.0 (permintaan dokter): fungsi, bentuk & warna DISAMAKAN dengan Tanya AI di AUTO KLINIK
+  // (Klinik Pintar): panel ungu-gelap, pilihan model + perkiraan biaya, tombol cepat (diagnosis banding, terapi & dosis, kapan
+  // rujuk, edukasi), 📎 Baca data pasien (identitas disamarkan, bisa dilihat dulu), 📷 lampiran foto, Ctrl+Enter, – perkecil,
+  // ＋ percakapan baru, Salin. Kunci API sama dengan ASISTEN SUARA (localStorage browser ini).
+  // Hanya menjawab: tidak mengisi atau menyimpan form apa pun.
   // =========================
   const SP_AI_BTN_ID = "sp-auto-asm-tanya-ai-btn";
   const SP_AI_PANEL_ID = "sp-auto-asm-tanya-ai-panel";
-  const SP_AI_CHAT_SS = "sp-auto-asm-tanya-ai-chat";
-  const SP_AI_SYSTEM = [
-    "Anda asisten klinis untuk dokter jaga IGD di rumah sakit Indonesia (RS tipe C/B). Dokter bertanya seperti di Claude chat.",
-    "Jawab dalam Bahasa Indonesia, ringkas dan langsung ke inti dulu, lalu rincian seperlunya. Pakai poin/daftar dan tabel kecil bila membantu.",
-    "Untuk tata laksana: sebutkan langkah prioritas IGD, obat generik + dosis dewasa lazim (dan anak per kgBB bila relevan), rute, frekuensi,",
-    "kontraindikasi/peringatan penting, kapan rujuk/konsul/rawat ICU. Rujuk pedoman yang berlaku di Indonesia bila ada (PNPK Kemenkes,",
-    "PERKI, PAPDI, PDPI, PERDOSSI, IDAI, Fornas) atau pedoman internasional (AHA, ESC, GINA, GOLD, KDIGO, WHO), sebut namanya.",
-    "Jujur bila tidak yakin atau bukti terbatas; jangan mengarang referensi, angka, atau merek. Bila pertanyaan kurang data penting",
-    "(BB, usia, fungsi ginjal, kehamilan, alergi), sebutkan asumsi Anda atau tanyakan singkat.",
-    "Anda tidak melihat data pasien di Smartplus; hanya teks yang diketik Dokter (identitas pasien sudah disaring).",
-    "Keputusan klinis tetap pada dokter: akhiri dengan pengingat singkat untuk memverifikasi dosis hanya bila jawaban memuat dosis obat."
-  ].join(" ");
+  const SP_AI_MODEL_LS = "sp-auto-asm-tanya-ai-model";
+  const SP_AI_BOX_LS = "sp-auto-asm-tanya-ai-box";
+  // Harga USD per 1 juta token (input, output) — sama dengan AUTO KLINIK.
+  const SP_AI_MODELS = [
+    { id: "claude-opus-5-5", label: "Opus 5.5", hint: "terbaik", inUsd: 4, outUsd: 20, fallback: true },
+    { id: "claude-sonnet-5-5", label: "Sonnet 5.5", hint: "± ½ biaya Opus", inUsd: 2, outUsd: 10, fallback: true },
+    { id: "claude-haiku-5-5", label: "Haiku 5.5", hint: "paling murah", inUsd: 0.1, outUsd: 0.5, fallback: false }
+  ];
+  const SP_AI_MODEL = "claude-haiku-5-5"; // bawaan sama dengan AUTO KLINIK (paling hemat)
+  const SP_AI_MAX_IMAGES = 4;
+  const SP_AI_QUICK = [
+    ["Diagnosis banding", "Apa diagnosis banding untuk pasien ini, dan pemeriksaan apa yang membedakannya?"],
+    ["Terapi & dosis", "Apa terapi yang dianjurkan di IGD beserta dosisnya untuk pasien ini?"],
+    ["Kapan rujuk", "Apa tanda bahaya dan kriteria rawat inap / ICU / rujuk untuk kasus ini?"],
+    ["Edukasi pasien", "Buatkan edukasi singkat untuk pasien dalam bahasa awam."]
+  ];
+  const spAiModelInfo = (id) => SP_AI_MODELS.find((m) => m.id === id) || SP_AI_MODELS.find((m) => m.id === SP_AI_MODEL);
 
-  const spAi = { msgs: [], busy: false, ctrl: null };
-  try { const v = JSON.parse(sessionStorage.getItem(SP_AI_CHAT_SS) || "[]"); if (Array.isArray(v)) spAi.msgs = v.filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string"); } catch (_) {}
-  function spAiSave() { try { sessionStorage.setItem(SP_AI_CHAT_SS, JSON.stringify(spAi.msgs.slice(-40))); } catch (_) {} }
+  // Biaya satu jawaban dari `usage` API, dalam USD (fungsi murni, diuji). Token cache dihitung tarif input biasa.
+  function spAiCostUsd(modelId, usage) {
+    const m = spAiModelInfo(modelId);
+    const u = usage || {};
+    const input = (u.input_tokens || 0) + (u.cache_creation_input_tokens || 0) + (u.cache_read_input_tokens || 0);
+    return (input * m.inUsd + (u.output_tokens || 0) * m.outUsd) / 1e6;
+  }
 
-  // Markdown sederhana -> HTML aman (fungsi murni, diuji di tests/uji_v3_101.js): judul, tebal, miring, kode, daftar, tabel.
-  function spAiMd(src) {
-    const esc = (s) => escapeHtmlText(String(s));
-    const inline = (s) => esc(s)
-      .replace(/`([^`]+)`/g, "<code>$1</code>")
-      .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
-      .replace(/(^|[^*\w])\*([^*\s][^*]*)\*(?!\w)/g, "$1<i>$2</i>");
-    const lines = String(src || "").replace(/\r/g, "").split("\n");
+  function spAiSystemPrompt() {
+    let obat = "";
+    try { obat = String(spAsistenVocab() || "").split("\n").slice(1).join(" ").trim(); } catch (_) {}
+    return [
+      "Anda adalah asisten klinis untuk dokter jaga IGD di rumah sakit di Indonesia.",
+      "Penanya adalah dokter. Jawab dalam Bahasa Indonesia yang ringkas, jelas, dan praktis untuk dipakai saat jaga.",
+      "Anda adalah alat bantu pengambilan keputusan, bukan pengganti penilaian klinis dokter. Keputusan akhir selalu di tangan dokter.",
+      "Pedoman: ikuti PNPK Kemenkes, Fornas, dan pedoman PERKI/PAPDI/PDPI/PERDOSSI/IDAI yang berlaku (atau AHA/ESC/GINA/GOLD/KDIGO/WHO bila relevan). Sebutkan tanda bahaya dan kriteria rawat inap/ICU/rujuk.",
+      "Saat menyebut dosis: tulis dosis per kg dan dosis maksimal untuk anak, sesuaikan dengan umur/BB/fungsi ginjal bila datanya ada, dan sebutkan kontraindikasi serta interaksi penting. Bila ragu, katakan ragu dan sarankan rujukan sumber resmi. Jangan mengarang angka.",
+      obat ? "Utamakan obat yang tersedia di rumah sakit ini bila sesuai: " + obat + "." : "",
+      "Format: paragraf pendek, poin '- ', judul singkat '## ' bila perlu, **tebal** untuk hal penting. Jangan memakai tabel.",
+      "Bila data klinis pasien disertakan, pakai data itu. Bila data penting belum ada (mis. BB anak, alergi, hamil), sebutkan apa yang perlu ditanyakan atau diperiksa."
+    ].filter(Boolean).join("\n");
+  }
+
+  // Isi pesan dokter untuk API (fungsi murni, diuji).
+  function spAiUserContent(question, { context = "", images = [] } = {}) {
+    const q = String(question || "").trim();
+    const textPart = context
+      ? `Data pasien dari halaman Smartplus yang sedang dibuka (identitas disamarkan):\n${context}\n\nPertanyaan dokter:\n${q}`
+      : q;
+    if (!images.length) return textPart;
+    return [
+      ...images.map((img) => ({ type: "image", source: { type: "base64", media_type: img.mediaType, data: img.data } })),
+      { type: "text", text: textPart || "Tolong nilai gambar ini." }
+    ];
+  }
+
+  // Permintaan ke Messages API (fungsi murni, diuji).
+  function spAiRequest(messages, kunci, { fallback = true, model = SP_AI_MODEL, ws = "" } = {}) {
+    const info = spAiModelInfo(model);
+    const headers = {
+      "content-type": "application/json",
+      "x-api-key": String(kunci || "").trim(),
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true"
+    };
+    if (ws) headers["anthropic-workspace-id"] = ws;
+    const body = { model: info.id, max_tokens: 16000, system: spAiSystemPrompt(), output_config: { effort: "medium" }, messages };
+    if (fallback && info.fallback) {
+      headers["anthropic-beta"] = "server-side-fallback-2026-07-01";
+      body.fallbacks = "default";
+    }
+    return { headers, body };
+  }
+
+  // Pesan error API -> kalimat untuk dokter (fungsi murni, diuji).
+  function spAiErrorMessage(status, payload) {
+    const msg = String((payload && payload.error && payload.error.message) || "");
+    if (status === 401) return "API key salah atau sudah dicabut. Buka ⚙ Pengaturan dan tempel ulang API key.";
+    if (status === 403) return "API key tidak punya izin memakai model ini. Cek di console.anthropic.com.";
+    if (/workspace/i.test(msg)) return "API key ini tidak terikat workspace. Isi Workspace ID di ⚙️ panel 🎙️ ASISTEN SUARA.";
+    if (/credit balance|billing|purchase credits/i.test(msg)) return "Saldo kredit API habis. Isi saldo di console.anthropic.com → Billing.";
+    if (status === 429) return "Batas pemakaian API tercapai. Tunggu sebentar lalu coba lagi.";
+    if (status === 413) return "Gambar/teks terlalu besar. Kurangi gambar lalu coba lagi.";
+    if (status === 529 || status >= 500) return "Layanan AI sedang sibuk. Coba lagi sebentar lagi.";
+    if (status === 0) return "Tidak bisa menghubungi layanan AI. Periksa koneksi internet / jaringan RS.";
+    return `Permintaan ditolak (${status})${msg ? `: ${msg}` : ""}.`;
+  }
+
+  // Jawaban API -> { text, content, refused, truncated, usage, model } (fungsi murni, diuji).
+  function spAiParse(status, payload) {
+    if (status < 200 || status >= 300) throw new Error(spAiErrorMessage(status, payload));
+    const content = Array.isArray(payload && payload.content) ? payload.content : [];
+    const text = content.filter((b) => b && b.type === "text").map((b) => b.text).join("").trim();
+    return { text, content, refused: payload.stop_reason === "refusal", truncated: payload.stop_reason === "max_tokens", usage: payload.usage || null, model: payload.model || "" };
+  }
+
+  // Markdown sederhana -> HTML aman (fungsi murni, diuji). Semua teks di-escape dulu.
+  function spAiMd(md) {
+    const inline = (s) => escapeHtmlText(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`([^`]+)`/g, "<code>$1</code>");
     const out = [];
-    let list = "", i = 0;
-    const closeList = () => { if (list) { out.push(`</${list}>`); list = ""; } };
-    while (i < lines.length) {
-      const ln = lines[i];
-      if (/^```/.test(ln)) {
-        closeList();
-        const buf = [];
-        i++;
-        while (i < lines.length && !/^```/.test(lines[i])) buf.push(lines[i++]);
-        i++;
-        out.push(`<pre>${esc(buf.join("\n"))}</pre>`);
-        continue;
-      }
-      if (/^\s*\|.*\|\s*$/.test(ln) && i + 1 < lines.length && /^\s*\|[\s:|-]+\|\s*$/.test(lines[i + 1])) {
-        closeList();
-        const cells = (l) => l.trim().replace(/^\||\|$/g, "").split("|").map((c) => inline(c.trim()));
-        let h = `<table><tr>${cells(ln).map((c) => `<th>${c}</th>`).join("")}</tr>`;
-        i += 2;
-        while (i < lines.length && /^\s*\|.*\|\s*$/.test(lines[i])) h += `<tr>${cells(lines[i++]).map((c) => `<td>${c}</td>`).join("")}</tr>`;
-        out.push(h + "</table>");
-        continue;
-      }
+    let list = null;
+    const closeList = () => { if (list) out.push(`</${list}>`); list = null; };
+    for (const raw of String(md || "").split(/\r?\n/)) {
+      const line = raw.trimEnd();
       let m;
-      if ((m = ln.match(/^(#{1,4})\s+(.*)$/))) { closeList(); out.push(`<div class="sp-ai-h">${inline(m[2])}</div>`); }
-      else if ((m = ln.match(/^\s*[-*•]\s+(.*)$/))) { if (list !== "ul") { closeList(); out.push("<ul>"); list = "ul"; } out.push(`<li>${inline(m[1])}</li>`); }
-      else if ((m = ln.match(/^\s*\d+[.)]\s+(.*)$/))) { if (list !== "ol") { closeList(); out.push("<ol>"); list = "ol"; } out.push(`<li>${inline(m[1])}</li>`); }
-      else if (/^\s*(-{3,}|\*{3,})\s*$/.test(ln)) { closeList(); out.push("<hr>"); }
-      else if (!ln.trim()) { closeList(); out.push('<div style="height:6px"></div>'); }
-      else { closeList(); out.push(`<div>${inline(ln)}</div>`); }
-      i++;
+      if (!line.trim()) closeList();
+      else if ((m = line.match(/^\s*#{1,4}\s+(.*)$/))) { closeList(); out.push(`<div class="ak-ai-h">${inline(m[1])}</div>`); }
+      else if ((m = line.match(/^\s*[-*•]\s+(.*)$/))) { if (list !== "ul") { closeList(); out.push("<ul>"); list = "ul"; } out.push(`<li>${inline(m[1])}</li>`); }
+      else if ((m = line.match(/^\s*\d+[.)]\s+(.*)$/))) { if (list !== "ol") { closeList(); out.push("<ol>"); list = "ol"; } out.push(`<li>${inline(m[1])}</li>`); }
+      else { closeList(); out.push(`<p>${inline(line)}</p>`); }
     }
     closeList();
     return out.join("");
   }
 
-  function spAiStatus(msg, color) {
-    const el = document.querySelector(`#${SP_AI_PANEL_ID} .sp-ai-status`);
-    if (el) { el.textContent = msg || ""; el.style.color = color || "#546e7a"; }
+  function spAiMaskKey(key) {
+    const k = String(key || "");
+    return k.length > 12 ? `${k.slice(0, 7)}…${k.slice(-4)}` : k ? "••••" : "";
+  }
+  function spAiSetKey(k) { try { if (k) localStorage.setItem(SP_AS_KEY_LS, k); else localStorage.removeItem(SP_AS_KEY_LS); } catch (_) {} }
+  function spAiGetModel() { try { return spAiModelInfo(localStorage.getItem(SP_AI_MODEL_LS) || SP_AI_MODEL).id; } catch (_) { return SP_AI_MODEL; } }
+  function spAiSetModel(id) { try { localStorage.setItem(SP_AI_MODEL_LS, spAiModelInfo(id).id); } catch (_) {} }
+
+  async function spAiPost(req) {
+    try {
+      const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: req.headers, body: JSON.stringify(req.body), credentials: "omit" });
+      let payload = null;
+      try { payload = await r.json(); } catch (_) {}
+      return { status: r.status, payload };
+    } catch (_) { return { status: 0, payload: null }; }
   }
 
-  function spAiRender() {
-    const log = document.querySelector(`#${SP_AI_PANEL_ID} .sp-ai-log`);
-    if (!log) return;
-    if (!spAi.msgs.length) {
-      log.innerHTML = `<div style="color:#78909c;padding:8px 2px">Tanyakan apa saja seputar klinis, misalnya:<br>• "Dosis loading amiodaron untuk AF RVR?"<br>` +
-        `• "Tata laksana KAD di IGD langkah demi langkah"<br>• "Interpretasi AGD pH 7,21 pCO2 28 HCO3 11"<br>` +
-        `Jangan ketik nama / No.RM pasien (tetap disaring otomatis sebelum dikirim). Jawaban hanya saran — keputusan tetap pada Dokter.</div>`;
-      return;
-    }
-    log.innerHTML = spAi.msgs.map((m, i) => m.role === "user"
-      ? `<div class="sp-ai-u">${escapeHtmlText(m.content).replace(/\n/g, "<br>")}</div>`
-      : `<div class="sp-ai-a">${spAiMd(m.content)}${m.content ? `<div style="text-align:right"><button type="button" data-ai-copy="${i}" class="sp-ai-mini">📋 Salin</button></div>` : ""}</div>`).join("");
-    log.scrollTop = log.scrollHeight;
-  }
-
-  // Baca aliran SSE Claude; onText(teksSejauhIni). Mengembalikan { text, stop }.
-  async function spAiReadStream(r, onText) {
-    let text = "", stop = "", buf = "";
-    const take = (chunk) => {
-      buf += chunk;
-      let k;
-      while ((k = buf.indexOf("\n\n")) >= 0) {
-        const ev = buf.slice(0, k);
-        buf = buf.slice(k + 2);
-        const data = ev.split("\n").filter((l) => l.startsWith("data:")).map((l) => l.slice(5).trim()).join("");
-        if (!data) continue;
-        let o;
-        try { o = JSON.parse(data); } catch (_) { continue; }
-        if (o.type === "content_block_delta" && o.delta && o.delta.type === "text_delta") { text += o.delta.text || ""; onText(text); }
-        else if (o.type === "message_delta" && o.delta && o.delta.stop_reason) stop = o.delta.stop_reason;
-        else if (o.type === "error") throw new Error((o.error && o.error.message) || "Claude mengirim galat.");
-      }
-    };
-    if (r.body && r.body.getReader) {
-      const rd = r.body.getReader();
-      const dec = new TextDecoder();
-      for (;;) {
-        const { done, value } = await rd.read();
-        if (done) break;
-        take(dec.decode(value, { stream: true }));
-      }
-      take(dec.decode() + "\n\n");
-    } else take((await r.text()) + "\n\n");
-    return { text, stop };
-  }
-
-  async function spAiAsk(onText) {
-    const key = spAsistenGetKey();
-    if (!key) throw new Error("Kunci API Claude belum diisi. Tekan ⚙️ di panel ini.");
-    const model = spAsistenGetModel();
-    // Riwayat dibatasi ±20 giliran terakhir (dimulai dari pertanyaan Dokter) supaya biaya & waktu tetap wajar.
-    let msgs = spAi.msgs.filter((m) => m.content).slice(-20);
-    while (msgs.length && msgs[0].role !== "user") msgs = msgs.slice(1);
-    const body = {
-      model,
-      max_tokens: 8000,
-      stream: true,
-      system: [{ type: "text", text: SP_AI_SYSTEM, cache_control: { type: "ephemeral" } }],
-      messages: msgs.map((m) => ({ role: m.role, content: m.content }))
-    };
-    const headers = {
-      "content-type": "application/json",
-      "x-api-key": key,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true"
-    };
+  async function spAiAsk(messages, kunci, model) {
     let ws = "";
     try { ws = (localStorage.getItem(SP_AS_WS_LS) || "").trim(); } catch (_) {}
-    if (ws) headers["anthropic-workspace-id"] = ws;
-    if (model !== "claude-haiku-5-5") {
-      body.fallbacks = "default";
-      headers["anthropic-beta"] = "server-side-fallback-2026-07-01";
-    }
-    const send = async () => {
-      spAi.ctrl = typeof AbortController === "function" ? new AbortController() : null;
-      try {
-        return await fetch("https://api.anthropic.com/v1/messages", {
-          method: "POST", headers, body: JSON.stringify(body), credentials: "omit", signal: spAi.ctrl ? spAi.ctrl.signal : undefined
+    let res = await spAiPost(spAiRequest(messages, kunci, { model, ws }));
+    // Akun yang belum mendukung model cadangan -> ulangi tanpa fitur itu.
+    if (res.status === 400 && /fallback|beta/i.test((res.payload && res.payload.error && res.payload.error.message) || ""))
+      res = await spAiPost(spAiRequest(messages, kunci, { fallback: false, model, ws }));
+    return spAiParse(res.status, res.payload);
+  }
+
+  // Gambar diperkecil (sisi terpanjang ≤1568 px, JPEG) sebelum dikirim.
+  function spAiReadImage(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Gambar tidak bisa dibaca."));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error("File bukan gambar yang didukung."));
+        img.onload = () => {
+          const scale = Math.min(1, 1568 / Math.max(img.width, img.height));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(img.width * scale));
+          canvas.height = Math.max(1, Math.round(img.height * scale));
+          const ctx = canvas.getContext("2d");
+          ctx.fillStyle = "#fff";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const url = canvas.toDataURL("image/jpeg", 0.85);
+          resolve({ mediaType: "image/jpeg", data: url.split(",")[1], url, name: file.name || "gambar" });
+        };
+        img.src = String(reader.result);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // 📎 Baca data pasien: isi form GADAR yang terbuka + umur & lab kunjungan ini; semua lewat penyaring identitas.
+  async function spAiPatientData() {
+    const parts = [];
+    try {
+      const root = spAsistenFormRoot();
+      if (root) {
+        const L = [];
+        SP_AS_FIELDS.forEach((f) => {
+          const el = spAsistenField(root, f.key);
+          const v = el ? String(el.value || "").replace(/\s+/g, " ").trim() : "";
+          if (v) L.push(`- ${f.label}: ${v}`);
         });
+        if (L.length) parts.push("Form Assesment GADAR yang terbuka:\n" + L.join("\n"));
+      }
+    } catch (_) {}
+    try {
+      const c = await Promise.race([spAsistenGadarContext(), recipeSleep(8000).then(() => "")]);
+      if (c) parts.push(c);
+    } catch (_) {}
+    return parts.length ? spAsistenScrub(parts.join("\n\n")).text : "";
+  }
+
+  // Percakapan disimpan di memori saja (hilang saat halaman dimuat ulang) — sama dengan AUTO KLINIK.
+  const spAiChat = { messages: [], view: [], busy: false, images: [], convModel: "", min: false, box: null };
+
+  // Posisi & ukuran panel diingat di browser ini. Kotak dijaga tetap di dalam layar (fungsi murni, diuji).
+  function spAiClampBox(box, vw, vh) {
+    const width = Math.round(Math.min(Math.max(box.width, 200), vw - 8));
+    const height = Math.round(Math.min(Math.max(box.height, 220), vh - 8));
+    const left = Math.round(Math.min(Math.max(box.left, 0), Math.max(0, vw - width)));
+    const top = Math.round(Math.min(Math.max(box.top, 0), Math.max(0, vh - 40)));
+    return { left, top, width, height };
+  }
+  function spAiLoadBox() {
+    if (spAiChat.box) return spAiChat.box;
+    try { const b = JSON.parse(localStorage.getItem(SP_AI_BOX_LS) || "null"); if (b && b.width) return b; } catch (_) {}
+    return null;
+  }
+  function spAiSaveBox(box) {
+    spAiChat.box = box;
+    try { localStorage.setItem(SP_AI_BOX_LS, JSON.stringify(box)); } catch (_) {}
+  }
+  function spAiApplyBox(panel) {
+    const set = (k, v) => panel.style.setProperty(k, v, "important");
+    const box = spAiLoadBox();
+    if (box) {
+      const b = spAiClampBox(box, window.innerWidth, window.innerHeight);
+      set("left", `${b.left}px`); set("top", `${b.top}px`); set("right", "auto");
+      set("width", `${b.width}px`);
+      if (!spAiChat.min) set("height", `${b.height}px`);
+    }
+    panel.classList.toggle("ak-ai-min", !!spAiChat.min);
+    if (spAiChat.min) panel.style.removeProperty("height");
+    const btn = panel.querySelector('[data-act="min"]');
+    if (btn) btn.textContent = spAiChat.min ? "▢" : "–";
+  }
+  // Geser lewat judul, ubah ukuran lewat pegangan sudut kiri bawah (sama dengan AUTO KLINIK).
+  function spAiEnableDrag(panel, head, grip) {
+    const start = (ev, mode) => {
+      if (mode === "move" && ev.target.closest("button")) return;
+      if (ev.button !== undefined && ev.button !== 0) return;
+      ev.preventDefault();
+      const r = panel.getBoundingClientRect();
+      const s = { x: ev.clientX, y: ev.clientY, left: r.left, top: r.top, width: r.width, height: spAiChat.min ? ((spAiChat.box && spAiChat.box.height) || 260) : r.height };
+      const move = (e) => {
+        const dx = e.clientX - s.x, dy = e.clientY - s.y;
+        const box = mode === "move"
+          ? { left: s.left + dx, top: s.top + dy, width: s.width, height: s.height }
+          : { left: s.left + dx, top: s.top, width: s.width - dx, height: s.height + dy };
+        spAiChat.box = spAiClampBox(box, window.innerWidth, window.innerHeight);
+        spAiApplyBox(panel);
+      };
+      const end = () => {
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", end);
+        window.removeEventListener("pointercancel", end);
+        if (spAiChat.box) spAiSaveBox(spAiChat.box);
+      };
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", end);
+      window.addEventListener("pointercancel", end);
+    };
+    head.addEventListener("pointerdown", (ev) => start(ev, "move"));
+    grip.addEventListener("pointerdown", (ev) => start(ev, "resize"));
+  }
+
+  const SP_AI_FONT = 'system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif';
+  function spAiCss() {
+    if (document.getElementById("sp-ai-css")) return;
+    const P = "#" + SP_AI_PANEL_ID, F = SP_AI_FONT;
+    const st = document.createElement("style");
+    st.id = "sp-ai-css";
+    // Bentuk & warna sama dengan panel Tanya AI AUTO KLINIK v10.13.0.
+    st.textContent = `
+    #${SP_AI_BTN_ID}{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:44px!important;height:44px!important;
+      padding:0!important;border:0!important;border-radius:999px!important;background:linear-gradient(135deg,#8b5cf6,#6d28d9)!important;
+      font:400 22px/1 ${F}!important;cursor:pointer!important;touch-action:manipulation!important;box-sizing:border-box!important;
+      box-shadow:0 6px 18px rgba(109,40,217,.32),0 2px 6px rgba(15,23,42,.12)!important;}
+    #${SP_AI_BTN_ID}:hover{filter:brightness(1.08)!important;}
+    ${P}{position:fixed!important;top:8px!important;right:8px!important;bottom:auto!important;left:auto!important;z-index:2147483646!important;
+      width:min(317px,69vw)!important;height:30vh!important;min-width:200px!important;min-height:220px!important;
+      display:flex!important;flex-direction:column!important;overflow:hidden!important;background:#f8fafc!important;
+      border:1px solid #94a3b8!important;border-radius:12px!important;box-shadow:0 12px 32px rgba(15,23,42,.28)!important;box-sizing:border-box!important;
+      font:500 12.5px/1.45 ${F}!important;color:#0f172a!important;text-align:left!important;}
+    ${P}.ak-ai-min{height:auto!important;min-height:0!important;}
+    ${P}.ak-ai-min > :not(.ak-ai-head){display:none!important;}
+    ${P} *{box-sizing:border-box!important;}
+    ${P} [hidden]{display:none!important;}
+    ${P} .ak-ai-head,${P} .ak-ai-privacy,${P} .ak-ai-settings{flex:none!important;}
+    ${P} .ak-ai-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:6px!important;
+      padding:5px 6px 5px 10px!important;background:#1e293b!important;border-bottom:2px solid #7c3aed!important;color:#fff!important;
+      cursor:move!important;touch-action:none!important;user-select:none!important;-webkit-user-select:none!important;}
+    ${P} .ak-ai-title{font:800 13px/1.2 ${F}!important;color:#fff!important;white-space:nowrap!important;}
+    ${P} .ak-ai-sub{font:600 10px/1.2 ${F}!important;color:#c4b5fd!important;white-space:nowrap!important;}
+    ${P} .ak-ai-head-btns{display:flex!important;gap:4px!important;flex:none!important;}
+    ${P} .ak-ai-iconbtn{width:26px!important;height:26px!important;border:0!important;border-radius:7px!important;background:#334155!important;
+      color:#fff!important;font:700 14px/1 ${F}!important;cursor:pointer!important;padding:0!important;touch-action:manipulation!important;}
+    ${P} .ak-ai-iconbtn:hover{background:#475569!important;}
+    ${P} .ak-ai-settings{max-height:60%!important;overflow:auto!important;padding:8px 10px!important;background:#ede9fe!important;border-bottom:1px solid #c4b5fd!important;}
+    ${P} .ak-ai-set-title{font:800 11.5px/1.3 ${F}!important;color:#4c1d95!important;}
+    ${P} .ak-ai-set-note{font:500 11px/1.4 ${F}!important;color:#4c1d95!important;margin:2px 0 6px!important;}
+    ${P} .ak-ai-set-note a{color:#6d28d9!important;font-weight:700!important;text-decoration:underline!important;}
+    ${P} .ak-ai-set-row{display:flex!important;gap:6px!important;align-items:center!important;font:600 11px/1.4 ${F}!important;color:#4c1d95!important;}
+    ${P} .ak-ai-set-row + .ak-ai-set-row,${P} .ak-ai-set-row + .ak-ai-set-title{margin-top:6px!important;}
+    ${P} .ak-ai-key,${P} .ak-ai-model{flex:1!important;min-width:0!important;height:30px!important;padding:0 8px!important;border:1.5px solid #a78bfa!important;
+      border-radius:8px!important;background:#fff!important;font:500 12px ${F}!important;color:#0f172a!important;}
+    ${P} .ak-ai-settings button{height:28px!important;padding:0 10px!important;border:0!important;border-radius:8px!important;
+      background:#7c3aed!important;color:#fff!important;font:700 11.5px ${F}!important;cursor:pointer!important;}
+    ${P} .ak-ai-key-status button{height:24px!important;background:#fff!important;color:#7c3aed!important;border:1px solid #a78bfa!important;}
+    ${P} .ak-ai-privacy{padding:3px 10px!important;background:#fffbeb!important;border-bottom:1px solid #fde68a!important;
+      font:600 10px/1.35 ${F}!important;color:#92400e!important;}
+    ${P} .ak-ai-log{flex:1 1 auto!important;min-height:0!important;overflow:auto!important;padding:8px!important;display:flex!important;flex-direction:column!important;gap:7px!important;}
+    ${P} .ak-ai-empty{margin:auto 4px!important;text-align:center!important;color:#475569!important;font:500 11.5px/1.45 ${F}!important;}
+    ${P} .ak-ai-msg{max-width:94%!important;padding:7px 9px!important;border-radius:11px!important;word-break:break-word!important;font:500 12.5px/1.5 ${F}!important;}
+    ${P} .ak-ai-user{align-self:flex-end!important;background:#7c3aed!important;color:#fff!important;border-bottom-right-radius:3px!important;}
+    ${P} .ak-ai-bot{align-self:flex-start!important;background:#fff!important;border:1px solid #e2e8f0!important;border-bottom-left-radius:3px!important;color:#0f172a!important;}
+    ${P} .ak-ai-error{align-self:flex-start!important;background:#fef2f2!important;border:1px solid #fecaca!important;color:#991b1b!important;font-weight:600!important;}
+    ${P} .ak-ai-wait{color:#64748b!important;font-style:italic!important;}
+    ${P} .ak-ai-bot p{margin:0 0 4px!important;}
+    ${P} .ak-ai-bot ul,${P} .ak-ai-bot ol{margin:2px 0 6px!important;padding-left:17px!important;}
+    ${P} .ak-ai-bot li{margin:1px 0!important;}
+    ${P} .ak-ai-bot code{background:#f1f5f9!important;padding:0 3px!important;border-radius:4px!important;font-size:11.5px!important;}
+    ${P} .ak-ai-h{font:800 12.5px/1.35 ${F}!important;color:#4c1d95!important;margin:6px 0 3px!important;}
+    ${P} .ak-ai-tag{margin-top:4px!important;font:600 10.5px/1.3 ${F}!important;opacity:.85!important;}
+    ${P} .ak-ai-meta{margin-top:4px!important;font:600 10px/1.3 ${F}!important;color:#64748b!important;}
+    ${P} .ak-ai-copy{margin-top:3px!important;padding:2px 8px!important;border:1px solid #cbd5e1!important;border-radius:999px!important;
+      background:#f8fafc!important;color:#475569!important;font:600 10.5px ${F}!important;cursor:pointer!important;}
+    ${P} .ak-ai-msg-imgs{display:flex!important;flex-wrap:wrap!important;gap:3px!important;margin-bottom:4px!important;}
+    ${P} .ak-ai-msg-imgs img{width:52px!important;height:52px!important;object-fit:cover!important;border-radius:6px!important;}
+    ${P} .ak-ai-compose{flex:none!important;padding:6px 6px 7px!important;background:#fff!important;border-top:1px solid #e2e8f0!important;
+      display:flex!important;flex-direction:column!important;gap:5px!important;}
+    ${P} .ak-ai-chips{display:flex!important;flex-wrap:nowrap!important;gap:4px!important;overflow-x:auto!important;scrollbar-width:none!important;}
+    ${P} .ak-ai-chips > *{flex:none!important;white-space:nowrap!important;padding:3px 8px!important;border:1px solid #c4b5fd!important;border-radius:999px!important;
+      background:#f5f3ff!important;color:#5b21b6!important;font:600 10.5px/1.3 ${F}!important;cursor:pointer!important;margin:0!important;}
+    ${P} .ak-ai-ctx{display:inline-flex!important;align-items:center!important;gap:3px!important;}
+    ${P} .ak-ai-ctx input{width:12px!important;height:12px!important;margin:0!important;accent-color:#7c3aed!important;}
+    ${P} .ak-ai-ctx:has(input:checked){background:#7c3aed!important;border-color:#7c3aed!important;color:#fff!important;}
+    ${P} .ak-ai-ctx-preview{font:500 10.5px ${F}!important;color:#475569!important;}
+    ${P} .ak-ai-ctx-preview summary{cursor:pointer!important;font-weight:700!important;color:#6d28d9!important;}
+    ${P} .ak-ai-ctx-preview pre{white-space:pre-wrap!important;margin:3px 0 0!important;padding:5px!important;max-height:60px!important;overflow:auto!important;
+      background:#f1f5f9!important;border-radius:6px!important;font:500 10.5px/1.4 ${F}!important;color:#334155!important;}
+    ${P} .ak-ai-thumbs{display:flex!important;flex-wrap:wrap!important;gap:5px!important;}
+    ${P} .ak-ai-thumbs:empty{display:none!important;}
+    ${P} .ak-ai-thumb{position:relative!important;}
+    ${P} .ak-ai-thumb img{width:38px!important;height:38px!important;object-fit:cover!important;border-radius:6px!important;border:1px solid #cbd5e1!important;}
+    ${P} .ak-ai-thumb button{position:absolute!important;top:-5px!important;right:-5px!important;width:16px!important;height:16px!important;padding:0!important;
+      border:0!important;border-radius:999px!important;background:#b91c1c!important;color:#fff!important;font:700 11px/16px ${F}!important;cursor:pointer!important;}
+    ${P} .ak-ai-row{display:flex!important;align-items:flex-end!important;gap:5px!important;padding-left:8px!important;}
+    ${P} .ak-ai-input{flex:1!important;min-width:0!important;height:36px!important;min-height:32px!important;max-height:20vh!important;resize:vertical!important;padding:6px 8px!important;
+      border:1.5px solid #94a3b8!important;border-radius:9px!important;background:#fff!important;color:#0f172a!important;font:500 12.5px/1.4 ${F}!important;margin:0!important;}
+    ${P} .ak-ai-input:focus{outline:none!important;border-color:#7c3aed!important;box-shadow:0 0 0 2px rgba(124,58,237,.18)!important;}
+    ${P} .ak-ai-attach{flex:none!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;width:32px!important;height:36px!important;
+      border:1.5px solid #94a3b8!important;border-radius:9px!important;background:#fff!important;font:400 15px/1 ${F}!important;cursor:pointer!important;margin:0!important;}
+    ${P} .ak-ai-send{flex:none!important;width:40px!important;height:36px!important;border:0!important;border-radius:9px!important;background:#7c3aed!important;
+      color:#fff!important;font:800 15px/1 ${F}!important;cursor:pointer!important;padding:0!important;}
+    ${P} .ak-ai-send:disabled{background:#94a3b8!important;cursor:wait!important;}
+    ${P} .ak-ai-grip{position:absolute!important;left:0!important;bottom:0!important;width:16px!important;height:16px!important;cursor:nesw-resize!important;
+      touch-action:none!important;z-index:2!important;background:linear-gradient(45deg,transparent 0 30%,#94a3b8 30% 38%,transparent 38% 52%,#94a3b8 52% 60%,transparent 60%)!important;
+      transform:scaleX(-1)!important;}
+    @media (max-width:640px){${P} .ak-ai-input{font-size:16px!important;}}`;
+    (document.head || document.documentElement).appendChild(st);
+  }
+
+  function spAiRenderPanel() {
+    spAiCss();
+    const old = document.getElementById(SP_AI_PANEL_ID);
+    if (old) old.remove();
+    let notice = "";
+    const panel = document.createElement("div");
+    panel.id = SP_AI_PANEL_ID;
+    panel.innerHTML = `
+  <div class="ak-ai-head" title="Geser untuk memindahkan panel">
+    <div><div class="ak-ai-title">🧠 Tanya AI</div><div class="ak-ai-sub"></div></div>
+    <div class="ak-ai-head-btns">
+      <button type="button" class="ak-ai-iconbtn" data-act="min" title="Perkecil / buka">–</button>
+      <button type="button" class="ak-ai-iconbtn" data-act="new" title="Percakapan baru">＋</button>
+      <button type="button" class="ak-ai-iconbtn" data-act="settings" title="Pengaturan: API key & model">⚙</button>
+      <button type="button" class="ak-ai-iconbtn" data-act="close" title="Tutup">×</button>
+    </div>
+  </div>
+  <div class="ak-ai-settings" hidden>
+    <div class="ak-ai-set-title">API key Anthropic</div>
+    <div class="ak-ai-set-note">Buat di <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com → API Keys</a>, lalu tempel di sini. Disimpan di browser ini saja (dipakai juga oleh 🎙️ ASISTEN SUARA).</div>
+    <div class="ak-ai-set-row"><input type="password" class="ak-ai-key" placeholder="sk-ant-..." autocomplete="off" spellcheck="false"><button type="button" data-act="savekey">Simpan</button></div>
+    <div class="ak-ai-set-row ak-ai-key-status"></div>
+    <div class="ak-ai-set-title">Model (ganti model = percakapan baru)</div>
+    <div class="ak-ai-set-row"><select class="ak-ai-model">${SP_AI_MODELS.map((m) => `<option value="${m.id}">${escapeHtmlText(`${m.label} · ${m.hint}`)}</option>`).join("")}</select></div>
+  </div>
+  <div class="ak-ai-privacy">⚠ Dikirim ke AI di luar Smartplus. Jangan tulis nama/No. RM pasien; nama/No.RM/No.Reg/tanggal disamarkan otomatis.</div>
+  <div class="ak-ai-log" aria-live="polite"></div>
+  <div class="ak-ai-compose">
+    <div class="ak-ai-chips"><label class="ak-ai-ctx" title="Kirim isi form GADAR yang terbuka + umur & lab kunjungan ini (identitas disamarkan)"><input type="checkbox" class="ak-ai-ctx-check">📎 Baca data pasien</label>${SP_AI_QUICK.map(([l], i) => `<button type="button" data-chip="${i}">${escapeHtmlText(l)}</button>`).join("")}</div>
+    <details class="ak-ai-ctx-preview" hidden><summary>Lihat data yang dikirim (cek identitas sudah disamarkan)</summary><pre></pre></details>
+    <div class="ak-ai-thumbs"></div>
+    <div class="ak-ai-row">
+      <textarea class="ak-ai-input" rows="1" placeholder="Tulis pertanyaan…"></textarea>
+      <label class="ak-ai-attach" title="Lampirkan foto (lesi kulit, hasil lab, EKG, rontgen)">📷<input type="file" accept="image/*" multiple hidden></label>
+      <button type="button" class="ak-ai-send" data-act="send" title="Kirim (Ctrl+Enter)">➤</button>
+    </div>
+  </div>
+  <div class="ak-ai-grip" title="Tarik untuk mengubah ukuran"></div>`;
+    (document.body || document.documentElement).appendChild(panel);
+    spAiApplyBox(panel);
+
+    const $ = (sel) => panel.querySelector(sel);
+    const log = $(".ak-ai-log"), input = $(".ak-ai-input"), ctxCheck = $(".ak-ai-ctx-check"), ctxPreview = $(".ak-ai-ctx-preview");
+    const settings = $(".ak-ai-settings"), keyInput = $(".ak-ai-key"), keyStatus = $(".ak-ai-key-status"), sendBtn = $(".ak-ai-send"), thumbs = $(".ak-ai-thumbs");
+
+    // Tombol keyboard & fokus di panel tidak diteruskan ke halaman (modal GADAR merebut fokus).
+    panel.addEventListener("keydown", (ev) => ev.stopPropagation());
+    panel.addEventListener("focusin", (ev) => ev.stopPropagation());
+
+    const refreshKey = () => {
+      const k = spAsistenGetKey();
+      keyStatus.textContent = k ? `Tersimpan: ${spAiMaskKey(k)}` : "Belum ada API key.";
+      if (k) keyStatus.insertAdjacentHTML("beforeend", ' <button type="button" data-act="delkey">Hapus</button>');
+      if (!k) settings.hidden = false;
+    };
+    refreshKey();
+
+    const renderLog = () => {
+      log.innerHTML = spAiChat.view.length
+        ? spAiChat.view.map((m, i) => {
+          if (m.role === "user")
+            return `<div class="ak-ai-msg ak-ai-user">${m.images && m.images.length ? `<div class="ak-ai-msg-imgs">${m.images.map((u) => `<img src="${u}" alt="">`).join("")}</div>` : ""}${escapeHtmlText(m.text).replace(/\n/g, "<br>")}${m.withContext ? '<div class="ak-ai-tag">📎 data pasien disertakan</div>' : ""}${m.removed ? `<div class="ak-ai-tag">${m.removed} identitas disamarkan</div>` : ""}</div>`;
+          if (m.role === "error") return `<div class="ak-ai-msg ak-ai-error">${escapeHtmlText(m.text)}</div>`;
+          return `<div class="ak-ai-msg ak-ai-bot">${spAiMd(m.text)}${m.note ? `<div class="ak-ai-tag">${escapeHtmlText(m.note)}</div>` : ""}${m.meta ? `<div class="ak-ai-meta">${escapeHtmlText(m.meta)}</div>` : ""}<button type="button" class="ak-ai-copy" data-copy="${i}">Salin</button></div>`;
+        }).join("")
+        : `<div class="ak-ai-empty">${notice ? `<b>${escapeHtmlText(notice)}</b><br>` : ""}Tanyakan apa saja: diagnosis banding, dosis obat, interaksi, kriteria rawat/rujuk, edukasi pasien, atau kirim foto lesi/hasil lab/EKG.<br><br>Centang 📎 Baca data pasien agar AI ikut membaca form GADAR & lab pasien ini.</div>`;
+      if (spAiChat.busy) log.insertAdjacentHTML("beforeend", '<div class="ak-ai-msg ak-ai-bot ak-ai-wait">AI sedang berpikir…</div>');
+      log.scrollTop = log.scrollHeight;
+    };
+    renderLog();
+
+    const renderThumbs = () => {
+      thumbs.innerHTML = spAiChat.images.map((img, i) => `<span class="ak-ai-thumb"><img src="${img.url}" alt=""><button type="button" data-rmimg="${i}" title="Hapus">×</button></span>`).join("");
+    };
+    renderThumbs();
+    panel.__spRefresh = () => { sendBtn.disabled = spAiChat.busy; renderLog(); };
+    sendBtn.disabled = spAiChat.busy;
+    spAiEnableDrag(panel, $(".ak-ai-head"), $(".ak-ai-grip"));
+    // Ganti model = percakapan baru; pertanyaan terakhir dikembalikan ke kotak teks untuk dibandingkan.
+    const modelSelect = $(".ak-ai-model"), sub = $(".ak-ai-sub");
+    modelSelect.value = spAiGetModel();
+    sub.textContent = spAiModelInfo(modelSelect.value).label;
+    modelSelect.addEventListener("change", () => {
+      if (spAiChat.busy) { modelSelect.value = spAiGetModel(); return; }
+      spAiSetModel(modelSelect.value);
+      sub.textContent = spAiModelInfo(modelSelect.value).label;
+      if (spAiChat.messages.length && spAiChat.convModel && spAiChat.convModel !== modelSelect.value) {
+        const lastQ = (spAiChat.view.slice().reverse().find((m) => m.role === "user") || {}).text || "";
+        spAiChat.messages = [];
+        spAiChat.view = [];
+        notice = `Model diganti ke ${spAiModelInfo(modelSelect.value).label}: percakapan baru. Pertanyaan terakhir sudah dikembalikan, tekan Kirim untuk membandingkan jawabannya.`;
+        if (lastQ && !input.value.trim()) input.value = lastQ;
+        renderLog();
+      }
+    });
+
+    let ctxJob = null;
+    const updateCtxPreview = () => {
+      if (!ctxCheck.checked) { ctxPreview.hidden = true; return; }
+      ctxPreview.hidden = false;
+      const pre = ctxPreview.querySelector("pre");
+      pre.textContent = "Membaca data pasien…";
+      ctxJob = spAiPatientData();
+      ctxJob.then((c) => { if (ctxCheck.checked) pre.textContent = c || "(Belum ada data pasien yang terbaca di halaman ini.)"; });
+    };
+    ctxCheck.addEventListener("change", updateCtxPreview);
+
+    const send = async () => {
+      if (spAiChat.busy) return;
+      const raw = input.value.trim();
+      if (!raw && !spAiChat.images.length) { input.focus(); return; }
+      const kunci = spAsistenGetKey();
+      if (!kunci) { settings.hidden = false; keyInput.focus(); toast("Tempel API key Anthropic dulu (⚙ Pengaturan)."); return; }
+      const { text: question, removed } = spAsistenScrub(raw);
+      const images = spAiChat.images.slice();
+      spAiChat.images = [];
+      input.value = "";
+      ctxPreview.open = false;
+      renderThumbs();
+      spAiChat.busy = true;
+      sendBtn.disabled = true;
+      const withCtx = ctxCheck.checked;
+      spAiChat.view.push({ role: "user", text: question, withContext: withCtx, removed, images: images.map((i) => i.url) });
+      renderLog();
+      let pushed = false;
+      try {
+        const context = withCtx ? await (ctxJob || spAiPatientData()) : "";
+        spAiChat.messages.push({ role: "user", content: spAiUserContent(question, { context, images }) });
+        pushed = true;
+        const model = spAiGetModel();
+        spAiChat.convModel = model;
+        const res = await spAiAsk(spAiChat.messages, kunci, model);
+        if (!res.text) {
+          spAiChat.messages.pop(); // pertanyaan tidak terjawab: tidak disimpan di riwayat
+          spAiChat.view.push({ role: "error", text: res.refused ? "AI tidak mau menjawab pertanyaan ini (filter keamanan). Coba ubah kalimatnya." : "AI tidak memberi jawaban. Coba lagi." });
+        } else {
+          spAiChat.messages.push({ role: "assistant", content: res.content });
+          const cost = res.usage ? spAiCostUsd(model, res.usage) : null;
+          const served = (SP_AI_MODELS.find((m) => m.id === res.model) || spAiModelInfo(model)).label;
+          spAiChat.view.push({
+            role: "bot", text: res.text,
+            note: res.truncated ? "Jawaban terpotong karena terlalu panjang." : "",
+            meta: `${served}${cost != null ? ` · ±$${cost.toFixed(3)} (Rp ±${Math.round(cost * 16500).toLocaleString("id-ID")})` : ""}`
+          });
+        }
       } catch (err) {
-        throw new Error(err && err.name === "AbortError" ? "dihentikan." : "tidak bisa menghubungi Claude (internet mati atau diblokir jaringan RS).");
+        if (pushed) spAiChat.messages.pop();
+        spAiChat.view.push({ role: "error", text: (err && err.message) || String(err) });
+      } finally {
+        spAiChat.busy = false;
+        const cur = document.getElementById(SP_AI_PANEL_ID);
+        if (cur && cur.__spRefresh) cur.__spRefresh();
       }
     };
-    const errMsg = async (r) => { let d = null; try { d = await r.json(); } catch (_) {} return (d && d.error && d.error.message) || ("HTTP " + r.status); };
-    let r = await send();
-    if (r.status === 400 && body.fallbacks) {
-      const msg = await errMsg(r);
-      if (!/fallback|beta/i.test(msg)) throw new Error(msg);
-      delete body.fallbacks;
-      delete headers["anthropic-beta"];
-      r = await send();
-    }
-    if (!r.ok) {
-      const msg = await errMsg(r);
-      if (/workspace/i.test(msg) && !ws) throw new Error("kunci API ini tidak terikat workspace. Isi Workspace ID di ⚙️ panel 🎙️ ASISTEN SUARA.");
-      const why = { 401: "kunci API salah / dicabut", 403: "kunci API tidak diizinkan", 429: "terlalu banyak permintaan / batas belanja tercapai", 529: "server Claude sedang sibuk" }[r.status];
-      throw new Error((why ? why + " — " : "") + msg);
-    }
-    let res;
-    try { res = await spAiReadStream(r, onText); }
-    catch (err) { if (err && err.name === "AbortError") return { text: "", stop: "dihentikan" }; throw err; }
-    return res;
-  }
 
-  async function spAiSend() {
-    const panel = document.getElementById(SP_AI_PANEL_ID);
-    if (!panel || spAi.busy) return;
-    const ta = panel.querySelector(".sp-ai-input");
-    const raw = (ta.value || "").trim();
-    if (!raw) { ta.focus(); return; }
-    if (!spAsistenGetKey()) { spAiSettings(true); spAiStatus("Isi dulu kunci API Claude (sama dengan ASISTEN SUARA).", "#c62828"); return; }
-    const { text, removed } = spAsistenScrub(raw);
-    ta.value = "";
-    spAi.msgs.push({ role: "user", content: text });
-    const ans = { role: "assistant", content: "" };
-    spAi.msgs.push(ans);
-    spAi.busy = true;
-    spAiRender();
-    spAiBusyUi(true);
-    spAiStatus("🧠 Claude sedang berpikir…" + (removed ? ` (${removed} identitas disaring sebelum dikirim)` : ""));
-    const log = panel.querySelector(".sp-ai-log");
-    const last = () => log.lastElementChild;
-    let raf = 0;
-    try {
-      const res = await spAiAsk((t) => {
-        ans.content = t;
-        cancelAnimationFrame(raf);
-        raf = requestAnimationFrame(() => { const el = last(); if (el) { el.innerHTML = spAiMd(t); log.scrollTop = log.scrollHeight; } });
-      });
-      cancelAnimationFrame(raf);
-      ans.content = res.text || ans.content;
-      if (!ans.content) throw new Error(res.stop === "dihentikan" ? "dihentikan." : res.stop === "refusal" ? "Claude menolak pertanyaan ini. Coba kalimat lain." : "jawaban Claude kosong.");
-      spAiStatus(res.stop === "max_tokens" ? "Jawaban terpotong (terlalu panjang). Ketik \"lanjutkan\" untuk sisanya." : res.stop === "dihentikan" ? "Dihentikan." : "", res.stop === "max_tokens" ? "#e65100" : "");
-    } catch (err) {
-      // Pertanyaan yang gagal dikembalikan ke kotak ketik supaya bisa dikirim ulang.
-      if (!ans.content) { spAi.msgs.splice(-2, 2); ta.value = raw; }
-      spAiStatus("Gagal: " + (err && err.message ? err.message : err), "#c62828");
-    } finally {
-      spAi.busy = false;
-      spAi.ctrl = null;
-      spAiSave();
-      spAiRender();
-      spAiBusyUi(false);
-    }
-  }
-
-  function spAiBusyUi(busy) {
-    const b = document.querySelector(`#${SP_AI_PANEL_ID} [data-ai="send"]`);
-    if (!b) return;
-    b.textContent = busy ? "⏹ Stop" : "Kirim ➤";
-    b.style.background = busy ? "#d32f2f" : "#6a1b9a";
-  }
-
-  function spAiSettings(force) {
-    const box = document.querySelector(`#${SP_AI_PANEL_ID} .sp-ai-settings`);
-    if (!box) return;
-    const show = force === true || box.style.display === "none";
-    box.style.display = show ? "block" : "none";
-    if (!show) return;
-    const cur = spAsistenGetModel();
-    box.innerHTML = `<div style="font-weight:700;margin-bottom:4px">Setelan (sama dengan 🎙️ ASISTEN SUARA)</div>` +
-      `<input type="password" data-ai-key placeholder="${spAsistenGetKey() ? "Kunci API tersimpan — isi untuk mengganti" : "Kunci API Claude (sk-ant-…)"}" autocomplete="off" ` +
-      `style="width:100%;box-sizing:border-box;padding:6px;border:1px solid #b0bec5;border-radius:6px">` +
-      `<select data-ai-model style="width:100%;margin-top:6px;padding:6px;border:1px solid #b0bec5;border-radius:6px">` +
-      SP_AS_MODELS.map((m) => `<option value="${m[0]}"${m[0] === cur ? " selected" : ""}>${spAsistenEsc(m[1])}</option>`).join("") + `</select>` +
-      `<button type="button" data-ai="save-set" style="margin-top:6px;width:100%">Simpan setelan</button>` +
-      `<div style="font-size:11px;color:#546e7a;margin-top:6px">Kunci hanya disimpan di browser ini. Yang dikirim ke Claude hanya teks yang Dokter ketik di sini setelah nama/No.RM/No.Reg/tanggal disaring.</div>`;
-  }
-
-  function spAiSaveSettings() {
-    const panel = document.getElementById(SP_AI_PANEL_ID);
-    const k = panel.querySelector("[data-ai-key]");
-    const m = panel.querySelector("[data-ai-model]");
-    try {
-      if (k && k.value.trim()) localStorage.setItem(SP_AS_KEY_LS, k.value.trim());
-      if (m) localStorage.setItem(SP_AS_MODEL_LS, m.value);
-    } catch (_) {}
-    spAiSettings(false);
-    spAiStatus("Setelan disimpan.", "#2e7d32");
-  }
-
-  function spAiOpen() {
-    let panel = document.getElementById(SP_AI_PANEL_ID);
-    if (panel) {
-      panel.style.display = panel.style.display === "none" ? "flex" : "none";
-      if (panel.style.display !== "none") {
-        if (document.documentElement.lastElementChild !== panel) document.documentElement.appendChild(panel);
-        spKeepInView(panel);
-        panel.querySelector(".sp-ai-input").focus();
+    panel.addEventListener("click", async (ev) => {
+      const t = ev.target.closest("button");
+      if (!t || !panel.contains(t)) return;
+      ev.preventDefault();
+      const act = t.dataset.act;
+      if (act === "close") { panel.remove(); return; }
+      if (act === "min") { spAiChat.min = !spAiChat.min; spAiApplyBox(panel); return; }
+      if (act === "settings") { settings.hidden = !settings.hidden; return; }
+      if (act === "send") { send(); return; }
+      if (act === "new") {
+        if (spAiChat.busy) return;
+        spAiChat.messages = []; spAiChat.view = []; spAiChat.images = []; notice = "";
+        renderThumbs(); renderLog(); return;
       }
-      return;
-    }
-    panel = document.createElement("div");
-    panel.id = SP_AI_PANEL_ID;
-    panel.style.cssText = "position:fixed;right:72px;top:12px;z-index:2147483647;width:min(460px,calc(100vw - 84px));height:min(620px,calc(100vh - 24px));" +
-      "display:flex;flex-direction:column;box-sizing:border-box;background:#fff;color:#263238;border:1px solid #b0bec5;border-radius:12px;padding:10px 12px;" +
-      "box-shadow:0 8px 28px rgba(0,0,0,.28);font:13px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;overflow:hidden;";
-    const P = "#" + SP_AI_PANEL_ID;
-    panel.innerHTML =
-      `<style>${P} button{border:0;border-radius:8px;padding:7px 10px;color:#fff;background:#6a1b9a;font-weight:700;font-size:13px;line-height:1.2;cursor:pointer}` +
-      `${P} .sp-ai-mini{padding:3px 8px;font-size:11px;background:#90a4ae}` +
-      `${P} .sp-ai-log{flex:1;min-height:80px;overflow-y:auto;padding:2px 2px 6px}` +
-      `${P} .sp-ai-u{margin:6px 0 6px auto;max-width:85%;width:fit-content;background:#ede7f6;border-radius:10px 10px 2px 10px;padding:6px 9px;white-space:normal;word-wrap:break-word}` +
-      `${P} .sp-ai-a{margin:6px 0;background:#f5f7f8;border:1px solid #e0e6e9;border-radius:10px 10px 10px 2px;padding:7px 9px;word-wrap:break-word}` +
-      `${P} .sp-ai-a ul,${P} .sp-ai-a ol{margin:3px 0;padding-left:20px}${P} .sp-ai-a .sp-ai-h{font-weight:800;margin:6px 0 2px;color:#4a148c}` +
-      `${P} .sp-ai-a code{background:#eceff1;border-radius:4px;padding:0 3px}${P} .sp-ai-a pre{background:#eceff1;border-radius:6px;padding:6px;overflow-x:auto;white-space:pre-wrap}` +
-      `${P} .sp-ai-a table{border-collapse:collapse;margin:4px 0;font-size:12px;display:block;overflow-x:auto}${P} .sp-ai-a th,${P} .sp-ai-a td{border:1px solid #cfd8dc;padding:3px 5px;text-align:left;vertical-align:top}` +
-      `${P} .sp-ai-a th{background:#eceff1}${P} hr{border:0;border-top:1px solid #cfd8dc}` +
-      `@media (max-width:640px){${P}{font-size:14px!important}${P} button{min-height:40px;font-size:14px}${P} textarea{font-size:16px!important}}</style>` +
-      `<div class="sp-ai-head" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;cursor:move;touch-action:none" title="Tahan & geser untuk memindahkan kotak">` +
-      `<div style="font-weight:800;flex:1">🧠 TANYA AI <span style="font-weight:400;color:#78909c">(Claude)</span></div>` +
-      `<button type="button" data-ai="new" title="Mulai percakapan baru" style="background:#78909c">🗑 Baru</button>` +
-      `<button type="button" data-ai="settings" title="Setelan" style="background:#78909c">⚙️</button>` +
-      `<button type="button" data-ai="close" title="Tutup" style="background:#78909c">✕</button></div>` +
-      `<div class="sp-ai-settings" style="display:none;background:#eceff1;border-radius:8px;padding:8px;margin-bottom:8px"></div>` +
-      `<div class="sp-ai-log"></div>` +
-      `<div class="sp-ai-status" style="font-size:12px;min-height:0;margin:2px 0"></div>` +
-      `<div style="display:flex;gap:6px;align-items:flex-end">` +
-      `<textarea class="sp-ai-input" rows="2" placeholder="Ketik pertanyaan… (Enter = kirim, Shift+Enter = baris baru)" ` +
-      `style="flex:1;box-sizing:border-box;padding:7px;border:1px solid #b0bec5;border-radius:8px;font-size:13px;line-height:1.4;font-family:inherit;resize:vertical;max-height:40vh"></textarea>` +
-      `<button type="button" data-ai="send" style="min-height:40px">Kirim ➤</button></div>`;
-    (document.body || document.documentElement).appendChild(panel);
-    spMakeDraggable(panel, SP_AI_PANEL_ID, (t) => !!t.closest(".sp-ai-head"));
-    spPanelFit(panel, SP_AI_PANEL_ID);
-    // Modal GADAR (Bootstrap) merebut fokus: focusin dari panel tidak diteruskan supaya kotak tetap bisa diketik.
-    panel.addEventListener("focusin", (e) => e.stopPropagation());
-    const ta = panel.querySelector(".sp-ai-input");
-    ta.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey && !e.isComposing && !spIsTouchSmall()) { e.preventDefault(); spAiSend(); }
+      if (act === "savekey") {
+        const k = keyInput.value.trim();
+        if (!/^sk-ant-/.test(k)) { toast("API key Anthropic diawali sk-ant-…"); return; }
+        spAiSetKey(k); keyInput.value = ""; refreshKey(); settings.hidden = true; toast("API key tersimpan."); return;
+      }
+      if (act === "delkey") { spAiSetKey(""); refreshKey(); return; }
+      if (t.dataset.chip != null) { input.value = SP_AI_QUICK[Number(t.dataset.chip)][1]; input.focus(); return; }
+      if (t.dataset.rmimg != null) { spAiChat.images.splice(Number(t.dataset.rmimg), 1); renderThumbs(); return; }
+      if (t.dataset.copy != null) {
+        const m = spAiChat.view[Number(t.dataset.copy)];
+        try { await navigator.clipboard.writeText((m && m.text) || ""); toast("Jawaban disalin."); }
+        catch (_) { toast("Tidak bisa menyalin otomatis. Blok teksnya lalu salin manual."); }
+      }
     });
-    panel.addEventListener("click", (e) => {
-      const b = e.target.closest("button");
-      if (!b || !panel.contains(b)) return;
-      e.preventDefault();
-      e.stopPropagation();
-      const act = b.dataset.ai;
-      if (b.dataset.aiCopy !== undefined) {
-        const m = spAi.msgs[+b.dataset.aiCopy];
-        if (m) {
-          const done = () => { b.textContent = "✓ Tersalin"; setTimeout(() => { b.textContent = "📋 Salin"; }, 1500); };
-          try { navigator.clipboard.writeText(m.content).then(done, () => window.prompt("Salin teks:", m.content)); } catch (_) { window.prompt("Salin teks:", m.content); }
-        }
-      } else if (act === "send") {
-        if (spAi.busy) { if (spAi.ctrl) spAi.ctrl.abort(); } else spAiSend();
-      } else if (act === "new") {
-        if (spAi.busy) return;
-        if (spAi.msgs.length && !window.confirm("Mulai percakapan baru? Percakapan ini dihapus.")) return;
-        spAi.msgs = [];
-        spAiSave();
-        spAiRender();
-        spAiStatus("");
-        ta.focus();
-      } else if (act === "settings") spAiSettings();
-      else if (act === "save-set") spAiSaveSettings();
-      else if (act === "close") panel.style.display = "none";
-    }, true);
-    spAiRender();
-    if (!spAsistenGetKey()) { spAiSettings(true); spAiStatus("Isi kunci API Claude sekali (dipakai juga oleh 🎙️ ASISTEN SUARA)."); }
-    ta.focus();
+
+    $(".ak-ai-attach input").addEventListener("change", async (ev) => {
+      const files = [...(ev.target.files || [])];
+      ev.target.value = "";
+      for (const f of files) {
+        if (spAiChat.images.length >= SP_AI_MAX_IMAGES) { toast(`Paling banyak ${SP_AI_MAX_IMAGES} foto per pertanyaan.`); break; }
+        try { spAiChat.images.push(await spAiReadImage(f)); } catch (e) { toast(e.message); }
+      }
+      renderThumbs();
+    });
+
+    input.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter" && (ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); send(); }
+    });
+    if (spAsistenGetKey()) input.focus();
+  }
+
+  // Tombol 🧠: buka / tutup panel (panel yang diperkecil dibuka lagi) — sama dengan AUTO KLINIK.
+  function spAiOpen() {
+    const open = document.getElementById(SP_AI_PANEL_ID);
+    if (open && spAiChat.min) { spAiChat.min = false; spAiApplyBox(open); return; }
+    if (open) { open.remove(); return; }
+    try { spAiRenderPanel(); } catch (e) { toast(`Tanya AI: ${(e && e.message) || e}`); }
   }
 
   function spEnsureTanyaAiButton() {
     if (document.getElementById(SP_AI_BTN_ID)) return;
+    spAiCss();
     const b = document.createElement("button");
     b.id = SP_AI_BTN_ID;
     b.type = "button";
-    b.title = "TANYA AI: tanya jawab klinis bebas dengan Claude (seperti Claude chat). Hanya menjawab, tidak mengisi/menyimpan form.";
+    b.title = "Tanya AI";
+    b.setAttribute("aria-label", "Tanya AI");
     b.textContent = "🧠";
-    b.style.cssText = "position:fixed;right:242px;bottom:80px;z-index:2147483647;border:0;border-radius:22px;" +
-      "min-width:44px;height:44px;padding:0 12px;color:#fff;background:#4527a0;font:700 18px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;" +
-      "box-shadow:0 4px 12px rgba(0,0,0,.25);cursor:pointer;";
+    b.style.cssText = "position:fixed;right:242px;bottom:80px;z-index:2147483647;";
     b.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); spAiOpen(); }, true);
     (document.body || document.documentElement).appendChild(b);
     spPlaceFloatButtons();
