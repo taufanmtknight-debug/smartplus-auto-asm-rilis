@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.102.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.103.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.102.0
-// @description  v3.102.0 (permintaan dokter 15 Okt 2026): 🧠 TANYA AI kini SAMA fungsi, bentuk & warnanya dengan Tanya AI di AUTO KLINIK — panel ungu-gelap kecil (±317 px, 30% tinggi layar) yang bisa digeser, diubah ukurannya dari sudut kiri bawah, diperkecil (–) dan diingat posisinya; pilihan model (Opus/Sonnet/Haiku, bawaan Haiku) + perkiraan biaya tiap jawaban; tombol cepat Diagnosis banding / Terapi & dosis / Kapan rujuk / Edukasi pasien; 📎 Baca data pasien (isi form GADAR + umur & lab kunjungan ini, identitas disamarkan, bisa dilihat dulu); 📷 lampiran foto (lesi, lab, EKG); Ctrl+Enter kirim; ＋ percakapan baru; Salin. Tombol 🧠 ungu bulat seperti AUTO KLINIK. Kunci API sama dengan 🎙️ ASISTEN SUARA. Hanya menjawab: tidak mengisi atau menyimpan form.
+// @version      3.103.0
+// @description  v3.103.0 (permintaan dokter 15 Okt 2026): 🧠 TANYA AI 📎 Baca data pasien kini membaca SEMUA data pasien, bukan hanya form GADAR — IGD: form GADAR yang terbuka, Assesment GADAR tersimpan, CPPT, hasil lab, ekspertise radiologi, e-resep kunjungan ini, riwayat poli spesialis; rawat inap: ringkasan rawat inap (S/O/A/P saat ini & saat masuk IGD, terapi berjalan, advis spesialis), CPPT terbaru, lab, radiologi. Hanya dibaca (GET), nama pasien/No.RM/No.Reg disamarkan, tanggal ditulis tanpa tahun; isi yang dikirim bisa dilihat dulu. Tombol cepat baru "SOAP lengkap" mencentang 📎 otomatis dan meminta Claude merangkum semuanya menjadi SOAP lengkap siap salin. Tetap hanya menjawab: tidak mengisi atau menyimpan form.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.102.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.102.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.103.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.103.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -13257,7 +13257,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.102.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.103.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -13287,7 +13287,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
         </button>
 
         <div class="sp-note">
-          Resep dari KOMBINASI masuk sebagai draft — review lalu Simpan manual. Pintasan keyboard: Alt + A.<br>🎙️ Asisten suara (uji coba): tombol 🎙️ atau Alt + Q — visit banyak pasien (🏥 Multiple visit) atau rekam anamnesa IGD (👥 Percakapan); Claude menyiapkan isian, dokter cek lalu Simpan.<br>🧠 Tanya AI: tombol 🧠 — tanya jawab klinis dengan Claude seperti di AUTO KLINIK (model, 📎 data pasien tersamar, 📷 foto); hanya menjawab, tidak mengisi form.
+          Resep dari KOMBINASI masuk sebagai draft — review lalu Simpan manual. Pintasan keyboard: Alt + A.<br>🎙️ Asisten suara (uji coba): tombol 🎙️ atau Alt + Q — visit banyak pasien (🏥 Multiple visit) atau rekam anamnesa IGD (👥 Percakapan); Claude menyiapkan isian, dokter cek lalu Simpan.<br>🧠 Tanya AI: tombol 🧠 — tanya jawab klinis dengan Claude seperti di AUTO KLINIK (model, 📎 semua data pasien tersamar, SOAP lengkap, 📷 foto); hanya menjawab, tidak mengisi form.
         </div>
       `;
     }
@@ -16338,7 +16338,9 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     ["Diagnosis banding", "Apa diagnosis banding untuk pasien ini, dan pemeriksaan apa yang membedakannya?"],
     ["Terapi & dosis", "Apa terapi yang dianjurkan di IGD beserta dosisnya untuk pasien ini?"],
     ["Kapan rujuk", "Apa tanda bahaya dan kriteria rawat inap / ICU / rujuk untuk kasus ini?"],
-    ["Edukasi pasien", "Buatkan edukasi singkat untuk pasien dalam bahasa awam."]
+    ["Edukasi pasien", "Buatkan edukasi singkat untuk pasien dalam bahasa awam."],
+    // v3.103.0: rangkum semua data pasien (📎 otomatis dicentang) menjadi SOAP lengkap.
+    ["SOAP lengkap", "Rangkum semua data pasien di atas menjadi SOAP lengkap siap salin: S (keluhan utama, RPS, RPD, riwayat obat, alergi), O (KU, kesadaran, TTV, pemeriksaan fisik per sistem, lab & radiologi yang relevan dengan nilai abnormal), A (diagnosis kerja + banding, dengan ICD-10 bila jelas), P (terapi yang sedang berjalan + rencana/tindak lanjut). Pakai hanya data yang ada; tulis 'belum ada data' bila kosong, jangan mengarang."]
   ];
   const spAiModelInfo = (id) => SP_AI_MODELS.find((m) => m.id === id) || SP_AI_MODELS.find((m) => m.id === SP_AI_MODEL);
 
@@ -16490,9 +16492,92 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     });
   }
 
-  // 📎 Baca data pasien: isi form GADAR yang terbuka + umur & lab kunjungan ini; semua lewat penyaring identitas.
+  // 📎 Baca data pasien (v3.103.0, permintaan dokter: "membaca semua tab data pasien" lalu bisa dirangkum jadi SOAP lengkap).
+  // Hanya GET (tidak mengubah apa pun), dari sumber yang sama dengan fitur AUTO ASM lain:
+  //  IGD     : form GADAR yang sedang terbuka, Assesment GADAR tersimpan kunjungan ini, CPPT, hasil lab, ekspertise radiologi,
+  //            e-resep kunjungan ini, riwayat poli spesialis.
+  //  Ranap   : ringkasan rawat inap (data PAKET KONSUL RANAP: S/O/A/P saat ini & saat masuk, terapi berjalan, advis spesialis),
+  //            CPPT terbaru, hasil lab, ekspertise radiologi.
+  // Nama pasien (dari judul halaman) diganti [nama pasien], lalu semua teks lewat spAsistenScrub (No.RM/No.Reg/tanggal lahir…).
+  const SP_AI_CTX_MAX = 14000;
+  const SP_AI_KES = { 1: "Compos mentis", 2: "Apatis", 3: "Somnolen", 4: "Sopor", 5: "Koma" };
+  function spAiPageKind(path = location.pathname) {
+    if (/soap_igd\/pasien_detail\//i.test(path)) return "igd";
+    if (/erm_ranap\/main_content\//i.test(path)) return "ranap";
+    return "";
+  }
+  // Data Assesment GADAR (JSON soap_gadar_edit) -> baris berlabel (fungsi murni, diuji).
+  function spAiGadarText(g) {
+    if (!g) return "";
+    const L = [];
+    SP_AS_FIELDS.forEach((f) => {
+      let v = g[f.key];
+      if (f.key === "kesadaran") v = SP_AI_KES[String(v || "").trim()] || v;
+      v = String(v == null ? "" : v).replace(/\r/g, "").trim();
+      if (!v || /^(null|undefined|-)$/i.test(v)) return;
+      L.push(/\n/.test(v) ? `- ${f.label}:\n${v.split("\n").map((x) => "  " + x.trim()).filter((x) => x.trim()).join("\n")}` : `- ${f.label}: ${v}`);
+    });
+    return L.join("\n");
+  }
+  // Baris CPPT (spParseCpptViewer) -> teks ringkas tanpa nama PPA (fungsi murni, diuji).
+  function spAiCpptText(rows, max = 6) {
+    return (rows || []).slice(0, max).map((r) => {
+      const who = r.isDoctor ? (spSpecialty(r.ppa) || "Dokter") : "Perawat/PPA lain";
+      const sec = [["S", r.sText || r.keluhan], ["O", r.oText], ["A", r.diagnosis], ["P", r.pText], ["Instruksi", r.instruksi]]
+        .map(([k, t]) => [k, String(t || "").replace(/\s*\n\s*/g, "; ").trim()]).filter(([, t]) => t)
+        .map(([k, t]) => `  ${k}: ${t.length > 700 ? t.slice(0, 700) + " …" : t}`);
+      const obat = (r.obat || []).map((o) => [o.nama, o.dosis, o.frek].filter(Boolean).join(" ")).filter(Boolean);
+      if (obat.length) sec.push(`  e-Resep: ${obat.slice(0, 15).join("; ")}`);
+      return sec.length ? `- ${r.timeText} ${r.type} (${who}):\n${sec.join("\n")}` : "";
+    }).filter(Boolean).join("\n");
+  }
+  // Nama pasien dari judul halaman ("Data Pasien : NAMA, Tn / RM / REG ...").
+  function spAiPatientName() {
+    const t = (document.body && (document.body.innerText || document.body.textContent)) || "";
+    const m = t.match(/Data Pasien\s*:\s*([^/\n]+?)\s*\//i);
+    return m ? m[1].replace(/,\s*(Tn|Ny|Nn|An|By|Sdr|Sdri)\.?\s*$/i, "").trim() : "";
+  }
+  function spAiMaskName(text, name) {
+    let out = String(text || "");
+    const words = String(name || "").split(/[\s,]+/).filter((w) => w.length >= 3 && !/\d/.test(w));
+    if (name && name.length >= 3) out = out.split(name).join("[nama pasien]");
+    words.forEach((w) => { out = out.replace(new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "gi"), "[nama pasien]"); });
+    return out;
+  }
+  async function spAiRadText(base, noreg, max = 3) {
+    const entries = (await spFetchRadEntries(base, noreg)).sort((a, b) => String(b.sortKey).localeCompare(String(a.sortKey))).slice(0, max);
+    const out = await Promise.all(entries.map(async (e) => {
+      try {
+        const h = await spFetch(`${base}/hasil_rad/hasil_rad/inner_hasil_rad_detail/${encodeURIComponent(e.noreg)}/${encodeURIComponent(e.idTrx)}`, { credentials: "same-origin" }).then((r) => r.text());
+        const x = spParseRadExpertise(h);
+        return x.lines.length ? `- ${e.dateText} ${e.exam}:\n${x.lines.map((l) => "  " + l).join("\n")}` : "";
+      } catch (_) { return ""; }
+    }));
+    return out.filter(Boolean).join("\n");
+  }
+  async function spAiResepText(base, noreg, max = 6) {
+    const rr = new DOMParser().parseFromString(await spFetch(`${base}/soap_eresep/riwayat_resep/${encodeURIComponent(noreg)}`, { credentials: "same-origin" }).then((r) => r.text()), "text/html");
+    const list = [];
+    for (const a of rr.querySelectorAll('[onclick*="load_resep_detail"]')) {
+      const c = [...((a.closest("tr") || {}).cells || [])].map((x) => x.textContent.replace(/\s+/g, " ").trim());
+      const id = ((a.getAttribute("onclick") || "").match(/'(\d+)'/) || [])[1];
+      if (id) list.push({ id, when: c[0] || a.textContent.trim(), unit: c[1] || "" });
+    }
+    const det = await Promise.all(list.slice(0, max).map(async (r) => {
+      const d = new DOMParser().parseFromString(await spFetch(`${base}/soap_eresep/inner_resep_detail/${r.id}`, { credentials: "same-origin" }).then((x) => x.text()).catch(() => ""), "text/html");
+      const items = [...d.querySelectorAll("tr")].map((tr) => [...tr.querySelectorAll("td")].map((x) => x.textContent.replace(/\s+/g, " ").trim()))
+        .filter((c) => c.length >= 4 && c[0]).map((c) => [c[0], c[3], c[4]].filter((x) => x && x !== "-").join(" "));
+      return items.length ? `- ${r.when}${r.unit ? " " + r.unit : ""}: ${items.join("; ")}` : "";
+    }));
+    return det.filter(Boolean).join("\n");
+  }
+  // Kumpulkan semua bagian; tiap sumber dibatasi waktu & gagal diam-diam. Hasil: { text, parts: [judul…] }.
   async function spAiPatientData() {
-    const parts = [];
+    const kind = spAiPageKind();
+    const base = smartplusBaseUrl();
+    const timed = (p, ms = 15000) => Promise.race([Promise.resolve().then(() => p).catch(() => ""), recipeSleep(ms).then(() => "")]);
+    const sec = [];
+    const add = (title, body) => { const t = String(body || "").trim(); if (t) sec.push([title, t]); };
     try {
       const root = spAsistenFormRoot();
       if (root) {
@@ -16502,14 +16587,45 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
           const v = el ? String(el.value || "").replace(/\s+/g, " ").trim() : "";
           if (v) L.push(`- ${f.label}: ${v}`);
         });
-        if (L.length) parts.push("Form Assesment GADAR yang terbuka:\n" + L.join("\n"));
+        add("Form Assesment GADAR yang sedang terbuka (belum tentu tersimpan)", L.join("\n"));
       }
     } catch (_) {}
-    try {
-      const c = await Promise.race([spAsistenGadarContext(), recipeSleep(8000).then(() => "")]);
-      if (c) parts.push(c);
-    } catch (_) {}
-    return parts.length ? spAsistenScrub(parts.join("\n\n")).text : "";
+    try { const age = String(getPatientAgeDisplay() || "").replace(/\s+/g, " ").replace(/(Thn.*)\s+Thn$/i, "$1").trim(); if (age) add("Umur", age); } catch (_) {}
+    if (kind === "igd") {
+      const noreg = getCurrentIgdNoreg();
+      const [g, cppt, lab, rad, resep, poli] = await Promise.all([
+        timed(getLatestGadarData()),
+        timed(spFetch(`${base}/nurse_station/eranap/cppt_viewer/${encodeURIComponent(noreg)}`, { credentials: "same-origin" }).then((r) => r.ok ? r.text() : "").then((h) => spAiCpptText(spParseCpptViewer(h)))),
+        timed(spAsistenLabContext(base, noreg)),
+        timed(spAiRadText(base, noreg)),
+        timed(spAiResepText(base, noreg)),
+        timed(spBuildRiwayatPoliLines().then((x) => (x.lines || []).join("\n")))
+      ]);
+      add(`Assesment GADAR tersimpan kunjungan ini${g && g.data && g.data.gadar_date ? " (" + g.data.gadar_date + ")" : ""}`, g ? spAiGadarText(g.data) : "");
+      add("CPPT kunjungan ini (terbaru dulu)", cppt);
+      add("Hasil laboratorium ('!' = abnormal)", lab);
+      add("Hasil radiologi (ekspertise)", rad);
+      add("e-Resep kunjungan ini", resep);
+      add("Riwayat poli spesialis (dx & terapi terakhir)", poli);
+    } else if (kind === "ranap") {
+      const ctx = spRanapContext();
+      const [k, cppt, lab, rad] = await Promise.all([
+        timed(spBuildKonsulRanap({ ...ctx, noShots: true }), 25000),
+        timed(spFetch(`${base}/nurse_station/eranap/cppt_viewer/${encodeURIComponent(ctx.noreg)}`, { credentials: "same-origin" }).then((r) => r.text()).then((h) => spAiCpptText(spParseCpptViewer(h)))),
+        timed(spAsistenLabContext(base, ctx.noreg)),
+        timed(spAiRadText(base, ctx.noreg))
+      ]);
+      add("Ringkasan rawat inap (S/O/A/P saat ini & saat masuk, terapi berjalan, advis spesialis)", k ? spVisitContextText(k.text, k.notes, "", 6000) : "");
+      add("CPPT terbaru (semua PPA, terbaru dulu)", cppt);
+      add("Hasil laboratorium ('!' = abnormal)", lab);
+      add("Hasil radiologi (ekspertise)", rad);
+    }
+    let text = sec.map(([t, b]) => `## ${t}\n${b}`).join("\n\n");
+    // Tanggal kejadian 20xx ditulis tanpa tahun (urutan waktu tetap terbaca; penyaring menghapus tanggal lengkap).
+    text = text.replace(/\b(\d{1,2})[-/.](\d{1,2})[-/.]20\d{2}\b/g, "$1-$2").replace(/\b20\d{2}-(\d{2})-(\d{2})\b/g, "$2-$1");
+    text = spAsistenScrub(spAiMaskName(text, spAiPatientName())).text;
+    if (text.length > SP_AI_CTX_MAX) text = text.slice(0, SP_AI_CTX_MAX) + "\n[… dipotong]";
+    return text;
   }
 
   // Percakapan disimpan di memori saja (hilang saat halaman dimuat ulang) — sama dengan AUTO KLINIK.
@@ -16701,7 +16817,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
   <div class="ak-ai-privacy">⚠ Dikirim ke AI di luar Smartplus. Jangan tulis nama/No. RM pasien; nama/No.RM/No.Reg/tanggal disamarkan otomatis.</div>
   <div class="ak-ai-log" aria-live="polite"></div>
   <div class="ak-ai-compose">
-    <div class="ak-ai-chips"><label class="ak-ai-ctx" title="Kirim isi form GADAR yang terbuka + umur & lab kunjungan ini (identitas disamarkan)"><input type="checkbox" class="ak-ai-ctx-check">📎 Baca data pasien</label>${SP_AI_QUICK.map(([l], i) => `<button type="button" data-chip="${i}">${escapeHtmlText(l)}</button>`).join("")}</div>
+    <div class="ak-ai-chips"><label class="ak-ai-ctx" title="Kirim semua data pasien ini: GADAR, CPPT, lab, radiologi, e-resep, riwayat poli / ringkasan rawat inap (identitas disamarkan)"><input type="checkbox" class="ak-ai-ctx-check">📎 Baca data pasien</label>${SP_AI_QUICK.map(([l], i) => `<button type="button" data-chip="${i}">${escapeHtmlText(l)}</button>`).join("")}</div>
     <details class="ak-ai-ctx-preview" hidden><summary>Lihat data yang dikirim (cek identitas sudah disamarkan)</summary><pre></pre></details>
     <div class="ak-ai-thumbs"></div>
     <div class="ak-ai-row">
@@ -16738,7 +16854,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
           if (m.role === "error") return `<div class="ak-ai-msg ak-ai-error">${escapeHtmlText(m.text)}</div>`;
           return `<div class="ak-ai-msg ak-ai-bot">${spAiMd(m.text)}${m.note ? `<div class="ak-ai-tag">${escapeHtmlText(m.note)}</div>` : ""}${m.meta ? `<div class="ak-ai-meta">${escapeHtmlText(m.meta)}</div>` : ""}<button type="button" class="ak-ai-copy" data-copy="${i}">Salin</button></div>`;
         }).join("")
-        : `<div class="ak-ai-empty">${notice ? `<b>${escapeHtmlText(notice)}</b><br>` : ""}Tanyakan apa saja: diagnosis banding, dosis obat, interaksi, kriteria rawat/rujuk, edukasi pasien, atau kirim foto lesi/hasil lab/EKG.<br><br>Centang 📎 Baca data pasien agar AI ikut membaca form GADAR & lab pasien ini.</div>`;
+        : `<div class="ak-ai-empty">${notice ? `<b>${escapeHtmlText(notice)}</b><br>` : ""}Tanyakan apa saja: diagnosis banding, dosis obat, interaksi, kriteria rawat/rujuk, edukasi pasien, atau kirim foto lesi/hasil lab/EKG.<br><br>Centang 📎 Baca data pasien agar AI ikut membaca semua data pasien ini (GADAR, CPPT, lab, radiologi, resep). Tombol SOAP lengkap merangkumnya menjadi SOAP.</div>`;
       if (spAiChat.busy) log.insertAdjacentHTML("beforeend", '<div class="ak-ai-msg ak-ai-bot ak-ai-wait">AI sedang berpikir…</div>');
       log.scrollTop = log.scrollHeight;
     };
@@ -16769,13 +16885,14 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       }
     });
 
-    let ctxJob = null;
+    let ctxJob = null, ctxAt = 0;
     const updateCtxPreview = () => {
       if (!ctxCheck.checked) { ctxPreview.hidden = true; return; }
       ctxPreview.hidden = false;
       const pre = ctxPreview.querySelector("pre");
       pre.textContent = "Membaca data pasien…";
       ctxJob = spAiPatientData();
+      ctxAt = Date.now();
       ctxJob.then((c) => { if (ctxCheck.checked) pre.textContent = c || "(Belum ada data pasien yang terbaca di halaman ini.)"; });
     };
     ctxCheck.addEventListener("change", updateCtxPreview);
@@ -16799,7 +16916,9 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       renderLog();
       let pushed = false;
       try {
-        const context = withCtx ? await (ctxJob || spAiPatientData()) : "";
+        // Data dibaca ulang bila pratinjau sudah lebih dari 1 menit (form/CPPT bisa berubah).
+        if (withCtx && (!ctxJob || Date.now() - ctxAt > 60000)) { ctxJob = spAiPatientData(); ctxAt = Date.now(); }
+        const context = withCtx ? await ctxJob : "";
         spAiChat.messages.push({ role: "user", content: spAiUserContent(question, { context, images }) });
         pushed = true;
         const model = spAiGetModel();
@@ -16848,7 +16967,13 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
         spAiSetKey(k); keyInput.value = ""; refreshKey(); settings.hidden = true; toast("API key tersimpan."); return;
       }
       if (act === "delkey") { spAiSetKey(""); refreshKey(); return; }
-      if (t.dataset.chip != null) { input.value = SP_AI_QUICK[Number(t.dataset.chip)][1]; input.focus(); return; }
+      if (t.dataset.chip != null) {
+        const q = SP_AI_QUICK[Number(t.dataset.chip)];
+        input.value = q[1];
+        if (q[0] === "SOAP lengkap" && !ctxCheck.checked) { ctxCheck.checked = true; updateCtxPreview(); }
+        input.focus();
+        return;
+      }
       if (t.dataset.rmimg != null) { spAiChat.images.splice(Number(t.dataset.rmimg), 1); renderThumbs(); return; }
       if (t.dataset.copy != null) {
         const m = spAiChat.view[Number(t.dataset.copy)];
