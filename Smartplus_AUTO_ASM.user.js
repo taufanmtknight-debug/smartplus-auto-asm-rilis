@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.106.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.107.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.106.0
-// @description  v3.106.0 (dokter 17 Okt 2026): puyer Bapil Anak BB 5–10 kg tidak lagi hanya dexamethason — CTM 1 tab/10 bks ditambahkan bila usia ≥1 tahun, Ambroxol 1 tab/10 bks bila BB ≥5,7 kg (tetap ≤0,35 mg/kg/hari CTM dan ≤1,6 mg/kg/hari ambroxol); Radang/Bengkak Anak 5–10 kg ditambah CTM bila usia ≥1 tahun. Berlaku di resep keluhan & KOMBINASI RESEP (BB & usia pasien terbaca).
+// @version      3.107.0
+// @description  v3.107.0 (dokter 17 Okt 2026): KOMBINASI RESEP ditambah obat rawat jalan IGD — dewasa: Na diklofenak 50, as. mefenamat, eperisone, spasminal, metoclopramide, lansoprazole, sukralfat tab, acetylcysteine, Sanadryl DMP, methylprednisolon 8, levofloxacin, ciprofloxacin, metronidazol, acyclovir 5x800 mg (herpes zoster); anak: Sanmol drop bayi, Sanadryl ≥6 th, puyer ondansetron, puyer methylprednisolon asma, amoxicillin dosis tinggi, puyer acyclovir varisela 20 mg/kgBB 4x (dosis per kgBB dibulatkan ke bawah); paket DM rawat jalan per GDS (>200/>250 Metformin 2x1, >300/>350 Metformin 3x1 + Glimepiride 1 mg pagi, dipilih otomatis dari angka GDS); AUTO SOAP/PAKET KONSUL dewasa dengan DM atau gula ≥200 (form/lab terbaru) menambah "Cek KGDH sebelum makan, insulin SS kelipatan 5 unit sc" di Rencana.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.106.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.106.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.107.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.107.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -1459,9 +1459,34 @@
         ["CAPTOPRIL12", "Lain-lain", "Captopril 12,5 mg", "CAPTOPRIL TAB 12.5MG*", "10", "12,5 mg", "2x1", "", ["HIPERTENSI"], { cls: "chronic", notWith: ["AMLODIPINE"] }],
         ["METFORMIN", "Lain-lain", "Metformin 500 mg", "METFORMIN 500 MG TAB*", "10", "500 mg", "2x1", "", ["DM"], { cls: "chronic" }],
         ["GLIMEPIRIDE", "Lain-lain", "Glimepiride 1 mg", "GLIMEPIRIDE 1 MG TAB*", "10", "1 mg", "1x1", "", ["DM"], { cls: "chronic", notWith: ["METFORMIN"] }],
-        ["TRANEKSAMAT", "Lain-lain", "Asam traneksamat 500 mg", "ASAM TRANEKSAMAT 500 MG TAB*", "10", "500 mg", "3x1", "", ["PERDARAHAN"]]
+        ["TRANEKSAMAT", "Lain-lain", "Asam traneksamat 500 mg", "ASAM TRANEKSAMAT 500 MG TAB*", "10", "500 mg", "3x1", "", ["PERDARAHAN"]],
+        // v3.107.0 (usulan obat rawat jalan IGD C1–C16, disetujui dokter 17 Okt 2026; tamsulosin & salbutamol tidak dipakai).
+        // Nama = master Smartplus (autocomplete obat, lihat tests/README.md v3.38). Dokter 5 Okt 2026 sempat menolak beberapa obat ini;
+        // 17 Okt 2026 dokter menyetujui daftar C (keputusan terbaru).
+        ["DIKLOFENAK50", "Demam & Nyeri", "Natrium diklofenak 50 mg", "NATRIUM DIKLOFENAC 50 MG TAB*", "6", "50 mg", "2x1", "sesudah makan", ["NYERI_OTOT"], { notWith: ["DIKLOFENAK", "KETOROLAC", "IBUPROFEN"] }],
+        ["ASAM_MEFENAMAT", "Demam & Nyeri", "Asam mefenamat 500 mg", "ASAM MEFENAMAT 500 MG TAB*", "6", "500 mg", "3x1", "sesudah makan", ["NYERI"], { notWith: ["KETOROLAC", "IBUPROFEN"] }],
+        ["EPERISONE", "Demam & Nyeri", "Eperisone 50 mg", "EPERISONE TAB*", "6", "50 mg", "3x1", "sesudah makan", ["NYERI_OTOT"]],
+        ["SPASMINAL", "Saluran cerna", "Spasminal (kolik, dismenore)", "SPASMINAL TABLET", "6", "1 tablet", "3x1", "", ["NYERI"]],
+        ["METOCLOPRAMIDE", "Saluran cerna", "Metoclopramide 10 mg", "METOCLOPRAMIDE TABLET*", "6", "10 mg", "3x1", "sebelum makan, maks 5 hari", ["MUAL_MUNTAH"], { notWith: ["DOMPERIDON", "ONDANSETRON"] }],
+        ["LANSOPRAZOLE", "Saluran cerna", "Lansoprazole 30 mg", "LANSOPRAZOLE CAPS HEXPHARM* (ISI 100)", "6", "30 mg", "1x1", "sebelum makan", ["GERD"], { notWith: ["OMEPRAZOLE"] }],
+        ["SUKRALFAT_TAB", "Saluran cerna", "Sukralfat tablet 500 mg", "SUKRALFAT TAB", "6", "1 g (2 tablet)", "3x1", "sebelum makan", ["ULKUS"], { notWith: ["SUKRALFAT"] }],
+        ["NAC", "Batuk, pilek & alergi", "Acetylcysteine 200 mg", "ACETYLCYSTEINE KAPSUL 200 MG*", "6", "200 mg", "3x1", "", ["BATUK_PILEK"], { notWith: ["AMBROXOL"] }],
+        ["SANADRYL", "Batuk, pilek & alergi", "Sanadryl DMP sirup (batuk kering)", "SANADRYL DMP 60 ML SYRUP", "1", "10 ml", "3x1", "", ["BATUK_KERING"], { notWith: ["OBH"] }],
+        ["MP8", "Batuk, pilek & alergi", "Methylprednisolon 8 mg (3–5 hari)", "METHYLPREDNISOLON TAB 8 MG*", "6", "8 mg", "2x1", "3–5 hari", ["ASMA"], { notWith: ["MP4", "DEXA"] }],
+        ["LEVOFLOXACIN", "Antibiotik", "Levofloxacin 500 mg", "LEVOFLOXACIN 500 MG TAB HEXPHARM*", "5", "500 mg", "1x1", "", ["ISK_TIFOID"], { cls: "abx", notWith: ["CEFIXIME", "CIPROFLOXACIN"] }],
+        ["CIPROFLOXACIN", "Antibiotik", "Ciprofloxacin 500 mg", "CIPROFLOXACIN 500MG TAB", "6", "500 mg", "2x1", "", ["ISK_TIFOID"], { cls: "abx", notWith: ["CEFIXIME"] }],
+        ["METRONIDAZOL", "Antibiotik", "Metronidazol 500 mg", "METRONIDAZOLE TAB 500 MG*", "21", "500 mg", "3x1", "", ["DIARE"], { cls: "abx" }],
+        // Herpes zoster <72 jam: 800 mg (2 tab 400 mg) 5x sehari 7 hari = 70 tablet (kursus penuh, tidak dipotong aturan 6 tablet).
+        ["ACYCLOVIR", "Lain-lain", "Acyclovir 400 mg (herpes zoster)", "ACYCLOVIR 400 MG TABLET*", "70", "800 mg (2 tablet)", "5x1", "7 hari", ["HERPES"], { cls: "keep" }]
       ].map(([key, group, label, obat, jumlah, dosis, frekuensi, keterangan, why, extra]) =>
-        ({ key, group, label, why: why || [], ...(extra || {}), src: { kind: "fixed", item: { obat, jumlah, dosis, frekuensi, waktu: "", keterangan } } }))
+        ({ key, group, label, why: why || [], ...(extra || {}), src: { kind: "fixed", item: { obat, jumlah, dosis, frekuensi, waktu: "", keterangan } } })),
+      // v3.107.0 DM rawat jalan per GDS (dokter 17 Okt 2026): GDS >200 dan >250 = Metformin 500 mg 2x1 (pilihan METFORMIN);
+      // GDS >300 dan >350 = Metformin 500 mg 3x1 + Glimepiride 1 mg 1x1 pagi. Jumlah = 5 hari (cls "chronic").
+      { key: "DM_GDS300", group: "Lain-lain", label: "DM GDS >300: Metformin 3x1 + Glimepiride 1 mg pagi", why: ["DM_GDS300"], cls: "chronic", notWith: ["METFORMIN", "GLIMEPIRIDE"],
+        src: { kind: "multi", items: [
+          { obat: "METFORMIN 500 MG TAB*", jumlah: "15", dosis: "500 mg", frekuensi: "3x1", waktu: "", keterangan: "sesudah makan" },
+          { obat: "GLIMEPIRIDE 1 MG TAB*", jumlah: "5", dosis: "1 mg", frekuensi: "1x1", waktu: "", keterangan: "pagi sebelum makan" }
+        ] } }
     ],
     child: [
       // v3.58.0: Paracetamol anak per kgBB (v3.105.0: 12 mg/kgBB; sirup 125 mg/5 ml BB <=15 kg, puyer tablet 500 mg BB >15 kg).
@@ -1481,7 +1506,26 @@
       { key: "CEFADROXIL", group: "Antibiotik", label: "Cefadroxil sirup", why: ["INFEKSI_KULIT"], src: { kind: "perKgSyr", obat: "CEFADROXIL 125MG/5ML SYR*", mlPerKg: 0.6, frekuensi: "2x1", keterangan: "" } }, // 15 mg/kg, 125 mg/5 ml
       { key: "CEFIXIME", group: "Antibiotik", label: "Cefixime sirup", why: ["ISK_TIFOID"], src: { kind: "perKgSyr", obat: "CEFIXIM SYR*", mlPerKg: 0.2, frekuensi: "2x1", keterangan: "" } }, // 4 mg/kg, 100 mg/5 ml
       { key: "INTERZINC", group: "Saluran cerna", label: "Interzinc sirup", why: ["DIARE"], notWith: ["ZINC"], src: { kind: "byAge", obat: "INTERZINC SYR*", lt6Months: "2,5 ml", gte6Months: "5 ml", frekuensi: "1x1", keterangan: "selama 10 hari" } },
-      { key: "LACTOB", group: "Saluran cerna", label: "Lacto-B", why: ["DIARE"], src: { kind: "fixed", item: { obat: "LACTO B SACHET", jumlah: "3", dosis: "1 sachet", frekuensi: "1x1", waktu: "", keterangan: "" } } }
+      { key: "LACTOB", group: "Saluran cerna", label: "Lacto-B", why: ["DIARE"], src: { kind: "fixed", item: { obat: "LACTO B SACHET", jumlah: "3", dosis: "1 sachet", frekuensi: "1x1", waktu: "", keterangan: "" } } },
+      // v3.107.0 (usulan obat rawat jalan IGD anak C17–C25, disetujui dokter 17 Okt 2026). Dosis per kgBB pasien,
+      // dibulatkan ke BAWAH. Bufect = Ibuprofen sirup & Interzinc sudah ada di daftar.
+      // Sanmol drop 100 mg/ml: 12 mg/kgBB/kali = 0,12 ml/kg (dibulatkan ke bawah 0,1 ml), maks 4x sehari (bayi).
+      { key: "SANMOL_DROP", group: "Demam & Nyeri", label: "Sanmol drop (bayi)", why: [], notWith: ["PCT"], src: { kind: "perKgSyr", obat: "SANMOL DROP 20 ML", mlPerKg: 0.12, step: 0.1, floor: true, maxMl: 6, mgPerMl: 100, frekuensi: "4x1", keterangan: "maks 4x sehari" } },
+      // Sanadryl DMP: tidak untuk <6 th (FDA/BPOM obat batuk-pilek); 6–11 th 5 ml 3x sehari.
+      { key: "SANADRYL", group: "Batuk, pilek & alergi", label: "Sanadryl DMP sirup (usia ≥6 th)", why: [], notWith: ["BAPIL"], src: { kind: "fixed", minAgeYears: 6, item: { obat: "SANADRYL DMP 60 ML SYRUP", jumlah: "1", dosis: "5 ml", frekuensi: "3x1", waktu: "", keterangan: "" } } },
+      // Ondansetron 0,15 mg/kgBB/kali (maks 4 mg), usia ≥6 bulan: puyer 10 bungkus tablet 4 mg.
+      { key: "ONDANSETRON", group: "Saluran cerna", label: "Puyer Ondansetron (usia ≥6 bln)", why: ["MUNTAH_HEBAT"], notWith: ["DOMPERIDON"], src: { kind: "perKgPuyer", minAgeMonths: 6, nama: "Puyer Ondansetron", obat: "ONDANSETRON TABLET 4 MG*", tabMg: 4, mgPerKg: 0.15, maxMgKali: 4, bungkus: 10, frekuensi: "3 X SEHARI", keterangan: "bila muntah" } },
+      // Serangan asma anak: setara prednisolon 1 mg/kgBB/hari (maks 40 mg) 3 hari = methylprednisolon 0,8 mg/kgBB
+      // (maks 32 mg) 1x sehari; puyer 3 bungkus dari tablet 4 mg (master RS, prednisolon belum ada di data resep).
+      { key: "MP_ASMA", group: "Batuk, pilek & alergi", label: "Puyer Methylprednisolon (asma, 3 hari)", why: ["ASMA"], src: { kind: "perKgPuyer", nama: "Puyer Methylprednisolon", obat: "METHYLPREDNISOLON 4 MG*", tabMg: 4, mgPerKg: 0.8, maxMgKali: 32, bungkus: 3, frekuensi: "1 X SEHARI", keterangan: "pagi, 3 hari" } },
+      // Amoxicillin dosis tinggi (OMA, pneumonia): 45 mg/kgBB/kali 2x sehari. BB <=15 kg sirup 125 mg/5 ml (1,8 ml/kg),
+      // BB >15 kg puyer 10 bungkus tablet 500 mg; maks 1 g/kali.
+      { key: "AMOX_TINGGI", group: "Antibiotik", label: "Amoxicillin dosis tinggi (OMA/pneumonia)", why: [], notWith: ["AMOX", "CEFADROXIL", "CEFIXIME"], src: { kind: "bbSplit", maxSirupKg: 15,
+        sirup: { kind: "perKgSyr", obat: "AMOXYCILLIN 60 CC SYR 125MG/5ML*", mlPerKg: 1.8, step: 0.5, floor: true, maxMl: 40, mgPerMl: 25, frekuensi: "2x1", keterangan: "" },
+        puyer: { kind: "perKgPuyer", nama: "Puyer Amoxicillin dosis tinggi", obat: "AMOXICILLIN 500MG TABLET", tabMg: 500, mgPerKg: 45, maxMgKali: 1000, bungkus: 10, frekuensi: "2 X SEHARI" } } },
+      // Varisela anak: acyclovir 20 mg/kgBB/kali 4x sehari 5 hari (maks 800 mg/kali) = puyer 20 bungkus tablet 400 mg
+      // (jumlah tablet = BB dalam kg, dibulatkan ke bawah). Bayi <3 bulan / imunokompromais: rujuk (asiklovir iv).
+      { key: "ACYCLOVIR", group: "Lain-lain", label: "Puyer Acyclovir (varisela)", why: ["VARISELA"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "Puyer Acyclovir", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 20, maxMgKali: 800, bungkus: 20, frekuensi: "4 X SEHARI", keterangan: "5 hari" } }
     ]
   };
 
@@ -2275,11 +2319,25 @@
     MABUK: /mabuk perjalanan|mabuk kendaraan|mabuk laut|motion sickness|mabuk darat/gi,
     HIPERTENSI: /hipertensi|hypertension|\bht\b|\bhtn\b|tekanan darah tinggi|darah tinggi|urgensi hipertensi|hipertensi urgensi|tensi tinggi/gi,
     DM: /diabetes|\bdm\b|\bdmt2\b|kencing manis|hiperglikemi|hyperglycemi|gula darah tinggi|\bgds\s*(tinggi|>\s*2\d\d)/gi,
+    // v3.107.0: herpes zoster / varisela -> acyclovir; GDS >=300 -> paket DM GDS >300 (lihat spSuggestComplaints).
+    HERPES: /herpes zoster|\bhz\b|cacar ular|cacar api|dompo|shingles/gi,
+    VARISELA: /varisela|varicella|cacar air/gi,
     PERDARAHAN: /epistaksis|epistaxis|mimisan|perdarahan|pendarahan|hemoptisis|batuk darah|menoragia|menorrhagia|metroragia|\baub\b|hematuria|spotting|gusi berdarah/gi
   };
 
   // Keluhan yang ditulis sebagai RIWAYAT (mis. "riwayat alergi udang", "riwayat HT") bukan keluhan saat ini.
   const SP_SKIP_IF_RIWAYAT = ["ALERGI", "HIPERTENSI", "DM", "ASMA"];
+
+  // v3.107.0: angka GDS/KGDS/gula darah sewaktu tertinggi di teks ("GDS 320", "GDS: 345 mg/dl") -> { value, text } atau null.
+  function spGdsValue(text) {
+    const re = /\b(?:k?gds|gula darah(?: sewaktu)?|glukosa(?: darah)?(?: sewaktu)?)\s*(?:[:=]|adalah)?\s*(\d{2,3})(?![\d.,]\d)/gi;
+    let m, best = null;
+    while ((m = re.exec(String(text || "")))) {
+      const v = Number(m[1]);
+      if (!best || v > best.value) best = { value: v, text: m[0].trim() };
+    }
+    return best;
+  }
 
   function spSuggestComplaints(text) {
     const raw = String(text || "").replace(/\s+/g, " ");
@@ -2304,7 +2362,11 @@
       }
     }
     // Hipoglikemia: obat penurun gula tidak disarankan.
-    if (/hipoglik|hypoglyc/i.test(raw)) delete out.DM;
+    // v3.107.0 (dokter 17 Okt 2026): GDS >200 -> DM (Metformin 2x1); GDS >=300 -> Metformin 3x1 + Glimepiride.
+    const gds = spGdsValue(raw);
+    if (gds && gds.value > 200) out.DM = out.DM || gds.text;
+    if (gds && gds.value >= 300) out.DM_GDS300 = gds.text;
+    if (/hipoglik|hypoglyc/i.test(raw)) { delete out.DM; delete out.DM_GDS300; }
     return out; // { DEMAM: "demam", ... } kata yang ditemukan
   }
 
@@ -2318,19 +2380,20 @@
       ULKUS: ["OMEPRAZOLE"], KEMBUNG: ["ANTASIDA"], DIARE: ["DIATAB"], DIARE_NONINFEKSI: ["LODIA"],
       BATUK_PILEK: ["AMBROXOL", "CTM"], BATUK_KERING: ["OBH"], RADANG_BENGKAK: ["DEXA"], ALERGI: ["CETIRIZINE"], ASMA: ["MP4"],
       INFEKSI_BAKTERI: ["AMOX"], INFEKSI_KULIT: ["CEFADROXIL"], ISK_TIFOID: ["CEFIXIME"], VERTIGO: ["BETAHISTINE"],
-      MABUK: ["ANTIMO"], HIPERTENSI: ["AMLODIPINE"], DM: ["METFORMIN"], PERDARAHAN: ["TRANEKSAMAT"]
+      MABUK: ["ANTIMO"], HIPERTENSI: ["AMLODIPINE"], DM: ["METFORMIN"], DM_GDS300: ["DM_GDS300"], PERDARAHAN: ["TRANEKSAMAT"],
+      HERPES: ["ACYCLOVIR"], VARISELA: ["ACYCLOVIR"]
     },
     child: {
       DEMAM: ["PCT"], NYERI: ["PCT"], NYERI_OTOT: ["PCT"], SAKIT_KEPALA: ["PCT"], MUAL_MUNTAH: ["DOMPERIDON"],
       MUNTAH_HEBAT: ["DOMPERIDON"], BATUK_PILEK: ["BAPIL"], BATUK_KERING: ["BAPIL"], RADANG_BENGKAK: ["RADANG"],
       DIARE: ["ZINC"], NYERI_ULU_HATI: ["RANITIDIN"], GERD: ["RANITIDIN"], KEMBUNG: ["ANTASIDA"], ALERGI: ["CETIRIZINE"],
-      INFEKSI_BAKTERI: ["AMOX"], INFEKSI_KULIT: ["CEFADROXIL"], ISK_TIFOID: ["CEFIXIME"]
+      INFEKSI_BAKTERI: ["AMOX"], INFEKSI_KULIT: ["CEFADROXIL"], ISK_TIFOID: ["CEFIXIME"], VARISELA: ["ACYCLOVIR"]
     }
   };
   // Bila beberapa keluhan menyarankan obat SEGOLONGAN, hanya satu yang dipakai (yang paling kiri diutamakan).
   const SP_SUGGEST_EXCLUSIVE = {
     adult: [["KETOROLAC", "IBUPROFEN"], ["ONDANSETRON", "DOMPERIDON"], ["RANITIDIN", "OMEPRAZOLE"], ["LODIA", "DIATAB"],
-      ["CEFIXIME", "CEFADROXIL", "AMOX"], ["OBH", "AMBROXOL"], ["MP4", "DEXA"]],
+      ["CEFIXIME", "CEFADROXIL", "AMOX"], ["OBH", "AMBROXOL"], ["MP4", "DEXA"], ["DM_GDS300", "METFORMIN"]],
     child: [["BAPIL", "RADANG"], ["CEFIXIME", "CEFADROXIL", "AMOX"]]
   };
 
@@ -3116,6 +3179,7 @@
     let q;
     // v3.58.0 (instruksi dokter): Paracetamol & Ibuprofen dewasa = 10 tablet (cls "ten"), bukan maks 6.
     if (cls === "ten") return { ...item, jumlah: "10" };
+    if (cls === "keep") return item; // v3.107.0: jumlah sesuai template (mis. acyclovir 7 hari)
     if (cls === "abx" || cls === "chronic") {
       if (!per) return item;
       q = per * (cls === "abx" ? SP_ADULT_QTY.abxDays : SP_ADULT_QTY.chronicDays);
@@ -3135,14 +3199,48 @@
         if (!Number.isFinite(weight) || weight <= 0) throw new Error("isi BB");
         src = weight <= (src.maxSirupKg || 15) ? src.sirup : src.puyer;
       }
+      // v3.107.0: batas usia per pilihan obat (minAgeMonths / minAgeYears).
+      const amAll = ctx.ageMonths == null || ctx.ageMonths === "" ? NaN : Number(ctx.ageMonths);
+      if (src.minAgeMonths && Number.isFinite(amAll) && amAll < src.minAgeMonths) throw new Error(src.minAgeText || `hanya usia ≥${src.minAgeMonths} bulan`);
+      if (src.minAgeYears) {
+        const ay = Number.isFinite(Number(ctx.ageYears)) && ctx.ageYears !== null && ctx.ageYears !== "" ? Number(ctx.ageYears) : (Number.isFinite(amAll) ? amAll / 12 : NaN);
+        if (!Number.isFinite(ay)) throw new Error("usia tidak terbaca");
+        if (ay < src.minAgeYears) throw new Error(`hanya usia ≥${src.minAgeYears} th`);
+      }
       if (src.kind === "fixed") {
         res.items.push({ ...src.item });
+      } else if (src.kind === "multi") {
+        res.items.push(...src.items.map((i) => ({ ...i })));
       } else if (src.kind === "perKgSyr") {
         // v3.39.0: sirup anak per kg BB, dibulatkan 0,5 ml, min 0,5 ml, maks maxMl (bila ada).
+        // v3.107.0: step (mis. 0,1 ml untuk drop) & floor (dibulatkan ke bawah supaya tidak melewati mg/kgBB).
         if (!Number.isFinite(weight) || weight <= 0) throw new Error("isi BB");
-        let ml = Math.max(0.5, Math.round(weight * src.mlPerKg * 2) / 2);
+        const step = src.step || 0.5;
+        const raw = (weight * src.mlPerKg) / step;
+        let ml = Math.max(step, Math.round((src.floor ? Math.floor(raw + 1e-9) : Math.round(raw)) * step * 100) / 100);
         if (src.maxMl) ml = Math.min(ml, src.maxMl);
         res.items.push({ obat: src.obat, jumlah: "1", dosis: `${String(ml).replace(".", ",")} ml`, frekuensi: src.frekuensi, waktu: "", keterangan: src.keterangan || "" });
+        if (src.mgPerMl) res.text = `${src.obat.replace(/\*$/, "")} • ${String(ml).replace(".", ",")} ml (${String(Math.round(ml * src.mgPerMl * 10) / 10).replace(".", ",")} mg ≈ ${String(Math.round((ml * src.mgPerMl / weight) * 100) / 100).replace(".", ",")} mg/kgBB) • ${src.frekuensi}`;
+      } else if (src.kind === "perKgPuyer") {
+        // v3.107.0: puyer per kgBB pasien. Jumlah tablet = mgPerKg × BB × bungkus / mg tablet, dibulatkan ke BAWAH
+        // (tablet utuh, tidak melewati mg/kgBB), maks maxMgKali per bungkus.
+        if (!Number.isFinite(weight) || weight <= 0) throw new Error("isi BB");
+        const bks = src.bungkus || 10;
+        let tabs = Math.floor((src.mgPerKg * weight * bks) / src.tabMg + 1e-9);
+        if (src.maxMgKali) tabs = Math.min(tabs, Math.floor((src.maxMgKali * bks) / src.tabMg));
+        if (tabs < 1) throw new Error(`BB ${weight} kg terlalu kecil untuk puyer tablet ${src.tabMg} mg, isi manual`);
+        const per = (tabs * src.tabMg) / bks;
+        const f2 = (x) => String(Math.round(x * 100) / 100).replace(".", ",");
+        const tk = `PUYER_${opt.key}_PERKG`;
+        const wk = `kg_${String(weight).replace(/[^\d]/g, "_")}`;
+        MASTER_RACIKAN_TEMPLATES[tk] = MASTER_RACIKAN_TEMPLATES[tk] || { name: src.nama || opt.label, weightGroups: {} };
+        MASTER_RACIKAN_TEMPLATES[tk].weightGroups[wk] = {
+          label: `BB ${weight} kg`, name: `${src.nama || opt.label} ${weight} kg`, namaRacikan: src.namaRacikan || String(src.nama || opt.label).toLowerCase(),
+          instruksi: "Pulveres", jumlahRacikan: String(bks), dosis: "1 pulv", frekuensi: src.frekuensi, waktu: "",
+          items: [{ obat: src.obat, jumlahPerObat: String(tabs) }]
+        };
+        res.racikan.push({ key: tk, weightKey: wk, label: opt.label });
+        res.text = `Puyer ${bks} bks: ${src.obat.replace(/\*$/, "")} ×${tabs} tab (${f2(per)} mg/bungkus ≈ ${f2(per / weight)} mg/kgBB) • 1 pulv ${src.frekuensi}${src.keterangan ? " • " + src.keterangan : ""}`;
       } else if (src.kind === "pctPerKg") {
         // v3.58.0 (instruksi dokter): Paracetamol anak per kgBB per kali.
         // v3.105.0 (evaluasi dosis, dokter 17 Okt 2026): 12 mg/kgBB/kali, dibulatkan tetapi maks 12,5 mg/kgBB/kali supaya
@@ -3645,6 +3743,42 @@
     return lines;
   }
 
+  // v3.107.0 (dokter 17 Okt 2026): pasien IGD dewasa yang dikonsul rawat inap dengan DM atau gula darah tinggi
+  // (>=200 mg/dL di form GADAR atau hasil lab terbaru) -> baris insulin sliding scale di Rencana.
+  // Rawat jalan memakai paket DM per GDS di KOMBINASI RESEP.
+  const SP_INSULIN_SS_LINE = "Cek KGDH sebelum makan, insulin SS kelipatan 5 unit sc";
+  function spPerluInsulinSs(text, labRows) {
+    const t = String(text || "").replace(/\s+/g, " ");
+    if (/hipoglik|hypoglyc/i.test(t)) return false;
+    const re = /\bDMT?2?\b|diabet\w*|hiperglikemi\w*|hyperglycemi\w*|kencing manis/gi;
+    let m;
+    while ((m = re.exec(t))) {
+      const before = t.slice(Math.max(0, m.index - 22), m.index);
+      const after = t.slice(m.index + m[0].length, m.index + m[0].length + 18);
+      if (/(tidak|tdk|tanpa|bukan|disangkal|negatif)\s*(ada\s*)?(riwayat\s*)?$/i.test(before)) continue;
+      if (/^\s*[:=]?\s*(\(\s*-\s*\)|-(?![\w>])|disangkal|tidak ada|tdk ada|negatif|\(?neg\b)/i.test(after)) continue;
+      return true;
+    }
+    const g = spGdsValue(t);
+    if (g && g.value >= 200) return true;
+    return (labRows || []).some((r) => {
+      if (!r || r.type !== "item" || !/glukosa|gula darah|\bgds\b|\bgdp\b|gd\s*2\s*pp/i.test(r.name || "")) return false;
+      const v = String(r.hasil || "").replace(",", ".").match(/\d+(?:\.\d+)?/);
+      return !!v && Number(v[0]) >= 200;
+    });
+  }
+  // Hasil lab terbaru kunjungan ini (baris item) untuk spPerluInsulinSs; [] bila belum ada / gagal dibaca.
+  async function spLabRowsTerbaru() {
+    try {
+      const base = smartplusBaseUrl(), noreg = getCurrentIgdNoreg();
+      if (!noreg) return [];
+      const e = (await spFetchLabEntries(base, noreg)).sort((a, b) => String(b.sortKey).localeCompare(String(a.sortKey)))[0];
+      if (!e) return [];
+      const h = await spFetch(`${base}/hasil_lab/hasil_lab/print_hasil_labx_by_id_sample/${encodeURIComponent(e.idSample)}/${encodeURIComponent(e.noreg)}`, { credentials: "same-origin" }).then((r) => r.text());
+      return spParseLabSheet(h).rows || [];
+    } catch (_) { return []; }
+  }
+
   // Tulis blok "Terapi sementara:" ke kolom Rencana. Isi lama dipertahankan;
   // jika blok sudah ada (AUTO SOAP diklik ulang), blok lama diganti, tidak dobel.
   function mergeTerapiSementara(existing, lines) {
@@ -3807,6 +3941,11 @@
     }
 
     const terapi = buildTerapiSementara({ isAdult, bb, diagnosis, ageYears });
+    if (isAdult && !keepTerapi) {
+      const formText = [...form.querySelectorAll("textarea, input[type=text], input:not([type])")].map((el) => el.value || "").join(" \n ");
+      const labRows = await Promise.race([spLabRowsTerbaru(), new Promise((r) => setTimeout(() => r([]), 8000))]);
+      if (spPerluInsulinSs(`${diagnosis} \n ${formText}`, labRows)) terapi.push(SP_INSULIN_SS_LINE);
+    }
     const rencanaEl = form.querySelector('[name="rencana_tindakan"]');
     if (rencanaEl && keepTerapi) {
       // Terapi sementara sudah ada (mungkin sudah direvisi dokter) -> dibiarkan.
@@ -13354,7 +13493,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.106.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.107.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
