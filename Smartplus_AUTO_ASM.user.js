@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.107.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.107.1
 // @namespace    smartplus-auto-asm-v221
-// @version      3.107.0
-// @description  v3.107.0 (dokter 17 Okt 2026): KOMBINASI RESEP ditambah obat rawat jalan IGD — dewasa: Na diklofenak 50, as. mefenamat, eperisone, spasminal, metoclopramide, lansoprazole, sukralfat tab, acetylcysteine, Sanadryl DMP, methylprednisolon 8, levofloxacin, ciprofloxacin, metronidazol, acyclovir 5x800 mg (herpes zoster); anak: Sanmol drop bayi, Sanadryl ≥6 th, puyer ondansetron, puyer methylprednisolon asma, amoxicillin dosis tinggi, puyer acyclovir varisela 20 mg/kgBB 4x (dosis per kgBB dibulatkan ke bawah); paket DM rawat jalan per GDS (>200/>250 Metformin 2x1, >300/>350 Metformin 3x1 + Glimepiride 1 mg pagi, dipilih otomatis dari angka GDS); AUTO SOAP/PAKET KONSUL dewasa dengan DM atau gula ≥200 (form/lab terbaru) menambah "Cek KGDH sebelum makan, insulin SS kelipatan 5 unit sc" di Rencana.
+// @version      3.107.1
+// @description  v3.107.1 (dokter 17 Okt 2026): pilihan Amoxicillin dosis tinggi (45 mg/kgBB 2x) dihapus dari KOMBINASI RESEP anak; amoxicillin anak tetap dosis biasa 3x sehari.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.107.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.107.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.107.1";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.107.1");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -1508,7 +1508,7 @@
       { key: "INTERZINC", group: "Saluran cerna", label: "Interzinc sirup", why: ["DIARE"], notWith: ["ZINC"], src: { kind: "byAge", obat: "INTERZINC SYR*", lt6Months: "2,5 ml", gte6Months: "5 ml", frekuensi: "1x1", keterangan: "selama 10 hari" } },
       { key: "LACTOB", group: "Saluran cerna", label: "Lacto-B", why: ["DIARE"], src: { kind: "fixed", item: { obat: "LACTO B SACHET", jumlah: "3", dosis: "1 sachet", frekuensi: "1x1", waktu: "", keterangan: "" } } },
       // v3.107.0 (usulan obat rawat jalan IGD anak C17–C25, disetujui dokter 17 Okt 2026). Dosis per kgBB pasien,
-      // dibulatkan ke BAWAH. Bufect = Ibuprofen sirup & Interzinc sudah ada di daftar.
+      // dibulatkan ke BAWAH. Amoxicillin dosis tinggi dihapus atas permintaan dokter (v3.107.1). Bufect = Ibuprofen sirup & Interzinc sudah ada di daftar.
       // Sanmol drop 100 mg/ml: 12 mg/kgBB/kali = 0,12 ml/kg (dibulatkan ke bawah 0,1 ml), maks 4x sehari (bayi).
       { key: "SANMOL_DROP", group: "Demam & Nyeri", label: "Sanmol drop (bayi)", why: [], notWith: ["PCT"], src: { kind: "perKgSyr", obat: "SANMOL DROP 20 ML", mlPerKg: 0.12, step: 0.1, floor: true, maxMl: 6, mgPerMl: 100, frekuensi: "4x1", keterangan: "maks 4x sehari" } },
       // Sanadryl DMP: tidak untuk <6 th (FDA/BPOM obat batuk-pilek); 6–11 th 5 ml 3x sehari.
@@ -1518,11 +1518,6 @@
       // Serangan asma anak: setara prednisolon 1 mg/kgBB/hari (maks 40 mg) 3 hari = methylprednisolon 0,8 mg/kgBB
       // (maks 32 mg) 1x sehari; puyer 3 bungkus dari tablet 4 mg (master RS, prednisolon belum ada di data resep).
       { key: "MP_ASMA", group: "Batuk, pilek & alergi", label: "Puyer Methylprednisolon (asma, 3 hari)", why: ["ASMA"], src: { kind: "perKgPuyer", nama: "Puyer Methylprednisolon", obat: "METHYLPREDNISOLON 4 MG*", tabMg: 4, mgPerKg: 0.8, maxMgKali: 32, bungkus: 3, frekuensi: "1 X SEHARI", keterangan: "pagi, 3 hari" } },
-      // Amoxicillin dosis tinggi (OMA, pneumonia): 45 mg/kgBB/kali 2x sehari. BB <=15 kg sirup 125 mg/5 ml (1,8 ml/kg),
-      // BB >15 kg puyer 10 bungkus tablet 500 mg; maks 1 g/kali.
-      { key: "AMOX_TINGGI", group: "Antibiotik", label: "Amoxicillin dosis tinggi (OMA/pneumonia)", why: [], notWith: ["AMOX", "CEFADROXIL", "CEFIXIME"], src: { kind: "bbSplit", maxSirupKg: 15,
-        sirup: { kind: "perKgSyr", obat: "AMOXYCILLIN 60 CC SYR 125MG/5ML*", mlPerKg: 1.8, step: 0.5, floor: true, maxMl: 40, mgPerMl: 25, frekuensi: "2x1", keterangan: "" },
-        puyer: { kind: "perKgPuyer", nama: "Puyer Amoxicillin dosis tinggi", obat: "AMOXICILLIN 500MG TABLET", tabMg: 500, mgPerKg: 45, maxMgKali: 1000, bungkus: 10, frekuensi: "2 X SEHARI" } } },
       // Varisela anak: acyclovir 20 mg/kgBB/kali 4x sehari 5 hari (maks 800 mg/kali) = puyer 20 bungkus tablet 400 mg
       // (jumlah tablet = BB dalam kg, dibulatkan ke bawah). Bayi <3 bulan / imunokompromais: rujuk (asiklovir iv).
       { key: "ACYCLOVIR", group: "Lain-lain", label: "Puyer Acyclovir (varisela)", why: ["VARISELA"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "Puyer Acyclovir", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 20, maxMgKali: 800, bungkus: 20, frekuensi: "4 X SEHARI", keterangan: "5 hari" } }
@@ -13493,7 +13488,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.107.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.107.1</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
