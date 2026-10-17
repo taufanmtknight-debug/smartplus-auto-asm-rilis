@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.109.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.110.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.109.0
-// @description  v3.109.0 (dokter 17 Okt 2026): semua resep acyclovir dari IGD untuk 3 hari lalu kontrol di faskes (dewasa zoster/varisela 30 tab, herpes simpleks 9 tab; puyer anak 12 bungkus 4x / 15 bungkus 5x); batuk pilek bayi usia <6 bulan atau BB <5 kg kini punya resep: Ambroxol sirup 15 mg/5 ml 0,5 mg/kgBB/kali 3x (dibulatkan ke bawah 0,1 ml, maks 15 mg/hari) tanpa CTM dan tanpa dexamethason; neonatus <1 bulan diminta evaluasi/rujuk.
+// @version      3.110.0
+// @description  v3.110.0 (dokter 17 Okt 2026): Sanadryl DMP sirup untuk anak dihapus (dewasa tetap); puyer Batuk Pilek anak <40 kg dan bayi dihitung per kgBB pasien (10 bungkus 3x): dexamethason 0,08 mg/kgBB/hari, CTM 0,1 mg/kgBB/kali bila usia ≥1 th, bila CTM tidak boleh (6–11 bln) otomatis cetirizin ≤0,5 mg/kgBB/hari, ambroxol ≤1,6 mg/kgBB/hari (BB <5,7 kg: ambroxol sirup terpisah); pilihan baru Puyer Dexa + Cetirizin + Ambroxol; bayi <6 bln tanpa antihistamin, neonatus <1 bln evaluasi/rujuk.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.109.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.109.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.110.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.110.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -979,22 +979,58 @@
     MASTER_RACIKAN_TEMPLATES[pk] = { name: MASTER_RACIKAN_TEMPLATES[key].name, weightGroups: { [weightKey]: { ...g, items: [...g.items, ...extra] } } };
     return { key: pk, weightKey };
   }
-  // v3.109.0 (dokter 17 Okt 2026): batuk pilek bayi usia <6 bulan atau BB <5 kg (dulu: BB <5 kg tidak ada paket, 5–10 kg
-  // <6 bulan dapat puyer dexamethason). Bayi: TANPA CTM (bukan untuk <1 th), TANPA dexamethason (tidak bermanfaat untuk
-  // common cold) dan obat batuk-pilek kombinasi (FDA/BPOM: tidak untuk <2 th). Diganti Ambroxol sirup 15 mg/5 ml
-  // 0,5 mg/kgBB/kali 3x sehari (0,17 ml/kg, dibulatkan ke bawah 0,1 ml; label <2 th maks 7,5 mg 2x = 15 mg/hari).
-  // Neonatus <1 bulan: tidak dibuatkan (evaluasi/rujuk). Hasil null bila bukan bayi.
-  function spBapilBayi(weight, ageMonths) {
+  // v3.110.0 (dokter 17 Okt 2026): puyer Batuk Pilek anak (<40 kg) & bayi dihitung per kgBB pasien — menggantikan kelompok BB
+  // (v3.106) dan Ambroxol sirup saja untuk bayi (v3.109). 10 bungkus 3x sehari, tablet utuh dibulatkan ke BAWAH:
+  //  - Dexamethason 0,5 mg: 0,08 mg/kgBB/hari (batas bawah anti-inflamasi 0,08–0,3), min 1 tab, maks 10 tab (0,5 mg/kali).
+  //  - CTM 4 mg (usia >=12 bln, BNFC bukan untuk <1 th): 0,1 mg/kgBB/kali (0,3 mg/kg/hari <=0,35); maks 1 mg/kali usia <6 th,
+  //    2 mg 6–11 th, 4 mg >=12 th.
+  //  - Cetirizine 10 mg bila CTM tidak boleh (usia 6–11 bln) atau dipilih: <=0,5 mg/kgBB/hari (BNFC 0,25 mg/kg 2x);
+  //    maks 1 tab (3 mg/hari) usia <6 th, 3 tab (9 mg/hari) >=6 th; tidak untuk <6 bln.
+  //  - Ambroxol 30 mg: <=1,6 mg/kgBB/hari; maks 7,5 mg/kali <6 th, 15 mg 6–11 th, 30 mg >=12 th. Bila <1 tab (BB <5,7 kg):
+  //    Ambroxol sirup 15 mg/5 ml 0,5 mg/kgBB/kali 3x (dibulatkan ke bawah 0,1 ml) di luar puyer.
+  //  - Neonatus <1 bln: tidak dibuatkan (evaluasi/rujuk). Usia tidak terbaca: batas usia diperkirakan dari BB.
+  MASTER_RACIKAN_TEMPLATES.BAPIL_PERKG = { name: "Bapil Anak per kgBB", weightGroups: {} };
+  function spBapilPuyer(weight, ageMonths, antihist = "auto") {
     const w = Number(weight);
     const m = ageMonths == null || ageMonths === "" ? NaN : Number(ageMonths);
-    if (!((Number.isFinite(m) && m < 6) || (Number.isFinite(w) && w > 0 && w < 5))) return null;
     if (Number.isFinite(m) && m < 1) return { error: "neonatus <1 bulan dengan batuk pilek: evaluasi/rujuk, isi manual" };
     if (!Number.isFinite(w) || w <= 0) return { error: "isi BB" };
-    const ml = Math.max(0.1, Math.min(Math.floor(w * 0.17 * 10 + 1e-9) / 10, Math.floor((5 / 3) * 10) / 10));
-    const mlTxt = String(ml).replace(".", ",");
+    const y = Number.isFinite(m) ? m / 12 : (w < 20 ? 3 : 8);
+    const fl = (x) => Math.floor(x + 1e-9);
+    const f2 = (x) => String(Math.round(x * 100) / 100).replace(".", ",");
+    const items = [], extra = [], notes = [];
+    const dexa = Math.min(10, Math.max(1, fl((0.08 / 3) * w * 10 / 0.5)));
+    items.push({ obat: "DEXAMETHASON 0.5 MG TAB", jumlahPerObat: String(dexa) });
+    const ctmOk = Number.isFinite(m) ? m >= 12 : w >= 10;
+    const cetOk = Number.isFinite(m) ? m >= 6 : w >= 6;
+    let ah = "";
+    if (antihist !== "cetirizine" && ctmOk) {
+      const t = Math.min(fl(0.1 * w * 10 / 4), y < 6 ? 2 : y < 12 ? 5 : 10);
+      if (t >= 1) { items.push({ obat: "CTM 4MG TAB", jumlahPerObat: String(t) }); ah = `CTM ${t} tab`; }
+    }
+    if (!ah && cetOk) {
+      const t = Math.min(fl((0.5 * w) / 3), y < 6 ? 1 : 3);
+      if (t >= 1) { items.push({ obat: "CETIRIZINE 10 MG TAB (ISI 60)*", jumlahPerObat: String(t) }); ah = `Cetirizine ${t} tab`; }
+      else notes.push(`cetirizine tidak masuk (BB ${w} kg <6 kg)`);
+    }
+    if (!ah && !cetOk) notes.push("tanpa antihistamin (usia <6 bulan)");
+    const amb = Math.min(fl((1.6 / 3) * w * 10 / 30), y < 6 ? 2 : y < 12 ? 5 : 10);
+    if (amb >= 1) items.push({ obat: "AMBROXOL 30MG TAB*", jumlahPerObat: String(amb) });
+    else {
+      const ml = Math.max(0.1, Math.min(fl(w * 0.17 * 10) / 10, 1.6));
+      extra.push({ obat: "AMBROXOL SYR 15 MG/ 5 ML", jumlah: "1", dosis: `${String(ml).replace(".", ",")} ml`, frekuensi: "3x1", waktu: "", keterangan: "" });
+      notes.push(`ambroxol sirup ${String(ml).replace(".", ",")} ml 3x1 (BB <5,7 kg)`);
+    }
+    const wk = `kg_${String(w).replace(/[^\d]/g, "_")}_${antihist === "cetirizine" ? "cet" : "auto"}_${Number.isFinite(m) ? Math.floor(m) : "x"}`;
+    MASTER_RACIKAN_TEMPLATES.BAPIL_PERKG.weightGroups[wk] = {
+      label: `BB ${w} kg`, name: `Bapil Anak ${w} kg`, namaRacikan: "bapil anak", instruksi: "Pulveres",
+      jumlahRacikan: "10", dosis: "1 pulv", frekuensi: "3 X SEHARI", waktu: "", items
+    };
+    const mg = { "DEXAMETHASON 0.5 MG TAB": 0.5, "CTM 4MG TAB": 4, "CETIRIZINE 10 MG TAB (ISI 60)*": 10, "AMBROXOL 30MG TAB*": 30 };
+    const bahan = items.map((i) => `${i.obat.replace(/\*$/, "").replace(/ TAB.*$/, "")} ×${i.jumlahPerObat} (${f2((Number(i.jumlahPerObat) * mg[i.obat] / 10) * 3 / w)} mg/kg/hari)`).join(" + ");
     return {
-      items: [{ obat: "AMBROXOL SYR 15 MG/ 5 ML", jumlah: "1", dosis: `${mlTxt} ml`, frekuensi: "3x1", waktu: "", keterangan: "bayi: tanpa CTM/dexamethason; NaCl 0,9% tetes hidung, ASI sering" }],
-      text: `Bayi (<6 bln / BB <5 kg): Ambroxol sirup 15 mg/5 ml • ${mlTxt} ml (${String(Math.round(ml * 3 * 10) / 10).replace(".", ",")} mg ≈ ${String(Math.round((ml * 3 / w) * 100) / 100).replace(".", ",")} mg/kgBB) • 3x1 • tanpa CTM/dexamethason`
+      racikan: [{ key: "BAPIL_PERKG", weightKey: wk }], items: extra,
+      text: `Puyer 10 bks: ${bahan} • 1 pulv 3 X SEHARI${notes.length ? " • " + notes.join("; ") : ""}`
     };
   }
 
@@ -1242,14 +1278,15 @@
     }
 
     if (branch.kind === "racikan") {
-      if (branch.key === "BAPIL_ANAK") {
-        const bayi = spBapilBayi(weight, options.ageMonths != null && options.ageMonths !== "" ? options.ageMonths : getPatientAgeMonths());
-        if (bayi) {
-          if (bayi.error) throw new Error(bayi.error);
-          MASTER_RECIPE_TEMPLATES.BAPIL_BAYI = { name: "Batuk Pilek Bayi", items: bayi.items };
-          await fillRecipeTemplate("BAPIL_BAYI", null, options);
-          return true;
+      if (branch.key === "BAPIL_ANAK") { // v3.110.0: dihitung per kgBB pasien
+        const r = spBapilPuyer(weight, options.ageMonths != null && options.ageMonths !== "" ? options.ageMonths : getPatientAgeMonths());
+        if (r.error) throw new Error(r.error);
+        if (r.items.length) {
+          MASTER_RECIPE_TEMPLATES.BAPIL_SIRUP_BAYI = { name: "Ambroxol sirup bayi", items: r.items };
+          await fillRecipeTemplate("BAPIL_SIRUP_BAYI", null, options);
         }
+        for (const job of r.racikan) await fillRacikanTemplate(job.key, job.weightKey, options);
+        return true;
       }
       const weightKey = findWeightKeyForValue(branch.key, weight, { lowerBoundaryForRacikan: true });
       if (!weightKey) throw new Error(spBbBelumAda(weight, `BB ${weight} kg belum tersedia pada template anak untuk keluhan ini.`));
@@ -1352,10 +1389,11 @@
         const r = spPctAnakPerKg(branch, weight, options);
         regularItems.push(...r.items);
         racikanJobs.push(...r.racikan.map((job) => ({ ...job, label: complaint.label })));
-      } else if (branch.kind === "racikan" && branch.key === "BAPIL_ANAK" && spBapilBayi(weight, options.ageMonths != null && options.ageMonths !== "" ? options.ageMonths : getPatientAgeMonths())) {
-        const bayi = spBapilBayi(weight, options.ageMonths != null && options.ageMonths !== "" ? options.ageMonths : getPatientAgeMonths());
-        if (bayi.error) throw new Error(bayi.error);
-        regularItems.push(...bayi.items);
+      } else if (branch.kind === "racikan" && branch.key === "BAPIL_ANAK") { // v3.110.0: per kgBB
+        const r = spBapilPuyer(weight, options.ageMonths != null && options.ageMonths !== "" ? options.ageMonths : getPatientAgeMonths());
+        if (r.error) throw new Error(r.error);
+        regularItems.push(...r.items);
+        racikanJobs.push(...r.racikan.map((job) => ({ ...job, label: complaint.label })));
       } else if (branch.kind === "racikan") {
         const weightKey = findWeightKeyForValue(branch.key, weight, { lowerBoundaryForRacikan: true });
         if (!weightKey) throw new Error(spBbBelumAda(weight, `BB ${weight} kg belum tersedia untuk ${complaint.label}.`));
@@ -1527,7 +1565,9 @@
       // v3.58.0: Paracetamol anak per kgBB (v3.105.0: 12 mg/kgBB; sirup 125 mg/5 ml BB <=15 kg, puyer tablet 500 mg BB >15 kg).
       { key: "PCT", group: "Demam & Nyeri", label: "Paracetamol", why: ["DEMAM", "NYERI"], src: COMPLAINT_RECIPE_MAP.DEMAM.child },
       { key: "DOMPERIDON", group: "Saluran cerna", label: "Domperidone sirup", why: ["MUAL_MUNTAH"], src: COMPLAINT_RECIPE_MAP.MUAL_MUNTAH.child },
-      { key: "BAPIL", group: "Batuk, pilek & alergi", label: "Puyer Dexamethason + CTM + Ambroxol", why: ["BATUK_PILEK"], src: { kind: "racikan", key: "BAPIL_ANAK" } },
+      // v3.110.0: Bapil dihitung per kgBB (spBapilPuyer); CTM usia >=1 th, bila tidak boleh -> cetirizine (>=6 bln).
+      { key: "BAPIL", group: "Batuk, pilek & alergi", label: "Puyer Dexa + CTM + Ambroxol (per kgBB; <1 th: cetirizine)", why: ["BATUK_PILEK"], src: { kind: "bapilPerKg", antihist: "auto" } },
+      { key: "BAPIL_CET", group: "Batuk, pilek & alergi", label: "Puyer Dexa + Cetirizine + Ambroxol (per kgBB, usia ≥6 bln)", why: [], notWith: ["BAPIL", "CETIRIZINE"], src: { kind: "bapilPerKg", antihist: "cetirizine" } },
       { key: "RADANG", group: "Batuk, pilek & alergi", label: "Puyer Dexamethason + CTM", why: ["RADANG_BENGKAK"], notWith: ["BAPIL"], src: { kind: "racikan", key: "RADANG_BENGKAK_ANAK" } },
       { key: "ZINC", group: "Saluran cerna", label: "Zinc", why: ["DIARE"], src: { kind: "recipe", key: "KELUHAN_DIARE_ANAK", only: /^ZINc TABLET$/i } },
       { key: "ORALIT", group: "Saluran cerna", label: "Oralit", why: ["DIARE"], src: { kind: "recipe", key: "KELUHAN_DIARE_ANAK", only: /^ORALIT$/i } },
@@ -1546,8 +1586,7 @@
       // dibulatkan ke BAWAH. Amoxicillin dosis tinggi dihapus atas permintaan dokter (v3.107.1). Bufect = Ibuprofen sirup & Interzinc sudah ada di daftar.
       // Sanmol drop 100 mg/ml: 12 mg/kgBB/kali = 0,12 ml/kg (dibulatkan ke bawah 0,1 ml), maks 4x sehari (bayi).
       { key: "SANMOL_DROP", group: "Demam & Nyeri", label: "Sanmol drop (bayi)", why: [], notWith: ["PCT"], src: { kind: "perKgSyr", obat: "SANMOL DROP 20 ML", mlPerKg: 0.12, step: 0.1, floor: true, maxMl: 6, mgPerMl: 100, frekuensi: "4x1", keterangan: "maks 4x sehari" } },
-      // Sanadryl DMP: tidak untuk <6 th (FDA/BPOM obat batuk-pilek); 6–11 th 5 ml 3x sehari.
-      { key: "SANADRYL", group: "Batuk, pilek & alergi", label: "Sanadryl DMP sirup (usia ≥6 th)", why: [], notWith: ["BAPIL"], src: { kind: "fixed", minAgeYears: 6, item: { obat: "SANADRYL DMP 60 ML SYRUP", jumlah: "1", dosis: "5 ml", frekuensi: "3x1", waktu: "", keterangan: "" } } },
+      // v3.110.0: Sanadryl DMP sirup anak dihapus atas permintaan dokter (dewasa tetap).
       // Ondansetron 0,15 mg/kgBB/kali (maks 4 mg), usia ≥6 bulan: puyer 10 bungkus tablet 4 mg.
       { key: "ONDANSETRON", group: "Saluran cerna", label: "Puyer Ondansetron (usia ≥6 bln)", why: ["MUNTAH_HEBAT"], notWith: ["DOMPERIDON"], src: { kind: "perKgPuyer", minAgeMonths: 6, nama: "Puyer Ondansetron", obat: "ONDANSETRON TABLET 4 MG*", tabMg: 4, mgPerKg: 0.15, maxMgKali: 4, bungkus: 10, frekuensi: "3 X SEHARI", keterangan: "bila muntah" } },
       // Serangan asma anak: setara prednisolon 1 mg/kgBB/hari (maks 40 mg) 3 hari = methylprednisolon 0,8 mg/kgBB
@@ -2431,7 +2470,7 @@
   const SP_SUGGEST_EXCLUSIVE = {
     adult: [["KETOROLAC", "IBUPROFEN"], ["ONDANSETRON", "DOMPERIDON"], ["RANITIDIN", "OMEPRAZOLE"], ["LODIA", "DIATAB"],
       ["CEFIXIME", "CEFADROXIL", "AMOX"], ["OBH", "AMBROXOL"], ["MP4", "DEXA"], ["DM_GDS300", "METFORMIN"], ["ACYCLOVIR", "ACYCLOVIR_HSV"]],
-    child: [["BAPIL", "RADANG"], ["CEFIXIME", "CEFADROXIL", "AMOX"], ["ACYCLOVIR", "ACYCLOVIR_ZOSTER", "ACYCLOVIR_HSV"]]
+    child: [["BAPIL", "BAPIL_CET", "RADANG"], ["CEFIXIME", "CEFADROXIL", "AMOX"], ["ACYCLOVIR", "ACYCLOVIR_ZOSTER", "ACYCLOVIR_HSV"]]
   };
 
   // Obat yang disarankan (key, urut sesuai daftar obat) untuk cabang tertentu dari keluhan yang ditemukan.
@@ -3337,11 +3376,12 @@
         if (!Number.isFinite(age) || age < 5) throw new Error("hanya usia ≥5 th");
         const tpl = MASTER_RECIPE_TEMPLATES[age <= 15 ? src.key5_15 : src.keyGt15];
         res.items.push(...(tpl?.items || []).map((i) => ({ ...i })));
-      } else if (src.kind === "racikan" && src.key === "BAPIL_ANAK" && spBapilBayi(weight, ctx.ageMonths)) {
-        const bayi = spBapilBayi(weight, ctx.ageMonths); // v3.109.0: bayi <6 bln / BB <5 kg
-        if (bayi.error) throw new Error(bayi.error);
-        res.items.push(...bayi.items);
-        res.text = bayi.text;
+      } else if (src.kind === "bapilPerKg" || (src.kind === "racikan" && src.key === "BAPIL_ANAK")) {
+        const r = spBapilPuyer(weight, ctx.ageMonths, src.antihist || "auto"); // v3.110.0: per kgBB
+        if (r.error) throw new Error(r.error);
+        res.items.push(...r.items);
+        res.racikan.push(...r.racikan.map((j) => ({ ...j, label: opt.label })));
+        res.text = r.text;
       } else if (src.kind === "racikan") {
         if (!Number.isFinite(weight) || weight <= 0) throw new Error("isi BB");
         const wk0 = findWeightKeyForValue(src.key, weight, { lowerBoundaryForRacikan: true });
@@ -13535,7 +13575,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.109.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.110.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
