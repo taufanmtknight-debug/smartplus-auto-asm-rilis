@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.111.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.111.1
 // @namespace    smartplus-auto-asm-v221
-// @version      3.111.0
-// @description  v3.111.0 (dokter 17 Okt 2026): puyer Batuk Pilek anak: jumlah dexamethason kembali seperti kelompok BB lama (BB/5 + 1 tab, <5 kg 1 tab); cetirizin juga untuk bayi <6 bulan/<4 kg (≤0,5 mg/kgBB/hari, 1/2 tab bila BB <6 kg); ambroxol hanya dari tablet di dalam puyer (1/2 tab bila BB <5,7 kg), tanpa sirup terpisah; nama racikan acyclovir anak 'P. Acyclovir varicella/ H.zoster(4x20 mg/kg)' dan 'P. Acyclovir H.simpleks(5x15 mg/kg)'; pilihan baru Puyer Cefixime anak 4 mg/kgBB/kali 2x, 6 bungkus (3 hari), usia ≥6 bulan.
+// @version      3.111.1
+// @description  v3.111.1 (uji Smartplus asli 17 Okt 2026): GDS yang ditulis dengan kata penghubung ("cek GDS stick hasil 344", "gula sempat tinggi 340") kini terbaca — KOMBINASI RESEP dewasa menyarankan paket DM GDS >300 dan PAKET KONSUL menulis "Cek KGDH sebelum makan, insulin SS" sesuai GDS di RPS. Racikan v3.111.0 diuji di Smartplus asli: angka 0.5 diterima form racikan, nama racikan acyclovir anak & Puyer Cefixime (CEFIXIME 100 MG KAPSUL) masuk draft resep.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.111.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.111.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.111.1";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.111.1");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -2401,7 +2401,9 @@
 
   // v3.107.0: angka GDS/KGDS/gula darah sewaktu tertinggi di teks ("GDS 320", "GDS: 345 mg/dl") -> { value, text } atau null.
   function spGdsValue(text) {
-    const re = /\b(?:k?gds|gula darah(?: sewaktu)?|glukosa(?: darah)?(?: sewaktu)?)\s*(?:[:=]|adalah)?\s*(\d{2,3})(?![\d.,]\d)/gi;
+    // v3.111.1 (uji Smartplus asli: "cek GDS stick hasil 344", "gula sempat tinggi 340" tidak terbaca): boleh ada kata
+    // penghubung pendek (stick/stik/hasil/sempat/tinggi/di IGD…) antara kata kunci dan angka; "gula" saja juga dibaca.
+    const re = /\b(?:k?gds|gula darah(?: sewaktu)?|glukosa(?: darah)?(?: sewaktu)?|gula)\s*(?:[:=]|adalah)?(?:\s*(?:stick|stik|strip|hasil|nya|sempat|tinggi|naik|awal|saat|di|igd|tadi|terakhir|cek|sebesar)\b[\s:=]*){0,4}\s*(\d{2,3})(?![\d.,]\d)/gi;
     let m, best = null;
     while ((m = re.exec(String(text || "")))) {
       const v = Number(m[1]);
@@ -13571,7 +13573,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.111.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.111.1</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
