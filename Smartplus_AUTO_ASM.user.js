@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.108.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.109.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.108.0
-// @description  v3.108.0 (dokter 17 Okt 2026): acyclovir di KOMBINASI RESEP dibedakan per penyakit — dewasa: herpes zoster/varisela 800 mg 5x1 7 hari, herpes simpleks 400 mg 3x1 7 hari; anak (puyer per kgBB, tablet 400 mg dibulatkan ke bawah): varisela 20 mg/kgBB 4x 5 hari, herpes zoster 20 mg/kgBB 4x 7 hari (maks 800 mg/kali), herpes simpleks 15 mg/kgBB 5x 5 hari (maks 200 mg/kali); saran otomatis sesuai kata herpes zoster / varisela / herpes simpleks di GADAR.
+// @version      3.109.0
+// @description  v3.109.0 (dokter 17 Okt 2026): semua resep acyclovir dari IGD untuk 3 hari lalu kontrol di faskes (dewasa zoster/varisela 30 tab, herpes simpleks 9 tab; puyer anak 12 bungkus 4x / 15 bungkus 5x); batuk pilek bayi usia <6 bulan atau BB <5 kg kini punya resep: Ambroxol sirup 15 mg/5 ml 0,5 mg/kgBB/kali 3x (dibulatkan ke bawah 0,1 ml, maks 15 mg/hari) tanpa CTM dan tanpa dexamethason; neonatus <1 bulan diminta evaluasi/rujuk.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.108.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.108.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.109.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.109.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -979,6 +979,25 @@
     MASTER_RACIKAN_TEMPLATES[pk] = { name: MASTER_RACIKAN_TEMPLATES[key].name, weightGroups: { [weightKey]: { ...g, items: [...g.items, ...extra] } } };
     return { key: pk, weightKey };
   }
+  // v3.109.0 (dokter 17 Okt 2026): batuk pilek bayi usia <6 bulan atau BB <5 kg (dulu: BB <5 kg tidak ada paket, 5–10 kg
+  // <6 bulan dapat puyer dexamethason). Bayi: TANPA CTM (bukan untuk <1 th), TANPA dexamethason (tidak bermanfaat untuk
+  // common cold) dan obat batuk-pilek kombinasi (FDA/BPOM: tidak untuk <2 th). Diganti Ambroxol sirup 15 mg/5 ml
+  // 0,5 mg/kgBB/kali 3x sehari (0,17 ml/kg, dibulatkan ke bawah 0,1 ml; label <2 th maks 7,5 mg 2x = 15 mg/hari).
+  // Neonatus <1 bulan: tidak dibuatkan (evaluasi/rujuk). Hasil null bila bukan bayi.
+  function spBapilBayi(weight, ageMonths) {
+    const w = Number(weight);
+    const m = ageMonths == null || ageMonths === "" ? NaN : Number(ageMonths);
+    if (!((Number.isFinite(m) && m < 6) || (Number.isFinite(w) && w > 0 && w < 5))) return null;
+    if (Number.isFinite(m) && m < 1) return { error: "neonatus <1 bulan dengan batuk pilek: evaluasi/rujuk, isi manual" };
+    if (!Number.isFinite(w) || w <= 0) return { error: "isi BB" };
+    const ml = Math.max(0.1, Math.min(Math.floor(w * 0.17 * 10 + 1e-9) / 10, Math.floor((5 / 3) * 10) / 10));
+    const mlTxt = String(ml).replace(".", ",");
+    return {
+      items: [{ obat: "AMBROXOL SYR 15 MG/ 5 ML", jumlah: "1", dosis: `${mlTxt} ml`, frekuensi: "3x1", waktu: "", keterangan: "bayi: tanpa CTM/dexamethason; NaCl 0,9% tetes hidung, ASI sering" }],
+      text: `Bayi (<6 bln / BB <5 kg): Ambroxol sirup 15 mg/5 ml • ${mlTxt} ml (${String(Math.round(ml * 3 * 10) / 10).replace(".", ",")} mg ≈ ${String(Math.round((ml * 3 / w) * 100) / 100).replace(".", ",")} mg/kgBB) • 3x1 • tanpa CTM/dexamethason`
+    };
+  }
+
   const spBbBelumAda = (weight, pesan) => (Number(weight) < 5 ? `BB ${weight} kg (<5 kg, bayi muda): dosis dihitung individual, isi manual` : pesan);
 
   function sirupGroupsUpTo15(sourceGroups, drugRegex) {
@@ -1223,6 +1242,15 @@
     }
 
     if (branch.kind === "racikan") {
+      if (branch.key === "BAPIL_ANAK") {
+        const bayi = spBapilBayi(weight, options.ageMonths != null && options.ageMonths !== "" ? options.ageMonths : getPatientAgeMonths());
+        if (bayi) {
+          if (bayi.error) throw new Error(bayi.error);
+          MASTER_RECIPE_TEMPLATES.BAPIL_BAYI = { name: "Batuk Pilek Bayi", items: bayi.items };
+          await fillRecipeTemplate("BAPIL_BAYI", null, options);
+          return true;
+        }
+      }
       const weightKey = findWeightKeyForValue(branch.key, weight, { lowerBoundaryForRacikan: true });
       if (!weightKey) throw new Error(spBbBelumAda(weight, `BB ${weight} kg belum tersedia pada template anak untuk keluhan ini.`));
       const rk = spRacikanSesuaiPasien(branch.key, weightKey, weight, options.ageMonths != null && options.ageMonths !== "" ? options.ageMonths : getPatientAgeMonths());
@@ -1324,6 +1352,10 @@
         const r = spPctAnakPerKg(branch, weight, options);
         regularItems.push(...r.items);
         racikanJobs.push(...r.racikan.map((job) => ({ ...job, label: complaint.label })));
+      } else if (branch.kind === "racikan" && branch.key === "BAPIL_ANAK" && spBapilBayi(weight, options.ageMonths != null && options.ageMonths !== "" ? options.ageMonths : getPatientAgeMonths())) {
+        const bayi = spBapilBayi(weight, options.ageMonths != null && options.ageMonths !== "" ? options.ageMonths : getPatientAgeMonths());
+        if (bayi.error) throw new Error(bayi.error);
+        regularItems.push(...bayi.items);
       } else if (branch.kind === "racikan") {
         const weightKey = findWeightKeyForValue(branch.key, weight, { lowerBoundaryForRacikan: true });
         if (!weightKey) throw new Error(spBbBelumAda(weight, `BB ${weight} kg belum tersedia untuk ${complaint.label}.`));
@@ -1476,11 +1508,11 @@
         ["LEVOFLOXACIN", "Antibiotik", "Levofloxacin 500 mg", "LEVOFLOXACIN 500 MG TAB HEXPHARM*", "5", "500 mg", "1x1", "", ["ISK_TIFOID"], { cls: "abx", notWith: ["CEFIXIME", "CIPROFLOXACIN"] }],
         ["CIPROFLOXACIN", "Antibiotik", "Ciprofloxacin 500 mg", "CIPROFLOXACIN 500MG TAB", "6", "500 mg", "2x1", "", ["ISK_TIFOID"], { cls: "abx", notWith: ["CEFIXIME"] }],
         ["METRONIDAZOL", "Antibiotik", "Metronidazol 500 mg", "METRONIDAZOLE TAB 500 MG*", "21", "500 mg", "3x1", "", ["DIARE"], { cls: "abx" }],
-        // Herpes zoster <72 jam: 800 mg (2 tab 400 mg) 5x sehari 7 hari = 70 tablet (kursus penuh, tidak dipotong aturan 6 tablet).
-        ["ACYCLOVIR", "Lain-lain", "Acyclovir 800 mg 5x (herpes zoster / varisela)", "ACYCLOVIR 400 MG TABLET*", "70", "800 mg (2 tablet)", "5x1", "7 hari", ["HERPES", "VARISELA"], { cls: "keep", notWith: ["ACYCLOVIR_HSV"] }],
+        // Herpes zoster / varisela: 800 mg (2 tab 400 mg) 5x sehari; v3.109.0 (dokter): resep IGD 3 hari = 30 tablet, lanjut kontrol faskes.
+        ["ACYCLOVIR", "Lain-lain", "Acyclovir 800 mg 5x (herpes zoster / varisela)", "ACYCLOVIR 400 MG TABLET*", "30", "800 mg (2 tablet)", "5x1", "3 hari, lanjut kontrol faskes", ["HERPES", "VARISELA"], { cls: "keep", notWith: ["ACYCLOVIR_HSV"] }],
         // v3.108.0 (dokter 17 Okt 2026: acyclovir dibedakan per penyakit). Herpes simpleks (labialis/genital episode pertama):
-        // 400 mg 3x sehari 7 hari = 21 tablet (CDC STI 2021; BNF).
-        ["ACYCLOVIR_HSV", "Lain-lain", "Acyclovir 400 mg 3x (herpes simpleks)", "ACYCLOVIR 400 MG TABLET*", "21", "400 mg", "3x1", "7 hari", ["HERPES_SIMPLEX"], { cls: "keep" }]
+        // 400 mg 3x sehari (CDC STI 2021; BNF); v3.109.0: resep IGD 3 hari = 9 tablet.
+        ["ACYCLOVIR_HSV", "Lain-lain", "Acyclovir 400 mg 3x (herpes simpleks)", "ACYCLOVIR 400 MG TABLET*", "9", "400 mg", "3x1", "3 hari, lanjut kontrol faskes", ["HERPES_SIMPLEX"], { cls: "keep" }]
       ].map(([key, group, label, obat, jumlah, dosis, frekuensi, keterangan, why, extra]) =>
         ({ key, group, label, why: why || [], ...(extra || {}), src: { kind: "fixed", item: { obat, jumlah, dosis, frekuensi, waktu: "", keterangan } } })),
       // v3.107.0 DM rawat jalan per GDS (dokter 17 Okt 2026): GDS >200 dan >250 = Metformin 500 mg 2x1 (pilihan METFORMIN);
@@ -1523,11 +1555,12 @@
       { key: "MP_ASMA", group: "Batuk, pilek & alergi", label: "Puyer Methylprednisolon (asma, 3 hari)", why: ["ASMA"], src: { kind: "perKgPuyer", nama: "Puyer Methylprednisolon", obat: "METHYLPREDNISOLON 4 MG*", tabMg: 4, mgPerKg: 0.8, maxMgKali: 32, bungkus: 3, frekuensi: "1 X SEHARI", keterangan: "pagi, 3 hari" } },
       // Varisela anak: acyclovir 20 mg/kgBB/kali 4x sehari 5 hari (maks 800 mg/kali) = puyer 20 bungkus tablet 400 mg
       // (jumlah tablet = BB dalam kg, dibulatkan ke bawah). Bayi <3 bulan / imunokompromais: rujuk (asiklovir iv).
+      // v3.109.0 (dokter 17 Okt 2026): semua resep acyclovir dari IGD untuk 3 hari, lanjutan kontrol di faskes.
       // v3.108.0: herpes zoster anak 20 mg/kgBB/kali 4x 7 hari (28 bungkus, maks 800 mg/kali; AAP Red Book);
       // herpes simpleks anak (gingivostomatitis) 15 mg/kgBB/kali 5x 5 hari (25 bungkus, maks 200 mg/kali; BNFC).
-      { key: "ACYCLOVIR", group: "Lain-lain", label: "Puyer Acyclovir varisela (20 mg/kg 4x, 5 hari)", why: ["VARISELA"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "Puyer Acyclovir", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 20, maxMgKali: 800, bungkus: 20, frekuensi: "4 X SEHARI", keterangan: "5 hari" } },
-      { key: "ACYCLOVIR_ZOSTER", group: "Lain-lain", label: "Puyer Acyclovir herpes zoster (20 mg/kg 4x, 7 hari)", why: ["HERPES"], notWith: ["ACYCLOVIR"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "Puyer Acyclovir zoster", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 20, maxMgKali: 800, bungkus: 28, frekuensi: "4 X SEHARI", keterangan: "7 hari" } },
-      { key: "ACYCLOVIR_HSV", group: "Lain-lain", label: "Puyer Acyclovir herpes simpleks (15 mg/kg 5x, 5 hari)", why: ["HERPES_SIMPLEX"], notWith: ["ACYCLOVIR", "ACYCLOVIR_ZOSTER"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "Puyer Acyclovir herpes simpleks", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 15, maxMgKali: 200, bungkus: 25, frekuensi: "5 X SEHARI", keterangan: "5 hari" } }
+      { key: "ACYCLOVIR", group: "Lain-lain", label: "Puyer Acyclovir varisela (20 mg/kg 4x, 3 hari)", why: ["VARISELA"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "Puyer Acyclovir", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 20, maxMgKali: 800, bungkus: 12, frekuensi: "4 X SEHARI", keterangan: "3 hari, lanjut kontrol faskes" } },
+      { key: "ACYCLOVIR_ZOSTER", group: "Lain-lain", label: "Puyer Acyclovir herpes zoster (20 mg/kg 4x, 3 hari)", why: ["HERPES"], notWith: ["ACYCLOVIR"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "Puyer Acyclovir zoster", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 20, maxMgKali: 800, bungkus: 12, frekuensi: "4 X SEHARI", keterangan: "3 hari, lanjut kontrol faskes" } },
+      { key: "ACYCLOVIR_HSV", group: "Lain-lain", label: "Puyer Acyclovir herpes simpleks (15 mg/kg 5x, 3 hari)", why: ["HERPES_SIMPLEX"], notWith: ["ACYCLOVIR", "ACYCLOVIR_ZOSTER"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "Puyer Acyclovir herpes simpleks", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 15, maxMgKali: 200, bungkus: 15, frekuensi: "5 X SEHARI", keterangan: "3 hari, lanjut kontrol faskes" } }
     ]
   };
 
@@ -3304,6 +3337,11 @@
         if (!Number.isFinite(age) || age < 5) throw new Error("hanya usia ≥5 th");
         const tpl = MASTER_RECIPE_TEMPLATES[age <= 15 ? src.key5_15 : src.keyGt15];
         res.items.push(...(tpl?.items || []).map((i) => ({ ...i })));
+      } else if (src.kind === "racikan" && src.key === "BAPIL_ANAK" && spBapilBayi(weight, ctx.ageMonths)) {
+        const bayi = spBapilBayi(weight, ctx.ageMonths); // v3.109.0: bayi <6 bln / BB <5 kg
+        if (bayi.error) throw new Error(bayi.error);
+        res.items.push(...bayi.items);
+        res.text = bayi.text;
       } else if (src.kind === "racikan") {
         if (!Number.isFinite(weight) || weight <= 0) throw new Error("isi BB");
         const wk0 = findWeightKeyForValue(src.key, weight, { lowerBoundaryForRacikan: true });
@@ -13497,7 +13535,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.108.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.109.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
