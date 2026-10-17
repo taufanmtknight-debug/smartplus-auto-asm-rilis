@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.105.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.106.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.105.0
-// @description  v3.105.0 (evaluasi dosis, disetujui dokter 17 Okt 2026): dosis paket resep dicek terhadap dosis maksimal & diperbaiki — Paracetamol anak 12 mg/kgBB/kali (maks 12,5) sehingga tetap boleh 6x sehari (≤75 mg/kg/hari), bayi <5 kg/<3 bln maks 4x; Demam/Nyeri anak dihitung per kgBB pasien; PCT iv anak 15 mg/kgBB/6 jam (BB <10 kg 7,5 mg/kgBB); kelompok BB <5 kg tidak diisi otomatis (dosis bayi individual); domperidon sirup ≤0,25 mg/kg; puyer Bapil/Radang: ambroxol & CTM diturunkan, tanpa CTM <10 kg; puyer ranitidin anak 3 mg/kg/kali; zinc 10 hari (bayi <6 bln 1/2 tab juga di menu paket); ondansetron iv anak <7 kg 0,15 mg/kg; nebu anak <12 th salbutamol ± ipratropium; peringatan dosis dewasa pada paket TINDAKAN untuk anak & lansia (ketorolac 15 mg ≥65 th); Obat Nyeri tanpa ranitidin; Sanmol forte & Diatab diberi batas harian; resep pulang Azithromycin 3 hari, Adalat Oros 1x.
+// @version      3.106.0
+// @description  v3.106.0 (dokter 17 Okt 2026): puyer Bapil Anak BB 5–10 kg tidak lagi hanya dexamethason — CTM 1 tab/10 bks ditambahkan bila usia ≥1 tahun, Ambroxol 1 tab/10 bks bila BB ≥5,7 kg (tetap ≤0,35 mg/kg/hari CTM dan ≤1,6 mg/kg/hari ambroxol); Radang/Bengkak Anak 5–10 kg ditambah CTM bila usia ≥1 tahun. Berlaku di resep keluhan & KOMBINASI RESEP (BB & usia pasien terbaca).
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.105.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.105.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.106.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.106.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -843,7 +843,8 @@
       weightGroups: Object.fromEntries(
         // v3.105.0 (evaluasi dosis 17 Okt 2026): kelompok 1–5 kg dihapus. Per bungkus = jumlah tablet / 10.
         // Dexamethason tetap (i+1) tab. CTM i tab (maks 0,35 mg/kg/hari), TIDAK untuk BB <10 kg (bayi <1–2 th).
-        // Ambroxol (i-1) tab (maks 1,6 mg/kg/hari di BB batas bawah), tidak ada di 5–10 kg (pakai Ambroxol sirup per kg).
+        // Ambroxol (i-1) tab (maks 1,6 mg/kg/hari di BB batas bawah). Kelompok 5–10 kg ditambah CTM/Ambroxol sesuai usia & BB
+        // pasien saat dipakai (v3.106.0, spRacikanSesuaiPasien).
         Array.from({ length: 9 }, (_, n) => {
           const i = n + 1;
           const min = i * 5;
@@ -963,6 +964,21 @@
   // =========================
   const ANAK_SIRUP_MAX_KG = 15;
   // v3.105.0 (evaluasi dosis 17 Okt 2026): paket anak berbasis kelompok BB tidak tersedia untuk BB <5 kg (neonatus/bayi muda).
+  // v3.106.0 (dokter 17 Okt 2026, contoh anak 1 th BB ±9 kg mendapat Bapil dexa saja): racikan Bapil/Radang kelompok
+  // 5–10 kg disesuaikan pasien -> CTM 1 tab/10 bks bila usia >=12 bulan (BNFC: bukan untuk <1 th; 0,24 mg/kg/hari di 5 kg),
+  // Ambroxol 1 tab/10 bks (Bapil) bila BB >=5,7 kg (9 mg/hari <=1,6 mg/kg/hari). Hasil = kelompok di template "<KEY>_PASIEN".
+  function spRacikanSesuaiPasien(key, weightKey, weight, ageMonths) {
+    const g = MASTER_RACIKAN_TEMPLATES[key]?.weightGroups?.[weightKey];
+    if (weightKey !== "5_10" || !g || !/^(BAPIL_ANAK|RADANG_BENGKAK_ANAK)$/.test(key)) return { key, weightKey };
+    const m = ageMonths == null || ageMonths === "" ? NaN : Number(ageMonths);
+    const extra = [];
+    if (m >= 12) extra.push({ obat: "CTM 4MG TAB", jumlahPerObat: "1" });
+    if (key === "BAPIL_ANAK" && Number(weight) >= 5.7) extra.push({ obat: "AMBROXOL 30MG TAB*", jumlahPerObat: "1" });
+    if (!extra.length) return { key, weightKey };
+    const pk = `${key}_PASIEN`;
+    MASTER_RACIKAN_TEMPLATES[pk] = { name: MASTER_RACIKAN_TEMPLATES[key].name, weightGroups: { [weightKey]: { ...g, items: [...g.items, ...extra] } } };
+    return { key: pk, weightKey };
+  }
   const spBbBelumAda = (weight, pesan) => (Number(weight) < 5 ? `BB ${weight} kg (<5 kg, bayi muda): dosis dihitung individual, isi manual` : pesan);
 
   function sirupGroupsUpTo15(sourceGroups, drugRegex) {
@@ -1209,7 +1225,8 @@
     if (branch.kind === "racikan") {
       const weightKey = findWeightKeyForValue(branch.key, weight, { lowerBoundaryForRacikan: true });
       if (!weightKey) throw new Error(spBbBelumAda(weight, `BB ${weight} kg belum tersedia pada template anak untuk keluhan ini.`));
-      await fillRacikanTemplate(branch.key, weightKey, options);
+      const rk = spRacikanSesuaiPasien(branch.key, weightKey, weight, options.ageMonths != null && options.ageMonths !== "" ? options.ageMonths : getPatientAgeMonths());
+      await fillRacikanTemplate(rk.key, rk.weightKey, options);
       return true;
     }
 
@@ -1310,7 +1327,8 @@
       } else if (branch.kind === "racikan") {
         const weightKey = findWeightKeyForValue(branch.key, weight, { lowerBoundaryForRacikan: true });
         if (!weightKey) throw new Error(spBbBelumAda(weight, `BB ${weight} kg belum tersedia untuk ${complaint.label}.`));
-        racikanJobs.push({ key: branch.key, weightKey, label: complaint.label });
+        const rk = spRacikanSesuaiPasien(branch.key, weightKey, weight, options.ageMonths != null && options.ageMonths !== "" ? options.ageMonths : getPatientAgeMonths());
+        racikanJobs.push({ key: rk.key, weightKey: rk.weightKey, label: complaint.label });
       }
 
       details.push(complaint.label);
@@ -3186,11 +3204,13 @@
         res.items.push(...(tpl?.items || []).map((i) => ({ ...i })));
       } else if (src.kind === "racikan") {
         if (!Number.isFinite(weight) || weight <= 0) throw new Error("isi BB");
-        const wk = findWeightKeyForValue(src.key, weight, { lowerBoundaryForRacikan: true });
-        const tpl = MASTER_RACIKAN_TEMPLATES[src.key];
+        const wk0 = findWeightKeyForValue(src.key, weight, { lowerBoundaryForRacikan: true });
+        const rk = wk0 ? spRacikanSesuaiPasien(src.key, wk0, weight, ctx.ageMonths) : { key: src.key, weightKey: wk0 }; // v3.106.0
+        const wk = rk.weightKey;
+        const tpl = MASTER_RACIKAN_TEMPLATES[rk.key];
         const g = tpl?.weightGroups?.[wk];
         if (!g) throw new Error(spBbBelumAda(weight, `BB ${weight} kg belum ada di template racikan`));
-        res.racikan.push({ key: src.key, weightKey: wk, label: opt.label });
+        res.racikan.push({ key: rk.key, weightKey: wk, label: opt.label });
         const bahan = (g.items || []).map((i) => `${i.obat.replace(/\*$/, "")} ×${i.jumlahPerObat || i.jumlah || 1}`).join(" + ");
         res.text = `Puyer ${g.jumlahRacikan || 10} bks: ${bahan} • ${g.dosis || "1 pulv"} ${g.frekuensi || ""}`.trim();
       }
@@ -13334,7 +13354,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.105.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.106.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
