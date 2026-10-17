@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.104.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.105.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.104.0
-// @description  v3.104.0 (permintaan dokter 15 Okt 2026): 🧠 TANYA AI bisa memakai ChatGPT (OpenAI) selain Claude — di ⚙ Pengaturan kini ada kotak API key OpenAI (ChatGPT) di bawah API key Anthropic, caranya sama: buat kunci di platform.openai.com → API keys, tempel, Simpan (disimpan di browser ini saja, tidak pernah ada di script). Daftar Model kini dua grup: Claude (Opus/Sonnet/Haiku 5.5) dan ChatGPT (GPT-5.6 Sol/Terra/Luna, dengan perkiraan biaya); setelah kunci ChatGPT disimpan dan belum ada kunci Claude, model otomatis GPT-5.6 Luna (termurah). 📎 Baca data pasien, 📷 foto, tombol cepat, SOAP lengkap, riwayat percakapan & Salin tetap sama untuk ChatGPT. Hanya menjawab, tidak mengisi/menyimpan apa pun.
+// @version      3.105.0
+// @description  v3.105.0 (evaluasi dosis, disetujui dokter 17 Okt 2026): dosis paket resep dicek terhadap dosis maksimal & diperbaiki — Paracetamol anak 12 mg/kgBB/kali (maks 12,5) sehingga tetap boleh 6x sehari (≤75 mg/kg/hari), bayi <5 kg/<3 bln maks 4x; Demam/Nyeri anak dihitung per kgBB pasien; PCT iv anak 15 mg/kgBB/6 jam (BB <10 kg 7,5 mg/kgBB); kelompok BB <5 kg tidak diisi otomatis (dosis bayi individual); domperidon sirup ≤0,25 mg/kg; puyer Bapil/Radang: ambroxol & CTM diturunkan, tanpa CTM <10 kg; puyer ranitidin anak 3 mg/kg/kali; zinc 10 hari (bayi <6 bln 1/2 tab juga di menu paket); ondansetron iv anak <7 kg 0,15 mg/kg; nebu anak <12 th salbutamol ± ipratropium; peringatan dosis dewasa pada paket TINDAKAN untuk anak & lansia (ketorolac 15 mg ≥65 th); Obat Nyeri tanpa ranitidin; Sanmol forte & Diatab diberi batas harian; resep pulang Azithromycin 3 hari, Adalat Oros 1x.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.104.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.104.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.105.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.105.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -446,7 +446,7 @@
       name: "BI Dewasa",
       items: [
         { obat: "AMOXICILLIN 500MG TABLET", jumlah: "10", dosis: "500 mg", frekuensi: "3x1", waktu: "", keterangan: "" },
-        { obat: "SANMOL FORTE TABLET 650MG*", jumlah: "10", dosis: "650 mg", frekuensi: "4–6x1", waktu: "", keterangan: "" },
+        { obat: "SANMOL FORTE TABLET 650MG*", jumlah: "10", dosis: "650 mg", frekuensi: "4–6x1", waktu: "", keterangan: "maks 6 tablet/hari" },
         { obat: "DOMPERIDON 10MG TAB", jumlah: "6", dosis: "10 mg", frekuensi: "3x1", waktu: "", keterangan: "" }
       ]
     },
@@ -455,7 +455,7 @@
       name: "ISPA Dewasa",
       items: [
         { obat: "AMOXICILLIN 500MG TABLET", jumlah: "10", dosis: "500 mg", frekuensi: "3x1", waktu: "", keterangan: "" },
-        { obat: "SANMOL FORTE TABLET 650MG*", jumlah: "10", dosis: "650 mg", frekuensi: "4–6x1", waktu: "", keterangan: "" },
+        { obat: "SANMOL FORTE TABLET 650MG*", jumlah: "10", dosis: "650 mg", frekuensi: "4–6x1", waktu: "", keterangan: "maks 6 tablet/hari" },
         { obat: "AMBROXOL 30MG TAB", jumlah: "6", dosis: "30 mg", frekuensi: "3x1", waktu: "", keterangan: "" },
         { obat: "CTM 4MG TAB", jumlah: "6", dosis: "4 mg", frekuensi: "3x1", waktu: "", keterangan: "" },
         { obat: "DEXAMETHASON 0.5 MG TAB*", jumlah: "6", dosis: "0,5 mg", frekuensi: "3x1", waktu: "", keterangan: "" }
@@ -465,10 +465,10 @@
     GEA_DEWASA: {
       name: "GEA Dewasa",
       items: [
-        { obat: "NEW DIATAB", jumlah: "10", dosis: "2 tab", frekuensi: "setiap BAB cair", waktu: "", keterangan: "2 tab setiap BAB cair" },
+        { obat: "NEW DIATAB", jumlah: "10", dosis: "2 tab", frekuensi: "setiap BAB cair", waktu: "", keterangan: "2 tab setiap BAB cair, maks 12 tab/hari" },
         { obat: "OMEPRAZOLE 20 MG CAPSUL", jumlah: "5", dosis: "20 mg", frekuensi: "2x1", waktu: "", keterangan: "" },
         { obat: "DOMPERIDON 10MG TAB", jumlah: "6", dosis: "10 mg", frekuensi: "3x1", waktu: "", keterangan: "" },
-        { obat: "SANMOL FORTE TABLET 650MG*", jumlah: "10", dosis: "650 mg", frekuensi: "4–6x1", waktu: "", keterangan: "" }
+        { obat: "SANMOL FORTE TABLET 650MG*", jumlah: "10", dosis: "650 mg", frekuensi: "4–6x1", waktu: "", keterangan: "maks 6 tablet/hari" }
       ]
     },
 
@@ -476,8 +476,8 @@
       name: "Obat Nyeri",
       items: [
         { obat: "KETOROLAC TABLET", jumlah: "6", dosis: "1 tablet", frekuensi: "3x1", waktu: "", keterangan: "" },
-        { obat: "OMEPRAZOLE CAPSUL*", jumlah: "5", dosis: "1 caps", frekuensi: "2x1", waktu: "", keterangan: "" },
-        { obat: "RANITIDIN TABLET", jumlah: "5", dosis: "1 tablet", frekuensi: "2x1", waktu: "", keterangan: "" }
+        // v3.105.0: Ranitidin dihapus (dobel penekan asam dengan Omeprazole).
+        { obat: "OMEPRAZOLE CAPSUL*", jumlah: "5", dosis: "1 caps", frekuensi: "2x1", waktu: "", keterangan: "" }
       ]
     },
 
@@ -495,46 +495,34 @@
       ]
     },
 
+    // v3.105.0 (evaluasi dosis, disetujui dokter 17 Okt 2026): kelompok BB <5 kg dihapus dari BI Anak (neonatus/bayi muda =
+    // dosis individual). Paracetamol 12 mg/kgBB dihitung dari BB batas BAWAH kelompok (maks 12,5 mg/kg -> 6x/hari tetap
+    // <=75 mg/kg/hari). Domperidon 0,25 mg/kgBB/kali dari BB batas bawah (dibulatkan ke bawah 0,5 ml). Amoxicillin tetap.
+    // GEA Anak <5 kg: hanya zinc 1/2 tab (10 mg) + oralit. Zinc 10 hari (WHO/LINTAS Diare).
     BI_ANAK: {
       name: "BI Anak",
       weightGroups: {
-        "0_2_5": {
-          label: "BB 0–2,5 kg",
-          items: [
-            { obat: "AMOXYCILLIN 60 CC SYR 125MG/5ML*", jumlah: "1", dosis: "1 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "1 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "1 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
-          ]
-        },
-        "2_5_5": {
-          label: "BB 2,5–5 kg",
-          items: [
-            { obat: "AMOXYCILLIN 60 CC SYR 125MG/5ML*", jumlah: "1", dosis: "2 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "1 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "2 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
-          ]
-        },
         "5_7_5": {
           label: "BB 5–7,5 kg",
           items: [
             { obat: "AMOXYCILLIN 60 CC SYR 125MG/5ML*", jumlah: "1", dosis: "3 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "2 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "3 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
+            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "1 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
+            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "2,5 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
           ]
         },
         "7_5_10": {
           label: "BB 7,5–10 kg",
           items: [
             { obat: "AMOXYCILLIN 60 CC SYR 125MG/5ML*", jumlah: "1", dosis: "4 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "2 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "4 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
+            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "1,5 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
+            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "3,5 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
           ]
         },
         "10_12_5": {
           label: "BB 10–12,5 kg",
           items: [
             { obat: "AMOXYCILLIN 60 CC SYR 125MG/5ML*", jumlah: "1", dosis: "5 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "3 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
+            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "2,5 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
             { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "5 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
           ]
         },
@@ -550,7 +538,7 @@
           label: "BB 15–17,5 kg",
           items: [
             { obat: "AMOXYCILLIN 60 CC SYR 125MG/5ML*", jumlah: "1", dosis: "7 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "4 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
+            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "3,5 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
             { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "7 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
           ]
         },
@@ -559,7 +547,7 @@
           items: [
             { obat: "AMOXYCILLIN 60 CC SYR 125MG/5ML*", jumlah: "1", dosis: "8 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
             { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "4 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "8 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
+            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "8,5 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
           ]
         },
         "20_22_5": {
@@ -567,15 +555,15 @@
           items: [
             { obat: "AMOXYCILLIN 60 CC SYR 125MG/5ML*", jumlah: "1", dosis: "9 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
             { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "5 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "9 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
+            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "9,5 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
           ]
         },
         "22_5_25": {
           label: "BB 22,5–25 kg",
           items: [
             { obat: "AMOXYCILLIN 60 CC SYR 125MG/5ML*", jumlah: "1", dosis: "10 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "5 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "10 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
+            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "5,5 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
+            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "11 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
           ]
         }
       }
@@ -587,52 +575,48 @@
         "0_2_5": {
           label: "BB 0–2,5 kg",
           items: [
-            { obat: "ZINc TABLET", jumlah: "3", dosis: "1 tablet", frekuensi: "1x1", waktu: "", keterangan: "" },
-            { obat: "ORALIT", jumlah: "4", dosis: "", frekuensi: "setiap BAB cair", waktu: "", keterangan: "Diminum setiap BAB cair" },
-            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "1 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "1 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
+            { obat: "ZINc TABLET", jumlah: "5", dosis: "1/2 tablet", frekuensi: "1x1", waktu: "", keterangan: "selama 10 hari" },
+            { obat: "ORALIT", jumlah: "4", dosis: "", frekuensi: "setiap BAB cair", waktu: "", keterangan: "Diminum setiap BAB cair" }
           ]
         },
         "2_5_5": {
           label: "BB 2,5–5 kg",
           items: [
-            { obat: "ZINc TABLET", jumlah: "3", dosis: "1 tablet", frekuensi: "1x1", waktu: "", keterangan: "" },
-            { obat: "ORALIT", jumlah: "4", dosis: "", frekuensi: "setiap BAB cair", waktu: "", keterangan: "Diminum setiap BAB cair" },
-            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "1 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "2 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
+            { obat: "ZINc TABLET", jumlah: "5", dosis: "1/2 tablet", frekuensi: "1x1", waktu: "", keterangan: "selama 10 hari" },
+            { obat: "ORALIT", jumlah: "4", dosis: "", frekuensi: "setiap BAB cair", waktu: "", keterangan: "Diminum setiap BAB cair" }
           ]
         },
         "5_7_5": {
           label: "BB 5–7,5 kg",
           items: [
-            { obat: "ZINc TABLET", jumlah: "3", dosis: "1 tablet", frekuensi: "1x1", waktu: "", keterangan: "" },
+            { obat: "ZINc TABLET", jumlah: "10", dosis: "1 tablet", frekuensi: "1x1", waktu: "", keterangan: "selama 10 hari" },
             { obat: "ORALIT", jumlah: "4", dosis: "", frekuensi: "setiap BAB cair", waktu: "", keterangan: "Diminum setiap BAB cair" },
-            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "2 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "3 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
+            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "1 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
+            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "2,5 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
           ]
         },
         "7_5_10": {
           label: "BB 7,5–10 kg",
           items: [
-            { obat: "ZINc TABLET", jumlah: "3", dosis: "1 tablet", frekuensi: "1x1", waktu: "", keterangan: "" },
+            { obat: "ZINc TABLET", jumlah: "10", dosis: "1 tablet", frekuensi: "1x1", waktu: "", keterangan: "selama 10 hari" },
             { obat: "ORALIT", jumlah: "4", dosis: "", frekuensi: "setiap BAB cair", waktu: "", keterangan: "Diminum setiap BAB cair" },
-            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "2 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "4 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
+            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "1,5 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
+            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "3,5 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
           ]
         },
         "10_12_5": {
           label: "BB 10–12,5 kg",
           items: [
-            { obat: "ZINc TABLET", jumlah: "3", dosis: "1 tablet", frekuensi: "1x1", waktu: "", keterangan: "" },
+            { obat: "ZINc TABLET", jumlah: "10", dosis: "1 tablet", frekuensi: "1x1", waktu: "", keterangan: "selama 10 hari" },
             { obat: "ORALIT", jumlah: "4", dosis: "", frekuensi: "setiap BAB cair", waktu: "", keterangan: "Diminum setiap BAB cair" },
-            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "3 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
+            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "2,5 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
             { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "5 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
           ]
         },
         "12_5_15": {
           label: "BB 12,5–15 kg",
           items: [
-            { obat: "ZINc TABLET", jumlah: "3", dosis: "1 tablet", frekuensi: "1x1", waktu: "", keterangan: "" },
+            { obat: "ZINc TABLET", jumlah: "10", dosis: "1 tablet", frekuensi: "1x1", waktu: "", keterangan: "selama 10 hari" },
             { obat: "ORALIT", jumlah: "4", dosis: "", frekuensi: "setiap BAB cair", waktu: "", keterangan: "Diminum setiap BAB cair" },
             { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "3 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
             { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "6 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
@@ -641,37 +625,37 @@
         "15_17_5": {
           label: "BB 15–17,5 kg",
           items: [
-            { obat: "ZINc TABLET", jumlah: "3", dosis: "1 tablet", frekuensi: "1x1", waktu: "", keterangan: "" },
+            { obat: "ZINc TABLET", jumlah: "10", dosis: "1 tablet", frekuensi: "1x1", waktu: "", keterangan: "selama 10 hari" },
             { obat: "ORALIT", jumlah: "4", dosis: "", frekuensi: "setiap BAB cair", waktu: "", keterangan: "Diminum setiap BAB cair" },
-            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "4 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
+            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "3,5 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
             { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "7 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
           ]
         },
         "17_5_20": {
           label: "BB 17,5–20 kg",
           items: [
-            { obat: "ZINc TABLET", jumlah: "3", dosis: "1 tablet", frekuensi: "1x1", waktu: "", keterangan: "" },
+            { obat: "ZINc TABLET", jumlah: "10", dosis: "1 tablet", frekuensi: "1x1", waktu: "", keterangan: "selama 10 hari" },
             { obat: "ORALIT", jumlah: "4", dosis: "", frekuensi: "setiap BAB cair", waktu: "", keterangan: "Diminum setiap BAB cair" },
             { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "4 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "8 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
+            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "8,5 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
           ]
         },
         "20_22_5": {
           label: "BB 20–22,5 kg",
           items: [
-            { obat: "ZINc TABLET", jumlah: "3", dosis: "1 tablet", frekuensi: "1x1", waktu: "", keterangan: "" },
+            { obat: "ZINc TABLET", jumlah: "10", dosis: "1 tablet", frekuensi: "1x1", waktu: "", keterangan: "selama 10 hari" },
             { obat: "ORALIT", jumlah: "4", dosis: "", frekuensi: "setiap BAB cair", waktu: "", keterangan: "Diminum setiap BAB cair" },
             { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "5 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "9 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
+            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "9,5 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
           ]
         },
         "22_5_25": {
           label: "BB 22,5–25 kg",
           items: [
-            { obat: "ZINc TABLET", jumlah: "3", dosis: "1 tablet", frekuensi: "1x1", waktu: "", keterangan: "" },
+            { obat: "ZINc TABLET", jumlah: "10", dosis: "1 tablet", frekuensi: "1x1", waktu: "", keterangan: "selama 10 hari" },
             { obat: "ORALIT", jumlah: "4", dosis: "", frekuensi: "setiap BAB cair", waktu: "", keterangan: "Diminum setiap BAB cair" },
-            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "5 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
-            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "10 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
+            { obat: "DOMPERIDONE SYR", jumlah: "1", dosis: "5,5 ml", frekuensi: "3x1", waktu: "", keterangan: "" },
+            { obat: "PARACETAMOL 60 CC GEN", jumlah: "1", dosis: "11 ml", frekuensi: "4–6x1", waktu: "", keterangan: "" }
           ]
         }
       }
@@ -857,10 +841,13 @@
     BAPIL_ANAK: {
       name: "Bapil Anak",
       weightGroups: Object.fromEntries(
-        Array.from({ length: 10 }, (_, i) => {
-          const min = i === 0 ? 1 : i * 5;
+        // v3.105.0 (evaluasi dosis 17 Okt 2026): kelompok 1–5 kg dihapus. Per bungkus = jumlah tablet / 10.
+        // Dexamethason tetap (i+1) tab. CTM i tab (maks 0,35 mg/kg/hari), TIDAK untuk BB <10 kg (bayi <1–2 th).
+        // Ambroxol (i-1) tab (maks 1,6 mg/kg/hari di BB batas bawah), tidak ada di 5–10 kg (pakai Ambroxol sirup per kg).
+        Array.from({ length: 9 }, (_, n) => {
+          const i = n + 1;
+          const min = i * 5;
           const max = (i + 1) * 5;
-          const qty = String(i + 1);
           const key = `${min}_${max}`;
           return [key, {
             label: `BB ${min}–${max} kg`,
@@ -872,9 +859,8 @@
             frekuensi: "3 X SEHARI",
             waktu: "",
             items: [
-              { obat: "DEXAMETHASON 0.5 MG TAB", jumlahPerObat: qty },
-              { obat: "CTM 4MG TAB", jumlahPerObat: qty },
-              { obat: "AMBROXOL 30MG TAB*", jumlahPerObat: qty }
+              { obat: "DEXAMETHASON 0.5 MG TAB", jumlahPerObat: String(i + 1) },
+              ...(i >= 2 ? [{ obat: "CTM 4MG TAB", jumlahPerObat: String(i) }, { obat: "AMBROXOL 30MG TAB*", jumlahPerObat: String(i - 1) }] : [])
             ]
           }];
         })
@@ -883,10 +869,11 @@
     RADANG_BENGKAK_ANAK: {
       name: "Radang/Bengkak Anak",
       weightGroups: Object.fromEntries(
-        Array.from({ length: 10 }, (_, i) => {
-          const min = i === 0 ? 1 : i * 5;
+        // v3.105.0: kelompok 1–5 kg dihapus; CTM i tab, tidak untuk BB <10 kg (lihat Bapil Anak).
+        Array.from({ length: 9 }, (_, n) => {
+          const i = n + 1;
+          const min = i * 5;
           const max = (i + 1) * 5;
-          const qty = String(i + 1);
           const key = `${min}_${max}`;
           return [key, {
             label: `BB ${min}–${max} kg`,
@@ -898,8 +885,8 @@
             frekuensi: "3 X SEHARI",
             waktu: "",
             items: [
-              { obat: "DEXAMETHASON 0.5 MG TAB", jumlahPerObat: qty },
-              { obat: "CTM 4MG TAB", jumlahPerObat: qty }
+              { obat: "DEXAMETHASON 0.5 MG TAB", jumlahPerObat: String(i + 1) },
+              ...(i >= 2 ? [{ obat: "CTM 4MG TAB", jumlahPerObat: String(i) }] : [])
             ]
           }];
         })
@@ -908,10 +895,13 @@
     NYERI_ULU_HATI_ANAK: {
       name: "Nyeri Ulu Hati Anak",
       weightGroups: Object.fromEntries(
-        Array.from({ length: 10 }, (_, i) => {
-          const min = i === 0 ? 1 : i * 5;
+        // v3.105.0: kelompok 1–5 kg dihapus; Ranitidin i tab per 10 bungkus = 3 mg/kgBB/kali di BB batas bawah
+        // (2x sehari = maks 6 mg/kg/hari; tukak 4–8, GERD 5–10 mg/kg/hari; maks 150 mg/kali).
+        Array.from({ length: 9 }, (_, n) => {
+          const i = n + 1;
+          const min = i * 5;
           const max = (i + 1) * 5;
-          const qty = String(i + 1);
+          const qty = String(i);
           const key = `${min}_${max}`;
           return [key, {
             label: `BB ${min}–${max} kg`,
@@ -950,7 +940,7 @@
     { obat: "CTM 4MG TAB", jumlah: "6", dosis: "4 mg", frekuensi: "3x1", waktu: "", keterangan: "" },
     { obat: "DEXAMETHASON 0.5 MG TAB*", jumlah: "6", dosis: "0,5 mg", frekuensi: "3x1", waktu: "", keterangan: "" }
   ] };
-  MASTER_RECIPE_TEMPLATES.KELUHAN_DIARE_DEWASA = { name: "Diare Dewasa", items: [{ obat: "NEW DIATAB", jumlah: "10", dosis: "2 tab", frekuensi: "setiap BAB cair", waktu: "", keterangan: "2 tab setiap BAB cair" }] };
+  MASTER_RECIPE_TEMPLATES.KELUHAN_DIARE_DEWASA = { name: "Diare Dewasa", items: [{ obat: "NEW DIATAB", jumlah: "10", dosis: "2 tab", frekuensi: "setiap BAB cair", waktu: "", keterangan: "2 tab setiap BAB cair, maks 12 tab/hari" }] };
   MASTER_RECIPE_TEMPLATES.KELUHAN_INFEKSI_DEWASA = { name: "Infeksi Bakteri Dewasa", items: [{ obat: "AMOXICILLIN 500MG TABLET", jumlah: "10", dosis: "500 mg", frekuensi: "3x1", waktu: "", keterangan: "" }] };
   MASTER_RECIPE_TEMPLATES.KELUHAN_DIARE_ANAK = {
     name: "Diare Anak", weightGroups: Object.fromEntries(Object.entries(MASTER_RECIPE_TEMPLATES.GEA_ANAK.weightGroups).map(([key,g]) => [key,{ label:g.label, items:g.items.filter(i => /^(ZINc TABLET|ORALIT)$/i.test(i.obat)).map(i=>({...i})) }]))
@@ -972,6 +962,8 @@
   // Paracetamol: 4-6x sehari. Amoxicillin: 3x sehari.
   // =========================
   const ANAK_SIRUP_MAX_KG = 15;
+  // v3.105.0 (evaluasi dosis 17 Okt 2026): paket anak berbasis kelompok BB tidak tersedia untuk BB <5 kg (neonatus/bayi muda).
+  const spBbBelumAda = (weight, pesan) => (Number(weight) < 5 ? `BB ${weight} kg (<5 kg, bayi muda): dosis dihitung individual, isi manual` : pesan);
 
   function sirupGroupsUpTo15(sourceGroups, drugRegex) {
     return Object.fromEntries(
@@ -987,7 +979,7 @@
     );
   }
 
-  function puyerGroupsOver15({ name, namaRacikan, obat, frekuensi }) {
+  function puyerGroupsOver15({ name, namaRacikan, obat, frekuensi, tabs }) {
     // i = 3..9 -> 15–20 (4 tab) … 45–50 (10 tab)
     return Object.fromEntries(
       Array.from({ length: 7 }, (_, n) => {
@@ -1003,7 +995,7 @@
           dosis: "1 pulv",
           frekuensi,
           waktu: "",
-          items: [{ obat, jumlahPerObat: String(i + 1) }]
+          items: [{ obat, jumlahPerObat: String(tabs ? tabs(min) : i + 1) }]
         }];
       })
     );
@@ -1019,10 +1011,12 @@
   };
   MASTER_RACIKAN_TEMPLATES.PCT_PUYER_ANAK = {
     name: "Puyer Paracetamol Anak",
-    weightGroups: puyerGroupsOver15({ name: "Puyer Paracetamol", namaRacikan: "puyer paracetamol", obat: "PARACETAMOL 500 MG TAB", frekuensi: "4-6 X SEHARI" })
+    // v3.105.0: jumlah tablet = maks 12,5 mg/kgBB/kali di BB batas bawah (15–20 kg 3 tab … 45–50 kg 11 tab), 6x/hari <=75 mg/kg.
+    weightGroups: puyerGroupsOver15({ name: "Puyer Paracetamol", namaRacikan: "puyer paracetamol", obat: "PARACETAMOL 500 MG TAB", frekuensi: "4-6 X SEHARI",
+      tabs: (min) => Math.floor((12.5 * min * 10) / 500) })
   };
-  // v3.58.0: puyer Paracetamol anak 13 mg/kgBB — kelompok dibuat saat dihitung (lihat spResolveDrugOption "pctPerKg").
-  MASTER_RACIKAN_TEMPLATES.PCT_PUYER_PERKG = { name: "Puyer Paracetamol Anak 13 mg/kgBB", weightGroups: {} };
+  // v3.58.0: puyer Paracetamol anak per kgBB (v3.105.0: 12 mg/kgBB) — kelompok dibuat saat dihitung (spResolveDrugOption "pctPerKg").
+  MASTER_RACIKAN_TEMPLATES.PCT_PUYER_PERKG = { name: "Puyer Paracetamol Anak 12 mg/kgBB", weightGroups: {} };
   MASTER_RACIKAN_TEMPLATES.AMOX_PUYER_ANAK = {
     name: "Puyer Amoxicillin Anak",
     weightGroups: puyerGroupsOver15({ name: "Puyer Amoxicillin", namaRacikan: "puyer amoxicillin", obat: "AMOXICILLIN 500MG TABLET", frekuensi: "3 X SEHARI" })
@@ -1032,12 +1026,14 @@
     DEMAM: {
       label: "🌡️ Demam",
       adult: { kind: "dynamic", sourceKey: "ISPA_DEWASA", drug: "SANMOL FORTE TABLET 650MG*", key: "KELUHAN_DEMAM_DEWASA" },
-      child: { kind: "bbSplit", maxSirupKg: 15, sirup: { kind: "recipe", key: "PCT_SIRUP_ANAK_LE15" }, puyer: { kind: "racikan", key: "PCT_PUYER_ANAK" } }
+      // v3.105.0: anak = Paracetamol per kgBB (12 mg/kgBB, sama dengan KOMBINASI RESEP), bukan kelompok BB.
+      child: { kind: "pctPerKg", maxSirupKg: 15, sirupObat: "PARACETAMOL 60 CC GEN", frekuensiSirup: "4–6x1", tabObat: "PARACETAMOL 500 MG TAB", frekuensiPuyer: "4-6 X SEHARI" }
     },
     NYERI: {
       label: "🤕 Nyeri",
       adult: { kind: "recipe", key: "KELUHAN_NYERI_DEWASA" },
-      child: { kind: "bbSplit", maxSirupKg: 15, sirup: { kind: "recipe", key: "PCT_SIRUP_ANAK_LE15" }, puyer: { kind: "racikan", key: "PCT_PUYER_ANAK" } }
+      // v3.105.0: anak = Paracetamol per kgBB (12 mg/kgBB, sama dengan KOMBINASI RESEP), bukan kelompok BB.
+      child: { kind: "pctPerKg", maxSirupKg: 15, sirupObat: "PARACETAMOL 60 CC GEN", frekuensiSirup: "4–6x1", tabObat: "PARACETAMOL 500 MG TAB", frekuensiPuyer: "4-6 X SEHARI" }
     },
     MUAL_MUNTAH: {
       label: "🤢 Mual / Muntah",
@@ -1171,6 +1167,14 @@
     return { complaint, branch, weight, ageYears, adultByAge: false, reason: isAdultByWeight ? "weight-adult" : "weight-child" };
   }
 
+  // v3.105.0: Paracetamol anak per kgBB untuk resep keluhan (hitungan sama dengan KOMBINASI RESEP, spResolveDrugOption).
+  function spPctAnakPerKg(src, weight, options = {}) {
+    const ageMonths = Number.isFinite(Number(options.ageMonths)) && options.ageMonths !== null && options.ageMonths !== "" ? Number(options.ageMonths) : getPatientAgeMonths();
+    const r = spResolveDrugOption({ key: "PCT", label: "Paracetamol", src }, { branch: "child", weight, ageMonths });
+    if (r.error) throw new Error(r.error);
+    return r;
+  }
+
   async function runComplaintRecipe(complaintKey, rawWeight, options = {}) {
     const { complaint, branch, weight, ageYears, adultByAge } = await resolveComplaintRecipe(complaintKey, rawWeight, options);
 
@@ -1192,9 +1196,19 @@
       return true;
     }
 
+    if (branch.kind === "pctPerKg") {
+      const r = spPctAnakPerKg(branch, weight, options);
+      if (r.items.length) {
+        MASTER_RECIPE_TEMPLATES.PCT_SIRUP_PERKG = { name: "Paracetamol sirup anak 12 mg/kgBB", items: r.items };
+        await fillRecipeTemplate("PCT_SIRUP_PERKG", null, options);
+      }
+      for (const job of r.racikan) await fillRacikanTemplate(job.key, job.weightKey, options);
+      return true;
+    }
+
     if (branch.kind === "racikan") {
       const weightKey = findWeightKeyForValue(branch.key, weight, { lowerBoundaryForRacikan: true });
-      if (!weightKey) throw new Error(`BB ${weight} kg belum tersedia pada template anak untuk keluhan ini.`);
+      if (!weightKey) throw new Error(spBbBelumAda(weight, `BB ${weight} kg belum tersedia pada template anak untuk keluhan ini.`));
       await fillRacikanTemplate(branch.key, weightKey, options);
       return true;
     }
@@ -1204,7 +1218,7 @@
 
     if (tpl.weightGroups) {
       const weightKey = findWeightKeyForValue(branch.key, weight);
-      if (!weightKey) throw new Error(`BB ${weight} kg belum tersedia pada template anak untuk keluhan ini.`);
+      if (!weightKey) throw new Error(spBbBelumAda(weight, `BB ${weight} kg belum tersedia pada template anak untuk keluhan ini.`));
       await fillRecipeTemplate(branch.key, weightKey, options);
     } else {
       await fillRecipeTemplate(branch.key, null, options);
@@ -1257,7 +1271,7 @@
         if (!tpl) throw new Error(`Template untuk ${complaint.label} tidak ditemukan.`);
         if (tpl.weightGroups) {
           const weightKey = findWeightKeyForValue(branch.key, weight);
-          if (!weightKey) throw new Error(`BB ${weight} kg belum tersedia untuk ${complaint.label}.`);
+          if (!weightKey) throw new Error(spBbBelumAda(weight, `BB ${weight} kg belum tersedia untuk ${complaint.label}.`));
           const group = tpl.weightGroups[weightKey];
           if (!group?.items?.length) throw new Error(`Tidak ada obat pada kelompok BB ${group?.label || weight + " kg"} untuk ${complaint.label}.`);
           let items = group.items.map(item => ({ ...item }));
@@ -1265,7 +1279,7 @@
             const ageMonths = Number.isFinite(Number(options.ageMonths)) ? Number(options.ageMonths) : getPatientAgeMonths();
             if (Number.isFinite(ageMonths) && ageMonths < 6) {
               items = items.map(item => /^(ZINc TABLET)$/i.test(item.obat)
-                ? ({ ...item, dosis: "1/2 tab", frekuensi: "1x1" })
+                ? ({ ...item, dosis: "1/2 tab", frekuensi: "1x1", jumlah: "5" })
                 : item
               );
             }
@@ -1289,9 +1303,13 @@
           throw new Error(`Template ${complaint.label} sesuai umur tidak ditemukan.`);
         }
         regularItems.push(...tpl.items.map(item => ({ ...item })));
+      } else if (branch.kind === "pctPerKg") {
+        const r = spPctAnakPerKg(branch, weight, options);
+        regularItems.push(...r.items);
+        racikanJobs.push(...r.racikan.map((job) => ({ ...job, label: complaint.label })));
       } else if (branch.kind === "racikan") {
         const weightKey = findWeightKeyForValue(branch.key, weight, { lowerBoundaryForRacikan: true });
-        if (!weightKey) throw new Error(`BB ${weight} kg belum tersedia untuk ${complaint.label}.`);
+        if (!weightKey) throw new Error(spBbBelumAda(weight, `BB ${weight} kg belum tersedia untuk ${complaint.label}.`));
         racikanJobs.push({ key: branch.key, weightKey, label: complaint.label });
       }
 
@@ -1428,9 +1446,8 @@
         ({ key, group, label, why: why || [], ...(extra || {}), src: { kind: "fixed", item: { obat, jumlah, dosis, frekuensi, waktu: "", keterangan } } }))
     ],
     child: [
-      // v3.58.0: Paracetamol anak 13 mg/kgBB (sirup 125 mg/5 ml BB <=15 kg, puyer tablet 500 mg BB >15 kg).
-      { key: "PCT", group: "Demam & Nyeri", label: "Paracetamol", why: ["DEMAM", "NYERI"],
-        src: { kind: "pctPerKg", maxSirupKg: 15, sirupObat: "PARACETAMOL 60 CC GEN", frekuensiSirup: "4–6x1", tabObat: "PARACETAMOL 500 MG TAB", frekuensiPuyer: "4-6 X SEHARI" } },
+      // v3.58.0: Paracetamol anak per kgBB (v3.105.0: 12 mg/kgBB; sirup 125 mg/5 ml BB <=15 kg, puyer tablet 500 mg BB >15 kg).
+      { key: "PCT", group: "Demam & Nyeri", label: "Paracetamol", why: ["DEMAM", "NYERI"], src: COMPLAINT_RECIPE_MAP.DEMAM.child },
       { key: "DOMPERIDON", group: "Saluran cerna", label: "Domperidone sirup", why: ["MUAL_MUNTAH"], src: COMPLAINT_RECIPE_MAP.MUAL_MUNTAH.child },
       { key: "BAPIL", group: "Batuk, pilek & alergi", label: "Puyer Dexamethason + CTM + Ambroxol", why: ["BATUK_PILEK"], src: { kind: "racikan", key: "BAPIL_ANAK" } },
       { key: "RADANG", group: "Batuk, pilek & alergi", label: "Puyer Dexamethason + CTM", why: ["RADANG_BENGKAK"], notWith: ["BAPIL"], src: { kind: "racikan", key: "RADANG_BENGKAK_ANAK" } },
@@ -1467,7 +1484,8 @@
     ["RAMI10", "Hipertensi & jantung", "Ramipril 10 mg", "RAMIPRIL 10MG OGB DEXA*", "1", "1 X SEHARI", "SESUDAH MAKAN"],
     ["BISO5", "Hipertensi & jantung", "Bisoprolol 5 mg", "BISOPROLOL TAB 5 MG*", "1", "1 X SEHARI", "SESUDAH MAKAN"],
     ["CARVE", "Hipertensi & jantung", "Carvedilol 6,25 mg", "CARVEDILOL 6.25 MG TAB*", "1", "1 X SEHARI", "SESUDAH MAKAN"],
-    ["ADALAT", "Hipertensi & jantung", "Adalat Oros 30 mg", "ADALAT OROS 30 MG*", "1", "2 X SEHARI", "SESUDAH MAKAN"],
+    // v3.105.0 (evaluasi dosis 17 Okt 2026): Adalat OROS sediaan 1x sehari (sebelumnya 2x); Azithromycin 3 hari (sebelumnya 5).
+    ["ADALAT", "Hipertensi & jantung", "Adalat Oros 30 mg", "ADALAT OROS 30 MG*", "1", "1 X SEHARI", "SESUDAH MAKAN"],
     ["SPIRO25", "Hipertensi & jantung", "Spironolactone 25 mg", "SPIRONOLACTONE TAB 25 MG*", "1", "1 X SEHARI", "SESUDAH MAKAN"],
     ["FURO40", "Hipertensi & jantung", "Furosemide 40 mg", "FUROSEMIDA 40 MG TAB*", "1", "1 X SEHARI", "SESUDAH MAKAN"],
     ["ASCARDIA", "Hipertensi & jantung", "Ascardia 80 mg", "ASCARDIA 80 MG*", "1", "1 X SEHARI", "SESUDAH MAKAN"],
@@ -1508,7 +1526,7 @@
     ["CIPRO", "Antibiotik", "Ciprofloxacin 500 mg", "CIPROFLOXAZIN 500 MG TAB", "1", "2 X SEHARI", "SESUDAH MAKAN"],
     ["AMOX500", "Antibiotik", "Amoxicillin 500 mg", "AMOXICILLIN 500MG TABLET*", "1", "3 X SEHARI", "SESUDAH MAKAN"],
     ["CEFAD500", "Antibiotik", "Cefadroxil 500 mg", "CEFADROXIL 500 CAPSUL*", "1", "2 X SEHARI", "SESUDAH MAKAN"],
-    ["AZITH500", "Antibiotik", "Azithromycin 500 mg (5 hari)", "AZITHROMYCIN 500 MG TAB (30)*", "1", "1 X SEHARI", "SESUDAH MAKAN", { days: 5 }],
+    ["AZITH500", "Antibiotik", "Azithromycin 500 mg (3 hari)", "AZITHROMYCIN 500 MG TAB (30)*", "1", "1 X SEHARI", "SESUDAH MAKAN", { days: 3 }],
     ["TAMSU", "Urologi & lain", "Tamsulosin 0,4 mg", "TAMSULOSIN TABLET 0.4 MG", "1", "1 X SEHARI", "SESUDAH MAKAN"],
     ["URIEF", "Urologi & lain", "Urief 4 mg", "URIEF TABLET 4 MG ( ISI 100)", "1", "2 X SEHARI", "SESUDAH MAKAN"],
     ["ALLOP", "Urologi & lain", "Allopurinol 300 mg", "ALLOPURINOL 300 MG*", "1", "1 X SEHARI", "SESUDAH MAKAN"],
@@ -1564,14 +1582,16 @@
     { re: /azithro/i, mgkg: 10, max: 500, frek: "1 X SEHARI", days: 3 },
     { re: /ambroxol/i, mgkg: 0.5, max: 30, frek: "3 X SEHARI" },
     { re: /cetiri[sz]in/i, mgkg: 0.2, max: 10, frek: "1 X SEHARI" },
-    { re: /domperidon/i, mgkg: 0.25, max: 10, frek: "3 X SEHARI" },
+    { re: /domperidon/i, mgkg: 0.25, max: 10, frek: "3 X SEHARI", floor: true }, // v3.105.0: dibulatkan ke bawah (maks 0,25 mg/kg)
     { re: /salbutamol/i, mgkg: 0.1, max: 4, frek: "3 X SEHARI" },
     { re: /cotrimoxazol|kotrimoksazol|bactrim/i, mgkg: 4, max: 160, frek: "2 X SEHARI" },
     { re: /zinc|zink/i, fixedMg: (months) => (Number.isFinite(months) && months < 6 ? 10 : 20), frek: "1 X SEHARI", days: 10 }
   ];
   // mg per ml untuk sediaan cair yang namanya tidak memuat konsentrasi.
+  // v3.105.0: Paracetamol 60 cc GEN disamakan dengan KOMBINASI RESEP = 125 mg/5 ml (25 mg/ml; sebelumnya 24) sambil menunggu
+  // konfirmasi kemasan RS; bila sebenarnya 120 mg/5 ml, dosis hanya 4% lebih rendah (sisi aman).
   const SP_LIQ_CONC = [
-    [/sanmol forte syr/i, 50], [/sanmol drop/i, 100], [/sanmol syr/i, 24], [/paracetamol 60 cc/i, 24], [/paracetamol drop/i, 100],
+    [/sanmol forte syr/i, 50], [/sanmol drop/i, 100], [/sanmol syr/i, 24], [/paracetamol 60 cc/i, 25], [/paracetamol drop/i, 100],
     [/proris forte/i, 40], [/proris susp/i, 20], [/cefixi?m? syr/i, 20], [/azithromycin syr/i, 40], [/domperidone syr/i, 1],
     [/salbutamol syr/i, 0.4], [/interzinc syr/i, 4]
   ];
@@ -1596,7 +1616,7 @@
     else { if (!(kg > 0)) return null; mg = Math.min(kg * rule.mgkg, rule.max); }
     const drop = /drop/i.test(name);
     const step = drop ? 0.1 : 0.5;
-    const ml = Math.max(step, Math.round((mg / perMl) / step) * step);
+    const ml = Math.max(step, (rule.floor ? Math.floor : Math.round)((mg / perMl) / step + (rule.floor ? 1e-9 : 0)) * step);
     const fmt = (x) => String(Math.round(x * 10) / 10).replace(".", ",");
     return { dosis: `${fmt(ml)} ml`, frekuensi: rule.frek, days: rule.days, ket: rule.ket || "",
       basis: rule.fixedMg ? `${mg} mg` : `${String(rule.mgkg).replace(".", ",")} mg/kg = ${fmt(mg)} mg` };
@@ -2650,7 +2670,7 @@
     ["Ibuprofen", "NSAID", "proris|bufect|arfen|rhelafen", "200–400 mg 3–4x/hari sesudah makan; anak 5–10 mg/kg", "Hindari pada DBD, ulkus, gagal ginjal, hamil trimester 3"],
     ["Asam mefenamat", "NSAID", "ponstan|mefinal|asmef|mectan|datan", "500 mg 3x/hari sesudah makan", "Hindari pada DBD, ulkus, gagal ginjal"],
     ["Natrium diklofenak", "NSAID", "voltaren|cataflam|kaflam|flamar|deflamat|x-flam", "25–50 mg 2–3x/hari sesudah makan", "Hindari pada ulkus, gagal ginjal, gangguan jantung"],
-    ["Ketorolac", "NSAID", "toradol|remopain|xevolac|torasic", "iv/im 30 mg tiap 8 jam (maks 5 hari); oral 10 mg tiap 4–6 jam", "Hindari pada DBD, perdarahan, gagal ginjal, usia lanjut (dosis 15 mg)"],
+    ["Ketorolac", "NSAID", "toradol|remopain|xevolac|torasic", "iv/im 30 mg tiap 8 jam (maks 120 mg/hari; lansia 15 mg, maks 60 mg/hari; total iv+oral maks 5 hari); oral 10 mg tiap 4–6 jam (maks 40 mg/hari)", "Hindari pada DBD, perdarahan, gagal ginjal, usia lanjut (dosis 15 mg)"],
     ["Metamizol", "Analgetik", "antrain|novalgin|pronalges", "500–1000 mg iv/oral tiap 6–8 jam", "Risiko agranulositosis"],
     ["Meloxicam", "NSAID", "mobic|movix|movicox", "7,5–15 mg 1x/hari", "Hindari pada ulkus, gagal ginjal"],
     ["Etoricoxib", "NSAID COX-2", "arcoxia", "60–120 mg 1x/hari", "Hati-hati penyakit jantung"],
@@ -3106,19 +3126,26 @@
         if (src.maxMl) ml = Math.min(ml, src.maxMl);
         res.items.push({ obat: src.obat, jumlah: "1", dosis: `${String(ml).replace(".", ",")} ml`, frekuensi: src.frekuensi, waktu: "", keterangan: src.keterangan || "" });
       } else if (src.kind === "pctPerKg") {
-        // v3.58.0 (instruksi dokter): Paracetamol anak 13 mg/kgBB per kali.
-        // BB <= 15 kg: sirup 125 mg/5 ml -> ml = 13 x BB / 25 (dibulatkan 0,5 ml).
-        // BB > 15 kg: puyer 10 bungkus dari tablet 500 mg -> jumlah tablet = 13 x BB x 10 / 500 dibulatkan ke tablet utuh;
+        // v3.58.0 (instruksi dokter): Paracetamol anak per kgBB per kali.
+        // v3.105.0 (evaluasi dosis, dokter 17 Okt 2026): 12 mg/kgBB/kali, dibulatkan tetapi maks 12,5 mg/kgBB/kali supaya
+        // 6x sehari tetap <=75 mg/kg/hari. BB <5 kg atau usia <3 bulan: maks 4x sehari (<=60 mg/kg/hari, neonatus/bayi muda).
+        // BB <= 15 kg: sirup 125 mg/5 ml -> ml = 12 x BB / 25 (dibulatkan 0,5 ml).
+        // BB > 15 kg: puyer 10 bungkus dari tablet 500 mg -> jumlah tablet = 12 x BB x 10 / 500 dibulatkan ke tablet utuh;
         // dosis per bungkus menyesuaikan jumlah tablet (ditampilkan mg/bungkus & mg/kgBB).
         if (!Number.isFinite(weight) || weight <= 0) throw new Error("isi BB");
-        const mg = 13 * weight;
+        const mg = 12 * weight, capMg = 12.5 * weight;
         const f1 = (x) => String(Math.round(x * 10) / 10).replace(".", ",");
+        const am = ctx.ageMonths == null || ctx.ageMonths === "" ? NaN : Number(ctx.ageMonths);
+        const bayi = weight < 5 || am < 3;
         if (weight <= (src.maxSirupKg || 15)) {
-          const ml = Math.max(0.5, Math.round((mg / 25) * 2) / 2);
-          res.items.push({ obat: src.sirupObat, jumlah: "1", dosis: `${f1(ml)} ml`, frekuensi: src.frekuensiSirup || "4–6x1", waktu: "", keterangan: "" });
-          res.text = `${src.sirupObat.replace(/\*$/, "")} • ${f1(ml)} ml (${f1(ml * 25)} mg ≈ ${f1((ml * 25) / weight)} mg/kgBB, sediaan 125 mg/5 ml) • ${src.frekuensiSirup || "4–6x1"}`;
+          let ml = Math.max(0.5, Math.round((mg / 25) * 2) / 2);
+          while (ml > 0.5 && ml * 25 > capMg) ml -= 0.5;
+          const frek = bayi ? "4x1" : (src.frekuensiSirup || "4–6x1");
+          res.items.push({ obat: src.sirupObat, jumlah: "1", dosis: `${f1(ml)} ml`, frekuensi: frek, waktu: "", keterangan: bayi ? "maks 4x sehari" : "" });
+          res.text = `${src.sirupObat.replace(/\*$/, "")} • ${f1(ml)} ml (${f1(ml * 25)} mg ≈ ${f1((ml * 25) / weight)} mg/kgBB, sediaan 125 mg/5 ml) • ${frek}`;
         } else {
-          const tabs = Math.max(1, Math.round((mg * 10) / 500));
+          let tabs = Math.max(1, Math.round((mg * 10) / 500));
+          while (tabs > 1 && tabs * 50 > capMg) tabs--;
           const wk = `kg_${String(weight).replace(/[^\d]/g, "_")}`;
           MASTER_RACIKAN_TEMPLATES.PCT_PUYER_PERKG.weightGroups[wk] = {
             label: `BB ${weight} kg`, name: `Puyer Paracetamol ${weight} kg`, namaRacikan: "puyer paracetamol", instruksi: "Pulveres",
@@ -3143,12 +3170,12 @@
         if (tpl.weightGroups) {
           if (!Number.isFinite(weight) || weight <= 0) throw new Error("isi BB");
           const wk = findWeightKeyForValue(src.key, weight);
-          if (!wk) throw new Error(`BB ${weight} kg belum ada di template`);
+          if (!wk) throw new Error(spBbBelumAda(weight, `BB ${weight} kg belum ada di template`));
           items = tpl.weightGroups[wk].items;
         } else items = tpl.items || [];
         items = items.filter((i) => !src.only || src.only.test(i.obat)).map((i) => ({ ...i }));
         if (opt.key === "ZINC" && Number.isFinite(Number(ctx.ageMonths)) && Number(ctx.ageMonths) < 6) {
-          items = items.map((i) => ({ ...i, dosis: "1/2 tab", frekuensi: "1x1" }));
+          items = items.map((i) => ({ ...i, dosis: "1/2 tab", frekuensi: "1x1", jumlah: "5" })); // v3.105.0: 10 hari
         }
         if (!items.length) throw new Error("tidak ada obat untuk BB ini");
         res.items.push(...items);
@@ -3162,7 +3189,7 @@
         const wk = findWeightKeyForValue(src.key, weight, { lowerBoundaryForRacikan: true });
         const tpl = MASTER_RACIKAN_TEMPLATES[src.key];
         const g = tpl?.weightGroups?.[wk];
-        if (!g) throw new Error(`BB ${weight} kg belum ada di template racikan`);
+        if (!g) throw new Error(spBbBelumAda(weight, `BB ${weight} kg belum ada di template racikan`));
         res.racikan.push({ key: src.key, weightKey: wk, label: opt.label });
         const bahan = (g.items || []).map((i) => `${i.obat.replace(/\*$/, "")} ×${i.jumlahPerObat || i.jumlah || 1}`).join(" + ");
         res.text = `Puyer ${g.jumlahRacikan || 10} bks: ${bahan} • ${g.dosis || "1 pulv"} ${g.frekuensi || ""}`.trim();
@@ -3532,6 +3559,10 @@
   // Dewasa: RL 20 tpm, Ceftriaxon 1x2 g, Ondan 3x1 amp, Ranitidin 2x1 amp, Sanmol forte/4 jam kp.
   // Anak (BB): RL tpm makro (aturan dokter), Ceftriaxon 50 mg/kgBB (maks 2 g),
   //            Ondansetron 1 mg tiap 7 kg (lihat ANAK_ONDAN_MG), PCT IV 14 mg/kgBB / 4 jam (maks 1 g).
+  // v3.105.0 (evaluasi dosis, disetujui dokter 17 Okt 2026): PCT IV anak 15 mg/kgBB / 6 jam (maks 1 g, 60 mg/kg/hari);
+  //            BB <10 kg 7,5 mg/kgBB / 6 jam (maks 30 mg/kg/hari) — SmPC paracetamol infus. Ondansetron BB <7 kg
+  //            0,15 mg/kgBB (dibulatkan ke bawah 0,1 mg). Nebu anak <12 th: salbutamol 2,5 mg ± ipratropium 250 mcg
+  //            (Combivent UDV = dosis dewasa/anak >12 th).
   // Tambahan berdasarkan diagnosis: nebu, NS/12 jam (dewasa), diatab (dewasa) / oralit (anak).
   const TERAPI_DX = {
     nebu: /\bBP\b|bronko\s*pneumoni|\bTB\b|tuberkulos|pneumoni|\bPPOK\b|dyspn|dispn|sesak|asma|asthma/i,
@@ -3553,16 +3584,25 @@
     return Math.max(1, Math.min(20, tpm));
   }
 
-  // Ondansetron anak: 1 mg tiap 7 kg (dibulatkan ke bawah), minimal 1 mg, maksimal 4 mg.
+  // Ondansetron anak: 1 mg tiap 7 kg (dibulatkan ke bawah), maksimal 4 mg.
+  // v3.105.0: BB <7 kg = 0,15 mg/kgBB dibulatkan ke bawah 0,1 mg (min 0,1 mg), bukan 1 mg.
   function anakOndanMg(bb) {
-    return Math.max(1, Math.min(4, Math.floor((Number(bb) || 0) / 7)));
+    const w = Number(bb) || 0;
+    if (w < 7) return Math.max(0.1, Math.floor(0.15 * w * 10) / 10);
+    return Math.min(4, Math.floor(w / 7));
+  }
+
+  // v3.105.0: Paracetamol iv anak per dosis (tiap 6 jam), dibulatkan ke BAWAH supaya tidak melewati mg/kgBB.
+  function anakPctIvMg(bb) {
+    const w = Number(bb) || 0;
+    return w < 10 ? Math.floor((7.5 * w) / 5) * 5 : Math.min(1000, Math.floor((15 * w) / 10) * 10);
   }
 
   function roundTo(value, step) {
     return Math.round(value / step) * step;
   }
 
-  function buildTerapiSementara({ isAdult, bb, diagnosis }) {
+  function buildTerapiSementara({ isAdult, bb, diagnosis, ageYears }) {
     const dx = String(diagnosis || "");
     const lines = [];
     if (isAdult) {
@@ -3577,9 +3617,9 @@
       const makro = anakTpmMakro(bb);
       lines.push(bb < 7 ? `RL ${makro * 3} tpm mikro` : `RL ${makro} tpm makro`);
       lines.push(`Ceftriaxon 1x${Math.min(2000, roundTo(50 * bb, 50))} mg iv`);
-      lines.push(`Ondansetron 2x${anakOndanMg(bb)} mg iv`);
-      lines.push(`Paracetamol ${Math.min(1000, roundTo(14 * bb, 10))} mg iv / 4 jam`);
-      if (TERAPI_DX.nebu.test(dx)) lines.push("Nebu combivent 3x1");
+      lines.push(`Ondansetron 2x${String(anakOndanMg(bb)).replace(".", ",")} mg iv`);
+      lines.push(`Paracetamol ${anakPctIvMg(bb)} mg iv / 6 jam`);
+      if (TERAPI_DX.nebu.test(dx)) lines.push(Number(ageYears) >= 12 ? "Nebu combivent 3x1" : "Nebu salbutamol 2,5 mg (± ipratropium 250 mcg) 3x1");
       if (TERAPI_DX.diare.test(dx)) lines.push("Oralit setiap BAB cair");
     }
     return lines;
@@ -3746,7 +3786,7 @@
       }
     }
 
-    const terapi = buildTerapiSementara({ isAdult, bb, diagnosis });
+    const terapi = buildTerapiSementara({ isAdult, bb, diagnosis, ageYears });
     const rencanaEl = form.querySelector('[name="rencana_tindakan"]');
     if (rencanaEl && keepTerapi) {
       // Terapi sementara sudah ada (mungkin sudah direvisi dokter) -> dibiarkan.
@@ -8758,6 +8798,14 @@
     return { unique, skipped };
   }
 
+  // v3.105.0 (evaluasi dosis 17 Okt 2026): zinc bayi <6 bulan = 1/2 tab (10 mg) 10 hari, juga lewat menu paket GEA Anak.
+  function spZincBayi(items, options = {}) {
+    const raw = options.ageMonths != null && options.ageMonths !== "" ? options.ageMonths : (typeof getPatientAgeMonths === "function" ? getPatientAgeMonths() : null);
+    const months = raw == null || raw === "" ? NaN : Number(raw);
+    if (!(months < 6)) return items || [];
+    return (items || []).map((it) => (/^ZINc TABLET$/i.test(it.obat) && /^1 tab/i.test(it.dosis || "") ? { ...it, dosis: "1/2 tablet", jumlah: "5" } : it));
+  }
+
   // Semua paket resep bersifat ADDITIVE: pilihan berikutnya ditambahkan ke draft yang ada.
   async function fillRecipeTemplate(key, weightKey = null, options = {}) {
     if (recipeRunning) {
@@ -8799,7 +8847,8 @@
       // (Hasil tes: Demam -> Nyeri -> Demam membuat Sanmol dobel.)
       // Hanya untuk resep non-racikan; komposisi racikan tidak diubah.
       const seenSet = options.seenSet || getExistingRecipeDrugSet();
-      const plan = seenSet ? uniqueRecipeItems(tpl.items, seenSet) : { unique: tpl.items, skipped: [] };
+      const tplItems = spZincBayi(tpl.items, options);
+      const plan = seenSet ? uniqueRecipeItems(tplItems, seenSet) : { unique: tplItems, skipped: [] };
       if (!plan.unique.length) {
         toast(`MASTER TEMPLATE RESEP ${tpl.label || tpl.name} dilewati: semua obat sudah terinput.`);
         return;
@@ -9286,6 +9335,28 @@
     }
   }
 
+  // v3.105.0 (evaluasi dosis, disetujui dokter 17 Okt 2026): paket TINDAKAN memakai ampul DEWASA. Sebelum diisi (dan
+  // disimpan), pasien anak (<=17 th) atau lansia (>=65 th) mendapat peringatan dosis; dokter memilih lanjut/batal.
+  // Rujukan: BNFC/BNF, label ketorolac (FDA), Combivent UDV (dewasa/anak >12 th).
+  function spTindakanPeringatan(action, ageYears) {
+    const age = ageYears == null || ageYears === "" ? NaN : Number(ageYears);
+    if (!Number.isFinite(age)) return "";
+    const names = (action?.items || []).map((i) => String(i.obat || ""));
+    const has = (re) => names.some((n) => re.test(n));
+    const lines = [];
+    if (age <= 17) {
+      if (has(/KETOROLAC INJ/i)) lines.push(age < 2 ? "Ketorolac: tidak untuk anak <2 th" : "Ketorolac anak 0,5 mg/kgBB (maks 15 mg), ampul 30 mg");
+      if (has(/ONDANSETRON INJ/i)) lines.push("Ondansetron anak 0,15 mg/kgBB (maks 4 mg), ampul 8 mg");
+      if (has(/RANITIDIN INJ/i)) lines.push("Ranitidin anak 1 mg/kgBB (maks 50 mg), ampul 50 mg");
+      if (has(/TRANEKSAMAT.*INJ/i)) lines.push("Asam traneksamat anak 10–15 mg/kgBB, ampul 500 mg");
+      if (age < 12 && has(/COMBIVENT/i)) lines.push("Combivent UDV dosis dewasa/anak >12 th; anak <12 th: salbutamol 2,5 mg ± ipratropium 250 mcg");
+    } else if (age >= 65 && has(/KETOROLAC INJ/i)) {
+      lines.push("Ketorolac usia ≥65 th (juga BB <50 kg / gangguan ginjal): 15 mg = 1/2 ampul, maks 60 mg/hari");
+    }
+    if (!lines.length) return "";
+    return `TINDAKAN ${action.name} memakai dosis DEWASA (1 ampul).\nPasien ${age} th:\n\n${lines.map((l) => "• " + l).join("\n")}\n\nLanjutkan memasukkan paket ini? (Batal = tidak diisi; isi manual sesuai BB)`;
+  }
+
   async function fillActionRecipe(actionKey, options = {}) {
     if (recipeRunning) {
       toast("MASTER TEMPLATE RESEP: proses sebelumnya masih berjalan.");
@@ -9296,6 +9367,12 @@
 
     if (!action) {
       toast("MASTER TEMPLATE RESEP: tindakan tidak ditemukan.");
+      return;
+    }
+
+    const peringatan = spTindakanPeringatan(action, typeof getPatientAgeYears === "function" ? getPatientAgeYears() : null);
+    if (peringatan && !window.confirm(peringatan)) {
+      toast(`TINDAKAN ${action.name} dibatalkan (dosis dewasa, pasien anak/lansia).`);
       return;
     }
 
@@ -13257,7 +13334,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.104.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.105.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -13363,6 +13440,13 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
         ];
       }
 
+      if (branch.kind === "pctPerKg") { // v3.105.0
+        return [
+          `BB ≤${branch.maxSirupKg || 15} kg: ${branch.sirupObat} • 12 mg/kgBB/kali • ${branch.frekuensiSirup || "4–6x1"} (BB <5 kg / <3 bln: 4x)`,
+          `BB >${branch.maxSirupKg || 15} kg: puyer ${branch.tabObat} • 12 mg/kgBB/kali • 10 bks • 1 pulv ${branch.frekuensiPuyer || ""}`.trim()
+        ];
+      }
+
       if (branch.kind === "ageRecipe") {
         const a = MASTER_RECIPE_TEMPLATES[branch.key5_15];
         const b = MASTER_RECIPE_TEMPLATES[branch.keyGt15];
@@ -13377,7 +13461,8 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       if (branch.kind === "racikan") {
         const tpl = MASTER_RACIKAN_TEMPLATES[branch.key];
         const firstGroup = tpl?.weightGroups ? Object.values(tpl.weightGroups)[0] : null;
-        const components = (firstGroup?.items || []).map(item => item.obat).join(" + ");
+        // v3.105.0: komponen dari semua kelompok BB (CTM/Ambroxol tidak ada di kelompok BB kecil).
+        const components = [...new Set(Object.values(tpl?.weightGroups || {}).flatMap((g) => (g.items || []).map((item) => item.obat)))].join(" + ");
         const info = firstGroup
           ? `${firstGroup.namaRacikan || tpl.name} • ${components} • ${firstGroup.jumlahRacikan || "10"} puyer • ${firstGroup.dosis || "1 pulv"} • ${firstGroup.frekuensi || ""}`
           : tpl?.name || "Racikan sesuai kelompok BB";
