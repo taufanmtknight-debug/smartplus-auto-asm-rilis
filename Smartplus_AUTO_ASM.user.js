@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.110.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.111.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.110.0
-// @description  v3.110.0 (dokter 17 Okt 2026): Sanadryl DMP sirup untuk anak dihapus (dewasa tetap); puyer Batuk Pilek anak <40 kg dan bayi dihitung per kgBB pasien (10 bungkus 3x): dexamethason 0,08 mg/kgBB/hari, CTM 0,1 mg/kgBB/kali bila usia ≥1 th, bila CTM tidak boleh (6–11 bln) otomatis cetirizin ≤0,5 mg/kgBB/hari, ambroxol ≤1,6 mg/kgBB/hari (BB <5,7 kg: ambroxol sirup terpisah); pilihan baru Puyer Dexa + Cetirizin + Ambroxol; bayi <6 bln tanpa antihistamin, neonatus <1 bln evaluasi/rujuk.
+// @version      3.111.0
+// @description  v3.111.0 (dokter 17 Okt 2026): puyer Batuk Pilek anak: jumlah dexamethason kembali seperti kelompok BB lama (BB/5 + 1 tab, <5 kg 1 tab); cetirizin juga untuk bayi <6 bulan/<4 kg (≤0,5 mg/kgBB/hari, 1/2 tab bila BB <6 kg); ambroxol hanya dari tablet di dalam puyer (1/2 tab bila BB <5,7 kg), tanpa sirup terpisah; nama racikan acyclovir anak 'P. Acyclovir varicella/ H.zoster(4x20 mg/kg)' dan 'P. Acyclovir H.simpleks(5x15 mg/kg)'; pilihan baru Puyer Cefixime anak 4 mg/kgBB/kali 2x, 6 bungkus (3 hari), usia ≥6 bulan.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.110.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.110.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.111.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.111.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -979,15 +979,15 @@
     MASTER_RACIKAN_TEMPLATES[pk] = { name: MASTER_RACIKAN_TEMPLATES[key].name, weightGroups: { [weightKey]: { ...g, items: [...g.items, ...extra] } } };
     return { key: pk, weightKey };
   }
-  // v3.110.0 (dokter 17 Okt 2026): puyer Batuk Pilek anak (<40 kg) & bayi dihitung per kgBB pasien — menggantikan kelompok BB
-  // (v3.106) dan Ambroxol sirup saja untuk bayi (v3.109). 10 bungkus 3x sehari, tablet utuh dibulatkan ke BAWAH:
-  //  - Dexamethason 0,5 mg: 0,08 mg/kgBB/hari (batas bawah anti-inflamasi 0,08–0,3), min 1 tab, maks 10 tab (0,5 mg/kali).
+  // v3.110.0 (dokter 17 Okt 2026): puyer Batuk Pilek anak (<40 kg) & bayi dihitung per pasien — menggantikan kelompok BB
+  // (v3.106) dan Ambroxol sirup saja untuk bayi (v3.109). v3.111.0 (dokter 17 Okt 2026): dexa kembali seperti kelompok BB
+  // lama; cetirizin juga untuk bayi <6 bln/<4 kg; ambroxol dari tablet saja (tanpa sirup). 10 bungkus 3x sehari:
+  //  - Dexamethason 0,5 mg: seperti kelompok BB lama = floor(BB/5)+1 tab (BB <5 kg: 1 tab), maks 10 tab.
   //  - CTM 4 mg (usia >=12 bln, BNFC bukan untuk <1 th): 0,1 mg/kgBB/kali (0,3 mg/kg/hari <=0,35); maks 1 mg/kali usia <6 th,
-  //    2 mg 6–11 th, 4 mg >=12 th.
-  //  - Cetirizine 10 mg bila CTM tidak boleh (usia 6–11 bln) atau dipilih: <=0,5 mg/kgBB/hari (BNFC 0,25 mg/kg 2x);
-  //    maks 1 tab (3 mg/hari) usia <6 th, 3 tab (9 mg/hari) >=6 th; tidak untuk <6 bln.
-  //  - Ambroxol 30 mg: <=1,6 mg/kgBB/hari; maks 7,5 mg/kali <6 th, 15 mg 6–11 th, 30 mg >=12 th. Bila <1 tab (BB <5,7 kg):
-  //    Ambroxol sirup 15 mg/5 ml 0,5 mg/kgBB/kali 3x (dibulatkan ke bawah 0,1 ml) di luar puyer.
+  //    2 mg 6–11 th, 4 mg >=12 th. Tablet utuh, dibulatkan ke bawah.
+  //  - Cetirizine 10 mg bila CTM tidak boleh (usia <1 th) atau dipilih: <=0,5 mg/kgBB/hari (BNFC 0,25 mg/kg 2x);
+  //    maks 1 tab (3 mg/hari) usia <6 th, 3 tab (9 mg/hari) >=6 th. <1 tab -> 1/2 tab (BB <6 kg).
+  //  - Ambroxol 30 mg: <=1,6 mg/kgBB/hari; maks 7,5 mg/kali <6 th, 15 mg 6–11 th, 30 mg >=12 th. <1 tab -> 1/2 tab (BB <5,7 kg).
   //  - Neonatus <1 bln: tidak dibuatkan (evaluasi/rujuk). Usia tidak terbaca: batas usia diperkirakan dari BB.
   MASTER_RACIKAN_TEMPLATES.BAPIL_PERKG = { name: "Bapil Anak per kgBB", weightGroups: {} };
   function spBapilPuyer(weight, ageMonths, antihist = "auto") {
@@ -997,30 +997,23 @@
     if (!Number.isFinite(w) || w <= 0) return { error: "isi BB" };
     const y = Number.isFinite(m) ? m / 12 : (w < 20 ? 3 : 8);
     const fl = (x) => Math.floor(x + 1e-9);
+    const tabAtauSetengah = (x) => (x >= 1 ? fl(x) : 0.5);
     const f2 = (x) => String(Math.round(x * 100) / 100).replace(".", ",");
     const items = [], extra = [], notes = [];
-    const dexa = Math.min(10, Math.max(1, fl((0.08 / 3) * w * 10 / 0.5)));
+    const dexa = Math.min(10, w < 5 ? 1 : fl(w / 5) + 1);
     items.push({ obat: "DEXAMETHASON 0.5 MG TAB", jumlahPerObat: String(dexa) });
     const ctmOk = Number.isFinite(m) ? m >= 12 : w >= 10;
-    const cetOk = Number.isFinite(m) ? m >= 6 : w >= 6;
     let ah = "";
     if (antihist !== "cetirizine" && ctmOk) {
       const t = Math.min(fl(0.1 * w * 10 / 4), y < 6 ? 2 : y < 12 ? 5 : 10);
       if (t >= 1) { items.push({ obat: "CTM 4MG TAB", jumlahPerObat: String(t) }); ah = `CTM ${t} tab`; }
     }
-    if (!ah && cetOk) {
-      const t = Math.min(fl((0.5 * w) / 3), y < 6 ? 1 : 3);
-      if (t >= 1) { items.push({ obat: "CETIRIZINE 10 MG TAB (ISI 60)*", jumlahPerObat: String(t) }); ah = `Cetirizine ${t} tab`; }
-      else notes.push(`cetirizine tidak masuk (BB ${w} kg <6 kg)`);
+    if (!ah) {
+      const t = Math.min(tabAtauSetengah((0.5 * w) / 3), y < 6 ? 1 : 3);
+      items.push({ obat: "CETIRIZINE 10 MG TAB (ISI 60)*", jumlahPerObat: String(t) });
     }
-    if (!ah && !cetOk) notes.push("tanpa antihistamin (usia <6 bulan)");
-    const amb = Math.min(fl((1.6 / 3) * w * 10 / 30), y < 6 ? 2 : y < 12 ? 5 : 10);
-    if (amb >= 1) items.push({ obat: "AMBROXOL 30MG TAB*", jumlahPerObat: String(amb) });
-    else {
-      const ml = Math.max(0.1, Math.min(fl(w * 0.17 * 10) / 10, 1.6));
-      extra.push({ obat: "AMBROXOL SYR 15 MG/ 5 ML", jumlah: "1", dosis: `${String(ml).replace(".", ",")} ml`, frekuensi: "3x1", waktu: "", keterangan: "" });
-      notes.push(`ambroxol sirup ${String(ml).replace(".", ",")} ml 3x1 (BB <5,7 kg)`);
-    }
+    const amb = Math.min(tabAtauSetengah((1.6 / 3) * w * 10 / 30), y < 6 ? 2 : y < 12 ? 5 : 10);
+    items.push({ obat: "AMBROXOL 30MG TAB*", jumlahPerObat: String(amb) });
     const wk = `kg_${String(w).replace(/[^\d]/g, "_")}_${antihist === "cetirizine" ? "cet" : "auto"}_${Number.isFinite(m) ? Math.floor(m) : "x"}`;
     MASTER_RACIKAN_TEMPLATES.BAPIL_PERKG.weightGroups[wk] = {
       label: `BB ${w} kg`, name: `Bapil Anak ${w} kg`, namaRacikan: "bapil anak", instruksi: "Pulveres",
@@ -1580,6 +1573,9 @@
       { key: "AMBROXOL", group: "Batuk, pilek & alergi", label: "Ambroxol sirup", why: ["BATUK_PILEK"], notWith: ["BAPIL"], src: { kind: "perKgSyr", obat: "AMBROXOL SYR 15 MG/ 5 ML", mlPerKg: 0.17, frekuensi: "3x1", keterangan: "" } }, // 0,5 mg/kg, 15 mg/5 ml
       { key: "CEFADROXIL", group: "Antibiotik", label: "Cefadroxil sirup", why: ["INFEKSI_KULIT"], src: { kind: "perKgSyr", obat: "CEFADROXIL 125MG/5ML SYR*", mlPerKg: 0.6, frekuensi: "2x1", keterangan: "" } }, // 15 mg/kg, 125 mg/5 ml
       { key: "CEFIXIME", group: "Antibiotik", label: "Cefixime sirup", why: ["ISK_TIFOID"], src: { kind: "perKgSyr", obat: "CEFIXIM SYR*", mlPerKg: 0.2, frekuensi: "2x1", keterangan: "" } }, // 4 mg/kg, 100 mg/5 ml
+      // v3.111.0 (dokter 17 Okt 2026): puyer cefixime anak 4 mg/kgBB/kali 2x (8 mg/kg/hari), maks 200 mg/kali, usia >=6 bln,
+      // 3 hari (6 bungkus) lalu kontrol faskes. Kapsul 100 mg dibuka; nama dicari "CEFIXIME 100 MG" di autocomplete.
+      { key: "CEFIXIME_PUYER", group: "Antibiotik", label: "Puyer Cefixime (2x4 mg/kg, 3 hari)", why: [], notWith: ["CEFIXIME", "AMOX", "CEFADROXIL"], src: { kind: "perKgPuyer", minAgeMonths: 6, minAgeText: "hanya usia ≥6 bulan", nama: "P. Cefixime (2x4 mg/kg)", namaRacikan: "P. Cefixime (2x4 mg/kg)", obat: "CEFIXIME 100 MG", tabMg: 100, mgPerKg: 4, maxMgKali: 200, bungkus: 6, frekuensi: "2 X SEHARI", keterangan: "3 hari, lanjut kontrol faskes" } },
       { key: "INTERZINC", group: "Saluran cerna", label: "Interzinc sirup", why: ["DIARE"], notWith: ["ZINC"], src: { kind: "byAge", obat: "INTERZINC SYR*", lt6Months: "2,5 ml", gte6Months: "5 ml", frekuensi: "1x1", keterangan: "selama 10 hari" } },
       { key: "LACTOB", group: "Saluran cerna", label: "Lacto-B", why: ["DIARE"], src: { kind: "fixed", item: { obat: "LACTO B SACHET", jumlah: "3", dosis: "1 sachet", frekuensi: "1x1", waktu: "", keterangan: "" } } },
       // v3.107.0 (usulan obat rawat jalan IGD anak C17–C25, disetujui dokter 17 Okt 2026). Dosis per kgBB pasien,
@@ -1597,9 +1593,9 @@
       // v3.109.0 (dokter 17 Okt 2026): semua resep acyclovir dari IGD untuk 3 hari, lanjutan kontrol di faskes.
       // v3.108.0: herpes zoster anak 20 mg/kgBB/kali 4x 7 hari (28 bungkus, maks 800 mg/kali; AAP Red Book);
       // herpes simpleks anak (gingivostomatitis) 15 mg/kgBB/kali 5x 5 hari (25 bungkus, maks 200 mg/kali; BNFC).
-      { key: "ACYCLOVIR", group: "Lain-lain", label: "Puyer Acyclovir varisela (20 mg/kg 4x, 3 hari)", why: ["VARISELA"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "Puyer Acyclovir", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 20, maxMgKali: 800, bungkus: 12, frekuensi: "4 X SEHARI", keterangan: "3 hari, lanjut kontrol faskes" } },
-      { key: "ACYCLOVIR_ZOSTER", group: "Lain-lain", label: "Puyer Acyclovir herpes zoster (20 mg/kg 4x, 3 hari)", why: ["HERPES"], notWith: ["ACYCLOVIR"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "Puyer Acyclovir zoster", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 20, maxMgKali: 800, bungkus: 12, frekuensi: "4 X SEHARI", keterangan: "3 hari, lanjut kontrol faskes" } },
-      { key: "ACYCLOVIR_HSV", group: "Lain-lain", label: "Puyer Acyclovir herpes simpleks (15 mg/kg 5x, 3 hari)", why: ["HERPES_SIMPLEX"], notWith: ["ACYCLOVIR", "ACYCLOVIR_ZOSTER"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "Puyer Acyclovir herpes simpleks", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 15, maxMgKali: 200, bungkus: 15, frekuensi: "5 X SEHARI", keterangan: "3 hari, lanjut kontrol faskes" } }
+      { key: "ACYCLOVIR", group: "Lain-lain", label: "Puyer Acyclovir varisela (20 mg/kg 4x, 3 hari)", why: ["VARISELA"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "P. Acyclovir varicella/ H.zoster(4x20 mg/kg)", namaRacikan: "P. Acyclovir varicella/ H.zoster(4x20 mg/kg)", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 20, maxMgKali: 800, bungkus: 12, frekuensi: "4 X SEHARI", keterangan: "3 hari, lanjut kontrol faskes" } },
+      { key: "ACYCLOVIR_ZOSTER", group: "Lain-lain", label: "Puyer Acyclovir herpes zoster (20 mg/kg 4x, 3 hari)", why: ["HERPES"], notWith: ["ACYCLOVIR"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "P. Acyclovir varicella/ H.zoster(4x20 mg/kg)", namaRacikan: "P. Acyclovir varicella/ H.zoster(4x20 mg/kg)", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 20, maxMgKali: 800, bungkus: 12, frekuensi: "4 X SEHARI", keterangan: "3 hari, lanjut kontrol faskes" } },
+      { key: "ACYCLOVIR_HSV", group: "Lain-lain", label: "Puyer Acyclovir herpes simpleks (15 mg/kg 5x, 3 hari)", why: ["HERPES_SIMPLEX"], notWith: ["ACYCLOVIR", "ACYCLOVIR_ZOSTER"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "P. Acyclovir H.simpleks(5x15 mg/kg)", namaRacikan: "P. Acyclovir H.simpleks(5x15 mg/kg)", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 15, maxMgKali: 200, bungkus: 15, frekuensi: "5 X SEHARI", keterangan: "3 hari, lanjut kontrol faskes" } }
     ]
   };
 
@@ -2469,8 +2465,8 @@
   // Bila beberapa keluhan menyarankan obat SEGOLONGAN, hanya satu yang dipakai (yang paling kiri diutamakan).
   const SP_SUGGEST_EXCLUSIVE = {
     adult: [["KETOROLAC", "IBUPROFEN"], ["ONDANSETRON", "DOMPERIDON"], ["RANITIDIN", "OMEPRAZOLE"], ["LODIA", "DIATAB"],
-      ["CEFIXIME", "CEFADROXIL", "AMOX"], ["OBH", "AMBROXOL"], ["MP4", "DEXA"], ["DM_GDS300", "METFORMIN"], ["ACYCLOVIR", "ACYCLOVIR_HSV"]],
-    child: [["BAPIL", "BAPIL_CET", "RADANG"], ["CEFIXIME", "CEFADROXIL", "AMOX"], ["ACYCLOVIR", "ACYCLOVIR_ZOSTER", "ACYCLOVIR_HSV"]]
+      ["CEFIXIME", "CEFIXIME_PUYER", "CEFADROXIL", "AMOX"], ["OBH", "AMBROXOL"], ["MP4", "DEXA"], ["DM_GDS300", "METFORMIN"], ["ACYCLOVIR", "ACYCLOVIR_HSV"]],
+    child: [["BAPIL", "BAPIL_CET", "RADANG"], ["CEFIXIME", "CEFIXIME_PUYER", "CEFADROXIL", "AMOX"], ["ACYCLOVIR", "ACYCLOVIR_ZOSTER", "ACYCLOVIR_HSV"]]
   };
 
   // Obat yang disarankan (key, urut sesuai daftar obat) untuk cabang tertentu dari keluhan yang ditemukan.
@@ -13575,7 +13571,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.110.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.111.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
