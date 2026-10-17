@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.107.1
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.108.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.107.1
-// @description  v3.107.1 (dokter 17 Okt 2026): pilihan Amoxicillin dosis tinggi (45 mg/kgBB 2x) dihapus dari KOMBINASI RESEP anak; amoxicillin anak tetap dosis biasa 3x sehari.
+// @version      3.108.0
+// @description  v3.108.0 (dokter 17 Okt 2026): acyclovir di KOMBINASI RESEP dibedakan per penyakit — dewasa: herpes zoster/varisela 800 mg 5x1 7 hari, herpes simpleks 400 mg 3x1 7 hari; anak (puyer per kgBB, tablet 400 mg dibulatkan ke bawah): varisela 20 mg/kgBB 4x 5 hari, herpes zoster 20 mg/kgBB 4x 7 hari (maks 800 mg/kali), herpes simpleks 15 mg/kgBB 5x 5 hari (maks 200 mg/kali); saran otomatis sesuai kata herpes zoster / varisela / herpes simpleks di GADAR.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.107.1";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.107.1");
+  window.__SP_AUTO_ASM_LOADED__ = "3.108.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.108.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -1477,7 +1477,10 @@
         ["CIPROFLOXACIN", "Antibiotik", "Ciprofloxacin 500 mg", "CIPROFLOXACIN 500MG TAB", "6", "500 mg", "2x1", "", ["ISK_TIFOID"], { cls: "abx", notWith: ["CEFIXIME"] }],
         ["METRONIDAZOL", "Antibiotik", "Metronidazol 500 mg", "METRONIDAZOLE TAB 500 MG*", "21", "500 mg", "3x1", "", ["DIARE"], { cls: "abx" }],
         // Herpes zoster <72 jam: 800 mg (2 tab 400 mg) 5x sehari 7 hari = 70 tablet (kursus penuh, tidak dipotong aturan 6 tablet).
-        ["ACYCLOVIR", "Lain-lain", "Acyclovir 400 mg (herpes zoster)", "ACYCLOVIR 400 MG TABLET*", "70", "800 mg (2 tablet)", "5x1", "7 hari", ["HERPES"], { cls: "keep" }]
+        ["ACYCLOVIR", "Lain-lain", "Acyclovir 800 mg 5x (herpes zoster / varisela)", "ACYCLOVIR 400 MG TABLET*", "70", "800 mg (2 tablet)", "5x1", "7 hari", ["HERPES", "VARISELA"], { cls: "keep", notWith: ["ACYCLOVIR_HSV"] }],
+        // v3.108.0 (dokter 17 Okt 2026: acyclovir dibedakan per penyakit). Herpes simpleks (labialis/genital episode pertama):
+        // 400 mg 3x sehari 7 hari = 21 tablet (CDC STI 2021; BNF).
+        ["ACYCLOVIR_HSV", "Lain-lain", "Acyclovir 400 mg 3x (herpes simpleks)", "ACYCLOVIR 400 MG TABLET*", "21", "400 mg", "3x1", "7 hari", ["HERPES_SIMPLEX"], { cls: "keep" }]
       ].map(([key, group, label, obat, jumlah, dosis, frekuensi, keterangan, why, extra]) =>
         ({ key, group, label, why: why || [], ...(extra || {}), src: { kind: "fixed", item: { obat, jumlah, dosis, frekuensi, waktu: "", keterangan } } })),
       // v3.107.0 DM rawat jalan per GDS (dokter 17 Okt 2026): GDS >200 dan >250 = Metformin 500 mg 2x1 (pilihan METFORMIN);
@@ -1520,7 +1523,11 @@
       { key: "MP_ASMA", group: "Batuk, pilek & alergi", label: "Puyer Methylprednisolon (asma, 3 hari)", why: ["ASMA"], src: { kind: "perKgPuyer", nama: "Puyer Methylprednisolon", obat: "METHYLPREDNISOLON 4 MG*", tabMg: 4, mgPerKg: 0.8, maxMgKali: 32, bungkus: 3, frekuensi: "1 X SEHARI", keterangan: "pagi, 3 hari" } },
       // Varisela anak: acyclovir 20 mg/kgBB/kali 4x sehari 5 hari (maks 800 mg/kali) = puyer 20 bungkus tablet 400 mg
       // (jumlah tablet = BB dalam kg, dibulatkan ke bawah). Bayi <3 bulan / imunokompromais: rujuk (asiklovir iv).
-      { key: "ACYCLOVIR", group: "Lain-lain", label: "Puyer Acyclovir (varisela)", why: ["VARISELA"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "Puyer Acyclovir", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 20, maxMgKali: 800, bungkus: 20, frekuensi: "4 X SEHARI", keterangan: "5 hari" } }
+      // v3.108.0: herpes zoster anak 20 mg/kgBB/kali 4x 7 hari (28 bungkus, maks 800 mg/kali; AAP Red Book);
+      // herpes simpleks anak (gingivostomatitis) 15 mg/kgBB/kali 5x 5 hari (25 bungkus, maks 200 mg/kali; BNFC).
+      { key: "ACYCLOVIR", group: "Lain-lain", label: "Puyer Acyclovir varisela (20 mg/kg 4x, 5 hari)", why: ["VARISELA"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "Puyer Acyclovir", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 20, maxMgKali: 800, bungkus: 20, frekuensi: "4 X SEHARI", keterangan: "5 hari" } },
+      { key: "ACYCLOVIR_ZOSTER", group: "Lain-lain", label: "Puyer Acyclovir herpes zoster (20 mg/kg 4x, 7 hari)", why: ["HERPES"], notWith: ["ACYCLOVIR"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "Puyer Acyclovir zoster", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 20, maxMgKali: 800, bungkus: 28, frekuensi: "4 X SEHARI", keterangan: "7 hari" } },
+      { key: "ACYCLOVIR_HSV", group: "Lain-lain", label: "Puyer Acyclovir herpes simpleks (15 mg/kg 5x, 5 hari)", why: ["HERPES_SIMPLEX"], notWith: ["ACYCLOVIR", "ACYCLOVIR_ZOSTER"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "Puyer Acyclovir herpes simpleks", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 15, maxMgKali: 200, bungkus: 25, frekuensi: "5 X SEHARI", keterangan: "5 hari" } }
     ]
   };
 
@@ -2317,6 +2324,7 @@
     // v3.107.0: herpes zoster / varisela -> acyclovir; GDS >=300 -> paket DM GDS >300 (lihat spSuggestComplaints).
     HERPES: /herpes zoster|\bhz\b|cacar ular|cacar api|dompo|shingles/gi,
     VARISELA: /varisela|varicella|cacar air/gi,
+    HERPES_SIMPLEX: /herpes simple[xk]s?|\bhsv\b|herpes labialis|herpes genital(is)?|gingivostomatitis herpeti\w*|stomatitis herpeti\w*/gi,
     PERDARAHAN: /epistaksis|epistaxis|mimisan|perdarahan|pendarahan|hemoptisis|batuk darah|menoragia|menorrhagia|metroragia|\baub\b|hematuria|spotting|gusi berdarah/gi
   };
 
@@ -2376,20 +2384,21 @@
       BATUK_PILEK: ["AMBROXOL", "CTM"], BATUK_KERING: ["OBH"], RADANG_BENGKAK: ["DEXA"], ALERGI: ["CETIRIZINE"], ASMA: ["MP4"],
       INFEKSI_BAKTERI: ["AMOX"], INFEKSI_KULIT: ["CEFADROXIL"], ISK_TIFOID: ["CEFIXIME"], VERTIGO: ["BETAHISTINE"],
       MABUK: ["ANTIMO"], HIPERTENSI: ["AMLODIPINE"], DM: ["METFORMIN"], DM_GDS300: ["DM_GDS300"], PERDARAHAN: ["TRANEKSAMAT"],
-      HERPES: ["ACYCLOVIR"], VARISELA: ["ACYCLOVIR"]
+      HERPES: ["ACYCLOVIR"], VARISELA: ["ACYCLOVIR"], HERPES_SIMPLEX: ["ACYCLOVIR_HSV"]
     },
     child: {
       DEMAM: ["PCT"], NYERI: ["PCT"], NYERI_OTOT: ["PCT"], SAKIT_KEPALA: ["PCT"], MUAL_MUNTAH: ["DOMPERIDON"],
       MUNTAH_HEBAT: ["DOMPERIDON"], BATUK_PILEK: ["BAPIL"], BATUK_KERING: ["BAPIL"], RADANG_BENGKAK: ["RADANG"],
       DIARE: ["ZINC"], NYERI_ULU_HATI: ["RANITIDIN"], GERD: ["RANITIDIN"], KEMBUNG: ["ANTASIDA"], ALERGI: ["CETIRIZINE"],
-      INFEKSI_BAKTERI: ["AMOX"], INFEKSI_KULIT: ["CEFADROXIL"], ISK_TIFOID: ["CEFIXIME"], VARISELA: ["ACYCLOVIR"]
+      INFEKSI_BAKTERI: ["AMOX"], INFEKSI_KULIT: ["CEFADROXIL"], ISK_TIFOID: ["CEFIXIME"], VARISELA: ["ACYCLOVIR"],
+      HERPES: ["ACYCLOVIR_ZOSTER"], HERPES_SIMPLEX: ["ACYCLOVIR_HSV"]
     }
   };
   // Bila beberapa keluhan menyarankan obat SEGOLONGAN, hanya satu yang dipakai (yang paling kiri diutamakan).
   const SP_SUGGEST_EXCLUSIVE = {
     adult: [["KETOROLAC", "IBUPROFEN"], ["ONDANSETRON", "DOMPERIDON"], ["RANITIDIN", "OMEPRAZOLE"], ["LODIA", "DIATAB"],
-      ["CEFIXIME", "CEFADROXIL", "AMOX"], ["OBH", "AMBROXOL"], ["MP4", "DEXA"], ["DM_GDS300", "METFORMIN"]],
-    child: [["BAPIL", "RADANG"], ["CEFIXIME", "CEFADROXIL", "AMOX"]]
+      ["CEFIXIME", "CEFADROXIL", "AMOX"], ["OBH", "AMBROXOL"], ["MP4", "DEXA"], ["DM_GDS300", "METFORMIN"], ["ACYCLOVIR", "ACYCLOVIR_HSV"]],
+    child: [["BAPIL", "RADANG"], ["CEFIXIME", "CEFADROXIL", "AMOX"], ["ACYCLOVIR", "ACYCLOVIR_ZOSTER", "ACYCLOVIR_HSV"]]
   };
 
   // Obat yang disarankan (key, urut sesuai daftar obat) untuk cabang tertentu dari keluhan yang ditemukan.
@@ -2572,10 +2581,10 @@
       "Insisi & drainase; antibiotik bila selulitis sekitar/demam (cefadroxil); analgetik", ["CEFADROXIL", "KETOROLAC"], ["CEFADROXIL", "PCT"], ""],
     ["VARISELA", "B01.9", "Varisela (cacar air)", "varisela|varicella|cacar air|cacar", "Infeksi & tropis",
       "Demam, vesikel menyebar (berbagai stadium), gatal", "Sesak (pneumonia), penurunan kesadaran, imunokompromais, hamil", "Klinis",
-      "Simptomatik, antihistamin, bedak salisil; asiklovir 5x800 mg 7 hari (dewasa, <72 jam)", ["PCT", "CETIRIZINE"], ["PCT", "CETIRIZINE"], ""],
+      "Simptomatik, antihistamin, bedak salisil; asiklovir 5x800 mg 7 hari (dewasa, <72 jam); anak 20 mg/kgBB 4x 5 hari", ["ACYCLOVIR", "PCT", "CETIRIZINE"], ["ACYCLOVIR", "PCT", "CETIRIZINE"], ""],
     ["HERPES_ZOSTER", "B02.9", "Herpes zoster", "herpes zoster|zoster|cacar api|cacar ular|dompo|shingles", "Infeksi & tropis",
       "Nyeri/terbakar lalu vesikel berkelompok sesuai dermatom, satu sisi", "Mengenai mata (zoster oftalmikus), diseminata, imunokompromais", "Klinis",
-      "Asiklovir 5x800 mg 7 hari (<72 jam); analgetik", ["PCT", "IBUPROFEN"], ["PCT"], ""],
+      "Asiklovir 5x800 mg 7 hari (<72 jam); anak 20 mg/kgBB 4x 7 hari; analgetik", ["ACYCLOVIR", "PCT", "IBUPROFEN"], ["ACYCLOVIR_ZOSTER", "PCT"], ""],
     ["MORBILI", "B05.9", "Campak (morbili)", "morbili|campak|measles|gabagen", "Infeksi & tropis",
       "Demam, batuk, pilek, mata merah, ruam makulopapular dari belakang telinga", "Pneumonia, diare dehidrasi, ensefalitis, gizi buruk", "Klinis",
       "Simptomatik; vitamin A sesuai umur; isolasi", ["PCT"], ["PCT"], ""],
@@ -13488,7 +13497,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.107.1</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.108.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
