@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.111.1
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.112.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.111.1
-// @description  v3.111.1 (uji Smartplus asli 17 Okt 2026): GDS yang ditulis dengan kata penghubung ("cek GDS stick hasil 344", "gula sempat tinggi 340") kini terbaca — KOMBINASI RESEP dewasa menyarankan paket DM GDS >300 dan PAKET KONSUL menulis "Cek KGDH sebelum makan, insulin SS" sesuai GDS di RPS. Racikan v3.111.0 diuji di Smartplus asli: angka 0.5 diterima form racikan, nama racikan acyclovir anak & Puyer Cefixime (CEFIXIME 100 MG KAPSUL) masuk draft resep.
+// @version      3.112.0
+// @description  v3.112.0 (dokter 17 Okt 2026): tulisan 'per kgBB' dihapus dari pilihan puyer bapil; pilihan cefixime anak cukup 'Puyer Cefixime'; pilihan acyclovir anak bernama 'P. Acyclovir varicella/ H.zoster(4x20 mg/kg)' (varisela & zoster jadi satu) dan 'P. Acyclovir H.simpleks(5x15 mg/kg)', sedangkan nama racikan yang diisi di Smartplus cukup 'acyclovir' (cefixime: 'cefixime').
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.111.1";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.111.1");
+  window.__SP_AUTO_ASM_LOADED__ = "3.112.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.112.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -1559,8 +1559,8 @@
       { key: "PCT", group: "Demam & Nyeri", label: "Paracetamol", why: ["DEMAM", "NYERI"], src: COMPLAINT_RECIPE_MAP.DEMAM.child },
       { key: "DOMPERIDON", group: "Saluran cerna", label: "Domperidone sirup", why: ["MUAL_MUNTAH"], src: COMPLAINT_RECIPE_MAP.MUAL_MUNTAH.child },
       // v3.110.0: Bapil dihitung per kgBB (spBapilPuyer); CTM usia >=1 th, bila tidak boleh -> cetirizine (>=6 bln).
-      { key: "BAPIL", group: "Batuk, pilek & alergi", label: "Puyer Dexa + CTM + Ambroxol (per kgBB; <1 th: cetirizine)", why: ["BATUK_PILEK"], src: { kind: "bapilPerKg", antihist: "auto" } },
-      { key: "BAPIL_CET", group: "Batuk, pilek & alergi", label: "Puyer Dexa + Cetirizine + Ambroxol (per kgBB, usia ≥6 bln)", why: [], notWith: ["BAPIL", "CETIRIZINE"], src: { kind: "bapilPerKg", antihist: "cetirizine" } },
+      { key: "BAPIL", group: "Batuk, pilek & alergi", label: "Puyer Dexa + CTM + Ambroxol (<1 th: cetirizine)", why: ["BATUK_PILEK"], src: { kind: "bapilPerKg", antihist: "auto" } },
+      { key: "BAPIL_CET", group: "Batuk, pilek & alergi", label: "Puyer Dexa + Cetirizine + Ambroxol", why: [], notWith: ["BAPIL", "CETIRIZINE"], src: { kind: "bapilPerKg", antihist: "cetirizine" } },
       { key: "RADANG", group: "Batuk, pilek & alergi", label: "Puyer Dexamethason + CTM", why: ["RADANG_BENGKAK"], notWith: ["BAPIL"], src: { kind: "racikan", key: "RADANG_BENGKAK_ANAK" } },
       { key: "ZINC", group: "Saluran cerna", label: "Zinc", why: ["DIARE"], src: { kind: "recipe", key: "KELUHAN_DIARE_ANAK", only: /^ZINc TABLET$/i } },
       { key: "ORALIT", group: "Saluran cerna", label: "Oralit", why: ["DIARE"], src: { kind: "recipe", key: "KELUHAN_DIARE_ANAK", only: /^ORALIT$/i } },
@@ -1575,7 +1575,7 @@
       { key: "CEFIXIME", group: "Antibiotik", label: "Cefixime sirup", why: ["ISK_TIFOID"], src: { kind: "perKgSyr", obat: "CEFIXIM SYR*", mlPerKg: 0.2, frekuensi: "2x1", keterangan: "" } }, // 4 mg/kg, 100 mg/5 ml
       // v3.111.0 (dokter 17 Okt 2026): puyer cefixime anak 4 mg/kgBB/kali 2x (8 mg/kg/hari), maks 200 mg/kali, usia >=6 bln,
       // 3 hari (6 bungkus) lalu kontrol faskes. Kapsul 100 mg dibuka; nama dicari "CEFIXIME 100 MG" di autocomplete.
-      { key: "CEFIXIME_PUYER", group: "Antibiotik", label: "Puyer Cefixime (2x4 mg/kg, 3 hari)", why: [], notWith: ["CEFIXIME", "AMOX", "CEFADROXIL"], src: { kind: "perKgPuyer", minAgeMonths: 6, minAgeText: "hanya usia ≥6 bulan", nama: "P. Cefixime (2x4 mg/kg)", namaRacikan: "P. Cefixime (2x4 mg/kg)", obat: "CEFIXIME 100 MG", tabMg: 100, mgPerKg: 4, maxMgKali: 200, bungkus: 6, frekuensi: "2 X SEHARI", keterangan: "3 hari, lanjut kontrol faskes" } },
+      { key: "CEFIXIME_PUYER", group: "Antibiotik", label: "Puyer Cefixime", why: [], notWith: ["CEFIXIME", "AMOX", "CEFADROXIL"], src: { kind: "perKgPuyer", minAgeMonths: 6, minAgeText: "hanya usia ≥6 bulan", nama: "Puyer Cefixime", namaRacikan: "cefixime", obat: "CEFIXIME 100 MG", tabMg: 100, mgPerKg: 4, maxMgKali: 200, bungkus: 6, frekuensi: "2 X SEHARI", keterangan: "3 hari, lanjut kontrol faskes" } },
       { key: "INTERZINC", group: "Saluran cerna", label: "Interzinc sirup", why: ["DIARE"], notWith: ["ZINC"], src: { kind: "byAge", obat: "INTERZINC SYR*", lt6Months: "2,5 ml", gte6Months: "5 ml", frekuensi: "1x1", keterangan: "selama 10 hari" } },
       { key: "LACTOB", group: "Saluran cerna", label: "Lacto-B", why: ["DIARE"], src: { kind: "fixed", item: { obat: "LACTO B SACHET", jumlah: "3", dosis: "1 sachet", frekuensi: "1x1", waktu: "", keterangan: "" } } },
       // v3.107.0 (usulan obat rawat jalan IGD anak C17–C25, disetujui dokter 17 Okt 2026). Dosis per kgBB pasien,
@@ -1591,11 +1591,11 @@
       // Varisela anak: acyclovir 20 mg/kgBB/kali 4x sehari 5 hari (maks 800 mg/kali) = puyer 20 bungkus tablet 400 mg
       // (jumlah tablet = BB dalam kg, dibulatkan ke bawah). Bayi <3 bulan / imunokompromais: rujuk (asiklovir iv).
       // v3.109.0 (dokter 17 Okt 2026): semua resep acyclovir dari IGD untuk 3 hari, lanjutan kontrol di faskes.
-      // v3.108.0: herpes zoster anak 20 mg/kgBB/kali 4x 7 hari (28 bungkus, maks 800 mg/kali; AAP Red Book);
+      // v3.112.0 (dokter 17 Okt 2026): varisela & zoster anak satu pilihan (dosis sama); nama racikan di Smartplus "acyclovir",
+      // nama lengkap hanya di pilihan Kombinasi Resep. v3.108.0: herpes zoster anak 20 mg/kgBB/kali 4x 7 hari (28 bungkus, maks 800 mg/kali; AAP Red Book);
       // herpes simpleks anak (gingivostomatitis) 15 mg/kgBB/kali 5x 5 hari (25 bungkus, maks 200 mg/kali; BNFC).
-      { key: "ACYCLOVIR", group: "Lain-lain", label: "Puyer Acyclovir varisela (20 mg/kg 4x, 3 hari)", why: ["VARISELA"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "P. Acyclovir varicella/ H.zoster(4x20 mg/kg)", namaRacikan: "P. Acyclovir varicella/ H.zoster(4x20 mg/kg)", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 20, maxMgKali: 800, bungkus: 12, frekuensi: "4 X SEHARI", keterangan: "3 hari, lanjut kontrol faskes" } },
-      { key: "ACYCLOVIR_ZOSTER", group: "Lain-lain", label: "Puyer Acyclovir herpes zoster (20 mg/kg 4x, 3 hari)", why: ["HERPES"], notWith: ["ACYCLOVIR"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "P. Acyclovir varicella/ H.zoster(4x20 mg/kg)", namaRacikan: "P. Acyclovir varicella/ H.zoster(4x20 mg/kg)", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 20, maxMgKali: 800, bungkus: 12, frekuensi: "4 X SEHARI", keterangan: "3 hari, lanjut kontrol faskes" } },
-      { key: "ACYCLOVIR_HSV", group: "Lain-lain", label: "Puyer Acyclovir herpes simpleks (15 mg/kg 5x, 3 hari)", why: ["HERPES_SIMPLEX"], notWith: ["ACYCLOVIR", "ACYCLOVIR_ZOSTER"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "P. Acyclovir H.simpleks(5x15 mg/kg)", namaRacikan: "P. Acyclovir H.simpleks(5x15 mg/kg)", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 15, maxMgKali: 200, bungkus: 15, frekuensi: "5 X SEHARI", keterangan: "3 hari, lanjut kontrol faskes" } }
+      { key: "ACYCLOVIR", group: "Lain-lain", label: "P. Acyclovir varicella/ H.zoster(4x20 mg/kg)", why: ["VARISELA", "HERPES"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "P. Acyclovir varicella/ H.zoster(4x20 mg/kg)", namaRacikan: "acyclovir", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 20, maxMgKali: 800, bungkus: 12, frekuensi: "4 X SEHARI", keterangan: "3 hari, lanjut kontrol faskes" } },
+      { key: "ACYCLOVIR_HSV", group: "Lain-lain", label: "P. Acyclovir H.simpleks(5x15 mg/kg)", why: ["HERPES_SIMPLEX"], notWith: ["ACYCLOVIR"], src: { kind: "perKgPuyer", minAgeMonths: 3, minAgeText: "bayi <3 bulan: rujuk (asiklovir iv)", nama: "P. Acyclovir H.simpleks(5x15 mg/kg)", namaRacikan: "acyclovir", obat: "ACYCLOVIR 400 MG TABLET*", tabMg: 400, mgPerKg: 15, maxMgKali: 200, bungkus: 15, frekuensi: "5 X SEHARI", keterangan: "3 hari, lanjut kontrol faskes" } }
     ]
   };
 
@@ -2461,14 +2461,14 @@
       MUNTAH_HEBAT: ["DOMPERIDON"], BATUK_PILEK: ["BAPIL"], BATUK_KERING: ["BAPIL"], RADANG_BENGKAK: ["RADANG"],
       DIARE: ["ZINC"], NYERI_ULU_HATI: ["RANITIDIN"], GERD: ["RANITIDIN"], KEMBUNG: ["ANTASIDA"], ALERGI: ["CETIRIZINE"],
       INFEKSI_BAKTERI: ["AMOX"], INFEKSI_KULIT: ["CEFADROXIL"], ISK_TIFOID: ["CEFIXIME"], VARISELA: ["ACYCLOVIR"],
-      HERPES: ["ACYCLOVIR_ZOSTER"], HERPES_SIMPLEX: ["ACYCLOVIR_HSV"]
+      HERPES: ["ACYCLOVIR"], HERPES_SIMPLEX: ["ACYCLOVIR_HSV"]
     }
   };
   // Bila beberapa keluhan menyarankan obat SEGOLONGAN, hanya satu yang dipakai (yang paling kiri diutamakan).
   const SP_SUGGEST_EXCLUSIVE = {
     adult: [["KETOROLAC", "IBUPROFEN"], ["ONDANSETRON", "DOMPERIDON"], ["RANITIDIN", "OMEPRAZOLE"], ["LODIA", "DIATAB"],
       ["CEFIXIME", "CEFIXIME_PUYER", "CEFADROXIL", "AMOX"], ["OBH", "AMBROXOL"], ["MP4", "DEXA"], ["DM_GDS300", "METFORMIN"], ["ACYCLOVIR", "ACYCLOVIR_HSV"]],
-    child: [["BAPIL", "BAPIL_CET", "RADANG"], ["CEFIXIME", "CEFIXIME_PUYER", "CEFADROXIL", "AMOX"], ["ACYCLOVIR", "ACYCLOVIR_ZOSTER", "ACYCLOVIR_HSV"]]
+    child: [["BAPIL", "BAPIL_CET", "RADANG"], ["CEFIXIME", "CEFIXIME_PUYER", "CEFADROXIL", "AMOX"], ["ACYCLOVIR", "ACYCLOVIR_HSV"]]
   };
 
   // Obat yang disarankan (key, urut sesuai daftar obat) untuk cabang tertentu dari keluhan yang ditemukan.
@@ -2654,7 +2654,7 @@
       "Simptomatik, antihistamin, bedak salisil; asiklovir 5x800 mg 7 hari (dewasa, <72 jam); anak 20 mg/kgBB 4x 5 hari", ["ACYCLOVIR", "PCT", "CETIRIZINE"], ["ACYCLOVIR", "PCT", "CETIRIZINE"], ""],
     ["HERPES_ZOSTER", "B02.9", "Herpes zoster", "herpes zoster|zoster|cacar api|cacar ular|dompo|shingles", "Infeksi & tropis",
       "Nyeri/terbakar lalu vesikel berkelompok sesuai dermatom, satu sisi", "Mengenai mata (zoster oftalmikus), diseminata, imunokompromais", "Klinis",
-      "Asiklovir 5x800 mg 7 hari (<72 jam); anak 20 mg/kgBB 4x 7 hari; analgetik", ["ACYCLOVIR", "PCT", "IBUPROFEN"], ["ACYCLOVIR_ZOSTER", "PCT"], ""],
+      "Asiklovir 5x800 mg 7 hari (<72 jam); anak 20 mg/kgBB 4x 7 hari; analgetik", ["ACYCLOVIR", "PCT", "IBUPROFEN"], ["ACYCLOVIR", "PCT"], ""],
     ["MORBILI", "B05.9", "Campak (morbili)", "morbili|campak|measles|gabagen", "Infeksi & tropis",
       "Demam, batuk, pilek, mata merah, ruam makulopapular dari belakang telinga", "Pneumonia, diare dehidrasi, ensefalitis, gizi buruk", "Klinis",
       "Simptomatik; vitamin A sesuai umur; isolasi", ["PCT"], ["PCT"], ""],
@@ -13573,7 +13573,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.111.1</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.112.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
