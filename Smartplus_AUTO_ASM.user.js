@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.112.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.113.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.112.0
-// @description  v3.112.0 (dokter 17 Okt 2026): tulisan 'per kgBB' dihapus dari pilihan puyer bapil; pilihan cefixime anak cukup 'Puyer Cefixime'; pilihan acyclovir anak bernama 'P. Acyclovir varicella/ H.zoster(4x20 mg/kg)' (varisela & zoster jadi satu) dan 'P. Acyclovir H.simpleks(5x15 mg/kg)', sedangkan nama racikan yang diisi di Smartplus cukup 'acyclovir' (cefixime: 'cefixime').
+// @version      3.113.0
+// @description  v3.113.0 (dokter 18 Okt 2026): semua obat nebu (IGD & rawat inap) memakai Combivent saja — terapi sementara konsul ranap anak <12 th kini 'Nebu combivent ½ respul + NaCl 0,9% 2 ml 3x1' (dulu salbutamol ± ipratropium), dewasa/anak ≥12 th tetap 'Nebu combivent 3x1'; peringatan TINDAKAN Nebu anak <12 th menyarankan ½ respul; Referensi Klinis (asma, PPOK, bronkitis, pneumonia, bronkiolitis) menulis nebu combivent.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.112.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.112.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.113.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.113.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -2528,16 +2528,16 @@
       "Duduk condong ke depan, tekan cuping hidung 10–15 menit, tampon anterior (± adrenalin/lidokain); asam traneksamat; atasi hipertensi", ["TRANEKSAMAT"], [], ""],
     ["BRONKITIS", "J20.9", "Bronkitis akut", "bronkitis|bronchitis", "Respirasi & THT",
       "Batuk ± dahak, ronki kasar, tanpa tanda pneumonia", "Sesak, SpO2 rendah, demam tinggi menetap", "Ro thorax bila curiga pneumonia",
-      "Simptomatik, mukolitik; nebu bila wheezing; antibiotik tidak rutin", ["AMBROXOL", "PCT"], ["BAPIL", "PCT"], ""],
+      "Simptomatik, mukolitik; nebu combivent bila wheezing; antibiotik tidak rutin", ["AMBROXOL", "PCT"], ["BAPIL", "PCT"], ""],
     ["PNEUMONIA", "J18.9", "Pneumonia / Bronkopneumonia", "pneumonia|pneumoni|bronkopneumonia|bronkopneumoni|bronchopneumonia|\\bbp\\b|\\bcap\\b|\\bhap\\b", "Respirasi & THT",
       "Demam, batuk, sesak, napas cepat, ronki basah", "SpO2 <92%, RR >30, TD sistolik <90, penurunan kesadaran, CURB-65 ≥2", "DL, Ro thorax, AGD/elektrolit bila berat",
-      "O2 target SpO2 ≥94%; Ceftriaxon 1x2 g iv ± azitromisin 1x500 mg; nebu bila wheezing; antipiretik; anak: ceftriaxon/ampisilin sesuai BB", ["AMOX", "PCT", "AMBROXOL"], ["AMOX", "PCT"], "BP"],
+      "O2 target SpO2 ≥94%; Ceftriaxon 1x2 g iv ± azitromisin 1x500 mg; nebu combivent bila wheezing; antipiretik; anak: ceftriaxon/ampisilin sesuai BB", ["AMOX", "PCT", "AMBROXOL"], ["AMOX", "PCT"], "BP"],
     ["BRONKIOLITIS", "J21.9", "Bronkiolitis (anak <2 th)", "bronkiolitis|bronchiolitis", "Respirasi & THT",
       "Bayi: batuk, pilek, napas cepat, wheezing/ronki, retraksi", "Apnea, SpO2 <92%, sulit menyusu, dehidrasi, retraksi berat", "Klinis; SpO2",
-      "O2, suction hidung, cairan; nebu NaCl 3% bila perlu; bronkodilator/steroid tidak rutin", [], ["PCT"], ""],
+      "O2, suction hidung, cairan; nebu combivent ½ respul (+ NaCl 0,9% 2 ml) bila wheezing; steroid tidak rutin", [], ["PCT"], ""],
     ["ASMA", "J45.9", "Asma (serangan akut)", "asma|asthma|status asmatikus|serangan asma|mengi|bengek|sesak berbunyi", "Respirasi & THT",
       "Sesak episodik, wheezing, batuk malam, riwayat asma", "Bicara kata per kata, silent chest, SpO2 <92%, sianosis, gelisah/penurunan kesadaran", "SpO2; AGD bila berat; Ro thorax bila curiga komplikasi",
-      "O2; nebu salbutamol 2,5–5 mg / combivent tiap 20 menit (3x dalam 1 jam); MP 62,5–125 mg iv atau dexametason 5–10 mg iv; MgSO4 2 g iv dalam 20 menit bila berat", ["MP4", "CETIRIZINE"], ["CETIRIZINE"], ""],
+      "O2; nebu combivent 1 respul (anak <12 th ½ respul) tiap 20 menit (3x dalam 1 jam); MP 62,5–125 mg iv atau dexametason 5–10 mg iv; MgSO4 2 g iv dalam 20 menit bila berat", ["MP4", "CETIRIZINE"], ["CETIRIZINE"], ""],
     ["PPOK", "J44.1", "PPOK eksaserbasi akut", "ppok|copd|eksaserbasi ppok|bronkitis kronis|emfisema", "Respirasi & THT",
       "Perokok, sesak memberat, dahak bertambah/purulen", "Penurunan kesadaran (retensi CO2), SpO2 <88%, otot bantu napas", "Ro thorax, AGD, DL, EKG",
       "O2 target SpO2 88–92%; nebu combivent; MP 62,5 mg iv / prednison 40 mg 5 hari; antibiotik bila sputum purulen", ["MP4", "AMBROXOL"], [], ""],
@@ -2861,8 +2861,8 @@
     ["Guaifenesin", "Ekspektoran", "gg|glyceryl guaiacolate|guaifenesin", "100–200 mg 3x/hari", ""],
     ["Dekstrometorfan", "Antitusif", "dmp|dextromethorphan|vicks formula 44", "10–15 mg 3x/hari", "Bukan untuk batuk berdahak; anak <6 th tidak dianjurkan"],
     ["OBH", "Obat batuk", "obh|obh combi|obh nellco|obh itra", "15 ml 3x/hari", ""],
-    ["Salbutamol", "Bronkodilator β2", "ventolin|salbuven|lasal|salbutamol", "Oral 2–4 mg 3x/hari; nebu 2,5–5 mg; inhaler 1–2 puff", "Tremor, takikardia"],
-    ["Ipratropium + salbutamol", "Bronkodilator nebu", "combivent|farbivent|respivent|ipratropium", "Nebu 1 respul (2,5 ml) 3–4x/hari; serangan: tiap 20 menit 3x", ""],
+    ["Salbutamol", "Bronkodilator β2", "ventolin|salbuven|lasal|salbutamol", "Oral 2–4 mg 3x/hari; nebu: pakai combivent; inhaler 1–2 puff", "Tremor, takikardia"],
+    ["Ipratropium + salbutamol", "Bronkodilator nebu", "combivent|farbivent|respivent|ipratropium", "Nebu 1 respul (2,5 ml) 3–4x/hari (anak <12 th ½ respul); serangan: tiap 20 menit 3x", ""],
     ["Budesonide", "Kortikosteroid inhalasi", "pulmicort|budesma|inflammide", "Nebu 0,5–1 mg 2x/hari", ""],
     ["Fluticasone + salmeterol", "Inhaler kombinasi", "seretide|flutias", "1 puff/inhalasi 2x/hari", "Pengontrol, bukan pelega"],
     ["Budesonide + formoterol", "Inhaler kombinasi", "symbicort|duoresp", "1–2 inhalasi 2x/hari", ""],
@@ -3761,6 +3761,8 @@
   //            BB <10 kg 7,5 mg/kgBB / 6 jam (maks 30 mg/kg/hari) — SmPC paracetamol infus. Ondansetron BB <7 kg
   //            0,15 mg/kgBB (dibulatkan ke bawah 0,1 mg). Nebu anak <12 th: salbutamol 2,5 mg ± ipratropium 250 mcg
   //            (Combivent UDV = dosis dewasa/anak >12 th).
+  // v3.113.0 (dokter 18 Okt 2026): semua nebu = Combivent (ipratropium 0,5 mg + salbutamol 2,5 mg / 2,5 ml UDV).
+  //            Anak <12 th: ½ respul (ipratropium 250 mcg + salbutamol 1,25 mg) + NaCl 0,9% 2 ml; ≥12 th 1 respul.
   // Tambahan berdasarkan diagnosis: nebu, NS/12 jam (dewasa), diatab (dewasa) / oralit (anak).
   const TERAPI_DX = {
     nebu: /\bBP\b|bronko\s*pneumoni|\bTB\b|tuberkulos|pneumoni|\bPPOK\b|dyspn|dispn|sesak|asma|asthma/i,
@@ -3817,7 +3819,7 @@
       lines.push(`Ceftriaxon 1x${Math.min(2000, roundTo(50 * bb, 50))} mg iv`);
       lines.push(`Ondansetron 2x${String(anakOndanMg(bb)).replace(".", ",")} mg iv`);
       lines.push(`Paracetamol ${anakPctIvMg(bb)} mg iv / 6 jam`);
-      if (TERAPI_DX.nebu.test(dx)) lines.push(Number(ageYears) >= 12 ? "Nebu combivent 3x1" : "Nebu salbutamol 2,5 mg (± ipratropium 250 mcg) 3x1");
+      if (TERAPI_DX.nebu.test(dx)) lines.push(Number(ageYears) >= 12 ? "Nebu combivent 3x1" : "Nebu combivent ½ respul + NaCl 0,9% 2 ml 3x1");
       if (TERAPI_DX.diare.test(dx)) lines.push("Oralit setiap BAB cair");
     }
     return lines;
@@ -9588,7 +9590,7 @@
       if (has(/ONDANSETRON INJ/i)) lines.push("Ondansetron anak 0,15 mg/kgBB (maks 4 mg), ampul 8 mg");
       if (has(/RANITIDIN INJ/i)) lines.push("Ranitidin anak 1 mg/kgBB (maks 50 mg), ampul 50 mg");
       if (has(/TRANEKSAMAT.*INJ/i)) lines.push("Asam traneksamat anak 10–15 mg/kgBB, ampul 500 mg");
-      if (age < 12 && has(/COMBIVENT/i)) lines.push("Combivent UDV dosis dewasa/anak >12 th; anak <12 th: salbutamol 2,5 mg ± ipratropium 250 mcg");
+      if (age < 12 && has(/COMBIVENT/i)) lines.push("Combivent UDV 1 respul = dosis dewasa/anak ≥12 th; anak <12 th: ½ respul (ipratropium 250 mcg + salbutamol 1,25 mg) + NaCl 0,9% 2 ml");
     } else if (age >= 65 && has(/KETOROLAC INJ/i)) {
       lines.push("Ketorolac usia ≥65 th (juga BB <50 kg / gangguan ginjal): 15 mg = 1/2 ampul, maks 60 mg/hari");
     }
@@ -13573,7 +13575,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.112.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.113.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
