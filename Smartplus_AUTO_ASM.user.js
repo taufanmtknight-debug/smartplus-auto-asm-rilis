@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.113.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.114.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.113.0
-// @description  v3.113.0 (dokter 18 Okt 2026): semua obat nebu (IGD & rawat inap) memakai Combivent saja — terapi sementara konsul ranap anak <12 th kini 'Nebu combivent ½ respul + NaCl 0,9% 2 ml 3x1' (dulu salbutamol ± ipratropium), dewasa/anak ≥12 th tetap 'Nebu combivent 3x1'; peringatan TINDAKAN Nebu anak <12 th menyarankan ½ respul; Referensi Klinis (asma, PPOK, bronkitis, pneumonia, bronkiolitis) menulis nebu combivent.
+// @version      3.114.0
+// @description  v3.114.0 (dokter 19 Okt 2026): ASGADAR PENYAKIT punya 4 kasus IGD baru — 🤮 Vomitus dengan dehidrasi sedang (rawat inap untuk rehidrasi iv), 💫 Vertigo perifer, 🏍️ Vulnus ekskoriasi ec KLL dan 🩹 Vulnus laceratum (luka robek); KLL & luka robek memilih Jenis Kasus 'Trauma'; Referensi Klinis vomitus/vertigo/vulnus/ekskoriasi punya tombol template-nya; KOMBINASI RESEP tidak lagi menyarankan antibiotik untuk vulnus ekskoriasi.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.113.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.113.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.114.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.114.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -394,6 +394,158 @@
       kondisiKeluar: "Pindah/Rujuk",
       tindakLanjut:
         "Rawat inap/rujuk untuk evaluasi dan terapi penyebab penurunan kesadaran."
+    },
+
+    // v3.114.0 (permintaan dokter 19 Okt 2026): kasus IGD baru — vomitus dehidrasi sedang, vertigo, KLL, luka robek.
+    // Nadi tetap >120 seperti template penyakit lain; RR & SpO2 diacak dalam rentang (rrMin/rrMax, spo2Min/spo2Max).
+    // jenisKasus "Trauma" -> radio Jenis Kasus "Trauma" (bukan "Non Trauma").
+    VOMITUS_DS: {
+      keluhan:
+        "Mual dan muntah lebih dari 5 kali sejak 1 hari, setiap makan dan minum dimuntahkan, badan lemas, BAK berkurang.",
+      vital: {
+        td: "104/66",
+        tdSysMin: 95,
+        tdSysMax: 110,
+        tdDiaMin: 60,
+        tdDiaMax: 72,
+        nadiMin: 121,
+        nadiMax: 135,
+        rrMin: 22,
+        rrMax: 26,
+        rr: "24",
+        suhu: "36,9",
+        spo2Min: 97,
+        spo2Max: 99,
+        spo2: "98"
+      },
+      nyeri: "5",
+      gcs: "15",
+      fisik:
+        "Kep: ca -/-, si -/-, mata cekung +, mukosa bibir kering\nTh: rh -/-, wh -/-, retraksi -, murmur -\nAbd: bu +, soefl, nte -, turgor kembali lambat\nExt: akral hangat, crt 2 detik",
+      penunjang: "Darah rutin.",
+      diagnosis: "Vomitus dengan dehidrasi sedang",
+      terapi: "Darah rutin, rehidrasi cairan intravena, antiemetik, observasi.",
+      masalahKesehatan:
+        "Muntah berulang dengan asupan oral tidak adekuat disertai dehidrasi sedang.",
+      masalahKeperawatan: "Kekurangan volume cairan.",
+      rencanaKeperawatan:
+        "Monitor tanda vital, frekuensi muntah, tanda dehidrasi, balans cairan dan produksi urin, serta kolaborasi terapi cairan dan antiemetik.",
+      edukasi:
+        "Edukasi mengenai kebutuhan cairan, makan dan minum sedikit tapi sering, tanda dehidrasi, dan tanda bahaya.",
+      discharge: "Tidak",
+      kondisiKeluar: "Pindah/Rujuk",
+      tindakLanjut: "Rawat inap untuk rehidrasi intravena dan observasi."
+    },
+
+    VERTIGO: {
+      keluhan: "Pusing berputar, memberat saat perubahan posisi kepala, disertai mual dan muntah.",
+      vital: {
+        td: "134/84",
+        tdSysMin: 125,
+        tdSysMax: 145,
+        tdDiaMin: 75,
+        tdDiaMax: 90,
+        nadiMin: 121,
+        nadiMax: 128,
+        rrMin: 18,
+        rrMax: 22,
+        rr: "20",
+        suhu: "36,7",
+        spo2Min: 97,
+        spo2Max: 100,
+        spo2: "98"
+      },
+      nyeri: "5",
+      gcs: "15",
+      fisik:
+        "Kep: ca -/-, si -/-\nTh: rh -/-, wh -/-, retraksi -, murmur -\nAbd: bu +, soefl, nte -\nExt: akral hangat, crt 2 detik\nNeurologis: nistagmus horizontal +, Dix-Hallpike +, lateralisasi -, defisit neurologis fokal -",
+      penunjang: "Darah rutin.",
+      diagnosis: "Vertigo perifer",
+      terapi: "Darah rutin, antivertigo, antiemetik, observasi.",
+      masalahKesehatan: "Pusing berputar akut disertai mual tanpa tanda defisit neurologis fokal.",
+      masalahKeperawatan: "Risiko jatuh dan gangguan rasa nyaman.",
+      rencanaKeperawatan:
+        "Monitor tanda vital, keluhan pusing berputar, mual muntah, status neurologis, risiko jatuh, serta respons terhadap terapi.",
+      edukasi:
+        "Edukasi mengenai perubahan posisi kepala secara perlahan, pencegahan jatuh, kepatuhan terapi, dan tanda bahaya yang memerlukan evaluasi segera.",
+      discharge: "Ya",
+      kondisiKeluar: "Sembuh",
+      tindakLanjut: "Kontrol rawat jalan bila keluhan menetap atau memberat."
+    },
+
+    KLL: {
+      keluhan: "Nyeri dan luka lecet pada anggota gerak setelah kecelakaan lalu lintas (KLL).",
+      jenisKasus: "Trauma",
+      vital: {
+        td: "126/80",
+        tdSysMin: 115,
+        tdSysMax: 135,
+        tdDiaMin: 70,
+        tdDiaMax: 85,
+        nadiMin: 121,
+        nadiMax: 128,
+        rrMin: 18,
+        rrMax: 22,
+        rr: "20",
+        suhu: "36,7",
+        spo2Min: 97,
+        spo2Max: 100,
+        spo2: "98"
+      },
+      nyeri: "6",
+      gcs: "15",
+      fisik:
+        "Kep: ca -/-, si -/-, jejas kepala -\nTh: rh -/-, wh -/-, retraksi -, murmur -, jejas dada -\nAbd: bu +, soefl, nte -, jejas abdomen -\nExt: akral hangat, crt 2 detik\nStatus lokalis: vulnus ekskoriasi regio ekstremitas, perdarahan aktif -, nyeri tekan +, deformitas -, ROM baik\nNeurologis: pupil isokor, lateralisasi -",
+      penunjang: "Darah rutin, rontgen sesuai lokasi cedera bila curiga fraktur.",
+      diagnosis: "Vulnus ekskoriasi ec KLL",
+      terapi: "Darah rutin, rawat luka, analgetik, profilaksis tetanus sesuai status imunisasi.",
+      masalahKesehatan:
+        "Luka lecet dan nyeri akibat kecelakaan lalu lintas tanpa tanda cedera kepala atau fraktur.",
+      masalahKeperawatan: "Nyeri akut dan kerusakan integritas kulit.",
+      rencanaKeperawatan:
+        "Monitor tanda vital, kesadaran, skala nyeri, kondisi luka, tanda perdarahan dan infeksi, serta respons terhadap terapi.",
+      edukasi:
+        "Edukasi mengenai perawatan luka, menjaga luka tetap bersih dan kering, kepatuhan terapi, serta tanda bahaya cedera kepala dan infeksi luka yang memerlukan evaluasi segera.",
+      discharge: "Ya",
+      kondisiKeluar: "Sembuh",
+      tindakLanjut: "Kontrol rawat luka 2-3 hari atau bila keluhan memberat."
+    },
+
+    VULNUS_LACERATUM: {
+      keluhan: "Luka robek dan berdarah setelah terkena benda tajam.",
+      jenisKasus: "Trauma",
+      vital: {
+        td: "124/78",
+        tdSysMin: 115,
+        tdSysMax: 135,
+        tdDiaMin: 70,
+        tdDiaMax: 85,
+        nadiMin: 121,
+        nadiMax: 128,
+        rrMin: 18,
+        rrMax: 22,
+        rr: "20",
+        suhu: "36,7",
+        spo2Min: 97,
+        spo2Max: 100,
+        spo2: "98"
+      },
+      nyeri: "6",
+      gcs: "15",
+      fisik:
+        "Kep: ca -/-, si -/-\nTh: rh -/-, wh -/-, retraksi -, murmur -\nAbd: bu +, soefl, nte -\nExt: akral hangat, crt 2 detik\nStatus lokalis: vulnus laceratum ukuran ± 3 x 0,5 cm, tepi tidak rata, perdarahan aktif minimal, benda asing -, gangguan sensorik/motorik distal -",
+      penunjang: "Darah rutin.",
+      diagnosis: "Vulnus laceratum",
+      terapi: "Darah rutin, wound toilet, hecting, analgetik, profilaksis tetanus sesuai status imunisasi, antibiotik bila luka kotor.",
+      masalahKesehatan: "Luka robek terbuka dengan risiko perdarahan dan infeksi.",
+      masalahKeperawatan: "Kerusakan integritas kulit dan nyeri akut.",
+      rencanaKeperawatan:
+        "Monitor tanda vital, perdarahan, skala nyeri, kondisi luka dan tanda infeksi, serta kolaborasi tindakan hecting dan terapi.",
+      edukasi:
+        "Edukasi mengenai perawatan luka, menjaga luka tetap bersih dan kering, jadwal kontrol luka dan aff hecting, serta tanda infeksi luka.",
+      discharge: "Ya",
+      kondisiKeluar: "Sembuh",
+      tindakLanjut: "Kontrol luka 3 hari, aff hecting 7-10 hari."
     },
 
     NORMAL: {
@@ -2362,6 +2514,7 @@
   // ("demam (-)", "tidak demam", "demam disangkal", "alergi: tidak ada") tidak dihitung.
   // v3.40.0 (instruksi dokter 5 Okt 2026): kamus keluhan diperluas untuk obat-obat KOMBINASI RESEP.
   // v3.88.0: + istilah awam (sumeng, encok, ingusan, bengek, berak cair, kencing perih, dunia berputar, …).
+  // v3.114.0: "vulnus ekskoriasi" (luka lecet, mis. template KLL) tidak lagi dianggap infeksi bakteri (antibiotik).
   const SP_COMPLAINT_KEYWORDS = {
     DEMAM: /demam|febris|febrile|panas badan|badan panas|badan hangat|meriang|hiperpireksia|hipertermi|sumeng|\bfever|\bobs\.? febris|\bvf\b|\bdbd\b|\bdhf\b|dengue/gi,
     // v3.57.0: sakit kepala dipisah dari nyeri umum (sakit kepala -> Ibuprofen, nyeri lain -> Ketorolac).
@@ -2382,7 +2535,7 @@
     GERD: /\bgerd\b|refluks|reflux|heartburn|dada (terasa )?terbakar|panas di dada|rasa panas di dada|asam lambung naik|sendawa|regurgitasi|pahit di mulut/gi,
     ULKUS: /tukak|ulkus peptik|ulkus lambung|peptic ulcer|gastritis erosif|erosi gaster|melena|bab hitam|hematemesis|muntah darah|muntah hitam/gi,
     KEMBUNG: /kembung|begah|flatulen|distensi|perut penuh|banyak gas/gi,
-    INFEKSI_BAKTERI: /\bBP\b|bronko?pneumoni|pneumoni|ispa|faringit|tonsil|otitis|\bomsk\b|\boma\b|sinusit|rhinosinusit|bronkit|vulnus|luka robek|luka terbuka|abses gigi|gigi berlubang|infeksi bakteri|bacterial infection|leukositosis/gi,
+    INFEKSI_BAKTERI: /\bBP\b|bronko?pneumoni|pneumoni|ispa|faringit|tonsil|otitis|\bomsk\b|\boma\b|sinusit|rhinosinusit|bronkit|vulnus(?!\s+(ekskoriasi|excoriasi|excoriatum|ekskoriatum))|luka robek|luka terbuka|abses gigi|gigi berlubang|infeksi bakteri|bacterial infection|leukositosis/gi,
     INFEKSI_KULIT: /abses|selulit|furunkel|furunkul|karbunkel|bisul|impetigo|paronikia|erisipelas|luka (terinfeksi|bernanah|infeksi)|bernanah|\bpus\b|ulkus (diabetik|dm|pedis)|ulkus kaki|gangren|pioderma|folikulitis/gi,
     ISK_TIFOID: /\bisk\b|\buti\b|infeksi saluran kemih|disuria|dysuria|anyang|nyeri (saat )?(bak|kencing)|sakit (saat )?(bak|kencing)|sistitis|pielonefritis|urin keruh|kencing (sakit|perih|panas)|tifoid|typhoid|thypoid|typhus|tipes|tifus|\bwidal\b|salmonell|demam enterik/gi,
     VERTIGO: /vertigo|pusing berputar|kepala berputar|sekeliling berputar|dunia berputar|dizzi|\bbppv\b|sempoyongan|kliyengan|tinnitus|telinga berdenging|meniere/gi,
@@ -2620,7 +2773,7 @@
       "Suportif, cukup kalori; hindari obat hepatotoksik; konsul penyakit dalam", ["DOMPERIDON"], [], ""],
     ["VOMITUS", "R11", "Mual muntah / vomitus", "vomitus|vomiting|muntah|mual muntah|nausea", "Saluran cerna",
       "Mual & muntah", "Dehidrasi, muntah darah/hijau, nyeri kepala hebat, kehamilan", "Elektrolit bila sering; tes kehamilan",
-      "Ondansetron 4 mg iv / metoklopramid 10 mg iv; rehidrasi", ["DOMPERIDON", "ONDANSETRON"], ["DOMPERIDON"], ""],
+      "Ondansetron 4 mg iv / metoklopramid 10 mg iv; rehidrasi", ["DOMPERIDON", "ONDANSETRON"], ["DOMPERIDON"], "VOMITUS_DS"],
     // ---- Infeksi / tropis ----
     ["FEBRIS", "R50.9", "Febris / observasi febris", "febris|obs febris|observasi febris|demam|panas|\\bvf\\b|infeksi virus|viral infection", "Infeksi & tropis",
       "Demam", "Demam ≥3 hari (DBD/tifoid), kejang, penurunan kesadaran, petekie, sesak, kaku kuduk", "DL (+ NS1 hari 1–3 / IgG-IgM dengue hari ≥4), Widal/Tubex bila ≥5–7 hari, urinalisis",
@@ -2673,7 +2826,7 @@
       "PCT / NSAID; metoklopramid 10 mg iv; ruang gelap tenang", ["IBUPROFEN", "DOMPERIDON"], ["PCT"], "CEPHALGIA"],
     ["VERTIGO", "R42", "Vertigo (BPPV / perifer)", "vertigo|bppv|pusing berputar|kepala berputar|kliyengan|dizziness|meniere", "Neurologi",
       "Pusing berputar dipicu posisi kepala, mual/muntah, nistagmus", "Tanda sentral (HINTS: head impulse normal, nistagmus vertikal/berganti arah, skew), ataksia, defisit neurologis, sakit kepala hebat", "Dix-Hallpike; GDS; CT bila curiga sentral",
-      "Manuver Epley (BPPV); betahistin 3x6 mg / flunarizin; dimenhidrinat; antiemetik", ["BETAHISTINE", "FLUNARIZINE", "DOMPERIDON"], [], ""],
+      "Manuver Epley (BPPV); betahistin 3x6 mg / flunarizin; dimenhidrinat; antiemetik", ["BETAHISTINE", "FLUNARIZINE", "DOMPERIDON"], [], "VERTIGO"],
     ["KEJANG_DEMAM", "R56.0", "Kejang demam (anak)", "kejang demam|step|febrile seizure|kd\\b|kds\\b|kdk\\b", "Neurologi",
       "Anak 6 bln–5 th, kejang saat demam, tanpa infeksi SSP", "Kejang >15 menit, fokal, berulang dalam 24 jam, penurunan kesadaran menetap, kaku kuduk", "DL, elektrolit, GDS; pungsi lumbal bila curiga meningitis",
       "Diazepam rektal 5 mg (BB <12 kg) / 10 mg (BB ≥12 kg), ulang 1x setelah 5 menit; diazepam iv 0,2–0,5 mg/kg (maks 10 mg); antipiretik", [], ["PCT"], "KEJANG_DEMAM_ANAK"],
@@ -2701,10 +2854,10 @@
       "NSAID / kolkisin 1 mg lalu 0,5 mg 1 jam kemudian / steroid; JANGAN mulai allopurinol saat serangan", ["DIKLOFENAK", "KETOROLAC"], [], ""],
     ["VULNUS", "T14.1", "Vulnus laceratum / luka terbuka", "vulnus|vl\\b|luka robek|luka terbuka|luka sobek|laserasi|vulnus laceratum|vulnus punctum|luka tusuk|vulnus scissum", "Muskuloskeletal & trauma",
       "Luka robek/terbuka", "Perdarahan arteri, cedera tendon/saraf, benda asing, luka kotor >6–8 jam", "Ro bila curiga benda asing/fraktur",
-      "Irigasi NaCl, eksplorasi, debridemen, jahit (hecting); profilaksis tetanus (TT ± ATS/HTIG sesuai status imunisasi); antibiotik bila kotor; analgetik", ["KETOROLAC", "CEFADROXIL"], ["PCT", "CEFADROXIL"], ""],
-    ["EKSKORIASI", "T14.0", "Vulnus ekskoriasi / kontusio", "ekskoriasi|vulnus excoriasi|vulnus ekskoriasi|lecet|luka lecet|kontusio|contusio|memar|jejas", "Muskuloskeletal & trauma",
+      "Irigasi NaCl, eksplorasi, debridemen, jahit (hecting); profilaksis tetanus (TT ± ATS/HTIG sesuai status imunisasi); antibiotik bila kotor; analgetik", ["KETOROLAC", "CEFADROXIL"], ["PCT", "CEFADROXIL"], "VULNUS_LACERATUM"],
+    ["EKSKORIASI", "T14.0", "Vulnus ekskoriasi / kontusio", "ekskoriasi|vulnus excoriasi|vulnus ekskoriasi|lecet|luka lecet|kll|kecelakaan lalu lintas|kontusio|contusio|memar|jejas", "Muskuloskeletal & trauma",
       "Luka lecet / memar", "Nyeri hebat, deformitas, hematom luas", "Klinis",
-      "Bersihkan luka, antiseptik, kompres dingin; profilaksis tetanus bila perlu; analgetik", ["KETOROLAC"], ["PCT"], ""],
+      "Bersihkan luka, antiseptik, kompres dingin; profilaksis tetanus bila perlu; analgetik", ["KETOROLAC"], ["PCT"], "KLL"],
     ["FRAKTUR", "T14.2", "Fraktur (curiga)", "fraktur|fracture|patah tulang|dislokasi", "Muskuloskeletal & trauma",
       "Nyeri, bengkak, deformitas, krepitasi, fungsi terganggu", "Fraktur terbuka, gangguan neurovaskular distal, sindrom kompartemen, fraktur femur/pelvis (syok)", "Ro 2 posisi (AP/lateral)",
       "Imobilisasi/bidai, analgetik (ketorolac 30 mg iv); fraktur terbuka: antibiotik iv + profilaksis tetanus; konsul ortopedi", ["KETOROLAC"], ["PCT"], ""],
@@ -13575,7 +13728,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.113.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.114.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -13630,6 +13783,10 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
             ${key === "FEBRIS_VI_BI" ? "🌡️ " : ""}
             ${key === "KEJANG_DEMAM_ANAK" ? "👶 " : ""}
             ${key === "PENURUNAN_KESADARAN" ? "🚨 " : ""}
+            ${key === "VOMITUS_DS" ? "🤮 " : ""}
+            ${key === "VERTIGO" ? "💫 " : ""}
+            ${key === "KLL" ? "🏍️ " : ""}
+            ${key === "VULNUS_LACERATUM" ? "🩹 " : ""}
             ${key === "NORMAL" ? "📋 " : ""}
             ${item.diagnosis || (key === "BP" ? "Bronkopneumonia" :
               key === "GEA" ? "Gastroenteritis Akut" :
@@ -14423,6 +14580,27 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     return true;
   }
 
+  // v3.114.0: klik radio/checkbox yang teks label/nilainya PERSIS sama (mis. "Trauma" tanpa ikut "Non Trauma");
+  // dicari di bagian bersubjudul sectionTitles dulu, lalu di seluruh form.
+  function spClickExactOption(root, sectionTitles, phrase) {
+    const want = norm(phrase);
+    const tryIn = (scope) => {
+      if (!scope) return false;
+      for (const radio of [...scope.querySelectorAll('input[type="radio"],input[type="checkbox"]')].filter(visible)) {
+        const lab = radio.id ? scope.querySelector(`label[for="${CSS.escape(radio.id)}"]`) : null;
+        const texts = [radio.value, lab && textOf(lab), radio.closest("label") && textOf(radio.closest("label"))];
+        if (texts.some((t) => norm(t) === want)) {
+          radio.click();
+          fire(radio);
+          return true;
+        }
+      }
+      return false;
+    };
+    for (const title of sectionTitles) if (tryIn(section(root, title))) return true;
+    return tryIn(root);
+  }
+
   // v3.64.0: opts.after dipanggil di akhir pengisian tertunda (setelah riwayat poli, nadi/RR/GCS diulang) — dipakai
   // ASISTEN SUARA untuk menimpa kolom template dengan yang diucapkan dokter.
   // v3.66.0 (audit): hasil false bila form GADAR tidak terbuka (opts.after tidak dipanggil) — ASISTEN tidak lagi menunggu 20 dtk.
@@ -14452,18 +14630,20 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     const patientAgeYears = getPatientAgeYears();
     const isPediatricUnder14 = patientAgeYears !== null && patientAgeYears < 14;
     const randomTD = getRandomTD(data.vital);
+    // v3.114.0: template kasus baru (vomitus DS, vertigo, KLL, luka robek) juga mengacak RR & SpO2 dalam rentangnya.
+    const randomRangeVital = ["NORMAL", "KEJANG_DEMAM_ANAK", "LBP", "VOMITUS_DS", "VERTIGO", "KLL", "VULNUS_LACERATUM"].includes(key);
     const randomRR =
       key === "BP"
         ? getRandomBPRespiratory()
         : key === "FEBRIS_VI_BI"
           ? getRandomFebrisRR()
-          : key === "NORMAL" || key === "KEJANG_DEMAM_ANAK" || key === "LBP"
+          : randomRangeVital
             ? getRandomNormalRR(data.vital)
             : data.vital.rr;
     const randomSpO2 =
       key === "BP"
         ? getRandomBPSpO2()
-        : key === "NORMAL" || key === "KEJANG_DEMAM_ANAK" || key === "LBP"
+        : randomRangeVital
           ? getRandomNormalSpO2(data.vital)
           : data.vital.spo2;
 
@@ -14495,9 +14675,14 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       clickInSection(root, ["Kegawatdaruratan", "TRIAGE"], ["True Emergency"])
     );
 
-    doSet("Non Trauma", () =>
-      clickInSection(root, ["Jenis Kasus", "TRIAGE"], ["Non Trauma"])
-    );
+    // v3.114.0: KLL & luka robek -> Jenis Kasus "Trauma" (dicocokkan persis, agar tidak memilih "Non Trauma").
+    if (data.jenisKasus === "Trauma") {
+      doSet("Trauma", () => spClickExactOption(root, ["Jenis Kasus", "TRIAGE"], "Trauma"));
+    } else {
+      doSet("Non Trauma", () =>
+        clickInSection(root, ["Jenis Kasus", "TRIAGE"], ["Non Trauma"])
+      );
+    }
 
     doSet("Cara Datang Sendiri", () =>
       clickInSection(root, ["Cara Datang"], ["Sendiri"])
