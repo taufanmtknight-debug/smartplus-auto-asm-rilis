@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.115.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.116.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.115.0
-// @description  v3.115.0 (dokter 20 Okt 2026): AUTO IGD punya 🛏 CEK ADVIS PASIEN DAPAT KAMAR 24 JAM — pasien IGD 24 jam terakhir yang ada di daftar rawat inap (e-Ranap) dicek apakah Rencana ASGADAR-nya sudah berisi advis DPJP/spesialis; yang belum ditampilkan dengan nama, kamar, DPJP dan isi Rencana saat ini, lalu ➕ Tambah advis membuka ADVIS SPESIALIS untuk pasien itu (disimpan hanya setelah dokter menekan 💾 Simpan Rencana).
+// @version      3.116.0
+// @description  v3.116.0 (dokter 20 Okt 2026): KOMBINASI RESEP dewasa (obat IGD) tidak lagi memuat Lansoprazole 30 mg, Eperisone 50 mg, Natrium diklofenak 25 mg dan Metoclopramide 10 mg; untuk nyeri otot tetap ada Natrium diklofenak 50 mg, Ibuprofen dan Asam mefenamat, Referensi Klinis LBP/gout/sprain kini menyarankan Natrium diklofenak 50 mg. Resep Pulang rawat inap tidak berubah.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.115.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.115.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.116.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.116.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -1639,7 +1639,7 @@
   const DRUG_OPTIONS = {
     adult: [
       { key: "PCT", group: "Demam & Nyeri", label: "Paracetamol (Sanmol Forte 650 mg)", why: ["DEMAM"], cls: "ten", src: { kind: "item", tpl: "ISPA_DEWASA", obat: "SANMOL FORTE TABLET 650MG*" } },
-      { key: "KETOROLAC", group: "Demam & Nyeri", label: "Ketorolac tablet", why: ["NYERI"], notWith: ["DIKLOFENAK"], src: { kind: "recipe", key: "KELUHAN_NYERI_DEWASA" } },
+      { key: "KETOROLAC", group: "Demam & Nyeri", label: "Ketorolac tablet", why: ["NYERI"], notWith: ["DIKLOFENAK50"], src: { kind: "recipe", key: "KELUHAN_NYERI_DEWASA" } },
       { key: "DOMPERIDON", group: "Saluran cerna", label: "Domperidon 10 mg", why: ["MUAL_MUNTAH"], notWith: ["ONDANSETRON"], src: { kind: "recipe", key: "KELUHAN_MUAL_MUNTAH_DEWASA" } },
       { key: "AMBROXOL", group: "Batuk, pilek & alergi", label: "Ambroxol 30 mg", why: ["BATUK_PILEK"], notWith: ["OBH"], src: { kind: "item", tpl: "KELUHAN_BATUK_PILEK_DEWASA", obat: "AMBROXOL 30MG TAB" } },
       { key: "CTM", group: "Batuk, pilek & alergi", label: "CTM 4 mg", why: ["BATUK_PILEK", "RADANG_BENGKAK"], notWith: ["CETIRIZINE"], src: { kind: "item", tpl: "KELUHAN_BATUK_PILEK_DEWASA", obat: "CTM 4MG TAB" } },
@@ -1652,8 +1652,7 @@
       // [key, golongan, label, obat, jumlah, dosis, frekuensi, keterangan, why, extra]
       ...[
         ["PCT500", "Demam & Nyeri", "Paracetamol 500 mg", "PARACETAMOL 500 MG TAB*", "10", "500 mg", "3x1", "", ["DEMAM"], { notWith: ["PCT"], cls: "ten" }],
-        ["IBUPROFEN", "Demam & Nyeri", "Ibuprofen 400 mg", "IBUPROFEN 400MG TAB*", "10", "400 mg", "3x1", "sesudah makan", ["NYERI_OTOT"], { notWith: ["DIKLOFENAK"], cls: "ten" }],
-        ["DIKLOFENAK", "Demam & Nyeri", "Natrium diklofenak 25 mg", "NATRIUM DIKLOFENAK 25 MG", "10", "25 mg", "3x1", "sesudah makan", ["NYERI_OTOT"]],
+        ["IBUPROFEN", "Demam & Nyeri", "Ibuprofen 400 mg", "IBUPROFEN 400MG TAB*", "10", "400 mg", "3x1", "sesudah makan", ["NYERI_OTOT"], { notWith: ["DIKLOFENAK50"], cls: "ten" }],
         ["OMEPRAZOLE", "Saluran cerna", "Omeprazole 20 mg", "OMEPRAZOLE CAPSUL*", "10", "20 mg", "2x1", "sebelum makan", ["GERD", "ULKUS"]],
         ["SUKRALFAT", "Saluran cerna", "Sukralfat sirup", "SUKRALFAT SYR*", "1", "1 sendok makan", "3x1", "", ["ULKUS"]],
         ["ANTASIDA_SUSP", "Saluran cerna", "Antasida suspensi", "ANTASIDA DOEN SUSPNSI", "1", "1 sendok makan", "3x1", "", ["NYERI_ULU_HATI"], { notWith: ["SUKRALFAT"] }],
@@ -1675,15 +1674,13 @@
         ["METFORMIN", "Lain-lain", "Metformin 500 mg", "METFORMIN 500 MG TAB*", "10", "500 mg", "2x1", "", ["DM"], { cls: "chronic" }],
         ["GLIMEPIRIDE", "Lain-lain", "Glimepiride 1 mg", "GLIMEPIRIDE 1 MG TAB*", "10", "1 mg", "1x1", "", ["DM"], { cls: "chronic", notWith: ["METFORMIN"] }],
         ["TRANEKSAMAT", "Lain-lain", "Asam traneksamat 500 mg", "ASAM TRANEKSAMAT 500 MG TAB*", "10", "500 mg", "3x1", "", ["PERDARAHAN"]],
+        // v3.116.0 (dokter 20 Okt 2026): Natrium diklofenak 25 mg, Eperisone, Metoclopramide, Lansoprazole dihapus dari obat IGD.
         // v3.107.0 (usulan obat rawat jalan IGD C1–C16, disetujui dokter 17 Okt 2026; tamsulosin & salbutamol tidak dipakai).
         // Nama = master Smartplus (autocomplete obat, lihat tests/README.md v3.38). Dokter 5 Okt 2026 sempat menolak beberapa obat ini;
         // 17 Okt 2026 dokter menyetujui daftar C (keputusan terbaru).
-        ["DIKLOFENAK50", "Demam & Nyeri", "Natrium diklofenak 50 mg", "NATRIUM DIKLOFENAC 50 MG TAB*", "6", "50 mg", "2x1", "sesudah makan", ["NYERI_OTOT"], { notWith: ["DIKLOFENAK", "KETOROLAC", "IBUPROFEN"] }],
+        ["DIKLOFENAK50", "Demam & Nyeri", "Natrium diklofenak 50 mg", "NATRIUM DIKLOFENAC 50 MG TAB*", "6", "50 mg", "2x1", "sesudah makan", ["NYERI_OTOT"], { notWith: ["KETOROLAC", "IBUPROFEN"] }],
         ["ASAM_MEFENAMAT", "Demam & Nyeri", "Asam mefenamat 500 mg", "ASAM MEFENAMAT 500 MG TAB*", "6", "500 mg", "3x1", "sesudah makan", ["NYERI"], { notWith: ["KETOROLAC", "IBUPROFEN"] }],
-        ["EPERISONE", "Demam & Nyeri", "Eperisone 50 mg", "EPERISONE TAB*", "6", "50 mg", "3x1", "sesudah makan", ["NYERI_OTOT"]],
         ["SPASMINAL", "Saluran cerna", "Spasminal (kolik, dismenore)", "SPASMINAL TABLET", "6", "1 tablet", "3x1", "", ["NYERI"]],
-        ["METOCLOPRAMIDE", "Saluran cerna", "Metoclopramide 10 mg", "METOCLOPRAMIDE TABLET*", "6", "10 mg", "3x1", "sebelum makan, maks 5 hari", ["MUAL_MUNTAH"], { notWith: ["DOMPERIDON", "ONDANSETRON"] }],
-        ["LANSOPRAZOLE", "Saluran cerna", "Lansoprazole 30 mg", "LANSOPRAZOLE CAPS HEXPHARM* (ISI 100)", "6", "30 mg", "1x1", "sebelum makan", ["GERD"], { notWith: ["OMEPRAZOLE"] }],
         ["SUKRALFAT_TAB", "Saluran cerna", "Sukralfat tablet 500 mg", "SUKRALFAT TAB", "6", "1 g (2 tablet)", "3x1", "sebelum makan", ["ULKUS"], { notWith: ["SUKRALFAT"] }],
         ["NAC", "Batuk, pilek & alergi", "Acetylcysteine 200 mg", "ACETYLCYSTEINE KAPSUL 200 MG*", "6", "200 mg", "3x1", "", ["BATUK_PILEK"], { notWith: ["AMBROXOL"] }],
         ["SANADRYL", "Batuk, pilek & alergi", "Sanadryl DMP sirup (batuk kering)", "SANADRYL DMP 60 ML SYRUP", "1", "10 ml", "3x1", "", ["BATUK_KERING"], { notWith: ["OBH"] }],
@@ -2845,13 +2842,13 @@
     // ---- Muskuloskeletal & trauma ----
     ["LBP", "M54.5", "Low back pain (nyeri pinggang)", "lbp|low back pain|nyeri pinggang|sakit pinggang|nyeri punggung bawah|ischialgia|iskialgia|hnp|encok", "Muskuloskeletal & trauma",
       "Nyeri pinggang, ± menjalar ke tungkai", "Retensi urin/inkontinensia, saddle anestesi (cauda equina), demam, keganasan, trauma, defisit motorik", "Klinis; Ro lumbosakral bila trauma/usia lanjut",
-      "NSAID (ketorolac 30 mg iv / diklofenak), relaksan otot (eperison); aktif bertahap", ["KETOROLAC", "DIKLOFENAK"], [], "LBP"],
+      "NSAID (ketorolac 30 mg iv / diklofenak), relaksan otot (eperison); aktif bertahap", ["KETOROLAC", "DIKLOFENAK50"], [], "LBP"],
     ["MIALGIA", "M79.1", "Mialgia", "mialgia|myalgia|nyeri otot|pegal|pegal linu|nyeri sendi|artralgia", "Muskuloskeletal & trauma",
       "Nyeri/pegal otot", "Urin gelap (rabdomiolisis), kelemahan", "Klinis",
       "Analgetik / NSAID", ["IBUPROFEN", "PCT"], ["PCT"], ""],
     ["GOUT", "M10.9", "Artritis gout akut", "gout|asam urat|arthritis gout|artritis gout|pirai", "Muskuloskeletal & trauma",
       "Sendi (sering ibu jari kaki) merah, bengkak, sangat nyeri mendadak", "Demam (artritis septik)", "Asam urat (bisa normal saat serangan), DL",
-      "NSAID / kolkisin 1 mg lalu 0,5 mg 1 jam kemudian / steroid; JANGAN mulai allopurinol saat serangan", ["DIKLOFENAK", "KETOROLAC"], [], ""],
+      "NSAID / kolkisin 1 mg lalu 0,5 mg 1 jam kemudian / steroid; JANGAN mulai allopurinol saat serangan", ["DIKLOFENAK50", "KETOROLAC"], [], ""],
     ["VULNUS", "T14.1", "Vulnus laceratum / luka terbuka", "vulnus|vl\\b|luka robek|luka terbuka|luka sobek|laserasi|vulnus laceratum|vulnus punctum|luka tusuk|vulnus scissum", "Muskuloskeletal & trauma",
       "Luka robek/terbuka", "Perdarahan arteri, cedera tendon/saraf, benda asing, luka kotor >6–8 jam", "Ro bila curiga benda asing/fraktur",
       "Irigasi NaCl, eksplorasi, debridemen, jahit (hecting); profilaksis tetanus (TT ± ATS/HTIG sesuai status imunisasi); antibiotik bila kotor; analgetik", ["KETOROLAC", "CEFADROXIL"], ["PCT", "CEFADROXIL"], "VULNUS_LACERATUM"],
@@ -2863,7 +2860,7 @@
       "Imobilisasi/bidai, analgetik (ketorolac 30 mg iv); fraktur terbuka: antibiotik iv + profilaksis tetanus; konsul ortopedi", ["KETOROLAC"], ["PCT"], ""],
     ["SPRAIN", "T14.3", "Sprain / keseleo", "sprain|keseleo|terkilir|strain|kram|kecetit", "Muskuloskeletal & trauma",
       "Nyeri & bengkak sendi setelah terpelintir", "Tidak bisa menumpu 4 langkah, nyeri tulang (Ottawa rules -> Ro)", "Ro sesuai Ottawa ankle/knee rules",
-      "RICE (istirahat, kompres es, balut tekan, elevasi), NSAID", ["IBUPROFEN", "DIKLOFENAK"], ["PCT"], ""],
+      "RICE (istirahat, kompres es, balut tekan, elevasi), NSAID", ["IBUPROFEN", "DIKLOFENAK50"], ["PCT"], ""],
     ["COMBUSTIO", "T30.0", "Luka bakar (combustio)", "combustio|luka bakar|kombustio|tersiram air panas|terbakar|burn", "Muskuloskeletal & trauma",
       "Luka bakar", "Luas >20% (dewasa) / >10% (anak), wajah/leher/genital/sendi, trauma inhalasi (suara serak, jelaga), listrik/kimia", "DL, elektrolit bila luas",
       "Dinginkan dengan air mengalir 20 menit; hitung luas (rule of nine); Parkland 4 ml × kgBB × %TBSA (separuh 8 jam pertama) bila luas; analgetik; rawat luka; profilaksis tetanus", ["KETOROLAC"], ["PCT"], ""],
@@ -13859,7 +13856,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.115.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.116.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
