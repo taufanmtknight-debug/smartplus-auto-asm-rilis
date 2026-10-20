@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.116.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.117.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.116.0
-// @description  v3.116.0 (dokter 20 Okt 2026): KOMBINASI RESEP dewasa (obat IGD) tidak lagi memuat Lansoprazole 30 mg, Eperisone 50 mg, Natrium diklofenak 25 mg dan Metoclopramide 10 mg; untuk nyeri otot tetap ada Natrium diklofenak 50 mg, Ibuprofen dan Asam mefenamat, Referensi Klinis LBP/gout/sprain kini menyarankan Natrium diklofenak 50 mg. Resep Pulang rawat inap tidak berubah.
+// @version      3.117.0
+// @description  v3.117.0 (dokter 20 Okt 2026): obat diare IGD — New Diatab kini diberikan 10 tablet (2 tab setiap BAB cair, maks 12 tab/hari) dan Lodia (loperamide 2 mg) 4 tablet dengan aturan 2x1 sehari di KOMBINASI RESEP dewasa (obat pulang IGD). Resep Pulang rawat inap tidak berubah.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.116.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.116.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.117.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.117.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -1644,7 +1644,7 @@
       { key: "AMBROXOL", group: "Batuk, pilek & alergi", label: "Ambroxol 30 mg", why: ["BATUK_PILEK"], notWith: ["OBH"], src: { kind: "item", tpl: "KELUHAN_BATUK_PILEK_DEWASA", obat: "AMBROXOL 30MG TAB" } },
       { key: "CTM", group: "Batuk, pilek & alergi", label: "CTM 4 mg", why: ["BATUK_PILEK", "RADANG_BENGKAK"], notWith: ["CETIRIZINE"], src: { kind: "item", tpl: "KELUHAN_BATUK_PILEK_DEWASA", obat: "CTM 4MG TAB" } },
       { key: "DEXA", group: "Batuk, pilek & alergi", label: "Dexamethason 0,5 mg", why: ["BATUK_PILEK", "RADANG_BENGKAK"], notWith: ["MP4"], src: { kind: "item", tpl: "KELUHAN_BATUK_PILEK_DEWASA", obat: "DEXAMETHASON 0.5 MG TAB*" } },
-      { key: "DIATAB", group: "Saluran cerna", label: "New Diatab", why: ["DIARE"], src: { kind: "recipe", key: "KELUHAN_DIARE_DEWASA" } },
+      { key: "DIATAB", group: "Saluran cerna", label: "New Diatab", why: ["DIARE"], cls: "ten", src: { kind: "recipe", key: "KELUHAN_DIARE_DEWASA" } },
       { key: "RANITIDIN", group: "Saluran cerna", label: "Ranitidin 150 mg", why: ["NYERI_ULU_HATI"], notWith: ["OMEPRAZOLE"], src: { kind: "recipe", key: "NYERI_ULU_HATI_DEWASA" } },
       { key: "ANTASIDA", group: "Saluran cerna", label: "Antasida tablet", why: ["KEMBUNG"], notWith: ["ANTASIDA_SUSP"], src: { kind: "recipe", key: "KEMBUNG_DEWASA" } },
       { key: "AMOX", group: "Antibiotik", label: "Amoxicillin 500 mg", cls: "abx", why: ["INFEKSI_BAKTERI"], notWith: ["CEFADROXIL", "CEFIXIME"], src: { kind: "recipe", key: "KELUHAN_INFEKSI_DEWASA" } },
@@ -1657,7 +1657,8 @@
         ["SUKRALFAT", "Saluran cerna", "Sukralfat sirup", "SUKRALFAT SYR*", "1", "1 sendok makan", "3x1", "", ["ULKUS"]],
         ["ANTASIDA_SUSP", "Saluran cerna", "Antasida suspensi", "ANTASIDA DOEN SUSPNSI", "1", "1 sendok makan", "3x1", "", ["NYERI_ULU_HATI"], { notWith: ["SUKRALFAT"] }],
         ["ONDANSETRON", "Saluran cerna", "Ondansetron 4 mg", "ONDANSETRON TABLET 4 MG*", "6", "4 mg", "3x1", "bila mual/muntah", ["MUNTAH_HEBAT"]],
-        ["LODIA", "Saluran cerna", "Lodia (loperamide) 2 mg", "LODIA TAB*", "6", "2 mg", "setiap BAB cair", "maks 4 tablet/hari", ["DIARE_NONINFEKSI"], { notWith: ["DIATAB"] }],
+        // v3.117.0 (instruksi dokter 20 Okt 2026): Diatab IGD 10 tablet (cls "ten"); Lodia 4 tablet 2x1.
+        ["LODIA", "Saluran cerna", "Lodia (loperamide) 2 mg", "LODIA TAB*", "4", "2 mg", "2x1", "", ["DIARE_NONINFEKSI"], { notWith: ["DIATAB"], cls: "keep" }],
         ["CETIRIZINE", "Batuk, pilek & alergi", "Cetirizine 10 mg", "CETIRIZINE 10 MG TAB (ISI 60)*", "5", "10 mg", "1x1", "", ["ALERGI"]],
         ["LORATADINE", "Batuk, pilek & alergi", "Loratadine 10 mg", "LORATADINE TAB 10 MG*", "5", "10 mg", "1x1", "", ["ALERGI"], { notWith: ["CETIRIZINE"] }],
         ["MP4", "Batuk, pilek & alergi", "Methylprednisolon 4 mg", "METHYLPREDNISOLON 4 MG*", "10", "4 mg", "3x1", "", ["ASMA"]],
@@ -13856,7 +13857,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.116.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.117.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
