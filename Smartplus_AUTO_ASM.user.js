@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.114.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.115.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.114.0
-// @description  v3.114.0 (dokter 19 Okt 2026): ASGADAR PENYAKIT punya 4 kasus IGD baru — 🤮 Vomitus dengan dehidrasi sedang (rawat inap untuk rehidrasi iv), 💫 Vertigo perifer, 🏍️ Vulnus ekskoriasi ec KLL dan 🩹 Vulnus laceratum (luka robek); KLL & luka robek memilih Jenis Kasus 'Trauma'; Referensi Klinis vomitus/vertigo/vulnus/ekskoriasi punya tombol template-nya; KOMBINASI RESEP tidak lagi menyarankan antibiotik untuk vulnus ekskoriasi.
+// @version      3.115.0
+// @description  v3.115.0 (dokter 20 Okt 2026): AUTO IGD punya 🛏 CEK ADVIS PASIEN DAPAT KAMAR 24 JAM — pasien IGD 24 jam terakhir yang ada di daftar rawat inap (e-Ranap) dicek apakah Rencana ASGADAR-nya sudah berisi advis DPJP/spesialis; yang belum ditampilkan dengan nama, kamar, DPJP dan isi Rencana saat ini, lalu ➕ Tambah advis membuka ADVIS SPESIALIS untuk pasien itu (disimpan hanya setelah dokter menekan 💾 Simpan Rencana).
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -53,8 +53,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.114.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.114.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.115.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.115.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -7221,7 +7221,9 @@
   // v3.32.0 (instruksi dokter): pasien dipilih lewat pencarian nama (tanpa membuka halaman pasien).
   // Daftar = pasien IGD 48 jam terakhir dari daftar pasien IGD (semua dokter), dicari langsung saat mengetik.
   // Dimuat 6 halaman sekaligus; onProgress(daftarSementara) dipanggil tiap gelombang supaya hasil cari langsung muncul.
-  async function spAdvisLoadPatients(base, onProgress) {
+  // v3.115.0: hours = rentang jam (bawaan 48; CEK ADVIS DAPAT KAMAR memakai 24).
+  async function spAdvisLoadPatients(base, onProgress, hours = 48) {
+    const win = hours * 3600000;
     const seen = new Map();
     let latest = 0;
     const parsePage = (h) => {
@@ -7241,11 +7243,11 @@
       if (!flat.length) break;
       if (!latest) latest = Math.max(...flat.map((x) => x.ts));
       flat.forEach((x) => { if (!seen.has(x.noreg)) seen.set(x.noreg, x); });
-      const list = [...seen.values()].filter((x) => x.ts >= latest - 2 * 86400000).sort((x, y) => y.ts - x.ts);
+      const list = [...seen.values()].filter((x) => x.ts >= latest - win).sort((x, y) => y.ts - x.ts);
       if (onProgress) onProgress(list);
-      if (pages.some((pg) => !pg.length) || Math.min(...flat.map((x) => x.ts)) < latest - 2 * 86400000) return list;
+      if (pages.some((pg) => !pg.length) || Math.min(...flat.map((x) => x.ts)) < latest - win) return list;
     }
-    return [...seen.values()].filter((x) => x.ts >= latest - 2 * 86400000).sort((x, y) => y.ts - x.ts);
+    return [...seen.values()].filter((x) => x.ts >= latest - win).sort((x, y) => y.ts - x.ts);
   }
 
   async function spAdvisLatestGadar(base, p) {
@@ -7409,6 +7411,8 @@
     }
     pq.addEventListener("input", () => { chosen = null; gadarInfo = null; loadSeq++; psel.textContent = ""; box.style.display = "none"; msg.textContent = ""; showList(); });
     if (waQueue.length) selectQ(0);
+    // v3.115.0: dibuka dari CEK ADVIS DAPAT KAMAR -> pasien langsung terpilih.
+    else if (opts.pick) choose(opts.pick);
     spAdvisLoadPatients(base, (part) => { patients = part; if (waPt && !chosen) { const p = waFind(part); if (p) { choose(p); return; } } showList(); })
       .then((r) => {
         patients = r; loading = false;
@@ -7460,6 +7464,7 @@
           (sres.changed && sres.changed.length ? ` Perhatian: kolom berubah: ${sres.changed.join(", ")}` : "");
         msg.querySelector("b").textContent = p.nama;
         toast("ADVIS SPESIALIS: Rencana tersimpan — " + p.nama);
+        if (opts.pick && typeof opts.onSaved === "function" && opts.pick.noreg === p.noreg) { try { opts.onSaved(); } catch (_) {} }
         // v3.78.0: antrean advis WA -> tandai selesai lalu lanjut ke pasien berikutnya.
         if (waCur >= 0 && waQueue[waCur] && !waQueue[waCur].done) {
           waQueue[waCur].done = true;
@@ -7479,6 +7484,127 @@
     });
   }
 
+
+  // =========================
+  // v3.115.0 (permintaan dokter 20 Okt 2026): CEK ADVIS PASIEN DAPAT KAMAR 24 JAM.
+  // Pasien IGD 24 jam terakhir yang DAPAT KAMAR = No.Reg (atau No.RM) ada di daftar pasien dirawat e-Ranap (`erm_ranap`),
+  // atau status di daftar IGD menyebut rawat inap/MRS. Rencana GADAR terakhir kunjungan ini dibaca (GET saja);
+  // SUDAH ADVIS = ada baris pembuka advis/instruksi DPJP (sama dengan PAKET KONSUL RANAP: "Advis dr. X SpY (jam):",
+  // "ADVICE DR. X", "RAWAT INAP DR. X", "ACC DR. X") atau kata "advis/advice dr/dpjp/sp" di Rencana.
+  // Yang belum: nama, kamar, DPJP & isi Rencana saat ini ditampilkan; "➕ Tambah advis" membuka ADVIS SPESIALIS untuk
+  // pasien itu (dokter menulis advis lalu menekan 💾 Simpan Rencana sendiri). Panel ini tidak pernah menyimpan.
+  // =========================
+  function spRencanaHasAdvis(text) {
+    const lines = spNlPure(text).split("\n").map((l) => l.replace(/^\s*(?:[-•*·>]+|\d+[.)])\s*/, "").trim()).filter(Boolean);
+    return lines.some((l) => SP_TX_HEADER.test(l) || /\badvi[cs]e?\s*:?\s*(?:dari\s+)?(?:dr\b|dokter|dpjp|sp\.?\s?[a-z])/i.test(l));
+  }
+  function spRmKey(v) { return String(v || "").replace(/\D/g, "").replace(/^0+/, ""); }
+  // igd = [{ noreg, norm, nama, st, ... }], ranap = [{ noreg, normRm, kamar, ... }] -> pasien IGD yang dapat kamar (+ data kamar).
+  function spMatchDapatKamar(igd, ranap) {
+    const byReg = new Map(), byRm = new Map();
+    (ranap || []).forEach((r) => { if (r.noreg) byReg.set(r.noreg, r); const k = spRmKey(r.normRm); if (k) byRm.set(k, r); });
+    return (igd || []).map((p) => {
+      const r = byReg.get(p.noreg) || byRm.get(spRmKey(p.norm)) || null;
+      return r || /rawat\s*inap|ranap|\bmrs\b|opname/i.test(p.st || "") ? { ...p, ranap: r } : null;
+    }).filter(Boolean);
+  }
+
+  async function runCekAdvisRanap() {
+    const PANEL_ID = "sp-cekadv-panel";
+    document.getElementById(PANEL_ID)?.remove();
+    const panel = document.createElement("div");
+    panel.id = PANEL_ID;
+    panel.style.cssText = "position:fixed;left:16px;top:6vh;z-index:2147483646;background:#fff;border:2px solid #6a1b9a;border-radius:12px;padding:12px;width:min(94vw,560px);max-height:88vh;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,.35);font:13px/1.45 Arial,sans-serif;color:#222;";
+    const head = document.createElement("div");
+    head.className = "sp-panel-head";
+    head.style.cssText = "padding:4px 0 8px;border-bottom:1px solid #eee;margin-bottom:8px;";
+    head.innerHTML = `<b style="font-size:15px;line-height:28px"><span style="color:#999">⠿</span> 🛏 CEK ADVIS PASIEN DAPAT KAMAR</b>`;
+    spStyleHandle(head);
+    const body = document.createElement("div");
+    body.innerHTML = `
+      <div style="color:#777;font-size:11px;margin-bottom:6px">Pasien IGD 24 jam terakhir yang ada di daftar rawat inap (e-Ranap). Hanya membaca; advis ditulis & disimpan sendiri lewat ➕ Tambah advis.</div>
+      <div class="sp-ca-msg" style="margin:4px 0;color:#555">⏳ Membaca daftar pasien IGD 24 jam & daftar rawat inap...</div>
+      <div class="sp-ca-list"></div>
+      <details class="sp-ca-okwrap" style="display:none;margin-top:8px"><summary style="cursor:pointer;color:#2e7d32;font-weight:600"></summary><div class="sp-ca-ok"></div></details>
+      <button type="button" class="sp-ca-reload" style="margin-top:10px;width:100%;padding:8px;font:600 13px Arial,sans-serif;background:#6a1b9a;color:#fff;border:0;border-radius:6px;cursor:pointer">🔄 Cek ulang</button>`;
+    panel.append(head, body);
+    document.documentElement.appendChild(panel);
+    spMakeDraggable(panel, PANEL_ID, (t) => !!t.closest(".sp-panel-head"));
+    spPanelFit(panel, PANEL_ID);
+    spWindowControls(panel, PANEL_ID, ".sp-panel-head", head, () => panel.remove());
+    const msg = body.querySelector(".sp-ca-msg"), list = body.querySelector(".sp-ca-list");
+    const okWrap = body.querySelector(".sp-ca-okwrap"), okList = body.querySelector(".sp-ca-ok"), reload = body.querySelector(".sp-ca-reload");
+    const base = smartplusBaseUrl();
+    let seq = 0;
+
+    const roomText = (p) => p.ranap ? [p.ranap.kamar, [p.ranap.noKamar, p.ranap.bed].filter(Boolean).join("/")].filter(Boolean).join(" ") : "kamar belum terbaca di e-Ranap";
+    const card = (p) => {
+      const d = document.createElement("div");
+      d.style.cssText = `border:1px solid ${p.has ? "#c8e6c9" : "#e1bee7"};background:${p.has ? "#f1f8e9" : "#fff"};border-radius:8px;padding:8px;margin:6px 0`;
+      d.innerHTML = `<div style="font-weight:700" class="n"></div><div style="color:#666;font-size:11px" class="i"></div>
+        <div style="font-weight:600;margin-top:5px">Rencana saat ini:</div>
+        <pre class="r" style="white-space:pre-wrap;margin:2px 0;padding:6px;background:#fafafa;border:1px solid #eee;border-radius:6px;max-height:150px;overflow:auto;font:12px/1.4 Arial,sans-serif"></pre>`;
+      d.querySelector(".n").textContent = `${p.loading ? "⏳" : p.has ? "✅" : p.err ? "⚠️" : "❌"} ${p.nama}`;
+      d.querySelector(".i").textContent = `🛏 ${roomText(p)}${p.ranap && p.ranap.dokter ? " · DPJP " + p.ranap.dokter : ""} · masuk IGD ${p.reg}${p.dok ? " · " + p.dok : ""}`;
+      d.querySelector(".r").textContent = p.loading ? "⏳ Membaca Rencana..." : p.err || String(p.rencana || "").trim() || "(Rencana kosong)";
+      if (!p.loading && !p.err) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = p.has ? "➕ Tambah advis lagi" : "➕ Tambah advis";
+        b.style.cssText = "margin-top:4px;padding:6px 12px;font:600 12px Arial,sans-serif;background:#e91e63;color:#fff;border:0;border-radius:6px;cursor:pointer";
+        b.onclick = () => runAdvisSpesialis({ pick: p, onSaved: () => recheck(p) });
+        d.append(b);
+      }
+      return d;
+    };
+    let rows = [];
+    const render = () => {
+      const todo = rows.filter((p) => !p.has), done = rows.filter((p) => p.has);
+      list.textContent = "";
+      okList.textContent = "";
+      todo.forEach((p) => list.append(card(p)));
+      done.forEach((p) => okList.append(card(p)));
+      okWrap.style.display = done.length ? "" : "none";
+      okWrap.querySelector("summary").textContent = `✅ Sudah ada advis: ${done.length} pasien`;
+      const pending = rows.filter((p) => p.loading).length;
+      msg.textContent = !rows.length ? "Tidak ada pasien IGD 24 jam terakhir yang dapat kamar." :
+        `${rows.length} pasien IGD 24 jam dapat kamar · ❌ belum advis: ${todo.filter((p) => !p.loading && !p.err).length}` +
+        (todo.some((p) => p.err) ? ` · ⚠️ belum terbaca: ${todo.filter((p) => p.err).length}` : "") +
+        ` · ✅ sudah: ${done.length}${pending ? ` · ⏳ membaca ${pending}...` : ""}`;
+    };
+    const readOne = async (p) => {
+      try {
+        const g = await spAdvisLatestGadar(base, p);
+        if (!g) { p.err = "Belum ada Assesment GADAR di kunjungan ini."; p.has = false; }
+        else { p.gadar = g; p.err = ""; p.rencana = spNl(g.gadar.rencana_tindakan || ""); p.has = spRencanaHasAdvis(p.rencana); }
+      } catch (e) { p.err = "Gagal membaca GADAR: " + ((e && e.message) || e); p.has = false; }
+      p.loading = false;
+    };
+    const recheck = async (p) => { p.loading = true; await readOne(p); render(); };
+    const load = async () => {
+      const my = ++seq;
+      reload.disabled = true;
+      list.textContent = ""; okWrap.style.display = "none";
+      msg.textContent = "⏳ Membaca daftar pasien IGD 24 jam & daftar rawat inap...";
+      try {
+        const [igd, ranap] = await Promise.all([spAdvisLoadPatients(base, null, 24), spFetchRanapPatients(base, true)]);
+        if (my !== seq) return;
+        rows = spMatchDapatKamar(igd, ranap).map((p) => ({ ...p, loading: true }));
+        render();
+        // Baca Rencana 4 pasien bersamaan.
+        let i = 0;
+        await Promise.all([0, 1, 2, 3].map(async () => {
+          while (i < rows.length && my === seq) { const p = rows[i++]; await readOne(p); if (my === seq) render(); }
+        }));
+      } catch (e) {
+        if (my === seq) msg.textContent = "❌ Gagal membaca daftar pasien: " + ((e && e.message) || e) + " (sesi login habis?)";
+      } finally {
+        if (my === seq) reload.disabled = false;
+      }
+    };
+    reload.onclick = load;
+    await load();
+  }
   // =========================
   // AUTO RO THORAX (v3.6.0)
   // =========================
@@ -13711,6 +13837,11 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
           🩺 REVIEW GADAR 24 JAM
         </button>
 
+        <!-- v3.115.0 (permintaan dokter 20 Okt 2026): pasien IGD 24 jam yang dapat kamar & belum ada advis di Rencana. -->
+        <button type="button" data-cek-advis="1">
+          🛏 CEK ADVIS PASIEN DAPAT KAMAR 24 JAM
+        </button>
+
         <!-- v3.90.0 (pilihan dokter 13 Okt 2026): saran diagnosis/TTV/pemfis untuk form GADAR yang terbuka. -->
         <button type="button" data-cek-gadar="1">
           🩺 CEK & SARAN ASGADAR
@@ -13728,7 +13859,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.114.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.115.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -14429,6 +14560,12 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       if (target.dataset?.advis === "1") {
         closeMenu();
         await runAdvisSpesialis();
+        return;
+      }
+
+      if (target.dataset?.cekAdvis === "1") {
+        closeMenu();
+        await runCekAdvisRanap();
         return;
       }
 
