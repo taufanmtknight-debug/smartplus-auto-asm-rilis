@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.117.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.118.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.117.0
-// @description  v3.117.0 (dokter 20 Okt 2026): obat diare IGD — New Diatab kini diberikan 10 tablet (2 tab setiap BAB cair, maks 12 tab/hari) dan Lodia (loperamide 2 mg) 4 tablet dengan aturan 2x1 sehari di KOMBINASI RESEP dewasa (obat pulang IGD). Resep Pulang rawat inap tidak berubah.
+// @version      3.118.0
+// @description  v3.118.0 (permintaan dokter 21 Okt 2026): 📲 KIRIM KONSUL KE WA — panel PAKET KONSUL (IGD & rawat inap) dan AUTO SOAP punya tombol 📲 Kirim WA: pilih spesialis dari daftar kontak (➕ tambah/✏ ubah/🗑 hapus; nomor HANYA disimpan di browser dokter, tidak di script) atau 👥 pilih chat/grup sendiri, lalu WhatsApp Web (atau 📱 aplikasi WA) terbuka dengan teks konsul sudah terisi; bila tab WhatsApp Web sudah terbuka, tab itu yang membuka chat. Pesan TIDAK terkirim otomatis — dokter memeriksa lalu menekan Kirim; teks juga tersalin sebagai cadangan. Balasan advis tetap masuk Rencana ASGADAR lewat 📤 Advis → ASGADAR di WhatsApp Web.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -41,6 +41,7 @@
   // v3.74.0: di WhatsApp Web hanya tombol kirim ADVIS DPJP -> Rencana ASGADAR (lihat runWaAdvisBridge).
   if (location.hostname === "web.whatsapp.com") {
     if (document.body) runWaAdvisBridge(); else document.addEventListener("DOMContentLoaded", runWaAdvisBridge, { once: true });
+    runWaKonsulOpen(); // v3.118.0: tab WA ini membuka chat konsul yang diminta tab Smartplus (tidak pernah mengirim)
     return;
   }
   if (!isSmartplusPage()) return;
@@ -53,8 +54,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.117.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.117.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.118.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.118.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -4124,7 +4125,7 @@
       if (!ok) { ta.focus(); ta.select(); }
       copyBtn.textContent = ok ? "✅ Tersalin — silakan Paste" : "Pilih teks lalu salin manual";
     });
-    row.append(copyBtn);
+    row.append(copyBtn, spKirimWaButton(() => text, "padding:11px;font:600 15px Arial,sans-serif;background:#25d366;color:#fff;border:0;border-radius:8px;cursor:pointer;"));
     panel.append(title, ta, row);
     document.documentElement.appendChild(panel);
     spMakeDraggable(panel, PANEL_ID, (t) => !!t.closest(".sp-panel-head"));
@@ -7604,6 +7605,251 @@
     await load();
   }
   // =========================
+  // v3.118.0 (permintaan dokter 21 Okt 2026): 📲 KIRIM KONSUL KE WA — dari panel PAKET KONSUL (IGD & rawat inap) dan
+  // AUTO SOAP, teks konsul langsung dibuka di chat WhatsApp spesialis yang dipilih (teks sudah terisi di kotak ketik).
+  // Pesan TIDAK PERNAH terkirim otomatis: dokter memeriksa lalu menekan Kirim di WhatsApp sendiri.
+  // Nomor spesialis HANYA disimpan di browser dokter (penyimpanan Violentmonkey, cadangan localStorage) — tidak pernah
+  // ditulis di script (repo rilis publik). Balasan advis kembali ke Rencana ASGADAR lewat tombol "📤 Advis → ASGADAR"
+  // di WhatsApp Web seperti biasa (pesan konsul ini memuat "Izin konsul" + baris pasien, jadi pasiennya dikenali).
+  // Cara membuka: WhatsApp Web (bawaan) — bila tab WhatsApp Web ber-AUTO ASM sudah terbuka di browser yang sama, tab itu
+  // yang membuka chat (tidak ada tab WA ganda); bila tidak ada, tab WhatsApp Web baru dibuka. Atau aplikasi WhatsApp (wa.me).
+  // =========================
+  // "0812-3456 7890" / "+62 812..." / "812..." -> "62812..." ("" bila bukan nomor HP yang wajar).
+  function spWaNormPhone(raw) {
+    let d = String(raw || "").replace(/\D+/g, "");
+    if (d.startsWith("00")) d = d.slice(2);
+    if (d.startsWith("0")) d = "62" + d.slice(1);
+    else if (d.startsWith("8")) d = "62" + d;
+    return /^\d{9,15}$/.test(d) ? d : "";
+  }
+  // Tampilan nomor: 62812xxxx -> 0812-xxxx-xxxx (hanya untuk dibaca dokter).
+  function spWaShowPhone(d) {
+    const s = String(d || "").replace(/^62/, "0");
+    return s.replace(/^(\d{4})(\d{4})(\d+)$/, "$1-$2-$3");
+  }
+  // Alamat chat. mode "app" = wa.me (aplikasi WhatsApp di HP / WhatsApp Desktop), selain itu WhatsApp Web.
+  // Tanpa nomor -> WhatsApp meminta dokter memilih chat/grup sendiri.
+  function spWaChatUrl(phone, text, mode) {
+    const p = spWaNormPhone(phone), t = encodeURIComponent(String(text || ""));
+    if (mode === "app") return `https://wa.me/${p}${t ? "?text=" + t : ""}`;
+    return `https://web.whatsapp.com/send?${p ? "phone=" + p + "&" : ""}text=${t}`;
+  }
+  // Daftar spesialis [{nama, hp, last}] — terakhir dipakai paling atas, lalu urut nama.
+  function spWaSortKontak(list) {
+    return (Array.isArray(list) ? list : []).filter((k) => k && spWaNormPhone(k.hp))
+      .sort((a, b) => (b.last || 0) - (a.last || 0) || String(a.nama || "").localeCompare(String(b.nama || "")));
+  }
+  function spWaFilterKontak(list, q) {
+    // "Sp.PD" / "sp pd" / "0812-3456" dicari tanpa titik/strip.
+    const nz = (x) => String(x || "").toLowerCase().replace(/[.\-]+/g, "").replace(/[^a-z0-9]+/g, " ");
+    const w = nz(q).split(/\s+/).filter(Boolean);
+    if (!w.length) return list;
+    return list.filter((k) => {
+      const s = nz(`${k.nama} ${k.hp} ${spWaShowPhone(k.hp)}`);
+      return w.every((x) => s.includes(x));
+    });
+  }
+
+  const SP_WA_KONTAK_KEY = "sp_wa_kontak_konsul_v1", SP_WA_MODE_KEY = "sp_wa_konsul_mode_v1";
+  const SP_WA_BUKA_KEY = "sp_wa_buka_chat_v1", SP_WA_BUKA_ACK = "sp_wa_buka_chat_ack_v1";
+  function spWaStoreGet(key, def) {
+    try { if (typeof GM_getValue === "function") { const v = GM_getValue(key, undefined); if (v !== undefined) return v; } } catch (_) {}
+    try { const s = localStorage.getItem(key); if (s != null) return JSON.parse(s); } catch (_) {}
+    return def;
+  }
+  function spWaStoreSet(key, val) {
+    try { if (typeof GM_setValue === "function") { GM_setValue(key, val); return; } } catch (_) {}
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch (_) {}
+  }
+
+  // Minta tab WhatsApp Web yang sudah terbuka (script AUTO ASM aktif di sana) membuka chat; true bila ada yang menjawab.
+  function spWaAskOpenTab(phone, text, waitMs = 900) {
+    return new Promise((resolve) => {
+      if (typeof GM_setValue !== "function" || typeof GM_addValueChangeListener !== "function") { resolve(false); return; }
+      const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+      let lid = null, done = false;
+      const finish = (ok) => {
+        if (done) return;
+        done = true;
+        try { if (lid != null && typeof GM_removeValueChangeListener === "function") GM_removeValueChangeListener(lid); } catch (_) {}
+        resolve(ok);
+      };
+      try {
+        lid = GM_addValueChangeListener(SP_WA_BUKA_ACK, (k, o, v) => { if (v && v.id === id) finish(true); });
+        GM_setValue(SP_WA_BUKA_KEY, { id, ts: Date.now(), phone: spWaNormPhone(phone), text: String(text || "") });
+      } catch (_) { finish(false); return; }
+      setTimeout(() => finish(false), waitMs);
+    });
+  }
+
+  async function spWaOpenChat(phone, text, mode) {
+    if (mode !== "app" && await spWaAskOpenTab(phone, text)) {
+      toast("📲 Chat dibuka di tab WhatsApp Web yang sudah terbuka — pindah ke tab itu, periksa teks, lalu tekan Kirim.");
+      return true;
+    }
+    // Nama jendela tetap: kiriman berikutnya memakai tab WA yang sama (tidak menumpuk tab).
+    const w = window.open(spWaChatUrl(phone, text, mode), mode === "app" ? "_blank" : "sp-wa-konsul");
+    if (!w) { toast("Browser memblokir jendela WhatsApp. Izinkan pop-up untuk Smartplus, atau Paste teks konsul (sudah tersalin) di WhatsApp."); return false; }
+    toast("📲 WhatsApp dibuka dengan teks konsul terisi — periksa, lampirkan gambar penunjang bila perlu, lalu tekan Kirim.");
+    return true;
+  }
+
+  // Panel pilih spesialis. getText() = teks konsul terkini (mis. isi kotak yang sudah diedit dokter).
+  function spShowKirimKonsulWa(getText) {
+    const PANEL_ID = "sp-wa-konsul-panel";
+    document.getElementById(PANEL_ID)?.remove();
+    const el = (tag, css, txt) => { const e = document.createElement(tag); if (css) e.style.cssText = css; if (txt != null) e.textContent = txt; return e; };
+    const btn = (txt, bg, fg, extra = "") => { const b = el("button", `padding:8px 10px;font:600 13px Arial,sans-serif;background:${bg};color:${fg};border:0;border-radius:6px;cursor:pointer;${extra}`, txt); b.type = "button"; return b; };
+    const panel = el("div", "position:fixed;left:50%;top:12vh;transform:translateX(-50%);z-index:2147483647;background:#fff;border:2px solid #25d366;border-radius:12px;padding:10px 12px;width:min(92vw,400px);max-height:80vh;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,.35);font:14px/1.4 sans-serif;color:#222;");
+    panel.id = PANEL_ID;
+    const head = el("div", "font-weight:bold;font-size:15px;padding:2px 0 6px;border-bottom:1px solid #eee;margin-bottom:6px;", "⠿ 📲 KIRIM KONSUL KE WA");
+    head.className = "sp-panel-head";
+    spStyleHandle(head);
+    const info = el("div", "font-size:12px;color:#555;margin-bottom:6px;",
+      "Pilih spesialis: WhatsApp terbuka dengan teks konsul terisi. Pesan TIDAK terkirim otomatis — periksa lalu tekan Kirim di WhatsApp. Gambar penunjang: seret/tempel dari panel PAKET KONSUL.");
+    // Cara membuka (diingat di browser ini).
+    let mode = spWaStoreGet(SP_WA_MODE_KEY, "web") === "app" ? "app" : "web";
+    const modeRow = el("div", "display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px;margin-bottom:6px;", "Buka di:");
+    const mWeb = btn("💻 WhatsApp Web", "#fff", "#222"), mApp = btn("📱 Aplikasi WA", "#fff", "#222");
+    mWeb.dataset.waMode = "web"; mApp.dataset.waMode = "app";
+    const paintMode = () => [mWeb, mApp].forEach((b) => {
+      const on = b.dataset.waMode === mode;
+      b.style.background = on ? "#075e54" : "#fff"; b.style.color = on ? "#fff" : "#222"; b.style.border = "1px solid #075e54";
+    });
+    [mWeb, mApp].forEach((b) => b.addEventListener("click", () => { mode = b.dataset.waMode; spWaStoreSet(SP_WA_MODE_KEY, mode); paintMode(); }));
+    paintMode();
+    modeRow.append(mWeb, mApp);
+    const q = el("input", "width:100%;box-sizing:border-box;padding:7px;font:14px sans-serif;border:1px solid #bbb;border-radius:6px;margin-bottom:6px;");
+    q.id = "sp-wa-kq"; q.placeholder = "Cari spesialis (nama / Sp.)"; q.type = "search";
+    const listBox = el("div", "display:flex;flex-direction:column;gap:4px;margin-bottom:6px;");
+    listBox.id = "sp-wa-klist";
+
+    const send = async (k) => {
+      const text = String(getText() || "").trim();
+      if (!text) { toast("Teks konsul kosong."); return; }
+      // Salinan cadangan: bila WhatsApp tidak mengisi teks (mis. teks terlalu panjang), cukup Paste.
+      try { copySoapText(text); } catch (_) {}
+      if (k) {
+        const all = spWaStoreGet(SP_WA_KONTAK_KEY, []);
+        const hit = Array.isArray(all) && all.find((x) => spWaNormPhone(x.hp) === k.hp);
+        if (hit) { hit.last = Date.now(); spWaStoreSet(SP_WA_KONTAK_KEY, all); }
+      }
+      if (await spWaOpenChat(k ? k.hp : "", text, mode)) panel.remove();
+    };
+
+    // Formulir tambah/ubah spesialis.
+    const form = el("div", "display:none;border:1px solid #c8e6c9;background:#f1f8e9;border-radius:8px;padding:8px;margin-bottom:6px;");
+    const fNama = el("input", "width:100%;box-sizing:border-box;padding:6px;margin-bottom:4px;font:14px sans-serif;");
+    fNama.id = "sp-wa-knama"; fNama.placeholder = "Nama, mis. dr. Budi Sp.PD";
+    const fHp = el("input", "width:100%;box-sizing:border-box;padding:6px;margin-bottom:4px;font:14px sans-serif;");
+    fHp.id = "sp-wa-khp"; fHp.placeholder = "No. WhatsApp, mis. 0812xxxxxxxx"; fHp.type = "tel"; fHp.inputMode = "tel";
+    const fRow = el("div", "display:flex;gap:6px;");
+    const fSave = btn("💾 Simpan kontak", "#2e7d32", "#fff", "flex:1;"), fCancel = btn("Batal", "#eee", "#222");
+    fSave.id = "sp-wa-ksave";
+    const fNote = el("div", "font-size:11px;color:#666;margin-top:4px;", "Nomor hanya disimpan di browser ini (tidak ikut script).");
+    fRow.append(fSave, fCancel);
+    form.append(fNama, fHp, fRow, fNote);
+    let editHp = "";
+    const openForm = (k) => {
+      editHp = k ? k.hp : "";
+      fNama.value = k ? k.nama : ""; fHp.value = k ? spWaShowPhone(k.hp) : "";
+      form.style.display = "block"; fNama.focus();
+    };
+    fCancel.addEventListener("click", () => { form.style.display = "none"; });
+    fSave.addEventListener("click", () => {
+      const nama = fNama.value.replace(/\s+/g, " ").trim(), hp = spWaNormPhone(fHp.value);
+      if (!nama) { toast("Isi nama spesialis."); fNama.focus(); return; }
+      if (!hp) { toast("Nomor WhatsApp tidak valid (contoh 0812xxxxxxxx)."); fHp.focus(); return; }
+      let all = spWaStoreGet(SP_WA_KONTAK_KEY, []);
+      if (!Array.isArray(all)) all = [];
+      all = all.filter((x) => { const h = spWaNormPhone(x && x.hp); return h && h !== hp && h !== editHp; });
+      all.push({ nama, hp, last: Date.now() });
+      spWaStoreSet(SP_WA_KONTAK_KEY, all);
+      form.style.display = "none";
+      q.value = "";
+      render();
+    });
+
+    const render = () => {
+      listBox.textContent = "";
+      const all = spWaSortKontak(spWaStoreGet(SP_WA_KONTAK_KEY, []));
+      q.style.display = all.length > 5 ? "block" : "none";
+      const shown = spWaFilterKontak(all, q.value);
+      if (!all.length) listBox.append(el("div", "font-size:13px;color:#777;padding:4px 0;", "Belum ada nomor spesialis. Tekan ➕ Tambah spesialis."));
+      else if (!shown.length) listBox.append(el("div", "font-size:13px;color:#777;padding:4px 0;", "Tidak ditemukan."));
+      for (const k of shown) {
+        const row = el("div", "display:flex;gap:4px;align-items:stretch;");
+        const go = btn("", "#25d366", "#fff", "flex:1;text-align:left;");
+        go.dataset.waKontak = k.hp;
+        go.append(el("div", "", "📲 " + k.nama), el("div", "font:400 11px sans-serif;opacity:.9;", spWaShowPhone(k.hp)));
+        go.addEventListener("click", () => send(k));
+        const ed = btn("✏", "#eee", "#222"); ed.title = "Ubah"; ed.addEventListener("click", () => openForm(k));
+        const del = btn("🗑", "#eee", "#b71c1c"); del.title = "Hapus kontak"; del.dataset.waHapus = k.hp;
+        del.addEventListener("click", () => {
+          if (del.dataset.sure !== "1") { del.dataset.sure = "1"; del.textContent = "Hapus?"; return; }
+          const rest = (spWaStoreGet(SP_WA_KONTAK_KEY, []) || []).filter((x) => spWaNormPhone(x && x.hp) !== k.hp);
+          spWaStoreSet(SP_WA_KONTAK_KEY, rest);
+          render();
+        });
+        row.append(go, ed, del);
+        listBox.append(row);
+      }
+    };
+    q.addEventListener("input", render);
+
+    const foot = el("div", "display:flex;gap:6px;flex-wrap:wrap;");
+    const add = btn("➕ Tambah spesialis", "#e8f5e9", "#1b5e20", "border:1px solid #81c784;");
+    add.id = "sp-wa-kadd";
+    add.addEventListener("click", () => openForm(null));
+    const pick = btn("👥 Pilih chat/grup di WA", "#e3f2fd", "#0d47a1", "border:1px solid #90caf9;");
+    pick.id = "sp-wa-kpick";
+    pick.title = "Buka WhatsApp tanpa nomor: pilih sendiri chat atau grup tujuan";
+    pick.addEventListener("click", () => send(null));
+    foot.append(add, pick);
+
+    panel.append(head, info, modeRow, q, listBox, form, foot);
+    document.documentElement.appendChild(panel);
+    render();
+    spMakeDraggable(panel, PANEL_ID, (t) => !!t.closest(".sp-panel-head"));
+    spPanelFit(panel, PANEL_ID);
+    spWindowControls(panel, PANEL_ID, ".sp-panel-head", head, () => panel.remove());
+    return panel;
+  }
+  // Tombol "📲 Kirim WA" untuk deretan tombol panel konsul.
+  function spKirimWaButton(getText, css) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "sp-wa-konsul-btn";
+    b.textContent = "📲 Kirim WA";
+    b.title = "Buka chat WhatsApp spesialis dengan teks konsul terisi (dokter menekan Kirim sendiri)";
+    b.style.cssText = css || "padding:7px 12px;font:600 13px Arial,sans-serif;background:#25d366;color:#fff;border:0;border-radius:6px;cursor:pointer;";
+    b.addEventListener("click", () => spShowKirimKonsulWa(getText));
+    return b;
+  }
+
+  // Sisi WhatsApp Web (berdiri sendiri; berjalan sebelum konstanta modul dibuat): tab WA yang sudah terbuka membuka chat
+  // permintaan tab Smartplus (nomor + teks) lewat alamat /send — teks hanya terisi di kotak ketik, TIDAK dikirim.
+  function runWaKonsulOpen() {
+    if (document.documentElement.hasAttribute("data-sp-wa-konsul")) return;
+    document.documentElement.setAttribute("data-sp-wa-konsul", "1");
+    if (typeof GM_addValueChangeListener !== "function" || typeof GM_setValue !== "function") return;
+    const REQ = "sp_wa_buka_chat_v1", ACK = "sp_wa_buka_chat_ack_v1";
+    const me = Math.random().toString(36).slice(2, 10);
+    GM_addValueChangeListener(REQ, (k, o, v, remote) => {
+      if (remote === false || !v || !v.id || !(Date.now() - (v.ts || 0) < 15000)) return;
+      const phone = String(v.phone || "").replace(/\D+/g, "");
+      if (phone && !/^\d{9,15}$/.test(phone)) return;
+      // Beberapa tab WA terbuka -> hanya satu yang membuka chat (penulis terakhir menang, semua membaca nilai yang sama).
+      try { GM_setValue(ACK, { id: v.id, tab: me, ts: Date.now() }); } catch (_) { return; }
+      setTimeout(() => {
+        let a = null;
+        try { a = GM_getValue(ACK, null); } catch (_) {}
+        if (!a || a.id !== v.id || a.tab !== me) return;
+        location.href = `https://web.whatsapp.com/send?${phone ? "phone=" + phone + "&" : ""}text=${encodeURIComponent(String(v.text || ""))}`;
+      }, 250);
+    });
+  }
+  // =========================
   // AUTO RO THORAX (v3.6.0)
   // =========================
   // Pola sama dengan AUTO LAB, memakai selector tetap hasil inspeksi DOM e-IGD:
@@ -8310,6 +8556,8 @@
         cp.textContent = ok ? "✅ SOAP tersalin" : "Gagal salin — pakai AUTO SOAP";
       });
       head.append(cp);
+      // v3.118.0: buka chat WhatsApp spesialis dengan teks konsul (isi kotak terkini) terisi.
+      head.append(spKirimWaButton(() => document.getElementById("sp-soap-ta")?.value || opts.soapText, btnCss("#25d366", "#fff")));
     }
     if (opts.onUpdate) {
       const up = document.createElement("button");
@@ -13857,7 +14105,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.117.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.118.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
