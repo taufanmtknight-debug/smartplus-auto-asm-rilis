@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.118.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.119.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.118.0
-// @description  v3.118.0 (permintaan dokter 21 Okt 2026): 📲 KIRIM KONSUL KE WA — panel PAKET KONSUL (IGD & rawat inap) dan AUTO SOAP punya tombol 📲 Kirim WA: pilih spesialis dari daftar kontak (➕ tambah/✏ ubah/🗑 hapus; nomor HANYA disimpan di browser dokter, tidak di script) atau 👥 pilih chat/grup sendiri, lalu WhatsApp Web (atau 📱 aplikasi WA) terbuka dengan teks konsul sudah terisi; bila tab WhatsApp Web sudah terbuka, tab itu yang membuka chat. Pesan TIDAK terkirim otomatis — dokter memeriksa lalu menekan Kirim; teks juga tersalin sebagai cadangan. Balasan advis tetap masuk Rencana ASGADAR lewat 📤 Advis → ASGADAR di WhatsApp Web.
+// @version      3.119.0
+// @description  v3.119.0 (permintaan dokter 22 Okt 2026): 🛏 CEK ADVIS PASIEN DAPAT KAMAR kini punya tombol 🔎 Cari advis di WhatsApp — daftar pasien yang belum advis dikirim ke tab WhatsApp Web (browser yang sama), tab WA membuka chat yang aktif 24 jam terakhir satu per satu (hanya membaca, tidak mengetik/mengirim), mengambil advis DPJP untuk nama/No.RM pasien-pasien itu (dari kutipan / pesan konsul terdekat), lalu advis langsung diisikan ke Rencana tiap pasien di antrean ADVIS SPESIALIS; Dokter tinggal cek lalu 💾 Simpan Rencana (tidak disimpan otomatis), pasien yang sudah disimpan dicek ulang. Tab WA harus terlihat selama mencari dan bisa dihentikan (⏹).
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -54,8 +54,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.118.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.118.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.119.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.119.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -6617,6 +6617,29 @@
     cards.forEach((c) => { c.anchor = c.idxs.includes(anchor); });
     return cards.slice(-100);
   }
+  // v3.119.0 (permintaan dokter 22 Okt 2026): CARI ADVIS DI WA untuk pasien dapat kamar yang belum advis (🛏 CEK ADVIS).
+  // Advis 24 jam terakhir di SATU chat yang pasiennya (dari kutipan / pesan konsul terdekat) termasuk targets
+  // [{key, nama, rm}] -> [{key, text}] (text = format "Advis dr. X (jam):\n- ..." seperti 📤 Advis → ASGADAR).
+  function spWaAdvisForPatients(msgs, nowMin, targets) {
+    const out = [];
+    if (!(targets || []).length) return out;
+    spWaCards(msgs, -1, 1440, nowMin).filter((c) => c.def).forEach((c) => {
+      const pt = spWaPatientFor(msgs, c.idxs);
+      if (!pt) return;
+      const t = targets.find((x) => spWaSamePatient({ nama: x.nama, rm: x.rm }, { nama: pt.nama, norm: pt.rm }));
+      const text = t && spWaBuildAdvis(c.idxs.map((i) => msgs[i]));
+      if (text) out.push({ key: t.key, text });
+    });
+    return out;
+  }
+  // Label waktu di daftar chat WA: jam (hari ini) / "Kemarin" / "Yesterday" = aktif <= 48 jam; tanggal / nama hari = lebih lama.
+  // null = bukan label waktu.
+  function spWaChatLabelRecent(label) {
+    const t = String(label || "").trim();
+    if (/^\d{1,2}[.:]\d{2}(\s?[ap]\.?\s?m\.?)?$/i.test(t) || /^(yesterday|kemarin)$/i.test(t)) return true;
+    if (/^\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2,4}$/.test(t) || /^(senin|selasa|rabu|kamis|jumat|jum'at|sabtu|minggu|monday|tuesday|wednesday|thursday|friday|saturday|sunday)$/i.test(t)) return false;
+    return null;
+  }
   // v3.97.0 (laporan dokter): DPJP membalas 2 pasien berturut-turut (21.25 kutip pasien 1, 21.26 kutip "2. NAMA, Nn / RM") —
   // kutipan pasien 2 tidak memuat kata "konsul" sehingga kedua balasan digabung jadi satu kartu pasien 1 dan pasien 2 hilang.
   // Pesan yang MENGUTIP konsul atau baris pasien = advis baru (kartu sendiri, pasien dari kutipannya sendiri).
@@ -7077,6 +7100,138 @@
       }
       b.style.display = "";
     }
+    // =========================
+    // v3.119.0 (permintaan dokter 22 Okt 2026): CARI ADVIS DI WA — tab Smartplus (🛏 CEK ADVIS) mengirim daftar pasien dapat
+    // kamar yang belum advis; tab WhatsApp Web ini membuka chat yang aktif 24 jam terakhir satu per satu (daftar chat kiri),
+    // membaca advis 24 jam seperti 📤 Advis → ASGADAR, lalu mengembalikan advis milik pasien-pasien itu ke Smartplus.
+    // Hanya membuka & membaca chat (tidak mengetik / mengirim apa pun). Tab WA harus terlihat (tab di latar diperlambat
+    // browser): bila tersembunyi, pencarian menunggu sampai tab WA dibuka.
+    // =========================
+    const CARI_REQ = "sp_wa_cari_req_v1", CARI_ACK = "sp_wa_cari_ack_v1", CARI_PROG = "sp_wa_cari_prog_v1", CARI_RES = "sp_wa_cari_hasil_v1";
+    const tabId = Math.random().toString(36).slice(2, 10);
+    const sidePane = () => document.querySelector("#pane-side");
+    const chatRows = () => {
+      const p = sidePane();
+      if (!p) return [];
+      return [...p.querySelectorAll('[role="listitem"], [role="row"]')].filter((r) => r.querySelector("span[title]") && !r.parentElement.closest('#pane-side [role="listitem"], #pane-side [role="row"]'));
+    };
+    const rowInfo = (r) => {
+      const title = (r.querySelector("span[title]")?.getAttribute("title") || "").trim();
+      let recent = null;
+      for (const x of r.querySelectorAll("div, span")) {
+        if (x.childElementCount) continue;
+        const v = spWaChatLabelRecent(x.textContent);
+        if (v !== null) { recent = v; break; }
+      }
+      return { title, recent, pinned: !!r.querySelector('[data-icon*="pin" i], [aria-label*="pin" i], [aria-label*="sematkan" i]') };
+    };
+    const sameChat = (a, b) => { a = String(a || "").trim(); b = String(b || "").trim(); return !!a && !!b && (a === b || a.startsWith(b) || b.startsWith(a)); };
+    async function recentChats(max) {
+      const p = sidePane();
+      if (!p) return [];
+      const out = [], seen = new Set();
+      let old = 0;
+      p.scrollTop = 0;
+      await sleep(400);
+      for (let step = 0; step < 40 && out.length < max && old < 4; step++) {
+        for (const r of chatRows()) {
+          const info = rowInfo(r);
+          if (!info.title || seen.has(info.title)) continue;
+          seen.add(info.title);
+          if (info.recent) out.push(info.title);
+          else if (!info.pinned) old++;
+          if (out.length >= max || old >= 4) break;
+        }
+        if (p.scrollTop + p.clientHeight >= p.scrollHeight - 5) break;
+        p.scrollTop += Math.max(200, p.clientHeight * 0.8);
+        await sleep(400);
+      }
+      p.scrollTop = 0;
+      return out;
+    }
+    async function openChat(title) {
+      if (sameChat(chatName(), title)) return true;
+      const p = sidePane();
+      if (!p) return false;
+      p.scrollTop = 0;
+      await sleep(300);
+      for (let step = 0; step < 40; step++) {
+        const r = chatRows().find((x) => rowInfo(x).title === title);
+        if (r) {
+          const t = r.querySelector("span[title]") || r;
+          r.scrollIntoView({ block: "center" });
+          for (const type of ["mousedown", "mouseup", "click"]) t.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: window, button: 0 }));
+          for (let w = 0; w < 40; w++) {
+            await sleep(200);
+            if (sameChat(chatName(), title) && document.querySelector("#main [data-pre-plain-text]")) { await sleep(600); return true; }
+          }
+          return sameChat(chatName(), title);
+        }
+        if (p.scrollTop + p.clientHeight >= p.scrollHeight - 5) break;
+        p.scrollTop += Math.max(200, p.clientHeight * 0.8);
+        await sleep(300);
+      }
+      return false;
+    }
+    async function cariAdvis(v) {
+      const send = (k, o) => { try { GM_setValue(k, { id: v.id, ts: Date.now(), ...o }); } catch (_) {} };
+      const banner = el("div", "position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:2147483647;background:#fff3e0;border:2px solid #e65100;border-radius:10px;padding:8px 12px;font:600 13px Arial,sans-serif;color:#222;box-shadow:0 4px 16px rgba(0,0,0,.25);max-width:94vw;display:flex;gap:10px;align-items:center");
+      banner.id = "sp-wa-cari-banner";
+      const bt = el("span", "", "");
+      const stopB = el("button", "border:0;background:#e65100;color:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;font:600 12px Arial,sans-serif", "⏹ Berhenti");
+      let stop = false;
+      stopB.onclick = () => { stop = true; stopB.disabled = true; stopB.textContent = "Menghentikan..."; };
+      banner.append(bt, stopB);
+      document.body.appendChild(banner);
+      const say = (t) => { bt.textContent = "🔎 AUTO ASM: " + t; send(CARI_PROG, { text: t }); };
+      const waitVisible = async () => {
+        if (!document.hidden) return;
+        say("buka tab WhatsApp Web ini supaya pencarian advis berjalan (tab di latar diperlambat browser).");
+        while (document.hidden && !stop) await sleep(500);
+      };
+      const start = chatName();
+      const found = [], scanned = [];
+      let titles = [];
+      try {
+        await waitVisible();
+        say("membaca daftar chat 24 jam terakhir... (jangan klik chat dulu)");
+        titles = await recentChats(25);
+        const nowMin = Math.round(Date.now() / 60000);
+        for (let i = 0; i < titles.length && !stop; i++) {
+          await waitVisible();
+          say(`chat ${i + 1}/${titles.length}: ${titles[i]} — ${found.length} advis ditemukan (jangan klik chat dulu)`);
+          if (!(await openChat(titles[i]))) continue;
+          await loadHistory(nowMin - 1440 - 30, null);
+          if (snapshot.expanded) { snapshot.expanded = false; await sleep(400); }
+          const all = readMsgs();
+          scanned.push(titles[i]);
+          spWaAdvisForPatients(all, nowMin, v.patients).forEach((x) => found.push({ ...x, chat: titles[i].slice(0, 60) }));
+        }
+        if (start && !sameChat(chatName(), start)) await openChat(start);
+        send(CARI_RES, { items: found, scanned: scanned.length, chats: titles.length, stopped: stop });
+      } catch (e) {
+        send(CARI_RES, { err: String((e && e.message) || e).slice(0, 120), items: found, scanned: scanned.length, chats: titles.length });
+      } finally {
+        banner.remove();
+      }
+    }
+    let cariBusy = false;
+    if (hasGM && typeof GM_addValueChangeListener === "function" && typeof GM_getValue === "function") {
+      GM_addValueChangeListener(CARI_REQ, (k, o, v, remote) => {
+        if (remote === false || !v || !v.id || !(Date.now() - (v.ts || 0) < 30000) || cariBusy || !Array.isArray(v.patients)) return;
+        // Beberapa tab WA terbuka -> hanya satu yang mencari (penulis terakhir menang; tab yang terlihat menulis belakangan).
+        setTimeout(() => {
+          try { GM_setValue(CARI_ACK, { id: v.id, tab: tabId, ts: Date.now() }); } catch (_) { return; }
+          setTimeout(() => {
+            let a = null;
+            try { a = GM_getValue(CARI_ACK, null); } catch (_) {}
+            if (!a || a.id !== v.id || a.tab !== tabId || cariBusy) return;
+            cariBusy = true;
+            cariAdvis(v).finally(() => { cariBusy = false; });
+          }, 400);
+        }, document.hidden ? 0 : 150);
+      });
+    }
     setInterval(ensureBtn, 1500);
     ensureBtn();
   }
@@ -7464,6 +7619,7 @@
         msg.querySelector("b").textContent = p.nama;
         toast("ADVIS SPESIALIS: Rencana tersimpan — " + p.nama);
         if (opts.pick && typeof opts.onSaved === "function" && opts.pick.noreg === p.noreg) { try { opts.onSaved(); } catch (_) {} }
+        if (typeof opts.onSavedAny === "function") { try { opts.onSavedAny(p); } catch (_) {} } // v3.119.0: CEK ADVIS diperbarui
         // v3.78.0: antrean advis WA -> tandai selesai lalu lanjut ke pasien berikutnya.
         if (waCur >= 0 && waQueue[waCur] && !waQueue[waCur].done) {
           waQueue[waCur].done = true;
@@ -7508,6 +7664,23 @@
     }).filter(Boolean);
   }
 
+  // v3.119.0: hasil CARI ADVIS DI WA [{key(noreg), text, chat}] -> rows (pasien belum advis) diberi p.wa = [{text, chat}];
+  // kembalikan antrean ADVIS SPESIALIS [{patient, texts}] (urut seperti daftar, advis sama tidak dobel).
+  function spCekAdvisApplyWa(rows, items) {
+    const groups = [];
+    (rows || []).forEach((p) => {
+      const mine = (items || []).filter((it) => it && it.key === p.noreg && String(it.text || "").trim());
+      p.wa = [];
+      mine.forEach((it) => { if (!p.wa.some((w) => w.text === it.text)) p.wa.push({ text: String(it.text), chat: it.chat || "" }); });
+      if (p.wa.length) groups.push({ patient: spCekAdvisPatient(p), texts: p.wa.map((w) => w.text) });
+    });
+    return groups;
+  }
+  function spCekAdvisPatient(p) {
+    const nama = String(p.nama || "").replace(/,.*$/, "").trim();
+    return { nama, title: "", rm: p.norm || "", label: `${p.nama}${p.norm ? " / " + p.norm : ""}` };
+  }
+
   async function runCekAdvisRanap() {
     const PANEL_ID = "sp-cekadv-panel";
     document.getElementById(PANEL_ID)?.remove();
@@ -7525,6 +7698,10 @@
       <div class="sp-ca-msg" style="margin:4px 0;color:#555">⏳ Membaca daftar pasien IGD 24 jam & daftar rawat inap...</div>
       <div class="sp-ca-list"></div>
       <details class="sp-ca-okwrap" style="display:none;margin-top:8px"><summary style="cursor:pointer;color:#2e7d32;font-weight:600"></summary><div class="sp-ca-ok"></div></details>
+      <div class="sp-ca-wa" style="display:none;margin-top:10px;padding:8px;border:1px solid #a5d6a7;background:#f1f8e9;border-radius:8px">
+        <button type="button" class="sp-ca-wago" style="width:100%;padding:9px;font:600 13px Arial,sans-serif;background:#25d366;color:#fff;border:0;border-radius:6px;cursor:pointer"></button>
+        <div class="sp-ca-wamsg" style="margin-top:5px;font-size:12px;color:#555">Membuka chat WhatsApp Web 24 jam terakhir satu per satu dan mengambil advis untuk pasien yang belum advis. Advis diisikan ke Rencana di panel ADVIS SPESIALIS — Dokter tinggal cek lalu 💾 Simpan.</div>
+      </div>
       <button type="button" class="sp-ca-reload" style="margin-top:10px;width:100%;padding:8px;font:600 13px Arial,sans-serif;background:#6a1b9a;color:#fff;border:0;border-radius:6px;cursor:pointer">🔄 Cek ulang</button>`;
     panel.append(head, body);
     document.documentElement.appendChild(panel);
@@ -7546,6 +7723,25 @@
       d.querySelector(".n").textContent = `${p.loading ? "⏳" : p.has ? "✅" : p.err ? "⚠️" : "❌"} ${p.nama}`;
       d.querySelector(".i").textContent = `🛏 ${roomText(p)}${p.ranap && p.ranap.dokter ? " · DPJP " + p.ranap.dokter : ""} · masuk IGD ${p.reg}${p.dok ? " · " + p.dok : ""}`;
       d.querySelector(".r").textContent = p.loading ? "⏳ Membaca Rencana..." : p.err || String(p.rencana || "").trim() || "(Rencana kosong)";
+      if (!p.loading && !p.err && !p.has && p.wa && p.wa.length) {
+        const w = document.createElement("div");
+        w.style.cssText = "margin-top:5px;padding:6px;border:1px solid #a5d6a7;background:#f1f8e9;border-radius:6px";
+        const h = document.createElement("div");
+        h.style.cssText = "font-weight:600;color:#1b5e20";
+        h.textContent = `📩 Advis dari WhatsApp (${[...new Set(p.wa.map((x) => x.chat).filter(Boolean))].join(", ") || "chat"}):`;
+        const t = document.createElement("pre");
+        t.className = "wa";
+        t.style.cssText = "white-space:pre-wrap;margin:2px 0;max-height:120px;overflow:auto;font:12px/1.4 Arial,sans-serif";
+        t.textContent = p.wa.map((x) => x.text).join("\n\n");
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "sp-ca-isiwa";
+        b.textContent = "✍ Cek & simpan advis ini";
+        b.style.cssText = "margin-top:4px;padding:6px 12px;font:600 12px Arial,sans-serif;background:#2e7d32;color:#fff;border:0;border-radius:6px;cursor:pointer";
+        b.onclick = () => runAdvisSpesialis({ waQueue: [{ patient: spCekAdvisPatient(p), texts: p.wa.map((x) => x.text) }], onSavedAny });
+        w.append(h, t, b);
+        d.append(w);
+      }
       if (!p.loading && !p.err) {
         const b = document.createElement("button");
         b.type = "button";
@@ -7580,10 +7776,64 @@
       p.loading = false;
     };
     const recheck = async (p) => { p.loading = true; await readOne(p); render(); };
+    // v3.119.0: advis disimpan dari panel ADVIS SPESIALIS (antrean WA) -> pasien itu dicek ulang.
+    const onSavedAny = (sp) => { const r = rows.find((x) => x.noreg === sp.noreg); if (r) recheck(r); };
+    const waBox = body.querySelector(".sp-ca-wa"), waGo = body.querySelector(".sp-ca-wago"), waMsg = body.querySelector(".sp-ca-wamsg");
+    const waTargets = () => rows.filter((p) => !p.loading && !p.err && !p.has);
+    const waIdle = () => {
+      const n = waTargets().length;
+      waBox.style.display = n ? "" : "none";
+      waGo.disabled = false;
+      waGo.textContent = `🔎 Cari advis di WhatsApp untuk ${n} pasien belum advis`;
+    };
+    let waRun = 0;
+    waGo.onclick = () => {
+      const targets = waTargets();
+      if (!targets.length) return;
+      if (typeof GM_setValue !== "function" || typeof GM_addValueChangeListener !== "function") {
+        waMsg.textContent = "❌ Penyimpanan Violentmonkey tidak tersedia — perbarui AUTO ASM di Violentmonkey."; return;
+      }
+      const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 7), my = ++waRun;
+      const lids = [];
+      let acked = false, last = Date.now(), finished = false;
+      const end = () => { finished = true; lids.forEach((l) => { try { GM_removeValueChangeListener(l); } catch (_) {} }); waGo.disabled = false; };
+      waGo.disabled = true;
+      waGo.textContent = "⏳ Mencari advis di WhatsApp...";
+      waMsg.textContent = "⏳ Menghubungi tab WhatsApp Web...";
+      lids.push(GM_addValueChangeListener("sp_wa_cari_ack_v1", (k, o, v) => { if (v && v.id === id) { acked = true; last = Date.now(); } }));
+      lids.push(GM_addValueChangeListener("sp_wa_cari_prog_v1", (k, o, v) => {
+        if (!v || v.id !== id || my !== waRun || finished) return;
+        acked = true; last = Date.now();
+        waMsg.textContent = "⏳ " + String(v.text || "");
+      }));
+      lids.push(GM_addValueChangeListener("sp_wa_cari_hasil_v1", (k, o, v) => {
+        if (!v || v.id !== id || my !== waRun || finished) return;
+        end();
+        const groups = spCekAdvisApplyWa(rows, v.items || []);
+        render();
+        waIdle();
+        const head = v.err ? `⚠️ Pencarian berhenti (${v.err}). ` : v.stopped ? "⏹ Dihentikan. " : "✅ Selesai. ";
+        waMsg.textContent = head + `${v.scanned || 0} dari ${v.chats || 0} chat 24 jam dibaca · advis ditemukan untuk ${groups.length} dari ${targets.length} pasien.` +
+          (groups.length ? " Advis sudah diisikan ke Rencana di panel ADVIS SPESIALIS: cek tiap pasien lalu 💾 Simpan Rencana." : " Tidak ada advis untuk pasien-pasien ini di chat 24 jam terakhir.");
+        if (groups.length) runAdvisSpesialis({ waQueue: groups, onSavedAny });
+        toast(`🔎 CARI ADVIS WA: advis ditemukan untuk ${groups.length} dari ${targets.length} pasien` + (groups.length ? " — cek lalu Simpan di ADVIS SPESIALIS." : "."));
+      }));
+      GM_setValue("sp_wa_cari_req_v1", { id, ts: Date.now(), patients: targets.map((p) => { const x = spCekAdvisPatient(p); return { key: p.noreg, nama: x.nama, rm: x.rm }; }) });
+      const watch = setInterval(() => {
+        if (finished || my !== waRun) { clearInterval(watch); return; }
+        if (!acked && Date.now() - last > 5000) {
+          clearInterval(watch); end(); waIdle();
+          waMsg.textContent = "⚠️ Tidak ada tab WhatsApp Web yang menjawab. Buka web.whatsapp.com (sudah login, AUTO ASM terbaru) di browser yang sama, lalu tekan tombol ini lagi.";
+        } else if (acked && Date.now() - last > 180000) {
+          clearInterval(watch); end(); waIdle();
+          waMsg.textContent = "⚠️ Tab WhatsApp Web tidak memberi kabar 3 menit. Pastikan tab WA terbuka & terlihat, lalu coba lagi.";
+        }
+      }, 1000);
+    };
     const load = async () => {
       const my = ++seq;
       reload.disabled = true;
-      list.textContent = ""; okWrap.style.display = "none";
+      list.textContent = ""; okWrap.style.display = "none"; waBox.style.display = "none";
       msg.textContent = "⏳ Membaca daftar pasien IGD 24 jam & daftar rawat inap...";
       try {
         const [igd, ranap] = await Promise.all([spAdvisLoadPatients(base, null, 24), spFetchRanapPatients(base, true)]);
@@ -7598,7 +7848,7 @@
       } catch (e) {
         if (my === seq) msg.textContent = "❌ Gagal membaca daftar pasien: " + ((e && e.message) || e) + " (sesi login habis?)";
       } finally {
-        if (my === seq) reload.disabled = false;
+        if (my === seq) { reload.disabled = false; waIdle(); }
       }
     };
     reload.onclick = load;
@@ -14105,7 +14355,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.118.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.119.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
