@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.119.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.119.1
 // @namespace    smartplus-auto-asm-v221
-// @version      3.119.0
-// @description  v3.119.0 (permintaan dokter 22 Okt 2026): 🛏 CEK ADVIS PASIEN DAPAT KAMAR kini punya tombol 🔎 Cari advis di WhatsApp — daftar pasien yang belum advis dikirim ke tab WhatsApp Web (browser yang sama), tab WA membuka chat yang aktif 24 jam terakhir satu per satu (hanya membaca, tidak mengetik/mengirim), mengambil advis DPJP untuk nama/No.RM pasien-pasien itu (dari kutipan / pesan konsul terdekat), lalu advis langsung diisikan ke Rencana tiap pasien di antrean ADVIS SPESIALIS; Dokter tinggal cek lalu 💾 Simpan Rencana (tidak disimpan otomatis), pasien yang sudah disimpan dicek ulang. Tab WA harus terlihat selama mencari dan bisa dihentikan (⏹).
+// @version      3.119.1
+// @description  v3.119.1 (uji Chrome & WhatsApp Web asli 22 Okt 2026): 🔎 Cari advis di WhatsApp kini benar-benar membuka chat (dulu berhenti di chat pertama: "Failed to construct MouseEvent" karena script WA berjalan di sandbox Violentmonkey); 🛏 CEK ADVIS PASIEN DAPAT KAMAR mengenali advis yang ditulis "adv dr X sp.a:" atau "Advcie dr. X,SpA" (dulu 5 dari 20 pasien keliru "belum advis"); halaman Smartplus biasa yang dibuka saat disk server penuh menampilkan peringatan oranye "Server Smartplus bermasalah", bukan "Simpan BELUM TENTU TERSIMPAN" (tidak ada yang disimpan).
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -54,8 +54,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.119.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.119.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.119.1";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.119.1");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -7160,7 +7160,9 @@
         if (r) {
           const t = r.querySelector("span[title]") || r;
           r.scrollIntoView({ block: "center" });
-          for (const type of ["mousedown", "mouseup", "click"]) t.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: window, button: 0 }));
+          // v3.119.1 (uji WA asli): di WhatsApp Web script berjalan di "sandbox" Violentmonkey (CSP) -> `view: window` bukan Window
+          // asli dan MouseEvent gagal dibuat ("Failed to read the view property") sehingga tidak ada chat yang terbuka; view tidak dipakai.
+          for (const type of ["mousedown", "mouseup", "click"]) t.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, button: 0 }));
           for (let w = 0; w < 40; w++) {
             await sleep(200);
             if (sameChat(chatName(), title) && document.querySelector("#main [data-pre-plain-text]")) { await sleep(600); return true; }
@@ -7651,7 +7653,9 @@
   // =========================
   function spRencanaHasAdvis(text) {
     const lines = spNlPure(text).split("\n").map((l) => l.replace(/^\s*(?:[-•*·>]+|\d+[.)])\s*/, "").trim()).filter(Boolean);
-    return lines.some((l) => SP_TX_HEADER.test(l) || /\badvi[cs]e?\s*:?\s*(?:dari\s+)?(?:dr\b|dokter|dpjp|sp\.?\s?[a-z])/i.test(l));
+    // v3.119.1 (uji Smartplus asli: 5 dari 20 pasien "belum advis" ternyata sudah): singkatan & salah ketik "adv dr bonnie sp.a:",
+    // "Advcie dr. Bonnie,SpA", "advise dr" juga advis. "Lapor dr X" saja tetap belum advis.
+    return lines.some((l) => SP_TX_HEADER.test(l) || /\b(?:adv|advs|advi[cs]e?|advise|advcie|adivs?|advsi)\.?\s*:?\s*(?:dari\s+)?(?:dr\b|dr\.|dokter|dpjp|sp\.?\s?[a-z])/i.test(l));
   }
   function spRmKey(v) { return String(v || "").replace(/\D/g, "").replace(/^0+/, ""); }
   // igd = [{ noreg, norm, nama, st, ... }], ranap = [{ noreg, normRm, kamar, ... }] -> pasien IGD yang dapat kamar (+ data kamar).
@@ -14355,7 +14359,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.119.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.119.1</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -18407,7 +18411,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     }
     return n;
   }
-  function spSgShow(reason, saved) {
+  function spSgShow(reason, saved, pageOnly = false) {
     let bar = document.getElementById(SP_SG_ID);
     if (!bar) {
       bar = document.createElement("div");
@@ -18419,8 +18423,13 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     bar.textContent = "";
     const msg = document.createElement("div");
     msg.style.cssText = "flex:1 1 260px";
-    msg.textContent = `⚠ Simpan BELUM TENTU TERSIMPAN: ${reason}. ` + (saved ? "Isian yang dikirim sudah dicadangkan di browser ini. " : "") +
-      "Cek riwayat/CPPT sebelum lanjut, lalu Simpan lagi bila belum masuk.";
+    // v3.119.1 (uji Chrome asli): halaman biasa (daftar pasien, tanpa Simpan) yang dibuka saat disk server penuh dulu menampilkan
+    // "Simpan BELUM TENTU TERSIMPAN" padahal tidak ada yang disimpan -> pesan peringatan halaman (oranye).
+    bar.style.background = pageOnly ? "#c2410c" : "#b91c1c";
+    msg.textContent = pageOnly
+      ? `⚠ Server Smartplus bermasalah: ${reason}. Halaman ini mungkin tidak lengkap dan Simpan bisa gagal — bila baru saja menekan Simpan, cek riwayat/CPPT dulu.`
+      : `⚠ Simpan BELUM TENTU TERSIMPAN: ${reason}. ` + (saved ? "Isian yang dikirim sudah dicadangkan di browser ini. " : "") +
+        "Cek riwayat/CPPT sebelum lanjut, lalu Simpan lagi bila belum masuk.";
     bar.appendChild(msg);
     const btn = (label, fn) => {
       const b = document.createElement("button");
@@ -18480,7 +18489,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     setTimeout(() => {
       try {
         const r = spServerErrorReason(document.body ? document.body.innerText.slice(0, 20000) : "", 0);
-        if (r && /penuh/.test(r)) spSgShow(r, false);
+        if (r && /penuh/.test(r)) spSgShow(r, false, !/(_act|simpan|save|insert|update)/i.test(location.pathname + location.search));
       } catch (_) {}
     }, 1500);
   }
