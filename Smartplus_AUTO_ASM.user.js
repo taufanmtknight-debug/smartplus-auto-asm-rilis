@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.119.5
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.119.6
 // @namespace    smartplus-auto-asm-v221
-// @version      3.119.5
-// @description  v3.119.5 (uji WhatsApp Web asli 23 Okt 2026): 🔎 Cari advis di WhatsApp tidak lagi macet di "Menghubungi tab WhatsApp Web" bila WhatsApp Web terbuka di lebih dari satu tab — semua tab memilih satu pemenang yang sama (tab yang daftar chatnya tampil & terlihat). v3.119.4: chat yang diarsipkan (grup konsul) ikut dibaca.
+// @version      3.119.6
+// @description  v3.119.6 (uji Smartplus asli & instruksi dokter 23 Okt 2026): ASGADAR KLL & Vulnus laceratum kini benar memilih Jenis Kasus "Trauma" (dulu tidak ada yang terpilih: label Smartplus berupa teks di samping radio bernilai angka); nebu Combivent anak <12 th menjadi 1 respul + NaCl 0,9% 2 ml (dulu ½ respul) di terapi sementara konsul, peringatan TINDAKAN & Referensi Klinis; Paracetamol sirup 60 cc GEN dihitung 120 mg/5 ml (sediaan umum, dulu 125) — dosis tetap 12 mg/kgBB, maks 12,5 mg/kgBB, bayi kecil dibulatkan 0,1 ml bila 0,5 ml terlalu rendah, dan pembulatan Resep Pulang tidak melewati dosis maksimal.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -54,8 +54,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.119.5";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.119.5");
+  window.__SP_AUTO_ASM_LOADED__ = "3.119.6";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.119.6");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -1706,7 +1706,7 @@
         ] } }
     ],
     child: [
-      // v3.58.0: Paracetamol anak per kgBB (v3.105.0: 12 mg/kgBB; sirup 125 mg/5 ml BB <=15 kg, puyer tablet 500 mg BB >15 kg).
+      // v3.58.0: Paracetamol anak per kgBB (v3.105.0: 12 mg/kgBB; sirup 120 mg/5 ml [v3.119.6] BB <=15 kg, puyer tablet 500 mg BB >15 kg).
       { key: "PCT", group: "Demam & Nyeri", label: "Paracetamol", why: ["DEMAM", "NYERI"], src: COMPLAINT_RECIPE_MAP.DEMAM.child },
       { key: "DOMPERIDON", group: "Saluran cerna", label: "Domperidone sirup", why: ["MUAL_MUNTAH"], src: COMPLAINT_RECIPE_MAP.MUAL_MUNTAH.child },
       // v3.110.0: Bapil dihitung per kgBB (spBapilPuyer); CTM usia >=1 th, bila tidak boleh -> cetirizine (>=6 bln).
@@ -1871,10 +1871,10 @@
     { re: /zinc|zink/i, fixedMg: (months) => (Number.isFinite(months) && months < 6 ? 10 : 20), frek: "1 X SEHARI", days: 10 }
   ];
   // mg per ml untuk sediaan cair yang namanya tidak memuat konsentrasi.
-  // v3.105.0: Paracetamol 60 cc GEN disamakan dengan KOMBINASI RESEP = 125 mg/5 ml (25 mg/ml; sebelumnya 24) sambil menunggu
-  // konfirmasi kemasan RS; bila sebenarnya 120 mg/5 ml, dosis hanya 4% lebih rendah (sisi aman).
+  // v3.119.6 (dokter 23 Okt 2026: sediaan umum): Paracetamol 60 cc GEN = 120 mg/5 ml (24 mg/ml). v3.105.0 sempat 125 mg/5 ml sambil menunggu
+  // konfirmasi kemasan RS.
   const SP_LIQ_CONC = [
-    [/sanmol forte syr/i, 50], [/sanmol drop/i, 100], [/sanmol syr/i, 24], [/paracetamol 60 cc/i, 25], [/paracetamol drop/i, 100],
+    [/sanmol forte syr/i, 50], [/sanmol drop/i, 100], [/sanmol syr/i, 24], [/paracetamol 60 cc/i, 24], [/paracetamol drop/i, 100],
     [/proris forte/i, 40], [/proris susp/i, 20], [/cefixi?m? syr/i, 20], [/azithromycin syr/i, 40], [/domperidone syr/i, 1],
     [/salbutamol syr/i, 0.4], [/interzinc syr/i, 4]
   ];
@@ -1899,7 +1899,9 @@
     else { if (!(kg > 0)) return null; mg = Math.min(kg * rule.mgkg, rule.max); }
     const drop = /drop/i.test(name);
     const step = drop ? 0.1 : 0.5;
-    const ml = Math.max(step, (rule.floor ? Math.floor : Math.round)((mg / perMl) / step + (rule.floor ? 1e-9 : 0)) * step);
+    let ml = Math.max(step, (rule.floor ? Math.floor : Math.round)((mg / perMl) / step + (rule.floor ? 1e-9 : 0)) * step);
+    // v3.119.6: pembulatan tidak boleh melewati dosis maksimal (PCT 120 mg/5 ml BB 60 kg: 21 ml = 504 mg > 500 mg).
+    if (!rule.fixedMg && rule.max) while (ml > step && ml * perMl > rule.max + 1e-9) ml = Math.round((ml - step) * 10) / 10;
     const fmt = (x) => String(Math.round(x * 10) / 10).replace(".", ",");
     return { dosis: `${fmt(ml)} ml`, frekuensi: rule.frek, days: rule.days, ket: rule.ket || "",
       basis: rule.fixedMg ? `${mg} mg` : `${String(rule.mgkg).replace(".", ",")} mg/kg = ${fmt(mg)} mg` };
@@ -2686,10 +2688,10 @@
       "O2 target SpO2 ≥94%; Ceftriaxon 1x2 g iv ± azitromisin 1x500 mg; nebu combivent bila wheezing; antipiretik; anak: ceftriaxon/ampisilin sesuai BB", ["AMOX", "PCT", "AMBROXOL"], ["AMOX", "PCT"], "BP"],
     ["BRONKIOLITIS", "J21.9", "Bronkiolitis (anak <2 th)", "bronkiolitis|bronchiolitis", "Respirasi & THT",
       "Bayi: batuk, pilek, napas cepat, wheezing/ronki, retraksi", "Apnea, SpO2 <92%, sulit menyusu, dehidrasi, retraksi berat", "Klinis; SpO2",
-      "O2, suction hidung, cairan; nebu combivent ½ respul (+ NaCl 0,9% 2 ml) bila wheezing; steroid tidak rutin", [], ["PCT"], ""],
+      "O2, suction hidung, cairan; nebu combivent 1 respul (+ NaCl 0,9% 2 ml) bila wheezing; steroid tidak rutin", [], ["PCT"], ""],
     ["ASMA", "J45.9", "Asma (serangan akut)", "asma|asthma|status asmatikus|serangan asma|mengi|bengek|sesak berbunyi", "Respirasi & THT",
       "Sesak episodik, wheezing, batuk malam, riwayat asma", "Bicara kata per kata, silent chest, SpO2 <92%, sianosis, gelisah/penurunan kesadaran", "SpO2; AGD bila berat; Ro thorax bila curiga komplikasi",
-      "O2; nebu combivent 1 respul (anak <12 th ½ respul) tiap 20 menit (3x dalam 1 jam); MP 62,5–125 mg iv atau dexametason 5–10 mg iv; MgSO4 2 g iv dalam 20 menit bila berat", ["MP4", "CETIRIZINE"], ["CETIRIZINE"], ""],
+      "O2; nebu combivent 1 respul (anak <12 th: 1 respul + NaCl 0,9% 2 ml) tiap 20 menit (3x dalam 1 jam); MP 62,5–125 mg iv atau dexametason 5–10 mg iv; MgSO4 2 g iv dalam 20 menit bila berat", ["MP4", "CETIRIZINE"], ["CETIRIZINE"], ""],
     ["PPOK", "J44.1", "PPOK eksaserbasi akut", "ppok|copd|eksaserbasi ppok|bronkitis kronis|emfisema", "Respirasi & THT",
       "Perokok, sesak memberat, dahak bertambah/purulen", "Penurunan kesadaran (retensi CO2), SpO2 <88%, otot bantu napas", "Ro thorax, AGD, DL, EKG",
       "O2 target SpO2 88–92%; nebu combivent; MP 62,5 mg iv / prednison 40 mg 5 hari; antibiotik bila sputum purulen", ["MP4", "AMBROXOL"], [], ""],
@@ -3014,7 +3016,7 @@
     ["Dekstrometorfan", "Antitusif", "dmp|dextromethorphan|vicks formula 44", "10–15 mg 3x/hari", "Bukan untuk batuk berdahak; anak <6 th tidak dianjurkan"],
     ["OBH", "Obat batuk", "obh|obh combi|obh nellco|obh itra", "15 ml 3x/hari", ""],
     ["Salbutamol", "Bronkodilator β2", "ventolin|salbuven|lasal|salbutamol", "Oral 2–4 mg 3x/hari; nebu: pakai combivent; inhaler 1–2 puff", "Tremor, takikardia"],
-    ["Ipratropium + salbutamol", "Bronkodilator nebu", "combivent|farbivent|respivent|ipratropium", "Nebu 1 respul (2,5 ml) 3–4x/hari (anak <12 th ½ respul); serangan: tiap 20 menit 3x", ""],
+    ["Ipratropium + salbutamol", "Bronkodilator nebu", "combivent|farbivent|respivent|ipratropium", "Nebu 1 respul (2,5 ml) 3–4x/hari (anak <12 th: 1 respul + NaCl 0,9% 2 ml); serangan: tiap 20 menit 3x", ""],
     ["Budesonide", "Kortikosteroid inhalasi", "pulmicort|budesma|inflammide", "Nebu 0,5–1 mg 2x/hari", ""],
     ["Fluticasone + salmeterol", "Inhaler kombinasi", "seretide|flutias", "1 puff/inhalasi 2x/hari", "Pengontrol, bukan pelega"],
     ["Budesonide + formoterol", "Inhaler kombinasi", "symbicort|duoresp", "1–2 inhalasi 2x/hari", ""],
@@ -3471,7 +3473,7 @@
         // v3.58.0 (instruksi dokter): Paracetamol anak per kgBB per kali.
         // v3.105.0 (evaluasi dosis, dokter 17 Okt 2026): 12 mg/kgBB/kali, dibulatkan tetapi maks 12,5 mg/kgBB/kali supaya
         // 6x sehari tetap <=75 mg/kg/hari. BB <5 kg atau usia <3 bulan: maks 4x sehari (<=60 mg/kg/hari, neonatus/bayi muda).
-        // BB <= 15 kg: sirup 125 mg/5 ml -> ml = 12 x BB / 25 (dibulatkan 0,5 ml).
+        // BB <= 15 kg: sirup 120 mg/5 ml -> ml = 12 x BB / 24 (dibulatkan 0,5 ml).
         // BB > 15 kg: puyer 10 bungkus dari tablet 500 mg -> jumlah tablet = 12 x BB x 10 / 500 dibulatkan ke tablet utuh;
         // dosis per bungkus menyesuaikan jumlah tablet (ditampilkan mg/bungkus & mg/kgBB).
         if (!Number.isFinite(weight) || weight <= 0) throw new Error("isi BB");
@@ -3480,11 +3482,15 @@
         const am = ctx.ageMonths == null || ctx.ageMonths === "" ? NaN : Number(ctx.ageMonths);
         const bayi = weight < 5 || am < 3;
         if (weight <= (src.maxSirupKg || 15)) {
-          let ml = Math.max(0.5, Math.round((mg / 25) * 2) / 2);
-          while (ml > 0.5 && ml * 25 > capMg) ml -= 0.5;
+          // v3.119.6 (dokter 23 Okt 2026: "pakai sediaan yang umum"): Paracetamol sirup generik 60 cc = 120 mg/5 ml (24 mg/ml;
+          // dulu dihitung 125 mg/5 ml). Dibulatkan 0,5 ml; bila hasilnya <9,5 mg/kgBB (bayi kecil) dipakai kelipatan 0,1 ml (≤ batas).
+          const MGML = 24;
+          let ml = Math.max(0.5, Math.round((mg / MGML) * 2) / 2);
+          while (ml > 0.5 && ml * MGML > capMg) ml -= 0.5;
+          if (ml * MGML < 9.5 * weight) ml = Math.max(0.1, Math.floor((capMg / MGML) * 10 + 1e-9) / 10);
           const frek = bayi ? "4x1" : (src.frekuensiSirup || "4–6x1");
           res.items.push({ obat: src.sirupObat, jumlah: "1", dosis: `${f1(ml)} ml`, frekuensi: frek, waktu: "", keterangan: bayi ? "maks 4x sehari" : "" });
-          res.text = `${src.sirupObat.replace(/\*$/, "")} • ${f1(ml)} ml (${f1(ml * 25)} mg ≈ ${f1((ml * 25) / weight)} mg/kgBB, sediaan 125 mg/5 ml) • ${frek}`;
+          res.text = `${src.sirupObat.replace(/\*$/, "")} • ${f1(ml)} ml (${f1(ml * MGML)} mg ≈ ${f1((ml * MGML) / weight)} mg/kgBB, sediaan 120 mg/5 ml) • ${frek}`;
         } else {
           let tabs = Math.max(1, Math.round((mg * 10) / 500));
           while (tabs > 1 && tabs * 50 > capMg) tabs--;
@@ -3915,6 +3921,7 @@
   //            (Combivent UDV = dosis dewasa/anak >12 th).
   // v3.113.0 (dokter 18 Okt 2026): semua nebu = Combivent (ipratropium 0,5 mg + salbutamol 2,5 mg / 2,5 ml UDV).
   //            Anak <12 th: ½ respul (ipratropium 250 mcg + salbutamol 1,25 mg) + NaCl 0,9% 2 ml; ≥12 th 1 respul.
+  // v3.119.6 (dokter 23 Okt 2026: "1 respul"): anak <12 th juga 1 respul (penuh) + NaCl 0,9% 2 ml.
   // Tambahan berdasarkan diagnosis: nebu, NS/12 jam (dewasa), diatab (dewasa) / oralit (anak).
   const TERAPI_DX = {
     nebu: /\bBP\b|bronko\s*pneumoni|\bTB\b|tuberkulos|pneumoni|\bPPOK\b|dyspn|dispn|sesak|asma|asthma/i,
@@ -3971,7 +3978,7 @@
       lines.push(`Ceftriaxon 1x${Math.min(2000, roundTo(50 * bb, 50))} mg iv`);
       lines.push(`Ondansetron 2x${String(anakOndanMg(bb)).replace(".", ",")} mg iv`);
       lines.push(`Paracetamol ${anakPctIvMg(bb)} mg iv / 6 jam`);
-      if (TERAPI_DX.nebu.test(dx)) lines.push(Number(ageYears) >= 12 ? "Nebu combivent 3x1" : "Nebu combivent ½ respul + NaCl 0,9% 2 ml 3x1");
+      if (TERAPI_DX.nebu.test(dx)) lines.push(Number(ageYears) >= 12 ? "Nebu combivent 3x1" : "Nebu combivent 1 respul + NaCl 0,9% 2 ml 3x1");
       if (TERAPI_DX.diare.test(dx)) lines.push("Oralit setiap BAB cair");
     }
     return lines;
@@ -10435,7 +10442,7 @@
       if (has(/ONDANSETRON INJ/i)) lines.push("Ondansetron anak 0,15 mg/kgBB (maks 4 mg), ampul 8 mg");
       if (has(/RANITIDIN INJ/i)) lines.push("Ranitidin anak 1 mg/kgBB (maks 50 mg), ampul 50 mg");
       if (has(/TRANEKSAMAT.*INJ/i)) lines.push("Asam traneksamat anak 10–15 mg/kgBB, ampul 500 mg");
-      if (age < 12 && has(/COMBIVENT/i)) lines.push("Combivent UDV 1 respul = dosis dewasa/anak ≥12 th; anak <12 th: ½ respul (ipratropium 250 mcg + salbutamol 1,25 mg) + NaCl 0,9% 2 ml");
+      if (age < 12 && has(/COMBIVENT/i)) lines.push("Combivent UDV anak <12 th: 1 respul (ipratropium 500 mcg + salbutamol 2,5 mg) + NaCl 0,9% 2 ml (instruksi dokter 23 Okt 2026)");
     } else if (age >= 65 && has(/KETOROLAC INJ/i)) {
       lines.push("Ketorolac usia ≥65 th (juga BB <50 kg / gangguan ginjal): 15 mg = 1/2 ampul, maks 60 mg/hari");
     }
@@ -14425,7 +14432,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.119.5</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.119.6</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -15291,7 +15298,12 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       if (!scope) return false;
       for (const radio of [...scope.querySelectorAll('input[type="radio"],input[type="checkbox"]')].filter(visible)) {
         const lab = radio.id ? scope.querySelector(`label[for="${CSS.escape(radio.id)}"]`) : null;
-        const texts = [radio.value, lab && textOf(lab), radio.closest("label") && textOf(radio.closest("label"))];
+        // v3.119.6 (uji Smartplus asli: Jenis Kasus tidak terpilih): label Smartplus berupa TEKS di samping radio
+        // (<div><input type=radio name=jns_kasus value=2> Trauma</div>, value angka) -> teks sesudah radio & teks induk
+        // yang hanya berisi radio itu ikut dicocokkan.
+        const next = radio.nextSibling && radio.nextSibling.nodeType === 3 ? radio.nextSibling.textContent : "";
+        const par = radio.parentElement && radio.parentElement.querySelectorAll("input").length === 1 ? textOf(radio.parentElement) : "";
+        const texts = [radio.value, lab && textOf(lab), radio.closest("label") && textOf(radio.closest("label")), next, par];
         if (texts.some((t) => norm(t) === want)) {
           radio.click();
           fire(radio);
