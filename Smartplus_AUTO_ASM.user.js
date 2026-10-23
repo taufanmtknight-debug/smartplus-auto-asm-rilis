@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.119.4
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.119.5
 // @namespace    smartplus-auto-asm-v221
-// @version      3.119.4
-// @description  v3.119.4 (uji WhatsApp Web asli 23 Okt 2026): 🔎 Cari advis di WhatsApp kini juga membaca chat yang DIARSIPKAN (grup konsul "DR X - IGD CIPON" biasanya diarsipkan, dulu tidak terbaca sama sekali), chat konsul (nama memuat dr/IGD/Sp/RS/ICU/ruangan) dibaca lebih dulu, hingga 40 chat aktif 24 jam; daftar chat dikembalikan seperti semula setelah selesai.
+// @version      3.119.5
+// @description  v3.119.5 (uji WhatsApp Web asli 23 Okt 2026): 🔎 Cari advis di WhatsApp tidak lagi macet di "Menghubungi tab WhatsApp Web" bila WhatsApp Web terbuka di lebih dari satu tab — semua tab memilih satu pemenang yang sama (tab yang daftar chatnya tampil & terlihat). v3.119.4: chat yang diarsipkan (grup konsul) ikut dibaca.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -54,8 +54,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.119.4";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.119.4");
+  window.__SP_AUTO_ASM_LOADED__ = "3.119.5";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.119.5");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -7282,17 +7282,22 @@
     if (hasGM && typeof GM_addValueChangeListener === "function" && typeof GM_getValue === "function") {
       GM_addValueChangeListener(CARI_REQ, (k, o, v, remote) => {
         if (remote === false || !v || !v.id || !(Date.now() - (v.ts || 0) < 30000) || cariBusy || !Array.isArray(v.patients)) return;
-        // Beberapa tab WA terbuka -> hanya satu yang mencari (penulis terakhir menang; tab yang terlihat menulis belakangan).
+        // Beberapa tab WA terbuka -> hanya satu yang mencari. v3.119.5 (uji WA asli: 2 tab WA -> keduanya mundur, pencarian macet di
+        // "Menghubungi tab WhatsApp Web"): tiap tab mengirim "tawaran" (daftar chat ada / tab terlihat); semua tab memilih pemenang
+        // yang SAMA dari tawaran yang terkumpul (daftar chat ada > terlihat > id tab terkecil).
+        const bids = new Map();
+        let lid = null;
+        try { lid = GM_addValueChangeListener(CARI_ACK, (k2, o2, a) => { if (a && a.id === v.id && a.tab) bids.set(a.tab, a); }); } catch (_) {}
+        const me = { id: v.id, tab: tabId, ok: sidePane() ? 1 : 0, vis: document.hidden ? 0 : 1, ts: Date.now() };
+        bids.set(tabId, me);
+        try { GM_setValue(CARI_ACK, me); } catch (_) { return; }
         setTimeout(() => {
-          try { GM_setValue(CARI_ACK, { id: v.id, tab: tabId, ts: Date.now() }); } catch (_) { return; }
-          setTimeout(() => {
-            let a = null;
-            try { a = GM_getValue(CARI_ACK, null); } catch (_) {}
-            if (!a || a.id !== v.id || a.tab !== tabId || cariBusy) return;
-            cariBusy = true;
-            cariAdvis(v).finally(() => { cariBusy = false; });
-          }, 400);
-        }, document.hidden ? 0 : 150);
+          try { if (lid != null && typeof GM_removeValueChangeListener === "function") GM_removeValueChangeListener(lid); } catch (_) {}
+          const win = [...bids.values()].sort((a, b) => (b.ok || 0) - (a.ok || 0) || (b.vis || 0) - (a.vis || 0) || (a.tab < b.tab ? -1 : a.tab > b.tab ? 1 : 0))[0];
+          if (!win || win.tab !== tabId || cariBusy) return;
+          cariBusy = true;
+          cariAdvis(v).finally(() => { cariBusy = false; });
+        }, 1200);
       });
     }
     setInterval(ensureBtn, 1500);
@@ -14420,7 +14425,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.119.4</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.119.5</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
