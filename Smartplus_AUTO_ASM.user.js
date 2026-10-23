@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.119.1
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.119.4
 // @namespace    smartplus-auto-asm-v221
-// @version      3.119.1
-// @description  v3.119.1 (uji Chrome & WhatsApp Web asli 22 Okt 2026): 🔎 Cari advis di WhatsApp kini benar-benar membuka chat (dulu berhenti di chat pertama: "Failed to construct MouseEvent" karena script WA berjalan di sandbox Violentmonkey); 🛏 CEK ADVIS PASIEN DAPAT KAMAR mengenali advis yang ditulis "adv dr X sp.a:" atau "Advcie dr. X,SpA" (dulu 5 dari 20 pasien keliru "belum advis"); halaman Smartplus biasa yang dibuka saat disk server penuh menampilkan peringatan oranye "Server Smartplus bermasalah", bukan "Simpan BELUM TENTU TERSIMPAN" (tidak ada yang disimpan).
+// @version      3.119.4
+// @description  v3.119.4 (uji WhatsApp Web asli 23 Okt 2026): 🔎 Cari advis di WhatsApp kini juga membaca chat yang DIARSIPKAN (grup konsul "DR X - IGD CIPON" biasanya diarsipkan, dulu tidak terbaca sama sekali), chat konsul (nama memuat dr/IGD/Sp/RS/ICU/ruangan) dibaca lebih dulu, hingga 40 chat aktif 24 jam; daftar chat dikembalikan seperti semula setelah selesai.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -54,8 +54,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.119.1";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.119.1");
+  window.__SP_AUTO_ASM_LOADED__ = "3.119.4";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.119.4");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -7126,31 +7126,91 @@
       return { title, recent, pinned: !!r.querySelector('[data-icon*="pin" i], [aria-label*="pin" i], [aria-label*="sematkan" i]') };
     };
     const sameChat = (a, b) => { a = String(a || "").trim(); b = String(b || "").trim(); return !!a && !!b && (a === b || a.startsWith(b) || b.startsWith(a)); };
+    // v3.119.2 (uji WA asli: grup konsul "DR X - IGD CIPON" diarsipkan dokter -> tidak terbaca, 0 advis ditemukan):
+    // chat DIARSIPKAN yang aktif 24 jam juga dibaca. Daftar arsip = laci terpisah (judul "Diarsipkan"/"Archived", di luar #pane-side).
+    const clickEl = (t) => { for (const type of ["mousedown", "mouseup", "click"]) t.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, button: 0 })); };
+    const archHeader = () => [...document.querySelectorAll("header")].find((h) => h.offsetParent && /^\s*(Diarsipkan|Archived)\b/i.test(h.innerText || ""));
+    const archRows = () => [...document.querySelectorAll('[role="listitem"], [role="row"]')]
+      .filter((r) => r.offsetParent && !r.closest("#pane-side") && !r.closest("#main") && r.querySelector("span[title]") && !r.parentElement.closest('[role="listitem"], [role="row"]'));
+    const archScroller = () => { let e = archRows()[0]; while (e && !(e.scrollHeight > e.clientHeight + 20 && /auto|scroll/.test(getComputedStyle(e).overflowY))) e = e.parentElement; return e || null; };
+    async function archOpen() {
+      if (archHeader()) return true;
+      const p = sidePane();
+      const b = [...document.querySelectorAll('button[aria-label], [role="button"][aria-label]')].find((x) => /^(Diarsipkan|Archived)$/i.test(x.getAttribute("aria-label") || "")) ||
+        (p && [...p.querySelectorAll("button, [role='button'], div")].find((x) => x.childElementCount < 6 && /^\s*(Diarsipkan|Archived)\b/i.test(x.innerText || "")));
+      if (!b) return false;
+      if (p) p.scrollTop = 0;
+      clickEl(b);
+      for (let w = 0; w < 25 && !archHeader(); w++) await sleep(200);
+      await sleep(400);
+      return !!archHeader();
+    }
+    async function archClose() {
+      const h = archHeader();
+      const b = h && [...h.querySelectorAll('button, [role="button"]')].find((x) => /kembali|back/i.test(x.getAttribute("aria-label") || "")) || (h && h.querySelector('button, [role="button"]'));
+      if (b) { clickEl(b); await sleep(400); }
+    }
+    const archived = new Set();
+    // Kumpulkan judul chat aktif 24 jam dari daftar (main / arsip) yang sedang tampil.
+    async function scanList(scroller, rowsFn, max, out, seen, isArch) {
+      if (!scroller) return;
+      let old = 0;
+      scroller.scrollTop = 0;
+      await sleep(400);
+      for (let step = 0; step < 40 && out.length < max && old < 4; step++) {
+        for (const r of rowsFn()) {
+          const info = rowInfo(r);
+          if (!info.title || seen.has(info.title)) continue;
+          seen.add(info.title);
+          if (info.recent) { out.push(info.title); if (isArch) archived.add(info.title); }
+          else if (!info.pinned) old++;
+          if (out.length >= max || old >= 4) break;
+        }
+        if (scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 5) break;
+        scroller.scrollTop += Math.max(200, scroller.clientHeight * 0.8);
+        await sleep(400);
+      }
+      scroller.scrollTop = 0;
+    }
+    // Chat konsul (nama memuat dr/IGD/Sp/RS/ICU/ruangan) dibaca lebih dulu (fungsi murni, diuji).
+    const medisRe = /\b(dr|dokter|dpjp|igd|sp\.?\s?[a-z]{1,4}|rs|rssa|icu|picu|nicu|hcu|rpu|rpa|perina\w*|ok|ruang\w*|konsul|jaga|bidan|perawat|duty)\b/i;
     async function recentChats(max) {
       const p = sidePane();
       if (!p) return [];
       const out = [], seen = new Set();
-      let old = 0;
-      p.scrollTop = 0;
-      await sleep(400);
-      for (let step = 0; step < 40 && out.length < max && old < 4; step++) {
-        for (const r of chatRows()) {
-          const info = rowInfo(r);
-          if (!info.title || seen.has(info.title)) continue;
-          seen.add(info.title);
-          if (info.recent) out.push(info.title);
-          else if (!info.pinned) old++;
-          if (out.length >= max || old >= 4) break;
-        }
-        if (p.scrollTop + p.clientHeight >= p.scrollHeight - 5) break;
-        p.scrollTop += Math.max(200, p.clientHeight * 0.8);
-        await sleep(400);
+      archived.clear();
+      await archClose();
+      await scanList(p, chatRows, max, out, seen, false);
+      if (out.length < max && (await archOpen())) {
+        await scanList(archScroller(), archRows, max, out, seen, true);
+        await archClose();
       }
-      p.scrollTop = 0;
-      return out;
+      return out.map((t, i) => ({ t, i, m: medisRe.test(t) ? 0 : 1 })).sort((a, b) => a.m - b.m || a.i - b.i).map((x) => x.t);
     }
     async function openChat(title) {
       if (sameChat(chatName(), title)) return true;
+      if (archived.has(title)) {
+        if (!(await archOpen())) return false;
+        const sc = archScroller();
+        if (sc) { sc.scrollTop = 0; await sleep(300); }
+        for (let step = 0; step < 40; step++) {
+          const r = archRows().find((x) => rowInfo(x).title === title);
+          if (r) {
+            r.scrollIntoView({ block: "center" });
+            clickEl(r.querySelector("span[title]") || r);
+            for (let w = 0; w < 40; w++) {
+              await sleep(200);
+              if (sameChat(chatName(), title) && document.querySelector("#main [data-pre-plain-text]")) { await sleep(600); return true; }
+            }
+            return sameChat(chatName(), title);
+          }
+          if (!sc || sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 5) break;
+          sc.scrollTop += Math.max(200, sc.clientHeight * 0.8);
+          await sleep(300);
+        }
+        return false;
+      }
+      await archClose();
       const p = sidePane();
       if (!p) return false;
       p.scrollTop = 0;
@@ -7197,7 +7257,7 @@
       try {
         await waitVisible();
         say("membaca daftar chat 24 jam terakhir... (jangan klik chat dulu)");
-        titles = await recentChats(25);
+        titles = await recentChats(40);
         const nowMin = Math.round(Date.now() / 60000);
         for (let i = 0; i < titles.length && !stop; i++) {
           await waitVisible();
@@ -7209,6 +7269,7 @@
           scanned.push(titles[i]);
           spWaAdvisForPatients(all, nowMin, v.patients).forEach((x) => found.push({ ...x, chat: titles[i].slice(0, 60) }));
         }
+        await archClose();
         if (start && !sameChat(chatName(), start)) await openChat(start);
         send(CARI_RES, { items: found, scanned: scanned.length, chats: titles.length, stopped: stop });
       } catch (e) {
@@ -14359,7 +14420,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.119.1</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.119.4</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
