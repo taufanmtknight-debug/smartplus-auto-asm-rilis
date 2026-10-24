@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.121.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.121.1
 // @namespace    smartplus-auto-asm-v221
-// @version      3.121.0
-// @description  v3.121.0 (permintaan dokter 24 Okt 2026): 🧠 TANYA AI bisa membaca EKG dan film radiologi — tombol Baca EKG membuka pemilih foto lalu meminta AI membaca EKG secara sistematis (kualitas, laju, irama, aksis, interval, morfologi, ST dengan kriteria STEMI Fourth UDMI & ekuivalen OMI, mimik) sambil memakai 📎 data pasien; 🩻 Film Ro/CT (ikut tercentang saat 📎 Baca data pasien) mengambil otomatis film rontgen & CT 1 bulan terakhir dari PACS lewat jalur AUTO SCREENSHOT (CT: 12 irisan merata dari seri aksial) dan mengirimnya ke AI sekali per percakapan; tombol Nilai film Ro/CT. Hanya menjawab, tidak mengisi atau menyimpan apa pun.
+// @version      3.121.1
+// @description  v3.121.1 (uji Smartplus & WA asli 24 Okt 2026): 🔎 Cari advis di WhatsApp lebih cepat — chat yang namanya memuat nama DPJP pasien dibaca dulu, lalu chat konsul/medis; chat lain (keluarga, toko, promo) dilewati; berhenti setelah semua pasien dapat advis dan chat DPJP sudah dibaca. KOMBINASI RESEP Bisakodil memakai nama master asli "DULCOLAX TAB 5 MG ISI 200 TAB*" (dulu ditolak Smartplus: "ID Obat Kosong"). Diazepam inj (VALISANBE INJ), D40 (D40 SANBE 20ML), Laktulosa terbukti ketemu di Smartplus asli.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -54,8 +54,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.121.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.121.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.121.1";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.121.1");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -1704,7 +1704,8 @@
         ["ONDANSETRON", "Saluran cerna", "Ondansetron 4 mg", "ONDANSETRON TABLET 4 MG*", "6", "4 mg", "3x1", "bila mual/muntah", ["MUNTAH_HEBAT"]],
         // v3.117.0 (instruksi dokter 20 Okt 2026): Diatab IGD 10 tablet (cls "ten"); Lodia 4 tablet 2x1.
         // v3.120.0 (usulan S28, dipilih dokter 24 Okt 2026): konstipasi — bisakodil 5–10 mg atau laktulosa 15 ml, malam.
-        ["BISAKODIL", "Saluran cerna", "Bisakodil (Dulcolax) 5 mg", "DULCOLAX TAB 5 MG*", "6", "5–10 mg (1–2 tablet)", "1x1", "malam sebelum tidur", ["KONSTIPASI"], { cls: "keep" }],
+        // v3.121.1 (uji Smartplus asli 24 Okt 2026): nama master lama (tanpa "ISI 200 TAB") tidak ada -> "ID Obat Kosong"; kini nama asli.
+        ["BISAKODIL", "Saluran cerna", "Bisakodil (Dulcolax) 5 mg", "DULCOLAX TAB 5 MG ISI 200 TAB*", "6", "5–10 mg (1–2 tablet)", "1x1", "malam sebelum tidur", ["KONSTIPASI"], { cls: "keep" }],
         ["LAKTULOSA", "Saluran cerna", "Laktulosa sirup", "LACTULOSE SYR 60 ML*", "1", "15 ml", "1x1", "malam sebelum tidur", ["KONSTIPASI"], { notWith: ["BISAKODIL"] }],
         ["LODIA", "Saluran cerna", "Lodia (loperamide) 2 mg", "LODIA TAB*", "4", "2 mg", "2x1", "", ["DIARE_NONINFEKSI"], { notWith: ["DIATAB"], cls: "keep" }],
         ["CETIRIZINE", "Batuk, pilek & alergi", "Cetirizine 10 mg", "CETIRIZINE 10 MG TAB (ISI 60)*", "5", "10 mg", "1x1", "", ["ALERGI"]],
@@ -6690,6 +6691,22 @@
     });
     return out;
   }
+  // v3.121.1 (permintaan dokter 24 Okt 2026: 40 chat ±8 menit terlalu lama): urutan baca chat (fungsi murni, diuji).
+  // 0 = nama chat memuat nama DPJP pasien yang dicari, 1 = chat konsul/medis (dr, IGD, Sp, RS, ICU, ruangan, DPJP),
+  // 2 = chat lain (keluarga, toko, promo) -> dilewati.
+  function spWaDpjpWords(names) {
+    const skip = /^(dokter|sp[a-z]{0,4}|finasim|fiha|mkes|kes|mars|spog|spa|sppd|spjp|spn|sps|spb|spot|sprad|span)$/i;
+    const out = new Set();
+    (names || []).forEach((n) => String(n || "").toLowerCase().replace(/\bdr\b\.?/g, " ").split(/[^a-z]+/)
+      .filter((w) => w.length >= 4 && !skip.test(w)).forEach((w) => out.add(w)));
+    return [...out];
+  }
+  function spWaChatPriority(title, dpjpWords) {
+    const t = String(title || "").toLowerCase();
+    if ((dpjpWords || []).some((w) => new RegExp("\\b" + w + "\\b").test(t))) return 0;
+    if (/\b(dr|dokter|dpjp|igd|sp\.?\s?[a-z]{1,4}|rs|rssa|icu|picu|nicu|hcu|rpu|rpa|perina\w*|ok|ruang\w*|konsul|jaga|bidan|perawat|duty)\b/i.test(t)) return 1;
+    return 2;
+  }
   // Label waktu di daftar chat WA: jam (hari ini) / "Kemarin" / "Yesterday" = aktif <= 48 jam; tanggal / nama hari = lebih lama.
   // null = bukan label waktu.
   function spWaChatLabelRecent(label) {
@@ -7316,8 +7333,16 @@
         await waitVisible();
         say("membaca daftar chat 24 jam terakhir... (jangan klik chat dulu)");
         titles = await recentChats(40);
+        // v3.121.1 (permintaan dokter: lebih cepat): chat bernama DPJP pasien dulu, lalu chat konsul/medis; chat lain (keluarga,
+        // toko, promo) dilewati; berhenti bila semua pasien sudah dapat advis & chat DPJP sudah dibaca.
+        const dw = spWaDpjpWords((v.patients || []).map((p) => p.dpjp));
+        const ranked = titles.map((t, i) => ({ t, i, p: spWaChatPriority(t, dw) })).filter((x) => x.p < 2).sort((a, b) => a.p - b.p || a.i - b.i);
+        titles = ranked.map((x) => x.t);
+        const lastDpjp = ranked.filter((x) => x.p === 0).length - 1;
+        const want = new Set((v.patients || []).map((p) => p.key));
         const nowMin = Math.round(Date.now() / 60000);
         for (let i = 0; i < titles.length && !stop; i++) {
+          if (i > lastDpjp && want.size && [...want].every((k) => found.some((x) => x.key === k))) break;
           await waitVisible();
           say(`chat ${i + 1}/${titles.length}: ${titles[i]} — ${found.length} advis ditemukan (jangan klik chat dulu)`);
           if (!(await openChat(titles[i]))) continue;
@@ -7946,7 +7971,7 @@
         if (groups.length) runAdvisSpesialis({ waQueue: groups, onSavedAny });
         toast(`🔎 CARI ADVIS WA: advis ditemukan untuk ${groups.length} dari ${targets.length} pasien` + (groups.length ? " — cek lalu Simpan di ADVIS SPESIALIS." : "."));
       }));
-      GM_setValue("sp_wa_cari_req_v1", { id, ts: Date.now(), patients: targets.map((p) => { const x = spCekAdvisPatient(p); return { key: p.noreg, nama: x.nama, rm: x.rm }; }) });
+      GM_setValue("sp_wa_cari_req_v1", { id, ts: Date.now(), patients: targets.map((p) => { const x = spCekAdvisPatient(p); return { key: p.noreg, nama: x.nama, rm: x.rm, dpjp: (p.ranap && p.ranap.dokter) || "" }; }) });
       const watch = setInterval(() => {
         if (finished || my !== waRun) { clearInterval(watch); return; }
         if (!acked && Date.now() - last > 5000) {
@@ -14577,7 +14602,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.121.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.121.1</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
