@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.121.1
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.121.2
 // @namespace    smartplus-auto-asm-v221
-// @version      3.121.1
-// @description  v3.121.1 (uji Smartplus & WA asli 24 Okt 2026): 🔎 Cari advis di WhatsApp lebih cepat — chat yang namanya memuat nama DPJP pasien dibaca dulu, lalu chat konsul/medis; chat lain (keluarga, toko, promo) dilewati; berhenti setelah semua pasien dapat advis dan chat DPJP sudah dibaca. KOMBINASI RESEP Bisakodil memakai nama master asli "DULCOLAX TAB 5 MG ISI 200 TAB*" (dulu ditolak Smartplus: "ID Obat Kosong"). Diazepam inj (VALISANBE INJ), D40 (D40 SANBE 20ML), Laktulosa terbukti ketemu di Smartplus asli.
+// @version      3.121.2
+// @description  v3.121.2 (uji WA asli 24 Okt 2026): 🔎 Cari advis WA — advis yang ternyata sudah tertulis di Rencana (ditulis tanpa kata "advis") tidak lagi masuk antrean ADVIS SPESIALIS "belum tersimpan"; pasien itu ditandai ✅ di CEK ADVIS. (v3.121.1: Cari advis membaca chat DPJP dulu lalu konsul/medis, chat lain dilewati — 11 chat ±4 menit, dulu 40 chat ±8 menit.)
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -54,8 +54,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.121.1";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.121.1");
+  window.__SP_AUTO_ASM_LOADED__ = "3.121.2";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.121.2");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -7825,6 +7825,11 @@
       const mine = (items || []).filter((it) => it && it.key === p.noreg && String(it.text || "").trim());
       p.wa = [];
       mine.forEach((it) => { if (!p.wa.some((w) => w.text === it.text)) p.wa.push({ text: String(it.text), chat: it.chat || "" }); });
+      // v3.121.2 (uji WA asli 24 Okt 2026): advis WA yang SEMUA bloknya sudah tertulis di Rencana (ditulis tanpa kata "advis")
+      // dulu tetap masuk antrean "belum tersimpan" -> kini pasien dianggap sudah advis dan tidak diantrekan.
+      if (p.wa.length && typeof spWaMergeAdvis === "function" && p.rencana && !spWaMergeAdvis(p.rencana, p.wa.map((w) => w.text)).added) {
+        p.has = true; p.waSudah = true; return;
+      }
       if (p.wa.length) groups.push({ patient: spCekAdvisPatient(p), texts: p.wa.map((w) => w.text) });
     });
     return groups;
@@ -7876,6 +7881,12 @@
       d.querySelector(".n").textContent = `${p.loading ? "⏳" : p.has ? "✅" : p.err ? "⚠️" : "❌"} ${p.nama}`;
       d.querySelector(".i").textContent = `🛏 ${roomText(p)}${p.ranap && p.ranap.dokter ? " · DPJP " + p.ranap.dokter : ""} · masuk IGD ${p.reg}${p.dok ? " · " + p.dok : ""}`;
       d.querySelector(".r").textContent = p.loading ? "⏳ Membaca Rencana..." : p.err || String(p.rencana || "").trim() || "(Rencana kosong)";
+      if (p.waSudah) {
+        const w = document.createElement("div");
+        w.style.cssText = "margin-top:4px;font-size:12px;color:#1b5e20";
+        w.textContent = "📩 Advis di WhatsApp sudah tertulis di Rencana ini (tanpa kata \"advis\").";
+        d.append(w);
+      }
       if (!p.loading && !p.err && !p.has && p.wa && p.wa.length) {
         const w = document.createElement("div");
         w.style.cssText = "margin-top:5px;padding:6px;border:1px solid #a5d6a7;background:#f1f8e9;border-radius:6px";
@@ -7963,10 +7974,12 @@
         if (!v || v.id !== id || my !== waRun || finished) return;
         end();
         const groups = spCekAdvisApplyWa(rows, v.items || []);
+        const sudah = rows.filter((p) => p.waSudah).length;
         render();
         waIdle();
         const head = v.err ? `⚠️ Pencarian berhenti (${v.err}). ` : v.stopped ? "⏹ Dihentikan. " : "✅ Selesai. ";
-        waMsg.textContent = head + `${v.scanned || 0} dari ${v.chats || 0} chat 24 jam dibaca · advis ditemukan untuk ${groups.length} dari ${targets.length} pasien.` +
+        waMsg.textContent = head + `${v.scanned || 0} dari ${v.chats || 0} chat 24 jam dibaca · advis ditemukan untuk ${groups.length + sudah} dari ${targets.length} pasien` +
+          (sudah ? ` (${sudah} ternyata sudah tertulis di Rencana → ✅)` : "") + "." +
           (groups.length ? " Advis sudah diisikan ke Rencana di panel ADVIS SPESIALIS: cek tiap pasien lalu 💾 Simpan Rencana." : " Tidak ada advis untuk pasien-pasien ini di chat 24 jam terakhir.");
         if (groups.length) runAdvisSpesialis({ waQueue: groups, onSavedAny });
         toast(`🔎 CARI ADVIS WA: advis ditemukan untuk ${groups.length} dari ${targets.length} pasien` + (groups.length ? " — cek lalu Simpan di ADVIS SPESIALIS." : "."));
@@ -14602,7 +14615,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.121.1</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.121.2</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
