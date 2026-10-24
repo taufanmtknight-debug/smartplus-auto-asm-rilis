@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.119.6
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.120.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.119.6
-// @description  v3.119.6 (uji Smartplus asli & instruksi dokter 23 Okt 2026): ASGADAR KLL & Vulnus laceratum kini benar memilih Jenis Kasus "Trauma" (dulu tidak ada yang terpilih: label Smartplus berupa teks di samping radio bernilai angka); nebu Combivent anak <12 th menjadi 1 respul + NaCl 0,9% 2 ml (dulu ½ respul) di terapi sementara konsul, peringatan TINDAKAN & Referensi Klinis; Paracetamol sirup 60 cc GEN dihitung 120 mg/5 ml (sediaan umum, dulu 125) — dosis tetap 12 mg/kgBB, maks 12,5 mg/kgBB, bayi kecil dibulatkan 0,1 ml bila 0,5 ml terlalu rendah, dan pembulatan Resep Pulang tidak melewati dosis maksimal.
+// @version      3.120.0
+// @description  v3.120.0 (usulan obat baru, dipilih dokter 24 Okt 2026): TINDAKAN punya 4 paket baru — Kejang (Diazepam 10 mg iv), Kejang Anak (Diazepam rektal 5 mg bila BB <12 kg / 10 mg bila ≥12 kg), Loading Fenitoin 20 mg/kgBB (jumlah ampul dihitung dari BB, dalam NaCl 0,9% 100 ml, ≤50 mg/menit; anak ≤1 mg/kgBB/menit) dan Hipoglikemia (D40% 25–50 ml iv); nama obatnya dicari dulu di master Smartplus dan paket batal bila tidak ditemukan. KOMBINASI RESEP dewasa ditambah Bisakodil (Dulcolax) 5–10 mg dan Laktulosa sirup 15 ml malam untuk konstipasi.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -54,8 +54,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.119.6";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.119.6");
+  window.__SP_AUTO_ASM_LOADED__ = "3.120.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.120.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -864,6 +864,50 @@
           ]
         },
 
+        // v3.120.0 (usulan S3 & S11, dipilih dokter 24 Okt 2026): kejang & hipoglikemia. Nama master obat belum pasti ->
+        // item ber-`cari` dicari dulu di master Smartplus (autocomplete) dan dipilih yang cocok `pola` (lihat spTindakanSiapkan).
+        // Item ber-`bb` hanya dipakai bila BB pasien di rentang [min, max); `sesuaikan` mengisi jumlah/dosis dari BB & sediaan master.
+        KEJANG: {
+          name: "Kejang (Diazepam iv)",
+          items: [
+            { obat: "DIAZEPAM INJ", cari: ["diazepam", "valisanbe", "stesolid"], pola: /INJ|AMP/i, tolak: /TAB|RECT|REKT|SUPP|ENEMA/i,
+              jumlah: "1", dosis: "10 mg iv pelan (≤5 mg/menit)", frekuensi: "", waktu: "", keterangan: "igd, dapat diulang 1x setelah 5 menit" },
+            { obat: "SPUIT 3 CC", jumlah: "1", dosis: "", frekuensi: "", waktu: "", keterangan: "igd" }
+          ]
+        },
+
+        KEJANG_ANAK: {
+          name: "Kejang Anak (Diazepam rektal)",
+          perluBB: true,
+          items: [
+            { obat: "STESOLID 5 MG", bb: [0, 12], cari: ["stesolid", "diazepam"], pola: /\b5\s*MG/i, tolak: /INJ|AMP|TAB|\b10\s*MG/i,
+              jumlah: "1", dosis: "5 mg per rektal", frekuensi: "", waktu: "", keterangan: "igd, BB <12 kg; ulang 1x setelah 5 menit bila masih kejang" },
+            { obat: "STESOLID 10 MG", bb: [12, 999], cari: ["stesolid", "diazepam"], pola: /\b10\s*MG/i, tolak: /INJ|AMP|TAB/i,
+              jumlah: "1", dosis: "10 mg per rektal", frekuensi: "", waktu: "", keterangan: "igd, BB ≥12 kg; ulang 1x setelah 5 menit bila masih kejang" }
+          ]
+        },
+
+        LOADING_FENITOIN: {
+          name: "Loading Fenitoin 20 mg/kgBB",
+          perluBB: true,
+          items: [
+            { obat: "PHENYTOIN INJ", cari: ["phenytoin", "fenitoin", "kutoin", "ikaphen"], pola: /INJ|AMP/i, tolak: /TAB|CAPS|KAPS|SYR/i,
+              sesuaikan: (bb, nama, usia) => spLoadingFenitoin(bb, nama, usia),
+              jumlah: "", dosis: "", frekuensi: "", waktu: "", keterangan: "" },
+            { obat: "SPUIT 10 CC TERUMO", jumlah: "1", dosis: "", frekuensi: "", waktu: "", keterangan: "igd" }
+          ]
+        },
+
+        HIPOGLIKEMIA: {
+          name: "Hipoglikemia (D40%)",
+          items: [
+            { obat: "D40", cari: ["d40", "dextrose 40", "dekstrosa 40", "glukosa 40"], pola: /40/, tolak: /INFUS 5|D5\b|D10\b/i,
+              sesuaikan: (bb, nama) => spD40Jumlah(nama),
+              jumlah: "2", dosis: "25–50 ml iv bolus", frekuensi: "", waktu: "", keterangan: "igd, cek GDS ulang 15 menit" },
+            { obat: "SPUIT 50 CC", jumlah: "1", dosis: "", frekuensi: "", waktu: "", keterangan: "igd" }
+          ]
+        },
+
         // v3.43.0 (instruksi dokter 5 Okt 2026): paket infus sesuai contoh resep IGD dokter.
         // Nama infus set di master memakai DUA spasi ("INFUS SET  DEWASA WIN*").
         INFUS: {
@@ -1659,6 +1703,9 @@
         ["ANTASIDA_SUSP", "Saluran cerna", "Antasida suspensi", "ANTASIDA DOEN SUSPNSI", "1", "1 sendok makan", "3x1", "", ["NYERI_ULU_HATI"], { notWith: ["SUKRALFAT"] }],
         ["ONDANSETRON", "Saluran cerna", "Ondansetron 4 mg", "ONDANSETRON TABLET 4 MG*", "6", "4 mg", "3x1", "bila mual/muntah", ["MUNTAH_HEBAT"]],
         // v3.117.0 (instruksi dokter 20 Okt 2026): Diatab IGD 10 tablet (cls "ten"); Lodia 4 tablet 2x1.
+        // v3.120.0 (usulan S28, dipilih dokter 24 Okt 2026): konstipasi — bisakodil 5–10 mg atau laktulosa 15 ml, malam.
+        ["BISAKODIL", "Saluran cerna", "Bisakodil (Dulcolax) 5 mg", "DULCOLAX TAB 5 MG*", "6", "5–10 mg (1–2 tablet)", "1x1", "malam sebelum tidur", ["KONSTIPASI"], { cls: "keep" }],
+        ["LAKTULOSA", "Saluran cerna", "Laktulosa sirup", "LACTULOSE SYR 60 ML*", "1", "15 ml", "1x1", "malam sebelum tidur", ["KONSTIPASI"], { notWith: ["BISAKODIL"] }],
         ["LODIA", "Saluran cerna", "Lodia (loperamide) 2 mg", "LODIA TAB*", "4", "2 mg", "2x1", "", ["DIARE_NONINFEKSI"], { notWith: ["DIATAB"], cls: "keep" }],
         ["CETIRIZINE", "Batuk, pilek & alergi", "Cetirizine 10 mg", "CETIRIZINE 10 MG TAB (ISI 60)*", "5", "10 mg", "1x1", "", ["ALERGI"]],
         ["LORATADINE", "Batuk, pilek & alergi", "Loratadine 10 mg", "LORATADINE TAB 10 MG*", "5", "10 mg", "1x1", "", ["ALERGI"], { notWith: ["CETIRIZINE"] }],
@@ -2535,6 +2582,8 @@
     NYERI_ULU_HATI: /ulu hati|epigastri|dispepsia|dyspepsia|gastritis|maag|perih|sebah/gi,
     GERD: /\bgerd\b|refluks|reflux|heartburn|dada (terasa )?terbakar|panas di dada|rasa panas di dada|asam lambung naik|sendawa|regurgitasi|pahit di mulut/gi,
     ULKUS: /tukak|ulkus peptik|ulkus lambung|peptic ulcer|gastritis erosif|erosi gaster|melena|bab hitam|hematemesis|muntah darah|muntah hitam/gi,
+    // v3.120.0: konstipasi -> bisakodil/laktulosa (bukan "obstipasi", bisa ileus obstruktif).
+    KONSTIPASI: /konstipasi|sembelit|susah bab|sulit bab|bab (keras|susah|sulit)|susah buang air besar/gi,
     KEMBUNG: /kembung|begah|flatulen|distensi|perut penuh|banyak gas/gi,
     INFEKSI_BAKTERI: /\bBP\b|bronko?pneumoni|pneumoni|ispa|faringit|tonsil|otitis|\bomsk\b|\boma\b|sinusit|rhinosinusit|bronkit|vulnus(?!\s+(ekskoriasi|excoriasi|excoriatum|ekskoriatum))|luka robek|luka terbuka|abses gigi|gigi berlubang|infeksi bakteri|bacterial infection|leukositosis/gi,
     INFEKSI_KULIT: /abses|selulit|furunkel|furunkul|karbunkel|bisul|impetigo|paronikia|erisipelas|luka (terinfeksi|bernanah|infeksi)|bernanah|\bpus\b|ulkus (diabetik|dm|pedis)|ulkus kaki|gangren|pioderma|folikulitis/gi,
@@ -5885,6 +5934,8 @@
     { text: "Intubasi", item: /\bETT\b|ENDOTRACHEAL/i, re: /intubas/i },
     { text: "Pemasangan kateter urin", item: /FOLEY CATHETER|KATETER URIN/i, re: /kateter|cateter|catheter|\bdc\b|dower/i },
     { text: "Pemasangan NGT", item: /\bNGT\b/i, re: /\bngt\b/i },
+    { text: "Diazepam per rektal", item: /STESOLID|DIAZEPAM.*(RECT|REKT)/i, re: /diazep|stesolid/i },  // v3.120.0
+    { text: "Bolus D40%", item: /^D\s?40|DEXTROSE 40|DEKSTROSA 40|GLUKOSA 40/i, re: /d\s?40|dextrose|dekstrosa/i },
     { text: "Vasokonstriktor (norepinefrin)", item: /NOREPH|NOREPI/i, re: /norepi|vasokons|vascon/i }
   ];
   // v3.30.0 (instruksi dokter 4 Okt 2026), selain daftar resep tindakan:
@@ -10443,11 +10494,64 @@
       if (has(/RANITIDIN INJ/i)) lines.push("Ranitidin anak 1 mg/kgBB (maks 50 mg), ampul 50 mg");
       if (has(/TRANEKSAMAT.*INJ/i)) lines.push("Asam traneksamat anak 10–15 mg/kgBB, ampul 500 mg");
       if (age < 12 && has(/COMBIVENT/i)) lines.push("Combivent UDV anak <12 th: 1 respul (ipratropium 500 mcg + salbutamol 2,5 mg) + NaCl 0,9% 2 ml (instruksi dokter 23 Okt 2026)");
+      if (has(/DIAZEPAM INJ/i)) lines.push("Diazepam anak iv 0,3 mg/kgBB (maks 10 mg), atau pakai paket Kejang Anak (diazepam rektal)");
+      if (has(/^D40$/i)) lines.push("Hipoglikemia anak: Dekstrosa 10% 2–3 ml/kgBB iv, bukan D40% langsung");
     } else if (age >= 65 && has(/KETOROLAC INJ/i)) {
       lines.push("Ketorolac usia ≥65 th (juga BB <50 kg / gangguan ginjal): 15 mg = 1/2 ampul, maks 60 mg/hari");
     }
     if (!lines.length) return "";
     return `TINDAKAN ${action.name} memakai dosis DEWASA (1 ampul).\nPasien ${age} th:\n\n${lines.map((l) => "• " + l).join("\n")}\n\nLanjutkan memasukkan paket ini? (Batal = tidak diisi; isi manual sesuai BB)`;
+  }
+
+  // v3.120.0 (usulan S3, dokter 24 Okt 2026): loading fenitoin 20 mg/kgBB iv dalam NaCl 0,9%; dewasa ≤50 mg/menit,
+  // anak ≤1 mg/kgBB/menit (maks 50). Jumlah ampul dari kekuatan di nama master ("100 MG/2 ML"; "50 MG/ML" = ampul 2 ml).
+  function spLoadingFenitoin(bb, nama, usia) {
+    const s = String(nama || "");
+    const perMl = s.match(/(\d+)\s*MG\s*\/\s*ML/i);
+    const perAmp = s.match(/(\d+)\s*MG\s*\/\s*\d+(?:[.,]\d+)?\s*ML/i) || s.match(/(\d+)\s*MG/i);
+    const ampMg = perMl ? Number(perMl[1]) * 2 : perAmp ? Number(perAmp[1]) : 100;
+    const mg = Math.round(20 * Number(bb));
+    const anak = usia != null && usia !== "" && Number(usia) <= 17;
+    const laju = anak ? `≤${String(Math.min(50, Math.round(Number(bb)))).replace(".", ",")} mg/menit (1 mg/kgBB/menit)` : "≤50 mg/menit";
+    return { jumlah: String(Math.max(1, Math.ceil(mg / ampMg))), dosis: `${mg} mg iv (20 mg/kgBB)`, keterangan: `igd, dalam NaCl 0,9% 100 ml, ${laju}` };
+  }
+
+  // v3.120.0 (usulan S11): D40% 25–50 ml -> jumlah kemasan untuk 50 ml (volume dari nama master; tidak terbaca = 2).
+  function spD40Jumlah(nama) {
+    const m = String(nama || "").match(/(\d+)\s*ML/i);
+    const vol = m ? Number(m[1]) : 0;
+    return { jumlah: String(vol > 0 ? Math.max(1, Math.ceil(50 / vol)) : 2) };
+  }
+
+  // v3.120.0: siapkan item paket TINDAKAN sebelum diisi — pilih item sesuai BB (`bb: [min, max)`), cari nama master obat
+  // untuk item ber-`cari` (cariMaster(term) -> daftar nama master), lalu `sesuaikan` jumlah/dosis. Gagal = { error } dan
+  // tidak ada yang diisi (tidak pernah memilih obat lain diam-diam).
+  async function spTindakanSiapkan(action, ctx = {}) {
+    const bb = Number(ctx.bb);
+    const out = [];
+    for (const item of action?.items || []) {
+      if (item.bb && !(bb >= item.bb[0] && bb < item.bb[1])) continue;
+      const { cari, pola, tolak, bb: _bb, sesuaikan, ...it } = item;
+      if (cari) {
+        let nama = "";
+        for (const term of cari) {
+          let list = [];
+          try { list = await ctx.cariMaster(term); } catch (_) { list = []; }
+          nama = (list || []).find((n) => (!pola || pola.test(n)) && !(tolak && tolak.test(n))) || "";
+          if (nama) break;
+        }
+        if (!nama) return { items: [], error: `${it.obat} tidak ditemukan di master obat Smartplus (dicari: ${cari.join(", ")})` };
+        it.obat = nama;
+      }
+      if (sesuaikan) Object.assign(it, sesuaikan(Number.isFinite(bb) && bb > 0 ? bb : null, it.obat, ctx.usia));
+      out.push(it);
+    }
+    return { items: out, error: "" };
+  }
+
+  async function spCariMasterObat(term) {
+    const list = await spFetch(`${spSmartplusBase()}/soap_eresep/inner_get_data_autocomplet_obat?term=${encodeURIComponent(term)}`, { credentials: "same-origin" }, 15000).then((r) => r.json());
+    return (Array.isArray(list) ? list : []).map((x) => String(x.label || x.name || "").trim()).filter(Boolean);
   }
 
   async function fillActionRecipe(actionKey, options = {}) {
@@ -10463,7 +10567,8 @@
       return;
     }
 
-    const peringatan = spTindakanPeringatan(action, typeof getPatientAgeYears === "function" ? getPatientAgeYears() : null);
+    const usiaTh = typeof getPatientAgeYears === "function" ? getPatientAgeYears() : null;
+    const peringatan = spTindakanPeringatan(action, usiaTh);
     if (peringatan && !window.confirm(peringatan)) {
       toast(`TINDAKAN ${action.name} dibatalkan (dosis dewasa, pasien anak/lansia).`);
       return;
@@ -10488,8 +10593,21 @@
         return;
       }
 
+      // v3.120.0: paket per BB (kejang anak, loading fenitoin) & nama master yang dicari dulu (diazepam, fenitoin, D40).
+      let bb = null;
+      if (action.perluBB) {
+        bb = Number(options.bb) > 0 ? Number(options.bb) : await getLatestGadarWeight();
+        if (!bb) {
+          const v = Number(String(window.prompt(`TINDAKAN ${action.name}: BB pasien belum terisi di GADAR. Isi BB (kg):`) || "").replace(",", "."));
+          bb = Number.isFinite(v) && v > 0 && v < 300 ? v : null;
+        }
+        if (!bb) { toast(`TINDAKAN ${action.name} dibatalkan: BB pasien belum ada.`); return; }
+      }
+      const siap = await spTindakanSiapkan(action, { bb, usia: usiaTh, cariMaster: spCariMasterObat });
+      if (siap.error) { toast(`TINDAKAN ${action.name} tidak diisi: ${siap.error}. Isi manual.`); return; }
+
       const seenSet = options.seenSet || null;
-      const plan = seenSet ? uniqueRecipeItems(action.items, seenSet) : { unique: action.items, skipped: [] };
+      const plan = seenSet ? uniqueRecipeItems(siap.items, seenSet) : { unique: siap.items, skipped: [] };
       if (!plan.unique.length) {
         toast(`TINDAKAN ${action.name} dilewati: semua item sudah terinput.`);
         return;
@@ -12197,7 +12315,7 @@
         const actionKey = actions[actionIndex];
         updateRecipeProgress(`KOMBINASI RESEP: tindakan ${actionIndex + 1}/${actions.length}`, actionIndex, actions.length, MASTER_RECIPE_TEMPLATES.TINDAKAN?.children?.[actionKey]?.name || actionKey);
         try {
-          await fillActionRecipe(actionKey, { autoSave: true, seenSet, internalPackage: true });
+          await fillActionRecipe(actionKey, { autoSave: true, seenSet, internalPackage: true, bb: ctx.weight > 0 ? ctx.weight : null });
           actionDone++;
         } catch (err) {
           console.error('[KOMBINASI RESEP] tindakan', actionKey, err);
@@ -14432,7 +14550,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.119.6</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.120.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
