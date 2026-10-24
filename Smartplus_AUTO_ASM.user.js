@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.120.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.121.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.120.0
-// @description  v3.120.0 (usulan obat baru, dipilih dokter 24 Okt 2026): TINDAKAN punya 4 paket baru — Kejang (Diazepam 10 mg iv), Kejang Anak (Diazepam rektal 5 mg bila BB <12 kg / 10 mg bila ≥12 kg), Loading Fenitoin 20 mg/kgBB (jumlah ampul dihitung dari BB, dalam NaCl 0,9% 100 ml, ≤50 mg/menit; anak ≤1 mg/kgBB/menit) dan Hipoglikemia (D40% 25–50 ml iv); nama obatnya dicari dulu di master Smartplus dan paket batal bila tidak ditemukan. KOMBINASI RESEP dewasa ditambah Bisakodil (Dulcolax) 5–10 mg dan Laktulosa sirup 15 ml malam untuk konstipasi.
+// @version      3.121.0
+// @description  v3.121.0 (permintaan dokter 24 Okt 2026): 🧠 TANYA AI bisa membaca EKG dan film radiologi — tombol Baca EKG membuka pemilih foto lalu meminta AI membaca EKG secara sistematis (kualitas, laju, irama, aksis, interval, morfologi, ST dengan kriteria STEMI Fourth UDMI & ekuivalen OMI, mimik) sambil memakai 📎 data pasien; 🩻 Film Ro/CT (ikut tercentang saat 📎 Baca data pasien) mengambil otomatis film rontgen & CT 1 bulan terakhir dari PACS lewat jalur AUTO SCREENSHOT (CT: 12 irisan merata dari seri aksial) dan mengirimnya ke AI sekali per percakapan; tombol Nilai film Ro/CT. Hanya menjawab, tidak mengisi atau menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -54,8 +54,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.120.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.120.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.121.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.121.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -8860,10 +8860,11 @@
   // v3.13.0: tunggu maks SP_FILM_TIMEOUT_MS (6 detik). Gambar yang sudah masuk tetap dipakai,
   // lalu jendela ditutup dan lanjut ke penunjang berikutnya.
   const SP_FILM_TIMEOUT_MS = 6000;
-  function spCaptureFilm(url, index, timeoutMs = SP_FILM_TIMEOUT_MS) {
+  // v3.121.0: mode "ai" (🧠 TANYA AI) -> CT/MRI juga diambil (irisan merata dari seri aksial), bukan dilewati.
+  function spCaptureFilm(url, index, timeoutMs = SP_FILM_TIMEOUT_MS, mode = "") {
     return new Promise((resolve) => {
       const nonce = `${Date.now()}_${index}_${Math.random().toString(36).slice(2, 8)}`;
-      const name = SP_FILM_WINDOW_PREFIX + encodeURIComponent(location.origin) + "|" + nonce;
+      const name = SP_FILM_WINDOW_PREFIX + encodeURIComponent(location.origin) + "|" + nonce + (mode ? "|" + mode : "");
       const got = [];
       let label = "";
       let done = false;
@@ -9343,12 +9344,29 @@
     toast(`AUTO SCREENSHOT: ${items.length} gambar siap dikirim (lab 1 minggu, radiologi 1 bulan).`);
   }
 
+  // v3.121.0: seri CT/MRI yang dipakai TANYA AI (fungsi murni, diuji): seri 10–80 gambar dengan nomor seri terkecil
+  // (aksial tebal), bila tidak ada -> seri ≥10 gambar terkecil, bila tidak ada -> seri terbesar.
+  function spPickCrossSeries(list) {
+    const L = (list || []).filter((s) => s && s.n > 0);
+    if (!L.length) return null;
+    const mid = L.filter((s) => s.n >= 10 && s.n <= 80).sort((a, b) => a.num - b.num);
+    if (mid.length) return mid[0];
+    const big = L.filter((s) => s.n >= 10).sort((a, b) => a.n - b.n);
+    return big.length ? big[0] : L.reduce((a, b) => (a.n >= b.n ? a : b));
+  }
+  // k indeks merata dari n gambar (fungsi murni, diuji).
+  function spEvenSlices(n, k) {
+    const m = Math.min(k, n);
+    return Array.from({ length: m }, (_, i) => Math.floor(((i + 0.5) * n) / m));
+  }
+
   // Dijalankan DI JENDELA VIEWER PACS (Orthanc/Osimis) yang dibuka oleh AUTO SCREENSHOT.
   // v3.13.0: tiap gambar dikirim begitu siap (bukan menunggu semua), karena Smartplus hanya menunggu 6 detik.
   async function runOrthancCapture() {
     const parts = String(window.name || "").split("|");
     const targetOrigin = decodeURIComponent(parts[1] || "");
     const nonce = parts[2] || "";
+    const aiMode = parts[3] === "ai"; // v3.121.0: dibuka 🧠 TANYA AI -> CT/MRI ikut diambil
     const send = (payload) => {
       try { if (window.opener && targetOrigin) window.opener.postMessage({ type: "sp-film", nonce, ...payload }, targetOrigin); } catch (_) {}
     };
@@ -9366,7 +9384,7 @@
       const series = await (await get(`/studies/${study}/series`)).json();
       const isImg = (s) => !/^(SR|PR|KO|DOC|REG|SEG)$/i.test(s.MainDicomTags?.Modality || "");
       // v3.12.0: film USG tidak diambil (USG cukup ekspertise). v3.24.0: CT/MRI juga tidak (cukup ekspertise).
-      const isUs = (s) => /^(US|CT|MR)$/i.test(s.MainDicomTags?.Modality || "");
+      const isUs = (s) => (aiMode ? /^US$/i : /^(US|CT|MR)$/i).test(s.MainDicomTags?.Modality || "");
       if (series.some(isImg) && series.filter(isImg).every(isUs)) {
         const m = series.filter(isImg).map((x) => String(x.MainDicomTags?.Modality || "").toUpperCase());
         send({ part: "done", ok: true, skipped: m.includes("CT") ? "CT" : m.includes("MR") ? "MRI" : "USG" });
@@ -9379,14 +9397,20 @@
       if (label) send({ part: "meta", label });
       const usable = series
         .filter((s) => isImg(s) && !isUs(s))
-        .map((s) => ({ id: s.ID, n: (s.Instances || []).length, num: Number(s.MainDicomTags?.SeriesNumber) || 9999 }))
+        .map((s) => ({ id: s.ID, n: (s.Instances || []).length, num: Number(s.MainDicomTags?.SeriesNumber) || 9999, mod: String(s.MainDicomTags?.Modality || "").toUpperCase() }))
         .filter((s) => s.n > 0)
         .sort((a, b) => a.num - b.num);
+      // v3.121.0 (TANYA AI): CT/MRI -> 12 irisan merata dari seri aksial utama (10–80 gambar, nomor seri terkecil;
+      // bukan scout/localizer yang hanya 1–3 gambar), dirender dengan windowing DICOM bila server mendukung.
+      const cross = aiMode ? spPickCrossSeries(usable.filter((s) => s.mod === "CT" || s.mod === "MR")) : null;
       // Film/rontgen: seri kecil (<=12 gambar) diambil semua. CT/MRI tanpa seri film:
       // ambil maks 9 irisan merata dari seri terkecil.
       const small = usable.filter((s) => s.n <= 12);
       const targets = [];
-      if (small.length) {
+      if (cross) {
+        const inst = (await (await get(`/series/${cross.id}/instances`)).json()).sort(byInstanceNumber);
+        spEvenSlices(inst.length, 12).forEach((i) => targets.push(inst[i].ID));
+      } else if (small.length) {
         const lists = await Promise.all(small.map((s) => get(`/series/${s.id}/instances`).then((r) => r.json())));
         for (const inst of lists) targets.push(...inst.sort(byInstanceNumber).map((i) => i.ID));
       } else if (usable.length) {
@@ -9399,7 +9423,10 @@
       let sent = 0;
       await Promise.all(targets.slice(0, 16).map(async (id, k) => {
         try {
-          const image = await blobToDataUrl(await (await get(`/instances/${id}/preview`)).blob());
+          let blob = null;
+          if (cross) blob = await get(`/instances/${id}/rendered`).then((r) => r.blob()).catch(() => null);
+          if (!blob) blob = await (await get(`/instances/${id}/preview`)).blob();
+          const image = await blobToDataUrl(blob);
           send({ part: "image", k, image, label });
           sent++;
         } catch (_) {}
@@ -14550,7 +14577,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.120.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.121.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -17692,13 +17719,30 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
   };
   const SP_AI_MODEL = "claude-haiku-5-5"; // bawaan sama dengan AUTO KLINIK (paling hemat)
   const SP_AI_MAX_IMAGES = 4;
+  // v3.121.0: baca EKG sistematis (urutan baku 8 langkah + kriteria STEMI Fourth UDMI + mimik), dikaitkan dengan data pasien.
+  const SP_AI_EKG_PROMPT = [
+    "Baca EKG pada foto terlampir secara sistematis seperti kardiolog, lalu kaitkan dengan data pasien (keluhan, TTV, elektrolit/troponin bila ada). Tulis hasil tiap langkah:",
+    "1. Kualitas & kalibrasi: kecepatan kertas, gain, artefak, kemungkinan salah pasang elektroda. Bila foto kurang jelas/terpotong, sebutkan bagian yang tidak bisa dinilai; jangan menebak.",
+    "2. Laju (1500 ÷ kotak kecil R–R; bila tidak teratur: jumlah QRS 10 detik × 6).",
+    "3. Irama: teratur atau tidak, gelombang P dan hubungannya dengan QRS, QRS sempit/lebar.",
+    "4. Aksis (lead I, aVF, II).",
+    "5. Interval: PR, QRS, QT dan QTc (Bazett; Fridericia bila laju <60 atau >90).",
+    "6. Morfologi: blok cabang, LVH, Q patologis, gelombang P, gelombang T (lancip/inversi), voltase.",
+    "7. Segmen ST per lead (mm, di titik J): kriteria STEMI Fourth UDMI (≥1 mm di 2 lead bersebelahan; V2–V3 ≥2 mm laki-laki ≥40 th, ≥2,5 mm laki-laki <40 th, ≥1,5 mm perempuan), depresi resiprokal, infark posterior (depresi V1–V3 → sarankan V7–V9), ventrikel kanan (infark inferior → sarankan V4R), elevasi aVR dengan depresi difus, ekuivalen STEMI/OMI (de Winter, Wellens, T hiperakut), Sgarbossa-Smith bila LBBB/paced.",
+    "8. Mimik: perikarditis, repolarisasi dini, LVH, aneurisma LV, hiperkalemia, Brugada, takotsubo, WPW.",
+    "Akhiri dengan **Kesimpulan** (1–3 baris), **Tanda bahaya** yang perlu tindakan segera, **Saran** (EKG serial, lead tambahan, lab, konsul), dan tingkat keyakinan bacaan (tinggi/sedang/rendah) beserta alasannya."
+  ].join("\n");
+  const SP_AI_MAX_FILMS = 16;
   const SP_AI_QUICK = [
     ["Diagnosis banding", "Apa diagnosis banding untuk pasien ini, dan pemeriksaan apa yang membedakannya?"],
     ["Terapi & dosis", "Apa terapi yang dianjurkan di IGD beserta dosisnya untuk pasien ini?"],
     ["Kapan rujuk", "Apa tanda bahaya dan kriteria rawat inap / ICU / rujuk untuk kasus ini?"],
     ["Edukasi pasien", "Buatkan edukasi singkat untuk pasien dalam bahasa awam."],
     // v3.103.0: rangkum semua data pasien (📎 otomatis dicentang) menjadi SOAP lengkap.
-    ["SOAP lengkap", "Rangkum semua data pasien di atas menjadi SOAP lengkap siap salin: S (keluhan utama, RPS, RPD, riwayat obat, alergi), O (KU, kesadaran, TTV, pemeriksaan fisik per sistem, lab & radiologi yang relevan dengan nilai abnormal), A (diagnosis kerja + banding, dengan ICD-10 bila jelas), P (terapi yang sedang berjalan + rencana/tindak lanjut). Pakai hanya data yang ada; tulis 'belum ada data' bila kosong, jangan mengarang."]
+    ["SOAP lengkap", "Rangkum semua data pasien di atas menjadi SOAP lengkap siap salin: S (keluhan utama, RPS, RPD, riwayat obat, alergi), O (KU, kesadaran, TTV, pemeriksaan fisik per sistem, lab & radiologi yang relevan dengan nilai abnormal), A (diagnosis kerja + banding, dengan ICD-10 bila jelas), P (terapi yang sedang berjalan + rencana/tindak lanjut). Pakai hanya data yang ada; tulis 'belum ada data' bila kosong, jangan mengarang."],
+    // v3.121.0 (permintaan dokter 24 Okt 2026): baca EKG dari foto secara sistematis + data pasien; nilai film Ro/CT dari PACS.
+    ["Baca EKG", SP_AI_EKG_PROMPT],
+    ["Nilai film Ro/CT", "Nilai gambar film rontgen/CT terlampir secara sistematis (per organ/struktur), sebutkan temuan dan kesan, bandingkan dengan ekspertise radiolog bila ada di data pasien, lalu sebutkan temuan yang perlu tindakan segera dan apakah sesuai dengan klinis pasien. Bila gambar kurang jelas atau irisan tidak lengkap, katakan bagian mana yang tidak bisa dinilai, jangan menebak."]
   ];
   const spAiModelInfo = (id) => SP_AI_MODELS.find((m) => m.id === id) || SP_AI_MODELS.find((m) => m.id === SP_AI_MODEL);
   // Label model yang menjawab (API mengembalikan id + tanggal, mis. gpt-5.6-luna-2026-09-30).
@@ -17729,14 +17773,18 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
   }
 
   // Isi pesan dokter untuk API (fungsi murni, diuji).
-  function spAiUserContent(question, { context = "", images = [] } = {}) {
+  // v3.121.0: films = gambar film Ro/CT dari PACS, tiap gambar didahului keterangannya.
+  function spAiUserContent(question, { context = "", images = [], films = [] } = {}) {
     const q = String(question || "").trim();
-    const textPart = context
+    let textPart = context
       ? `Data pasien dari halaman Smartplus yang sedang dibuka (identitas disamarkan):\n${context}\n\nPertanyaan dokter:\n${q}`
       : q;
-    if (!images.length) return textPart;
+    if (films.length) textPart = `Terlampir ${films.length} gambar film radiologi dari PACS RS (keterangan pemeriksaan & tanggal di atas tiap gambar; CT = irisan contoh merata, bukan seluruh irisan)${images.length ? ` dan ${images.length} foto dari dokter (paling akhir)` : ""}.\n\n${textPart}`;
+    if (!images.length && !films.length) return textPart;
+    const img = (x) => ({ type: "image", source: { type: "base64", media_type: x.mediaType, data: x.data } });
     return [
-      ...images.map((img) => ({ type: "image", source: { type: "base64", media_type: img.mediaType, data: img.data } })),
+      ...films.flatMap((f) => [{ type: "text", text: `Film: ${f.caption || "radiologi"}` }, img(f)]),
+      ...images.map(img),
       { type: "text", text: textPart || "Tolong nilai gambar ini." }
     ];
   }
@@ -17900,6 +17948,62 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       };
       reader.readAsDataURL(file);
     });
+  }
+
+  // v3.121.0: gambar dari dataURL (film PACS) diperkecil (sisi terpanjang ≤ max px, JPEG).
+  function spAiShrinkDataUrl(src, max = 1024) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("Gambar film tidak bisa dibaca."));
+      img.onload = () => {
+        const scale = Math.min(1, max / Math.max(img.width, img.height));
+        const cv = document.createElement("canvas");
+        cv.width = Math.max(1, Math.round(img.width * scale));
+        cv.height = Math.max(1, Math.round(img.height * scale));
+        const ctx = cv.getContext("2d");
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, cv.width, cv.height);
+        ctx.drawImage(img, 0, 0, cv.width, cv.height);
+        const url = cv.toDataURL("image/jpeg", 0.85);
+        resolve({ mediaType: "image/jpeg", data: url.split(",")[1], url });
+      };
+      img.src = src;
+    });
+  }
+
+  // v3.121.0 (permintaan dokter 24 Okt 2026): 🩻 Film Ro/CT — saat membaca data pasien, film rontgen & CT 1 bulan terakhir
+  // (bila tidak ada: pemeriksaan terakhir) diambil otomatis dari PACS lewat jalur AUTO SCREENSHOT (jendela viewer terbuka
+  // sebentar lalu menutup sendiri), lalu ikut dikirim ke AI. USG tidak (cukup ekspertise). Hanya membaca, tidak mengubah apa pun.
+  // Daftar film dari riwayat radiologi (fungsi murni, diuji): [{url, caption}] terbaru dulu, alamat ganda dibuang.
+  function spAiFilmList(rads, windowSpec = SP_RAD_WINDOW) {
+    const { recent, latestOlder } = spPickRecentEntries(rads || [], windowSpec);
+    const rows = (recent.length ? recent : latestOlder).filter((r) => !spIsUsgExam(r.exam));
+    const seen = new Set();
+    return rows.flatMap((r) => (r.films || []).map((url, i) => ({ url, caption: `${r.exam} ${r.dateText}${r.films.length > 1 ? ` (film ${i + 1})` : ""}` })))
+      .filter((f) => !seen.has(f.url) && (seen.add(f.url), true));
+  }
+  function spAiFilmNoreg() {
+    const k = spAiPageKind();
+    return k === "igd" ? getCurrentIgdNoreg() : k === "ranap" ? getCurrentNoregAny() : "";
+  }
+  // Ambil film satu per satu (jendela PACS butuh izin pop-up untuk situs Smartplus). progress(teks) untuk status di panel.
+  async function spAiCaptureFilms(list, progress = () => {}) {
+    const films = [], notes = [];
+    let blocked = 0;
+    for (let i = 0; i < list.length && films.length < SP_AI_MAX_FILMS; i++) {
+      const f = list[i];
+      progress(`Mengambil film ${i + 1}/${list.length}: ${f.caption}…`);
+      const res = await spCaptureFilm(f.url, i, 20000, "ai");
+      if (res.blocked) { blocked++; continue; }
+      const imgs = (res.images || []).slice(0, SP_AI_MAX_FILMS - films.length);
+      if (!imgs.length) { notes.push(`${f.caption}: ${res.error || "film tidak terambil"}`); continue; }
+      const cap = res.label ? `${f.caption} — ${res.label}` : f.caption;
+      for (let k = 0; k < imgs.length; k++) {
+        try { films.push({ ...(await spAiShrinkDataUrl(imgs[k])), caption: `${cap}${imgs.length > 1 ? ` — gambar ${k + 1}/${imgs.length}` : ""}` }); } catch (_) {}
+      }
+    }
+    if (blocked) notes.push(`${blocked} film tidak terambil karena browser memblokir jendela film. Izinkan pop-up untuk situs Smartplus (ikon 🚫 di kolom alamat → Selalu izinkan), lalu tanya lagi dengan ＋ percakapan baru.`);
+    return { films, notes };
   }
 
   // 📎 Baca data pasien (v3.103.0, permintaan dokter: "membaca semua tab data pasien" lalu bisa dirangkum jadi SOAP lengkap).
@@ -18086,7 +18190,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
   }
 
   // Percakapan disimpan di memori saja (hilang saat halaman dimuat ulang) — sama dengan AUTO KLINIK.
-  const spAiChat = { messages: [], view: [], busy: false, images: [], convModel: "", min: false, box: null };
+  const spAiChat = { messages: [], view: [], busy: false, images: [], convModel: "", min: false, box: null, filmFor: "", waitText: "" };
 
   // Posisi & ukuran panel diingat di browser ini. Kotak dijaga tetap di dalam layar (fungsi murni, diuji).
   function spAiClampBox(box, vw, vh) {
@@ -18275,15 +18379,15 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     <div class="ak-ai-set-title">Model (ganti model = percakapan baru)</div>
     <div class="ak-ai-set-row"><select class="ak-ai-model">${["claude", "openai"].map((pv) => `<optgroup label="${pv === "openai" ? "ChatGPT (OpenAI)" : "Claude (Anthropic)"}">${SP_AI_MODELS.filter((m) => m.prov === pv).map((m) => `<option value="${m.id}">${escapeHtmlText(`${m.label} · ${m.hint}`)}</option>`).join("")}</optgroup>`).join("")}</select></div>
   </div>
-  <div class="ak-ai-privacy">⚠ Dikirim ke AI di luar Smartplus. Jangan tulis nama/No. RM pasien; nama/No.RM/No.Reg/tanggal disamarkan otomatis.</div>
+  <div class="ak-ai-privacy">⚠ Dikirim ke AI di luar Smartplus. Jangan tulis nama/No. RM pasien; nama/No.RM/No.Reg/tanggal disamarkan otomatis. Foto/film bisa memuat tulisan identitas: potong dulu bila ada.</div>
   <div class="ak-ai-log" aria-live="polite"></div>
   <div class="ak-ai-compose">
-    <div class="ak-ai-chips"><label class="ak-ai-ctx" title="Kirim semua data pasien ini: GADAR, CPPT, lab, radiologi, e-resep, riwayat poli / ringkasan rawat inap (identitas disamarkan)"><input type="checkbox" class="ak-ai-ctx-check">📎 Baca data pasien</label>${SP_AI_QUICK.map(([l], i) => `<button type="button" data-chip="${i}">${escapeHtmlText(l)}</button>`).join("")}</div>
+    <div class="ak-ai-chips"><label class="ak-ai-ctx" title="Kirim semua data pasien ini: GADAR, CPPT, lab, radiologi, e-resep, riwayat poli / ringkasan rawat inap (identitas disamarkan)"><input type="checkbox" class="ak-ai-ctx-check">📎 Baca data pasien</label><label class="ak-ai-ctx ak-ai-film" title="Ambil otomatis film rontgen & CT 1 bulan terakhir dari PACS (jendela film terbuka sebentar, butuh izin pop-up) dan kirim ke AI. Ikut tercentang saat 📎 Baca data pasien."><input type="checkbox" class="ak-ai-film-check">🩻 Film Ro/CT</label>${SP_AI_QUICK.map(([l], i) => `<button type="button" data-chip="${i}">${escapeHtmlText(l)}</button>`).join("")}</div>
     <details class="ak-ai-ctx-preview" hidden><summary>Lihat data yang dikirim (cek identitas sudah disamarkan)</summary><pre></pre></details>
     <div class="ak-ai-thumbs"></div>
     <div class="ak-ai-row">
       <textarea class="ak-ai-input" rows="1" placeholder="Tulis pertanyaan…"></textarea>
-      <label class="ak-ai-attach" title="Lampirkan foto (lesi kulit, hasil lab, EKG, rontgen)">📷<input type="file" accept="image/*" multiple hidden></label>
+      <label class="ak-ai-attach" title="Lampirkan foto (EKG, lesi kulit, hasil lab, rontgen)">📷<input type="file" accept="image/*" multiple hidden></label>
       <button type="button" class="ak-ai-send" data-act="send" title="Kirim (Ctrl+Enter)">➤</button>
     </div>
   </div>
@@ -18315,12 +18419,12 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       log.innerHTML = spAiChat.view.length
         ? spAiChat.view.map((m, i) => {
           if (m.role === "user")
-            return `<div class="ak-ai-msg ak-ai-user">${m.images && m.images.length ? `<div class="ak-ai-msg-imgs">${m.images.map((u) => `<img src="${u}" alt="">`).join("")}</div>` : ""}${escapeHtmlText(m.text).replace(/\n/g, "<br>")}${m.withContext ? '<div class="ak-ai-tag">📎 data pasien disertakan</div>' : ""}${m.removed ? `<div class="ak-ai-tag">${m.removed} identitas disamarkan</div>` : ""}</div>`;
+            return `<div class="ak-ai-msg ak-ai-user">${m.images && m.images.length ? `<div class="ak-ai-msg-imgs">${m.images.map((u) => `<img src="${u}" alt="">`).join("")}</div>` : ""}${escapeHtmlText(m.text).replace(/\n/g, "<br>")}${m.withContext ? '<div class="ak-ai-tag">📎 data pasien disertakan</div>' : ""}${m.filmNote ? `<div class="ak-ai-tag">${escapeHtmlText(m.filmNote)}</div>` : ""}${m.removed ? `<div class="ak-ai-tag">${m.removed} identitas disamarkan</div>` : ""}</div>`;
           if (m.role === "error") return `<div class="ak-ai-msg ak-ai-error">${escapeHtmlText(m.text)}</div>`;
           return `<div class="ak-ai-msg ak-ai-bot">${spAiMd(m.text)}${m.note ? `<div class="ak-ai-tag">${escapeHtmlText(m.note)}</div>` : ""}${m.meta ? `<div class="ak-ai-meta">${escapeHtmlText(m.meta)}</div>` : ""}<button type="button" class="ak-ai-copy" data-copy="${i}">Salin</button></div>`;
         }).join("")
-        : `<div class="ak-ai-empty">${notice ? `<b>${escapeHtmlText(notice)}</b><br>` : ""}Tanyakan apa saja: diagnosis banding, dosis obat, interaksi, kriteria rawat/rujuk, edukasi pasien, atau kirim foto lesi/hasil lab/EKG.<br><br>Centang 📎 Baca data pasien agar AI ikut membaca semua data pasien ini (GADAR, CPPT, lab, radiologi, resep). Tombol SOAP lengkap merangkumnya menjadi SOAP.</div>`;
-      if (spAiChat.busy) log.insertAdjacentHTML("beforeend", '<div class="ak-ai-msg ak-ai-bot ak-ai-wait">AI sedang berpikir…</div>');
+        : `<div class="ak-ai-empty">${notice ? `<b>${escapeHtmlText(notice)}</b><br>` : ""}Tanyakan apa saja: diagnosis banding, dosis obat, interaksi, kriteria rawat/rujuk, edukasi pasien, atau kirim foto lesi/hasil lab/EKG.<br><br>Centang 📎 Baca data pasien agar AI ikut membaca semua data pasien ini (GADAR, CPPT, lab, radiologi, resep); 🩻 Film Ro/CT ikut mengambil film dari PACS. Tombol Baca EKG: lampirkan foto EKG (📷) lalu kirim.</div>`;
+      if (spAiChat.busy) log.insertAdjacentHTML("beforeend", `<div class="ak-ai-msg ak-ai-bot ak-ai-wait">${escapeHtmlText(spAiChat.waitText || "AI sedang berpikir…")}</div>`);
       log.scrollTop = log.scrollHeight;
     };
     renderLog();
@@ -18362,6 +18466,18 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       ctxJob.then((c) => { if (ctxCheck.checked) pre.textContent = c || "(Belum ada data pasien yang terbaca di halaman ini.)"; });
     };
     ctxCheck.addEventListener("change", updateCtxPreview);
+    // v3.121.0: daftar film disiapkan begitu 🩻 dicentang, supaya jendela film pertama terbuka langsung saat Kirim ditekan.
+    const filmCheck = $(".ak-ai-film-check");
+    let filmList = null, filmListFor = "";
+    const prepFilms = () => {
+      const noreg = spAiFilmNoreg();
+      if (!filmCheck.checked || !noreg || spAiChat.filmFor === noreg || (filmListFor === noreg && filmList)) return;
+      filmListFor = noreg; filmList = null;
+      spFetchRadEntries(smartplusBaseUrl(), noreg).then((rads) => { if (filmListFor === noreg) filmList = spAiFilmList(rads); }, () => { if (filmListFor === noreg) filmList = []; });
+    };
+    filmCheck.addEventListener("change", prepFilms);
+    ctxCheck.addEventListener("change", () => { if (ctxCheck.checked && !filmCheck.checked && spAiChat.filmFor !== spAiFilmNoreg()) { filmCheck.checked = true; prepFilms(); } });
+    const setWait = (t) => { spAiChat.waitText = t; renderLog(); };
 
     const send = async () => {
       if (spAiChat.busy) return;
@@ -18379,14 +18495,33 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       spAiChat.busy = true;
       sendBtn.disabled = true;
       const withCtx = ctxCheck.checked;
-      spAiChat.view.push({ role: "user", text: question, withContext: withCtx, removed, images: images.map((i) => i.url) });
+      const filmNoreg = filmCheck.checked ? spAiFilmNoreg() : "";
+      const wantFilms = !!filmNoreg && spAiChat.filmFor !== filmNoreg;
+      const userView = { role: "user", text: question, withContext: withCtx, removed, images: images.map((i) => i.url) };
+      spAiChat.view.push(userView);
+      spAiChat.waitText = "";
       renderLog();
       let pushed = false;
+      // Film diambil lebih dulu (jendela pertama dibuka langsung bila daftar film sudah siap -> tidak diblokir pop-up).
+      const filmsP = !wantFilms ? Promise.resolve({ films: [], notes: [] }) : (async () => {
+        const list = filmListFor === filmNoreg && filmList ? filmList
+          : spAiFilmList(await spFetchRadEntries(smartplusBaseUrl(), filmNoreg).catch(() => []));
+        if (!list.length) return { films: [], notes: ["Tidak ada film rontgen/CT di PACS untuk pasien ini."] };
+        return spAiCaptureFilms(list, setWait);
+      })().catch((e) => ({ films: [], notes: [`Film gagal diambil: ${(e && e.message) || e}`] }));
       try {
         // Data dibaca ulang bila pratinjau sudah lebih dari 1 menit (form/CPPT bisa berubah).
         if (withCtx && (!ctxJob || Date.now() - ctxAt > 60000)) { ctxJob = spAiPatientData(); ctxAt = Date.now(); }
         const context = withCtx ? await ctxJob : "";
-        spAiChat.messages.push({ role: "user", content: spAiUserContent(question, { context, images }) });
+        const fr = await filmsP;
+        if (wantFilms) {
+          spAiChat.filmFor = filmNoreg; // sekali per percakapan (film ikut di riwayat percakapan)
+          userView.images = fr.films.map((f) => f.url).concat(userView.images);
+          userView.filmNote = [fr.films.length ? `🩻 ${fr.films.length} gambar film Ro/CT dari PACS disertakan` : "", ...fr.notes].filter(Boolean).join(" · ");
+        }
+        spAiChat.waitText = "";
+        renderLog();
+        spAiChat.messages.push({ role: "user", content: spAiUserContent(question, { context, images, films: fr.films }) });
         pushed = true;
         const model = spAiGetModel();
         spAiChat.convModel = model;
@@ -18409,6 +18544,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
         spAiChat.view.push({ role: "error", text: (err && err.message) || String(err) });
       } finally {
         spAiChat.busy = false;
+        spAiChat.waitText = "";
         const cur = document.getElementById(SP_AI_PANEL_ID);
         if (cur && cur.__spRefresh) cur.__spRefresh();
       }
@@ -18425,7 +18561,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       if (act === "send") { send(); return; }
       if (act === "new") {
         if (spAiChat.busy) return;
-        spAiChat.messages = []; spAiChat.view = []; spAiChat.images = []; notice = "";
+        spAiChat.messages = []; spAiChat.view = []; spAiChat.images = []; spAiChat.filmFor = ""; notice = "";
         renderThumbs(); renderLog(); return;
       }
       if (act === "savekey") {
@@ -18441,7 +18577,10 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       if (t.dataset.chip != null) {
         const q = SP_AI_QUICK[Number(t.dataset.chip)];
         input.value = q[1];
-        if (q[0] === "SOAP lengkap" && !ctxCheck.checked) { ctxCheck.checked = true; updateCtxPreview(); }
+        if (/SOAP lengkap|Baca EKG|Nilai film/.test(q[0]) && !ctxCheck.checked) { ctxCheck.checked = true; ctxCheck.dispatchEvent(new Event("change")); }
+        if (q[0] === "Nilai film Ro/CT" && !filmCheck.checked) { filmCheck.checked = true; prepFilms(); }
+        // Baca EKG tanpa foto -> langsung buka pemilih foto (📷).
+        if (q[0] === "Baca EKG" && !spAiChat.images.length) { toast("Pilih foto EKG (lurus, terang, 12 lead terlihat), lalu tekan Kirim."); $(".ak-ai-attach input").click(); return; }
         input.focus();
         return;
       }
