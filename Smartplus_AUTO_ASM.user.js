@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.121.2
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.121.3
 // @namespace    smartplus-auto-asm-v221
-// @version      3.121.2
-// @description  v3.121.2 (uji WA asli 24 Okt 2026): 🔎 Cari advis WA — advis yang ternyata sudah tertulis di Rencana (ditulis tanpa kata "advis") tidak lagi masuk antrean ADVIS SPESIALIS "belum tersimpan"; pasien itu ditandai ✅ di CEK ADVIS. (v3.121.1: Cari advis membaca chat DPJP dulu lalu konsul/medis, chat lain dilewati — 11 chat ±4 menit, dulu 40 chat ±8 menit.)
+// @version      3.121.3
+// @description  v3.121.3 (uji Smartplus asli 24 Okt 2026): CEK & SARAN ASGADAR membaca angka pertama TTV berteks (napas "24 x/menit spo2 93 ra" dulu terbaca 2493 -> "tidak wajar"). 🧠 Tanya AI 🩻 Film Ro/CT & AUTO SCREENSHOT: bila jendela film tidak menjawab (PACS hanya terbuka dari jaringan RS) pesannya jelas dan film lain tidak dicoba satu per satu (hemat 20 detik per film).
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -54,8 +54,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.121.2";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.121.2");
+  window.__SP_AUTO_ASM_LOADED__ = "3.121.3";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.121.3");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -3353,7 +3353,8 @@
     if (a < 6) return { nadi: [80, 140], rr: [20, 40], adult: false };
     return { nadi: [70, 120], rr: [18, 30], adult: false };
   }
-  const spKbNum = (v) => { const n = Number(String(v == null ? "" : v).replace(",", ".").replace(/[^0-9.]/g, "")); return String(v || "").trim() && Number.isFinite(n) ? n : null; };
+  // v3.121.3 (uji Smartplus asli 24 Okt 2026): kolom napas "24 x/menit spo2 93 ra" dulu dibaca 2493 ("tidak wajar") -> angka pertama saja.
+  const spKbNum = (v) => { const m = String(v == null ? "" : v).match(/\d+(?:[.,]\d+)?/); const n = m ? Number(m[0].replace(",", ".")) : NaN; return Number.isFinite(n) ? n : null; };
 
   // Gabung baris pemfis ke teks pemfis: "Abd: BU meningkat" ditambahkan di baris "Abd:" yang ada, atau baris baru.
   function spKbMergePemfis(fisik, lines) {
@@ -8906,6 +8907,7 @@
       const got = [];
       let label = "";
       let done = false;
+      let heard = false; // v3.121.3: jendela film pernah menjawab (viewer PACS terbuka & AUTO ASM berjalan di sana)
       let w = null;
       const collected = () => got.filter(Boolean);
       const finish = (val) => {
@@ -8921,6 +8923,7 @@
         const d = ev.data;
         if (!d || d.type !== "sp-film" || d.nonce !== nonce) return;
         if (filmOrigin && ev.origin !== filmOrigin) return; // hanya dari server film itu sendiri
+        heard = true;
         if (d.label) label = d.label;
         if (d.part === "image") { got[d.k] = d.image; return; }
         if (d.part === "meta") return;
@@ -8933,7 +8936,10 @@
       setTimeout(() => finish({
         ok: !!collected().length,
         timedOut: true,
-        error: collected().length ? "" : `film tidak muncul dalam ${Math.round(timeoutMs / 1000)} detik`
+        noReply: !heard,
+        // v3.121.3 (uji laptop di luar RS 24 Okt 2026): PACS di jaringan lokal RS tidak terjangkau -> jendela film tidak pernah menjawab.
+        error: collected().length ? "" : heard ? `film tidak muncul dalam ${Math.round(timeoutMs / 1000)} detik`
+          : `jendela film tidak menjawab dalam ${Math.round(timeoutMs / 1000)} detik — PACS hanya terbuka dari jaringan RS (Wi-Fi/LAN RS); bila sudah di RS, cek viewer PACS bisa dibuka`
       }), timeoutMs);
     });
   }
@@ -14615,7 +14621,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.121.2</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.121.3</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -18034,7 +18040,12 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       const res = await spCaptureFilm(f.url, i, 20000, "ai");
       if (res.blocked) { blocked++; continue; }
       const imgs = (res.images || []).slice(0, SP_AI_MAX_FILMS - films.length);
-      if (!imgs.length) { notes.push(`${f.caption}: ${res.error || "film tidak terambil"}`); continue; }
+      if (!imgs.length) {
+        notes.push(`${f.caption}: ${res.error || "film tidak terambil"}`);
+        // v3.121.3: PACS tidak terjangkau -> film berikutnya tidak dicoba (hemat 20 detik per film).
+        if (res.noReply) { if (i < list.length - 1) notes.push(`${list.length - 1 - i} film lain tidak dicoba.`); break; }
+        continue;
+      }
       const cap = res.label ? `${f.caption} — ${res.label}` : f.caption;
       for (let k = 0; k < imgs.length; k++) {
         try { films.push({ ...(await spAiShrinkDataUrl(imgs[k])), caption: `${cap}${imgs.length > 1 ? ` — gambar ${k + 1}/${imgs.length}` : ""}` }); } catch (_) {}
