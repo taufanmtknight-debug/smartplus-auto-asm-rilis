@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.121.3
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.122.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.121.3
-// @description  v3.121.3 (uji Smartplus asli 24 Okt 2026): CEK & SARAN ASGADAR membaca angka pertama TTV berteks (napas "24 x/menit spo2 93 ra" dulu terbaca 2493 -> "tidak wajar"). 🧠 Tanya AI 🩻 Film Ro/CT & AUTO SCREENSHOT: bila jendela film tidak menjawab (PACS hanya terbuka dari jaringan RS) pesannya jelas dan film lain tidak dicoba satu per satu (hemat 20 detik per film).
+// @version      3.122.0
+// @description  v3.122.0 (permintaan dokter 26 Okt 2026): cek darah pasien ANAK (usia <18 th) di IGD kini memakai Darah lengkap, bukan Hema rutin — AUTO LAB, order lab dari template ASGADAR PENYAKIT dan ASISTEN SUARA mencentang Darah lengkap (nama dicari: Darah lengkap / Hema lengkap / Hematologi lengkap; bila tidak ada, order TIDAK disimpan dan dokter memilih manual), dan teks "Darah rutin" di Penunjang/Rencana template ASGADAR ditulis "Darah lengkap" untuk anak. Usia tidak terbaca dianggap dewasa. Dewasa tidak berubah (Hema rutin + GDS bila >39 th).
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -54,8 +54,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.121.3";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.121.3");
+  window.__SP_AUTO_ASM_LOADED__ = "3.122.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.122.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -4423,6 +4423,22 @@
     return false;
   }
 
+  // v3.122.0 (permintaan dokter 26 Okt 2026): cek darah pasien anak (usia <18 th) memakai Darah lengkap, bukan Hema rutin.
+  // Usia tidak terbaca -> diperlakukan dewasa (Hema rutin) seperti sebelumnya. Nama pemeriksaan di master lab dicari
+  // berurutan; bila tidak ada satu pun, AUTO LAB tidak Save (dokter memilih manual).
+  const SP_LAB_ANAK_MAX_TH = 18;
+  const SP_LAB_DARAH_LENGKAP = ["Darah lengkap", "Hema lengkap", "Hematologi lengkap"];
+  function spLabIsAnak(ageYears) {
+    return ageYears !== null && ageYears !== undefined && Number.isFinite(Number(ageYears)) && Number(ageYears) < SP_LAB_ANAK_MAX_TH;
+  }
+  function spCheckDarahLengkap(root) {
+    return SP_LAB_DARAH_LENGKAP.some((name) => checkLabOptionByText(root, name));
+  }
+  // Teks template ("Darah rutin.", "Cek darah rutin, ...") untuk anak -> "Darah lengkap".
+  function spDarahRutinKeLengkap(text) {
+    return String(text ?? "").replace(/darah rutin/gi, (m) => (m[0] === "D" ? "Darah lengkap" : "darah lengkap"));
+  }
+
   function checkLabOptionByText(root, phrase) {
     if (!root) return false;
     const wanted = norm(phrase);
@@ -5606,7 +5622,7 @@
     return words.length >= 2 && words.filter((w) => p.includes(w)).length >= Math.min(2, words.length);
   }
 
-  // v3.58.0 (instruksi dokter): memilih template PENYAKIT di ASGADAR -> lab langsung diorder (AUTO LAB: hema rutin, +
+  // v3.58.0 (instruksi dokter): memilih template PENYAKIT di ASGADAR -> lab langsung diorder (AUTO LAB: hema rutin / darah lengkap bila anak <18 th, +
   // glukosa sewaktu bila usia >39 th) dengan diagnosis template. Diorder SEBELUM form GADAR diisi (pindah ke tab Order Lab
   // menyembunyikan form GADAR). Tidak diorder bila: template NORMAL, halaman draf (pasien belum terdaftar), atau kunjungan ini
   // sudah punya order lab (cegah order dobel saat template dipilih ulang).
@@ -5751,10 +5767,15 @@
       "dx"
     )) fail.push("Indikasi Klinis");
 
-    if (!checkLabOptionByText(root, "Hema rutin")) fail.push("Hema rutin");
-
     const patientAgeYears = getPatientAgeYears(root);
     const needsGlucoseSewaktu = patientAgeYears !== null && patientAgeYears > 39;
+    // v3.122.0 (permintaan dokter 26 Okt 2026): pasien anak (<18 th) -> Darah lengkap, bukan Hema rutin.
+    const isAnak = spLabIsAnak(patientAgeYears);
+    const darahLabel = isAnak ? "Darah lengkap" : "Hema rutin";
+
+    if (isAnak) {
+      if (!spCheckDarahLengkap(root)) fail.push("Darah lengkap (anak <" + SP_LAB_ANAK_MAX_TH + " th, nama pemeriksaan tidak ditemukan)");
+    } else if (!checkLabOptionByText(root, "Hema rutin")) fail.push("Hema rutin");
 
     console.log('[AUTO LAB] usia terbaca dari form:', patientAgeYears);
 
@@ -5793,10 +5814,11 @@
       toast(
         needsGlucoseSewaktu
           ? "AUTO LAB selesai. Hema rutin + Glukosa Sewaktu dipilih (usia >39 tahun), dan Save ditekan." + dxNote
-          : "AUTO LAB selesai. Hema rutin dipilih, dan Save ditekan." + dxNote
+          : "AUTO LAB selesai. " + darahLabel + " dipilih" + (isAnak ? " (anak <" + SP_LAB_ANAK_MAX_TH + " th)" : "") + ", dan Save ditekan." + dxNote
       );
       console.log("[AUTO LAB] selesai", {
         age: patientAgeYears,
+        darah: darahLabel,
         glukosaSewaktu: needsGlucoseSewaktu
       });
       return true;
@@ -5996,7 +6018,7 @@
   function spReviewLabItem(name) {
     const n = String(name);
     if (/hema rutin|darah rutin/i.test(n)) return { text: "Hema rutin", re: /darah rutin|darah lengkap|hema|\bdpl\b|\bcbc\b/i  /* "dr" tidak dipakai: bentrok dengan "dr. (nama dokter)" */ };
-    if (/hema lengkap|darah lengkap/i.test(n)) return { text: "Darah lengkap", re: /darah lengkap|hema lengkap|\bdpl\b/i };
+    if (/hema(tologi)? lengkap|darah lengkap/i.test(n)) return { text: "Darah lengkap", re: /darah lengkap|hema(tologi)? lengkap|\bdpl\b|\bdl\b/i };
     if (/glukosa sewaktu/i.test(n)) return { text: "GDS", re: /\bgds\b|gula darah|glukosa/i };
     if (/^kreatinin$/i.test(n)) return { text: "Kreatinin", re: /kreatinin|fungsi ginjal|\brft\b/i };
     if (/ureum/i.test(n)) return { text: "Ureum", re: /ureum|\bbun\b|fungsi ginjal/i };
@@ -14621,7 +14643,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.121.3</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.122.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -15533,6 +15555,8 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     const randomNadi = getRandomNadi(data.vital);
     const patientAgeYears = getPatientAgeYears();
     const isPediatricUnder14 = patientAgeYears !== null && patientAgeYears < 14;
+    // v3.122.0: anak <18 th -> teks "Darah rutin" template ditulis "Darah lengkap" (sama dengan AUTO LAB).
+    const isAnakLab = spLabIsAnak(patientAgeYears);
     const randomTD = getRandomTD(data.vital);
     // v3.114.0: template kasus baru (vomitus DS, vertigo, KLL, luka robek) juga mengacak RR & SpO2 dalam rentangnya.
     const randomRangeVital = ["NORMAL", "KEJANG_DEMAM_ANAK", "LBP", "VOMITUS_DS", "VERTIGO", "KLL", "VULNUS_LACERATUM"].includes(key);
@@ -15683,7 +15707,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     );
 
     doSet("Pemeriksaan Penunjang", () =>
-      setByLabel(root, ["Pemeriksaan Penunjang"], data.penunjang)
+      setByLabel(root, ["Pemeriksaan Penunjang"], isAnakLab ? spDarahRutinKeLengkap(data.penunjang) : data.penunjang)
     );
 
     doSet("Diagnosis", () =>
@@ -15704,7 +15728,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       setByLabel(
         root,
         ["Rencana (Tindakan, Terapi, dll)", "Rencana Tindakan", "Rencana"],
-        data.terapi
+        isAnakLab ? spDarahRutinKeLengkap(data.terapi) : data.terapi
       )
     );
 
@@ -16200,7 +16224,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
   const SP_AS_MODE_LS = "sp-auto-asm-asisten-mode";
   // v3.62.0: order penunjang yang boleh dijalankan asisten = HANYA fungsi AUTO yang sudah diizinkan Save oleh dokter.
   const SP_AS_ORDERS = [
-    { key: "LAB_RUTIN", label: "Lab: Hema rutin (+ GDS bila usia >39 th)" },
+    { key: "LAB_RUTIN", label: "Lab: Hema rutin / Darah lengkap bila anak <18 th (+ GDS bila usia >39 th)" },
     { key: "LAB_SEVERE", label: "Lab Severe: Kreatinin + Elektrolit + AGD" },
     { key: "THORAX", label: "Radiologi: Ro Thorax PA/AP" },
     { key: "USG_WHOLE_ABDOMEN", label: "Radiologi: USG Whole Abdomen" },
@@ -16801,7 +16825,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     "- Setelah anamnesa, dokter biasanya MENDIKTEKAN tanda vital, pemeriksaan fisik, diagnosis, rencana, dan pemeriksaan penunjang. Bagian dikte itu adalah temuan dokter: isi ke kolomnya seperti mode dikte. Di sini 'titik'/'koma' bisa berarti tanda baca, '120 per 80' = 120/80, '37 koma 5' = 37,5, 'saturasi 95' = spo2.",
     "",
     "ORDER PENUNJANG (kedua mode): order_penunjang hanya berisi pemeriksaan yang dokter PERINTAHKAN/rencanakan dengan jelas, dari daftar tetap:",
-    "- LAB_RUTIN: darah lengkap / DL / hema rutin / cek darah rutin (GDS otomatis ikut bila usia >39 th).",
+    "- LAB_RUTIN: darah lengkap / DL / hema rutin / cek darah rutin (anak <18 th otomatis Darah lengkap; GDS otomatis ikut bila usia >39 th).",
     "- LAB_SEVERE: hanya bila dokter menyebut 'lab severe'/'lab berat' atau meminta ketiganya: kreatinin, elektrolit, dan analisa gas darah.",
     "- THORAX: rontgen/foto/ro thorax/dada. USG_WHOLE_ABDOMEN: USG abdomen/perut. CT_BRAIN_NK: CT scan kepala/brain (non kontras).",
     "- Pemeriksaan lain yang diperintahkan tetapi tidak ada di daftar (mis. ureum, SGOT, EKG, urin, GDS pada usia <40) tulis di order_manual dipisah koma.",
