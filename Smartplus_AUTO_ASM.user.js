@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.122.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.123.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.122.0
-// @description  v3.122.0 (permintaan dokter 26 Okt 2026): cek darah pasien ANAK (usia <18 th) di IGD kini memakai Darah lengkap, bukan Hema rutin — AUTO LAB, order lab dari template ASGADAR PENYAKIT dan ASISTEN SUARA mencentang Darah lengkap (nama dicari: Darah lengkap / Hema lengkap / Hematologi lengkap; bila tidak ada, order TIDAK disimpan dan dokter memilih manual), dan teks "Darah rutin" di Penunjang/Rencana template ASGADAR ditulis "Darah lengkap" untuk anak. Usia tidak terbaca dianggap dewasa. Dewasa tidak berubah (Hema rutin + GDS bila >39 th).
+// @version      3.123.0
+// @description  v3.123.0 (permintaan dokter 27 Okt 2026): 🧠 TANYA AI — 📎 Baca data pasien kini mengirim SEMUA data pasien apa adanya, bukan ringkasan bergaya SOAP: semua CPPT dokter/perawat tanpa dipotong, semua nilai lab tiap lembar (normal & abnormal), semua ekspertise radiologi & e-resep kunjungan ini, riwayat poli; rawat inap juga Assesment GADAR saat masuk & e-resep sejak masuk. Chat dalam satu sesi kini bersambung: data pasien dikirim sekali (dikirim lagi sebagai TERBARU bila berubah), tiap pertanyaan membawa tanya-jawab sebelumnya, sesi per pasien tetap ada walau halaman dimuat ulang (tab yang sama), ＋ Sesi baru untuk pasien/topik lain. Berlaku untuk kunci Claude maupun ChatGPT. Nama/No.RM/No.Reg tetap disamarkan; tidak mengisi atau menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -54,8 +54,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.122.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.122.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.123.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.123.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -14643,7 +14643,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.122.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.123.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -17836,16 +17836,20 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       "Saat menyebut dosis: tulis dosis per kg dan dosis maksimal untuk anak, sesuaikan dengan umur/BB/fungsi ginjal bila datanya ada, dan sebutkan kontraindikasi serta interaksi penting. Bila ragu, katakan ragu dan sarankan rujukan sumber resmi. Jangan mengarang angka.",
       obat ? "Utamakan obat yang tersedia di rumah sakit ini bila sesuai: " + obat + "." : "",
       "Format: paragraf pendek, poin '- ', judul singkat '## ' bila perlu, **tebal** untuk hal penting. Jangan memakai tabel.",
-      "Bila data klinis pasien disertakan, pakai data itu. Bila data penting belum ada (mis. BB anak, alergi, hamil), sebutkan apa yang perlu ditanyakan atau diperiksa."
+      "Bila data klinis pasien disertakan, pakai data itu. Bila data penting belum ada (mis. BB anak, alergi, hamil), sebutkan apa yang perlu ditanyakan atau diperiksa.",
+      // v3.123.0 (permintaan dokter): data pasien dikirim lengkap per sumber & percakapan bersambung dalam satu sesi.
+      "Data pasien dikirim LENGKAP apa adanya per sumber (form & Assesment GADAR, semua CPPT dokter/perawat, semua nilai lab, ekspertise radiologi, e-resep, riwayat poli). Telaah seluruhnya, urutkan menurut waktu, dan perhatikan perubahan dari waktu ke waktu (keluhan, TTV, lab, terapi).",
+      "Percakapan ini BERSAMBUNG dalam satu sesi untuk satu pasien: pakai data dan jawaban di pesan sebelumnya, jangan mengulang yang sudah dijelaskan kecuali diminta, jawab pertanyaan lanjutan tetap terarah pada pasien & masalah yang sama, dan jaga konsistensi (bila pendapat berubah, sebutkan alasannya). Bila ada 'Data pasien TERBARU', data itu menggantikan data pasien sebelumnya."
     ].filter(Boolean).join("\n");
   }
 
   // Isi pesan dokter untuk API (fungsi murni, diuji).
   // v3.121.0: films = gambar film Ro/CT dari PACS, tiap gambar didahului keterangannya.
-  function spAiUserContent(question, { context = "", images = [], films = [] } = {}) {
+  // v3.123.0: updated = data pasien berubah sejak dikirim di sesi ini -> ditandai TERBARU (menggantikan yang lama).
+  function spAiUserContent(question, { context = "", images = [], films = [], updated = false } = {}) {
     const q = String(question || "").trim();
     let textPart = context
-      ? `Data pasien dari halaman Smartplus yang sedang dibuka (identitas disamarkan):\n${context}\n\nPertanyaan dokter:\n${q}`
+      ? `${updated ? "Data pasien TERBARU (menggantikan data pasien sebelumnya di sesi ini)" : "Data pasien lengkap"} dari halaman Smartplus yang sedang dibuka (identitas disamarkan):\n${context}\n\nPertanyaan dokter:\n${q}`
       : q;
     if (films.length) textPart = `Terlampir ${films.length} gambar film radiologi dari PACS RS (keterangan pemeriksaan & tanggal di atas tiap gambar; CT = irisan contoh merata, bukan seluruh irisan)${images.length ? ` dan ${images.length} foto dari dokter (paling akhir)` : ""}.\n\n${textPart}`;
     if (!images.length && !films.length) return textPart;
@@ -17855,6 +17859,20 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       ...images.map(img),
       { type: "text", text: textPart || "Tolong nilai gambar ini." }
     ];
+  }
+
+  // v3.123.0: percakapan bersambung mengirim ulang riwayat (termasuk data pasien) tiap pertanyaan -> blok terakhir diberi
+  // cache_control supaya riwayat dibaca dari cache (lebih murah & cepat). Riwayat asli tidak diubah (fungsi murni, diuji).
+  function spAiCacheLast(messages) {
+    const list = (messages || []).slice();
+    const i = list.length - 1;
+    if (i < 0) return list;
+    const m = list[i];
+    const blocks = Array.isArray(m.content) ? m.content.map((b) => ({ ...b })) : [{ type: "text", text: String(m.content || "") }];
+    if (!blocks.length) return list;
+    blocks[blocks.length - 1].cache_control = { type: "ephemeral" };
+    list[i] = { ...m, content: blocks };
+    return list;
   }
 
   // Permintaan ke Messages API (fungsi murni, diuji).
@@ -17867,7 +17885,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       "anthropic-dangerous-direct-browser-access": "true"
     };
     if (ws) headers["anthropic-workspace-id"] = ws;
-    const body = { model: info.id, max_tokens: 16000, system: spAiSystemPrompt(), output_config: { effort: "medium" }, messages };
+    const body = { model: info.id, max_tokens: 16000, system: spAiSystemPrompt(), output_config: { effort: "medium" }, messages: spAiCacheLast(messages) };
     if (fallback && info.fallback) {
       headers["anthropic-beta"] = "server-side-fallback-2026-07-01";
       body.fallbacks = "default";
@@ -18086,7 +18104,10 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
   //  Ranap   : ringkasan rawat inap (data PAKET KONSUL RANAP: S/O/A/P saat ini & saat masuk, terapi berjalan, advis spesialis),
   //            CPPT terbaru, hasil lab, ekspertise radiologi.
   // Nama pasien (dari judul halaman) diganti [nama pasien], lalu semua teks lewat spAsistenScrub (No.RM/No.Reg/tanggal lahir…).
-  const SP_AI_CTX_MAX = 14000;
+  // v3.123.0 (permintaan dokter: "AI bisa menerima semua data keseluruhan pasien, bukan seperti template SOAP"): data dikirim
+  // lengkap per sumber — semua CPPT tanpa dipotong, SEMUA nilai lab tiap lembar (dulu 2 lembar, lembar lama abnormal saja,
+  // maks 1500 huruf), semua ekspertise radiologi & e-resep kunjungan ini, GADAR saat masuk untuk rawat inap. Batas total 60.000 huruf.
+  const SP_AI_CTX_MAX = 60000;
   const SP_AI_KES = { 1: "Compos mentis", 2: "Apatis", 3: "Somnolen", 4: "Sopor", 5: "Koma" };
   function spAiPageKind(path = location.pathname) {
     if (/soap_igd\/pasien_detail\//i.test(path)) return "igd";
@@ -18106,19 +18127,19 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     });
     return L.join("\n");
   }
-  // Baris CPPT (spParseCpptViewer) -> teks ringkas tanpa nama PPA (fungsi murni, diuji).
-  function spAiCpptText(rows, max = 6) {
+  // Baris CPPT (spParseCpptViewer) -> teks tanpa nama PPA (fungsi murni, diuji).
+  function spAiCpptText(rows, max = 60) {
     return (rows || []).slice(0, max).map((r) => {
       const who = r.isDoctor ? (spSpecialty(r.ppa) || "Dokter") : "Perawat/PPA lain";
       // v3.103.1 (uji Smartplus asli): CPPT perawat berisi daftar intervensi SDKI panjang ("Tindakan : => Intervensi …") yang
-      // menghabiskan jatah teks -> untuk PPA non-dokter P intervensi dilewati & teks lain maks 250 huruf.
-      const lim = r.isDoctor ? 700 : 250;
+      // menghabiskan jatah teks -> untuk PPA non-dokter P intervensi dilewati. v3.123.0: CPPT dokter utuh, PPA lain maks 1000 huruf.
+      const lim = r.isDoctor ? 8000 : 1000;
       const sec = [["S", r.sText || r.keluhan], ["O", r.oText], ["A", r.diagnosis], ["P", r.pText], ["Instruksi", r.instruksi]]
         .map(([k, t]) => [k, String(t || "").replace(/\s*\n\s*/g, "; ").trim()])
         .filter(([k, t]) => t && !(k === "P" && !r.isDoctor && /^(tindakan|;|=>|\s)*\s*(=>\s*)?(intervensi|implementasi)/i.test(t.replace(/^tindakan\s*:?\s*;?\s*/i, ""))))
         .map(([k, t]) => `  ${k}: ${t.length > lim ? t.slice(0, lim) + " …" : t}`);
       const obat = (r.obat || []).map((o) => [o.nama, o.dosis, o.frek].filter(Boolean).join(" ")).filter(Boolean);
-      if (obat.length) sec.push(`  e-Resep: ${obat.slice(0, 15).join("; ")}`);
+      if (obat.length) sec.push(`  e-Resep: ${obat.join("; ")}`);
       return sec.length ? `- ${r.timeText} ${r.type} (${who}):\n${sec.join("\n")}` : "";
     }).filter(Boolean).join("\n");
   }
@@ -18135,7 +18156,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     words.forEach((w) => { out = out.replace(new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "gi"), "[nama pasien]"); });
     return out;
   }
-  async function spAiRadText(base, noreg, max = 3) {
+  async function spAiRadText(base, noreg, max = 10) {
     const entries = (await spFetchRadEntries(base, noreg)).sort((a, b) => String(b.sortKey).localeCompare(String(a.sortKey))).slice(0, max);
     const out = await Promise.all(entries.map(async (e) => {
       try {
@@ -18154,11 +18175,30 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
   }
   // v3.103.1 (uji Smartplus asli): order lab hari ini yang hasilnya belum keluar dulu tidak tertulis sama sekali ->
   // "Order lab <tgl>: hasil belum keluar".
-  async function spAiLabText(base, noreg) {
-    const [entries, ctx] = await Promise.all([spFetchLabEntries(base, noreg).catch(() => []), spAsistenLabContext(base, noreg).catch(() => "")]);
-    if (ctx) return ctx;
-    const last = (entries || []).slice().sort((a, b) => String(b.sortKey).localeCompare(String(a.sortKey)))[0];
-    return last ? `- Order lab ${last.dateText}: hasil belum keluar / belum divalidasi` : "";
+  // v3.123.0: semua lembar lab kunjungan ini (maks 12, terbaru dulu) dengan SEMUA nilai, nilai normal & tanda abnormal.
+  async function spAiLabText(base, noreg, max = 12) {
+    const entries = (await spFetchLabEntries(base, noreg).catch(() => [])).slice().sort((a, b) => String(b.sortKey).localeCompare(String(a.sortKey)));
+    const sheets = await Promise.all(entries.slice(0, max).map((e) =>
+      spFetch(`${base}/hasil_lab/hasil_lab/print_hasil_labx_by_id_sample/${encodeURIComponent(e.idSample)}/${encodeURIComponent(e.noreg)}`, { credentials: "same-origin" })
+        .then((r) => r.text()).then((h) => ({ dateText: e.dateText, rows: spParseLabSheet(h).rows })).catch(() => ({ dateText: e.dateText, rows: [] }))));
+    return spAiLabFullText(sheets);
+  }
+  // Lembar lab -> teks lengkap per lembar & kelompok (fungsi murni, diuji). Lembar tanpa hasil = order belum keluar.
+  function spAiLabFullText(sheets) {
+    return (sheets || []).filter(Boolean).map((s) => {
+      const L = [];
+      (s.rows || []).forEach((r) => {
+        if (!r) return;
+        if (r.type === "section" || r.type === "group") { L.push(`  [${r.name}]`); return; }
+        if (r.type !== "item" || !String(r.hasil || "").trim()) return;
+        L.push(`  ${r.name} ${r.hasil}${r.satuan ? " " + r.satuan : ""}${r.normal ? ` (N ${r.normal})` : ""}${r.flagged ? " !" : ""}${r.ket ? ` — ${r.ket}` : ""}`);
+      });
+      // judul kelompok tanpa isi dibuang
+      const items = L.filter((x, i) => !/^\s*\[/.test(x) || (L[i + 1] && !/^\s*\[/.test(L[i + 1])));
+      return items.some((x) => !/^\s*\[/.test(x))
+        ? `- Lab ${s.dateText || ""}:\n${items.join("\n")}`.replace(/Lab\s+:/, "Lab:")
+        : `- Order lab ${s.dateText || ""}: hasil belum keluar / belum divalidasi`;
+    }).join("\n");
   }
   // "dd-mm-yyyy hh:mm" / "yyyy-mm-dd" -> waktu ms (fungsi murni, diuji).
   function spAiDateMs(t) {
@@ -18169,7 +18209,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
   }
   // v3.103.1 (uji Smartplus asli: "e-Resep kunjungan ini" berisi resep poli 2024–2025): riwayat_resep memuat SEMUA kunjungan ->
   // dipisah: resep sejak tanggal registrasi kunjungan ini, lalu maks 2 resep kunjungan sebelumnya (ditandai).
-  async function spAiResepText(base, noreg, max = 6) {
+  async function spAiResepText(base, noreg, max = 30, sinceMs = NaN) {
     const rr = new DOMParser().parseFromString(await spFetch(`${base}/soap_eresep/riwayat_resep/${encodeURIComponent(noreg)}`, { credentials: "same-origin" }).then((r) => r.text()), "text/html");
     const list = [];
     for (const a of rr.querySelectorAll('[onclick*="load_resep_detail"]')) {
@@ -18178,9 +18218,9 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       if (id) list.push({ id, when: c[0] || a.textContent.trim(), unit: c[1] || "" });
     }
     const reg = spAiDateMs((((document.body && document.body.textContent) || "").match(/Regdate\s*:\s*([0-9:\- ]+)/i) || [])[1] || "");
-    const since = Number.isFinite(reg) ? reg : Date.now() - 3 * 864e5;
+    const since = Number.isFinite(sinceMs) ? sinceMs : Number.isFinite(reg) ? reg : Date.now() - 3 * 864e5;
     const now = list.filter((r) => spAiDateMs(r.when) >= since).slice(0, max);
-    const old = list.filter((r) => !(spAiDateMs(r.when) >= since)).slice(0, 2);
+    const old = list.filter((r) => !(spAiDateMs(r.when) >= since)).slice(0, 3);
     const det = await Promise.all(now.concat(old).map(async (r) => {
       const d = new DOMParser().parseFromString(await spFetch(`${base}/soap_eresep/inner_resep_detail/${r.id}`, { credentials: "same-origin" }).then((x) => x.text()).catch(() => ""), "text/html");
       const items = [...d.querySelectorAll("tr")].map((tr) => [...tr.querySelectorAll("td")].map((x) => x.textContent.replace(/\s+/g, " ").trim()))
@@ -18237,22 +18277,28 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       add(`Assesment GADAR tersimpan kunjungan ini${g && g.data && g.data.gadar_date ? " (" + g.data.gadar_date + ")" : ""}`, g ? spAiGadarText(g.data) : "");
       // v3.103.1: bagian kosong ditulis "belum ada" supaya SOAP tidak mengarang & dokter tahu sumber itu sudah dibaca.
       add("CPPT kunjungan ini (terbaru dulu)", cppt || "- (belum ada CPPT)");
-      add("Hasil laboratorium ('!' = abnormal)", lab || "- (belum ada hasil lab / belum terbaca)");
+      add("Hasil laboratorium (semua nilai, '!' = abnormal)", lab || "- (belum ada hasil lab / belum terbaca)");
       add("Hasil radiologi (ekspertise)", rad || "- (belum ada)");
       add("e-Resep", resep);
       add("Riwayat poli spesialis (dx & terapi terakhir)", poli);
     } else if (kind === "ranap") {
       const ctx = spRanapContext();
-      const [k, cppt, lab, rad] = await Promise.all([
+      const [k, cppt, lab, rad, gm] = await Promise.all([
         timed(spBuildKonsulRanap({ ...ctx, noShots: true }), 25000),
         timed(spFetch(`${base}/nurse_station/eranap/cppt_viewer/${encodeURIComponent(ctx.noreg)}`, { credentials: "same-origin" }).then((r) => r.text()).then((h) => spAiCpptText(spParseCpptViewer(h)))),
         timed(spAiLabText(base, ctx.noreg)),
-        timed(spAiRadText(base, ctx.noreg))
+        timed(spAiRadText(base, ctx.noreg)),
+        timed(spFetchAdmissionGadar({ ...ctx, base }))
       ]);
-      add("Ringkasan rawat inap (S/O/A/P saat ini & saat masuk, terapi berjalan, advis spesialis)", k ? spVisitContextText(k.text, k.notes, "", 6000) : "");
+      // v3.123.0: e-resep sejak tanggal masuk (GADAR IGD saat masuk), cadangan 30 hari.
+      const admitMs = spAiDateMs(gm && gm.data && gm.data.gadar_date);
+      const resep = await timed(spAiResepText(base, ctx.noreg, 40, Number.isFinite(admitMs) ? admitMs - 864e5 : Date.now() - 30 * 864e5));
+      add("Ringkasan rawat inap (S/O/A/P saat ini & saat masuk, terapi berjalan, advis spesialis)", k ? spVisitContextText(k.text, k.notes, "", 20000) : "");
+      add(`Assesment GADAR IGD saat masuk${gm && gm.data && gm.data.gadar_date ? " (" + gm.data.gadar_date + ")" : ""}`, gm ? spAiGadarText(gm.data) : "");
       add("CPPT terbaru (semua PPA, terbaru dulu)", cppt || "- (belum ada CPPT / belum terbaca)");
-      add("Hasil laboratorium ('!' = abnormal)", lab || "- (belum ada hasil lab / belum terbaca)");
+      add("Hasil laboratorium (semua nilai, '!' = abnormal)", lab || "- (belum ada hasil lab / belum terbaca)");
       add("Hasil radiologi (ekspertise)", rad || "- (belum ada)");
+      add("e-Resep rawat inap", resep);
     }
     let text = sec.map(([t, b]) => `## ${t}\n${b}`).join("\n\n");
     // Tanggal kejadian 20xx ditulis tanpa tahun (urutan waktu tetap terbaca; penyaring menghapus tanggal lengkap).
@@ -18262,8 +18308,63 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     return text;
   }
 
-  // Percakapan disimpan di memori saja (hilang saat halaman dimuat ulang) — sama dengan AUTO KLINIK.
-  const spAiChat = { messages: [], view: [], busy: false, images: [], convModel: "", min: false, box: null, filmFor: "", waitText: "" };
+  // Percakapan = satu SESI bersambung: tiap pertanyaan mengirim seluruh riwayat sesi (v3.123.0, permintaan dokter: "setiap chat
+  // berkesinambungan dengan chat sebelumnya pada suatu sesi"). Data pasien dikirim sekali per sesi; bila berubah, dikirim lagi
+  // sebagai TERBARU (ctxSent). Sesi disimpan per pasien di sessionStorage tab ini (tanpa gambar) supaya tidak hilang saat
+  // halaman dimuat ulang (mis. sesudah Save GADAR); tab ditutup = hilang. ＋ = sesi baru.
+  const spAiChat = { messages: [], view: [], busy: false, images: [], convModel: "", min: false, box: null, filmFor: "", waitText: "", key: null, ctxSent: "" };
+  const SP_AI_SESSION_SS = "sp-auto-asm-tanya-ai-sesi";
+  const SP_AI_SESSION_KEEP = 6;
+  function spAiSessionKey() { return spAiFilmNoreg() || location.pathname; }
+  // Gambar (foto/film) tidak disimpan: diganti keterangan teks (fungsi murni, diuji).
+  function spAiStripImages(messages) {
+    return (messages || []).map((m) => (!Array.isArray(m.content) ? m : {
+      ...m,
+      content: m.content.map((b) => (b && b.type === "image" ? { type: "text", text: "[gambar yang dikirim sebelumnya tidak tersimpan setelah halaman dimuat ulang]" } : b))
+    }));
+  }
+  // Simpan sesi per pasien; maks SP_AI_SESSION_KEEP pasien terakhir (fungsi murni, diuji).
+  function spAiSessionStore(store, key, sesi, now = Date.now()) {
+    const out = { ...(store && typeof store === "object" ? store : {}) };
+    if (!sesi || !sesi.messages || !sesi.messages.length) delete out[key];
+    else out[key] = { ...sesi, at: now };
+    Object.keys(out).sort((a, b) => (out[b].at || 0) - (out[a].at || 0)).slice(SP_AI_SESSION_KEEP).forEach((k) => delete out[k]);
+    return out;
+  }
+  // Sidik teks data pasien (cukup untuk tahu "data berubah"; teksnya sendiri sudah ada di riwayat).
+  function spAiHash(t) { let h = 5381; const x = String(t || ""); for (let i = 0; i < x.length; i++) h = ((h * 33) ^ x.charCodeAt(i)) >>> 0; return `${x.length}:${h.toString(36)}`; }
+  function spAiSessionRead() { try { return JSON.parse(sessionStorage.getItem(SP_AI_SESSION_SS) || "{}") || {}; } catch (_) { return {}; } }
+  function spAiSaveSession() {
+    if (!spAiChat.key) return;
+    const sesi = {
+      messages: spAiStripImages(spAiChat.messages),
+      view: spAiChat.view.map((m) => (m.images && m.images.length ? { ...m, images: [], imgCount: m.images.length } : m)),
+      convModel: spAiChat.convModel, ctxSent: spAiChat.ctxSent
+    };
+    let store = spAiSessionStore(spAiSessionRead(), spAiChat.key, sesi);
+    for (let i = 0; i < 3; i++) {
+      try { sessionStorage.setItem(SP_AI_SESSION_SS, JSON.stringify(store)); return; } catch (_) {
+        // penuh: buang sesi pasien lain yang paling lama
+        const other = Object.keys(store).filter((k) => k !== spAiChat.key).sort((a, b) => (store[a].at || 0) - (store[b].at || 0))[0];
+        if (!other) return;
+        delete store[other];
+      }
+    }
+  }
+  // Pasien di halaman ini berbeda dengan sesi di memori -> pakai sesi tersimpan pasien ini (atau sesi baru). Hasil: catatan untuk dokter.
+  function spAiUseSession() {
+    const key = spAiSessionKey();
+    if (spAiChat.key === key) return "";
+    if (spAiChat.key && spAiChat.messages.length) spAiSaveSession();
+    const had = !!(spAiChat.key && spAiChat.messages.length);
+    const s = spAiSessionRead()[key];
+    Object.assign(spAiChat, { key, messages: [], view: [], images: [], convModel: "", filmFor: "", ctxSent: "" });
+    if (s && Array.isArray(s.messages) && s.messages.length) {
+      Object.assign(spAiChat, { messages: s.messages, view: Array.isArray(s.view) ? s.view : [], convModel: s.convModel || "", ctxSent: s.ctxSent || "" });
+      return "Sesi sebelumnya untuk pasien ini dilanjutkan.";
+    }
+    return had ? "Pasien berbeda: sesi baru dimulai." : "";
+  }
 
   // Posisi & ukuran panel diingat di browser ini. Kotak dijaga tetap di dalam layar (fungsi murni, diuji).
   function spAiClampBox(box, vw, vh) {
@@ -18384,6 +18485,10 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     ${P} .ak-ai-bot code{background:#f1f5f9!important;padding:0 3px!important;border-radius:4px!important;font-size:11.5px!important;}
     ${P} .ak-ai-h{font:800 12.5px/1.35 ${F}!important;color:#4c1d95!important;margin:6px 0 3px!important;}
     ${P} .ak-ai-tag{margin-top:4px!important;font:600 10.5px/1.3 ${F}!important;opacity:.85!important;}
+    ${P} .ak-ai-sesi{align-self:stretch!important;padding:4px 7px!important;border-radius:8px!important;background:#f5f3ff!important;border:1px solid #ddd6fe!important;
+      color:#4c1d95!important;font:600 10.5px/1.35 ${F}!important;}
+    ${P} .ak-ai-sesi button{margin-left:4px!important;padding:1px 7px!important;border:1px solid #a78bfa!important;border-radius:999px!important;
+      background:#fff!important;color:#5b21b6!important;font:700 10.5px ${F}!important;cursor:pointer!important;}
     ${P} .ak-ai-meta{margin-top:4px!important;font:600 10px/1.3 ${F}!important;color:#64748b!important;}
     ${P} .ak-ai-copy{margin-top:3px!important;padding:2px 8px!important;border:1px solid #cbd5e1!important;border-radius:999px!important;
       background:#f8fafc!important;color:#475569!important;font:600 10.5px ${F}!important;cursor:pointer!important;}
@@ -18427,7 +18532,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     spAiCss();
     const old = document.getElementById(SP_AI_PANEL_ID);
     if (old) old.remove();
-    let notice = "";
+    let notice = spAiUseSession();
     const panel = document.createElement("div");
     panel.id = SP_AI_PANEL_ID;
     panel.innerHTML = `
@@ -18435,7 +18540,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     <div><div class="ak-ai-title">🧠 Tanya AI</div><div class="ak-ai-sub"></div></div>
     <div class="ak-ai-head-btns">
       <button type="button" class="ak-ai-iconbtn" data-act="min" title="Perkecil / buka">–</button>
-      <button type="button" class="ak-ai-iconbtn" data-act="new" title="Percakapan baru">＋</button>
+      <button type="button" class="ak-ai-iconbtn" data-act="new" title="Sesi baru (pasien lain / topik baru)">＋</button>
       <button type="button" class="ak-ai-iconbtn" data-act="settings" title="Pengaturan: API key Claude/ChatGPT & model">⚙</button>
       <button type="button" class="ak-ai-iconbtn" data-act="close" title="Tutup">×</button>
     </div>
@@ -18471,6 +18576,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     const $ = (sel) => panel.querySelector(sel);
     const log = $(".ak-ai-log"), input = $(".ak-ai-input"), ctxCheck = $(".ak-ai-ctx-check"), ctxPreview = $(".ak-ai-ctx-preview");
     const settings = $(".ak-ai-settings"), sendBtn = $(".ak-ai-send"), thumbs = $(".ak-ai-thumbs");
+    const modelSelect = $(".ak-ai-model"), sub = $(".ak-ai-sub");
 
     // Tombol keyboard & fokus di panel tidak diteruskan ke halaman (modal GADAR merebut fokus).
     panel.addEventListener("keydown", (ev) => ev.stopPropagation());
@@ -18489,14 +18595,19 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     refreshKey();
 
     const renderLog = () => {
+      const nTanya = spAiChat.messages.filter((m) => m.role === "user").length;
+      sub.textContent = `${spAiModelInfo(spAiGetModel()).label}${nTanya ? ` · sesi: ${nTanya} tanya` : ""}`;
+      const bar = spAiChat.view.length
+        ? `<div class="ak-ai-sesi">💬 Sesi bersambung: AI mengingat ${nTanya} pertanyaan & jawaban sebelumnya${spAiChat.ctxSent ? " + data pasien" : ""}.${notice ? ` <b>${escapeHtmlText(notice)}</b>` : ""} <button type="button" data-act="new">＋ Sesi baru</button></div>`
+        : "";
       log.innerHTML = spAiChat.view.length
-        ? spAiChat.view.map((m, i) => {
+        ? bar + spAiChat.view.map((m, i) => {
           if (m.role === "user")
-            return `<div class="ak-ai-msg ak-ai-user">${m.images && m.images.length ? `<div class="ak-ai-msg-imgs">${m.images.map((u) => `<img src="${u}" alt="">`).join("")}</div>` : ""}${escapeHtmlText(m.text).replace(/\n/g, "<br>")}${m.withContext ? '<div class="ak-ai-tag">📎 data pasien disertakan</div>' : ""}${m.filmNote ? `<div class="ak-ai-tag">${escapeHtmlText(m.filmNote)}</div>` : ""}${m.removed ? `<div class="ak-ai-tag">${m.removed} identitas disamarkan</div>` : ""}</div>`;
+            return `<div class="ak-ai-msg ak-ai-user">${m.images && m.images.length ? `<div class="ak-ai-msg-imgs">${m.images.map((u) => `<img src="${u}" alt="">`).join("")}</div>` : ""}${m.imgCount ? `<div class="ak-ai-tag">📷 ${m.imgCount} gambar (tidak ditampilkan lagi setelah halaman dimuat ulang)</div>` : ""}${escapeHtmlText(m.text).replace(/\n/g, "<br>")}${m.withContext ? `<div class="ak-ai-tag">${escapeHtmlText(m.withContext === true ? "📎 data pasien disertakan" : m.withContext)}</div>` : ""}${m.filmNote ? `<div class="ak-ai-tag">${escapeHtmlText(m.filmNote)}</div>` : ""}${m.removed ? `<div class="ak-ai-tag">${m.removed} identitas disamarkan</div>` : ""}</div>`;
           if (m.role === "error") return `<div class="ak-ai-msg ak-ai-error">${escapeHtmlText(m.text)}</div>`;
           return `<div class="ak-ai-msg ak-ai-bot">${spAiMd(m.text)}${m.note ? `<div class="ak-ai-tag">${escapeHtmlText(m.note)}</div>` : ""}${m.meta ? `<div class="ak-ai-meta">${escapeHtmlText(m.meta)}</div>` : ""}<button type="button" class="ak-ai-copy" data-copy="${i}">Salin</button></div>`;
         }).join("")
-        : `<div class="ak-ai-empty">${notice ? `<b>${escapeHtmlText(notice)}</b><br>` : ""}Tanyakan apa saja: diagnosis banding, dosis obat, interaksi, kriteria rawat/rujuk, edukasi pasien, atau kirim foto lesi/hasil lab/EKG.<br><br>Centang 📎 Baca data pasien agar AI ikut membaca semua data pasien ini (GADAR, CPPT, lab, radiologi, resep); 🩻 Film Ro/CT ikut mengambil film dari PACS. Tombol Baca EKG: lampirkan foto EKG (📷) lalu kirim.</div>`;
+        : `<div class="ak-ai-empty">${notice ? `<b>${escapeHtmlText(notice)}</b><br>` : ""}Tanyakan apa saja: diagnosis banding, dosis obat, interaksi, kriteria rawat/rujuk, edukasi pasien, atau kirim foto lesi/hasil lab/EKG.<br><br>Centang 📎 Baca data pasien agar AI ikut membaca semua data pasien ini (GADAR, CPPT, lab, radiologi, resep); 🩻 Film Ro/CT ikut mengambil film dari PACS. Tombol Baca EKG: lampirkan foto EKG (📷) lalu kirim.<br><br>Pertanyaan berikutnya bersambung dengan jawaban sebelumnya (satu sesi per pasien, tetap ada walau halaman dimuat ulang). Tekan ＋ untuk sesi baru.</div>`;
       if (spAiChat.busy) log.insertAdjacentHTML("beforeend", `<div class="ak-ai-msg ak-ai-bot ak-ai-wait">${escapeHtmlText(spAiChat.waitText || "AI sedang berpikir…")}</div>`);
       log.scrollTop = log.scrollHeight;
     };
@@ -18510,18 +18621,18 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     sendBtn.disabled = spAiChat.busy;
     spAiEnableDrag(panel, $(".ak-ai-head"), $(".ak-ai-grip"));
     // Ganti model = percakapan baru; pertanyaan terakhir dikembalikan ke kotak teks untuk dibandingkan.
-    const modelSelect = $(".ak-ai-model"), sub = $(".ak-ai-sub");
     modelSelect.value = spAiGetModel();
-    sub.textContent = spAiModelInfo(modelSelect.value).label;
     modelSelect.addEventListener("change", () => {
       if (spAiChat.busy) { modelSelect.value = spAiGetModel(); return; }
       spAiSetModel(modelSelect.value);
-      sub.textContent = spAiModelInfo(modelSelect.value).label;
+      renderLog();
       refreshKey();
       if (spAiChat.messages.length && spAiChat.convModel && spAiChat.convModel !== modelSelect.value) {
         const lastQ = (spAiChat.view.slice().reverse().find((m) => m.role === "user") || {}).text || "";
         spAiChat.messages = [];
         spAiChat.view = [];
+        spAiChat.ctxSent = ""; spAiChat.filmFor = "";
+        spAiSaveSession();
         notice = `Model diganti ke ${spAiModelInfo(modelSelect.value).label}: percakapan baru. Pertanyaan terakhir sudah dikembalikan, tekan Kirim untuk membandingkan jawabannya.`;
         if (lastQ && !input.value.trim()) input.value = lastQ;
         renderLog();
@@ -18585,7 +18696,12 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       try {
         // Data dibaca ulang bila pratinjau sudah lebih dari 1 menit (form/CPPT bisa berubah).
         if (withCtx && (!ctxJob || Date.now() - ctxAt > 60000)) { ctxJob = spAiPatientData(); ctxAt = Date.now(); }
-        const context = withCtx ? await ctxJob : "";
+        const fullCtx = withCtx ? await ctxJob : "";
+        // v3.123.0: data pasien cukup sekali per sesi (ikut di riwayat); dikirim lagi hanya bila datanya berubah.
+        const ctxHash = fullCtx ? spAiHash(fullCtx) : "";
+        const updated = !!fullCtx && !!spAiChat.ctxSent && spAiChat.ctxSent !== ctxHash;
+        const context = fullCtx && spAiChat.ctxSent !== ctxHash ? fullCtx : "";
+        if (withCtx) userView.withContext = !fullCtx ? "📎 data pasien tidak terbaca" : !context ? "📎 data pasien sama dengan yang sudah dikirim di sesi ini" : updated ? "📎 data pasien TERBARU disertakan (ada perubahan)" : "📎 data pasien disertakan (lengkap)";
         const fr = await filmsP;
         if (wantFilms) {
           spAiChat.filmFor = filmNoreg; // sekali per percakapan (film ikut di riwayat percakapan)
@@ -18594,7 +18710,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
         }
         spAiChat.waitText = "";
         renderLog();
-        spAiChat.messages.push({ role: "user", content: spAiUserContent(question, { context, images, films: fr.films }) });
+        spAiChat.messages.push({ role: "user", content: spAiUserContent(question, { context, images, films: fr.films, updated }) });
         pushed = true;
         const model = spAiGetModel();
         spAiChat.convModel = model;
@@ -18604,6 +18720,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
           spAiChat.view.push({ role: "error", text: res.refused ? "AI tidak mau menjawab pertanyaan ini (filter keamanan). Coba ubah kalimatnya." : "AI tidak memberi jawaban. Coba lagi." });
         } else {
           spAiChat.messages.push({ role: "assistant", content: res.content });
+          if (context) spAiChat.ctxSent = ctxHash;
           const cost = res.usage ? spAiCostUsd(model, res.usage) : null;
           const served = spAiServedLabel(res.model, model);
           spAiChat.view.push({
@@ -18618,6 +18735,8 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       } finally {
         spAiChat.busy = false;
         spAiChat.waitText = "";
+        notice = "";
+        spAiSaveSession();
         const cur = document.getElementById(SP_AI_PANEL_ID);
         if (cur && cur.__spRefresh) cur.__spRefresh();
       }
@@ -18634,7 +18753,9 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       if (act === "send") { send(); return; }
       if (act === "new") {
         if (spAiChat.busy) return;
-        spAiChat.messages = []; spAiChat.view = []; spAiChat.images = []; spAiChat.filmFor = ""; notice = "";
+        spAiChat.messages = []; spAiChat.view = []; spAiChat.images = []; spAiChat.filmFor = ""; spAiChat.ctxSent = ""; spAiChat.convModel = "";
+        spAiChat.key = spAiSessionKey(); spAiSaveSession();
+        notice = "Sesi baru dimulai: AI tidak lagi mengingat pertanyaan sebelumnya.";
         renderThumbs(); renderLog(); return;
       }
       if (act === "savekey") {
