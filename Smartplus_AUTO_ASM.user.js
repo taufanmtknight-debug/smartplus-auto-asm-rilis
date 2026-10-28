@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.124.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.125.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.124.0
-// @description  v3.124.0 (permintaan dokter 28 Okt 2026): KOMBINASI RESEP IGD — keluhan pasien kini bisa diedit di kotak ✏️ Keluhan (terisi otomatis dari Assesment GADAR; tidak mengubah GADAR); saran obat 💡 ikut keluhan yang diedit. Obat terpilih yang tidak sesuai keluhan (mis. obat diare untuk pasien batuk, obat diare pada sembelit, obat gula saat hipoglikemia) ditandai MERAH dengan alasannya, dan sebelum ACC muncul pengingat. Hanya pengingat: obat tetap bisa dimasukkan, tidak ada yang dihapus/disimpan otomatis.
+// @version      3.125.0
+// @description  v3.125.0 (permintaan dokter 28 Okt 2026): panel 📦 KOMBINASI RESEP lebih rapi — judul berwarna dengan keterangan singkat, data pasien + keluhan GADAR dalam satu kartu, golongan obat dalam satu kartu putih bergaris tipis (titik warna per golongan), Tindakan dilipat (jumlah terpilih terlihat). Kotak edit keluhan v3.124.0 dihapus; tanda merah obat yang tidak sesuai keluhan GADAR dan pengingat sebelum ACC tetap ada.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -54,8 +54,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.124.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.124.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.125.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.125.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -11578,9 +11578,6 @@
       #${MENU_ID} .sp-pill.is-on.is-bad,#${MENU_ID} .sp-pill.is-on.is-bad:hover{background:#dc2626;border-color:#b91c1c;color:#fff;}
       #${MENU_ID} .sp-sel-chip.is-bad{background:#fee2e2;border-color:#fca5a5;color:#b91c1c;}
       #${MENU_ID} .sp-pkg-mis{margin-top:6px;padding:5px 8px;border-radius:8px;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-size:11.5px;line-height:1.4;max-height:70px;overflow:auto;}
-      #${MENU_ID} .sp-pkg-kel{display:block;margin:0 0 8px;font:700 11.5px/1.3 Arial,sans-serif;color:#1e3a5f;}
-      #${MENU_ID} .sp-pkg-kel small{font-weight:400;color:#6b7280;}
-      #${MENU_ID} .sp-pkg-kel textarea{display:block;width:100%;box-sizing:border-box;margin-top:3px;min-height:40px;max-height:120px;resize:vertical;padding:5px 8px;border:1px solid #bfdbfe;border-radius:8px;font:400 12.5px/1.35 Arial,sans-serif;color:#111827;background:#fff;}
       #${MENU_ID} .sp-pill.is-err:not(.is-on){color:#a1a1aa;border-style:dashed;background:#fafafa;}
       #${MENU_ID} .sp-pill-ic{font-size:11px;}
       #${MENU_ID} .sp-act input{display:none;}
@@ -11731,6 +11728,46 @@
         #${MENU_ID} .sp-pkg-sugrow{flex-wrap:wrap;}
         #${MENU_ID} .sp-pill{font-size:13px;padding:6px 11px;}
       }
+      /* v3.125.0 (dokter 28 Okt 2026): panel KOMBINASI RESEP lebih rapi — kartu putih, golongan bergaris tipis, tindakan dilipat. */
+      #${MENU_ID}.sp-kombi{background:#f4f5f9!important;border-color:#e2e0ee!important;}
+      #${MENU_ID}.sp-kombi > .sp-title{background:linear-gradient(90deg,#5b21b6,#7c3aed);color:#fff;border-bottom:0;letter-spacing:.3px;}
+      #${MENU_ID}.sp-kombi .sp-kombi-sub{display:block;margin-top:2px;font:400 11px/1.3 Arial,sans-serif;letter-spacing:0;color:#ede9fe;}
+      #${MENU_ID}.sp-kombi .sp-kombi-card{background:#fff;border:1px solid #e6e4ef;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.04);margin:0 0 8px;}
+      #${MENU_ID}.sp-kombi .sp-kombi-pt{margin-top:10px;padding:8px 10px;}
+      #${MENU_ID}.sp-kombi .sp-kombi-pt .sp-pkg-bar{margin:0;padding:0;background:none;border:0;border-radius:0;}
+      #${MENU_ID}.sp-kombi .sp-kombi-pt .sp-pkg-hint{margin:7px 0 0;}
+      #${MENU_ID}.sp-kombi .sp-kombi-pt .sp-pkg-anam-wrap{margin:7px 0 0;padding-top:7px;border-top:1px dashed #e5e7eb;}
+      #${MENU_ID}.sp-kombi .sp-kombi-pt .sp-pkg-anam{background:none;border:0;border-radius:0;padding:0;color:#334155;}
+      #${MENU_ID}.sp-kombi .sp-pkg-badge.is-adult{background:#ede9fe;color:#5b21b6;}
+      #${MENU_ID}.sp-kombi .sp-pkg-sugrow{margin:0 2px 8px;}
+      #${MENU_ID}.sp-kombi .sp-pkg-sugnote{flex:1;min-width:0;padding:5px 9px;border-radius:8px;background:#fffbeb;color:#78350f;border:1px solid #fde68a;}
+      #${MENU_ID}.sp-kombi .sp-pkg-tool{border-color:#e5e7eb!important;}
+      #${MENU_ID}.sp-kombi .sp-kombi-drugs{padding:2px 10px;}
+      #${MENU_ID}.sp-kombi .sp-kombi-drugs:empty{display:none;}
+      #${MENU_ID}.sp-kombi .sp-kombi-drugs .sp-pkg-row{grid-template-columns:118px minmax(0,1fr);margin:0;padding:8px 0;background:none;border:0;border-bottom:1px solid #f1f0f6;border-radius:0;}
+      #${MENU_ID}.sp-kombi .sp-kombi-drugs .sp-pkg-row:last-child{border-bottom:0;}
+      #${MENU_ID}.sp-kombi .sp-kombi-drugs .sp-pkg-row-label{display:flex;align-items:flex-start;gap:6px;padding-top:6px;color:#374151;letter-spacing:.2px;}
+      #${MENU_ID}.sp-kombi .sp-kombi-drugs .sp-pkg-row-label::before{content:"";flex:0 0 8px;width:8px;height:8px;margin-top:2px;border-radius:50%;background:var(--gc,#94a3b8);}
+      #${MENU_ID}.sp-kombi .sp-pill{background:#f8f8fb;border-color:#e4e2ec;}
+      #${MENU_ID}.sp-kombi .sp-pill:hover{background:#f3effe;border-color:#c4b5fd;}
+      #${MENU_ID}.sp-kombi .sp-pill.is-sug{background:#fffbeb;border-color:#f59e0b;}
+      #${MENU_ID}.sp-kombi .sp-pill.is-on{background:#16a34a;border-color:#16a34a;color:#fff;}
+      #${MENU_ID}.sp-kombi .sp-pill.is-on.is-bad{background:#dc2626;border-color:#b91c1c;color:#fff;}
+      #${MENU_ID}.sp-kombi .sp-kombi-act{padding:0 10px;}
+      #${MENU_ID}.sp-kombi .sp-kombi-act > summary{display:flex;align-items:center;gap:6px;padding:9px 0;cursor:pointer;list-style:none;font:800 11px/1.3 Arial,sans-serif;letter-spacing:.3px;text-transform:uppercase;color:#1d4ed8;}
+      #${MENU_ID}.sp-kombi .sp-kombi-act > summary::-webkit-details-marker{display:none;}
+      #${MENU_ID}.sp-kombi .sp-kombi-act > summary::after{content:"▾";margin-left:auto;color:#6b7280;font-size:13px;}
+      #${MENU_ID}.sp-kombi .sp-kombi-act[open] > summary::after{content:"▴";}
+      #${MENU_ID}.sp-kombi .sp-kombi-act > summary small{font:400 11px Arial,sans-serif;text-transform:none;letter-spacing:0;color:#6b7280;}
+      #${MENU_ID}.sp-kombi .sp-kombi-actn{padding:1px 7px;border-radius:999px;background:#dbeafe;color:#1e40af;font:700 10.5px/1.5 Arial,sans-serif;text-transform:none;}
+      #${MENU_ID}.sp-kombi .sp-kombi-actn:empty{display:none;}
+      #${MENU_ID}.sp-kombi .sp-kombi-act .sp-pkg-pills{padding:0 0 10px;}
+      #${MENU_ID}.sp-kombi .sp-pkg-foot{background:#fff;}
+      @media(max-width:600px){
+        #${MENU_ID}.sp-kombi .sp-kombi-drugs .sp-pkg-row{grid-template-columns:1fr;gap:5px;}
+        #${MENU_ID}.sp-kombi .sp-kombi-drugs .sp-pkg-row-label{padding-top:0;}
+      }
+      #${MENU_ID}.sp-kombi.sp-mfit-narrow .sp-kombi-drugs .sp-pkg-row{grid-template-columns:1fr;gap:5px;}
       .sp-preview-overlay-compact{position:fixed!important;inset:0!important;z-index:2147483647!important;background:rgba(0,0,0,.28)!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:12px!important;box-sizing:border-box!important;}
       .sp-preview-card-compact{width:min(780px,calc(100vw - 32px))!important;max-height:calc(100vh - 32px)!important;overflow:hidden!important;background:#fff!important;color:#222!important;border-radius:12px!important;box-shadow:0 10px 36px rgba(0,0,0,.4)!important;padding:12px!important;box-sizing:border-box!important;font:13px Arial,sans-serif!important;line-height:1.3!important;}
       .sp-preview-card-compact .sp-preview-grid-compact{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;}
@@ -12390,6 +12427,7 @@
         if (!entry) groups.push(entry = { name: g, opts: [] });
         entry.opts.push(opt);
       });
+      box.className = 'sp-kombi-card sp-kombi-drugs';
       box.innerHTML = groups.map((g) => {
         const [gc, gb] = GROUP_COLORS[g.name] || GROUP_COLORS['Lain-lain'];
         return `<div class="sp-pkg-row" style="--gc:${gc};--gb:${gb}"><div class="sp-pkg-row-label">${spEsc(g.name)}</div><div class="sp-pkg-pills">${g.opts.map(pill).join('')}</div></div>`;
@@ -12413,6 +12451,8 @@
         ? picked.map((o) => `<span class="sp-sel-chip${isBad(o.key) ? ' is-bad' : ''}" title="${spEsc(spResolveDrugOption(o, ctx).text || '')}">${spEsc(o.label)}<button type="button" class="sp-sel-x" data-unpick="${o.key}" title="Hapus">×</button></span>`).join('') +
           acts.map((el) => `<span class="sp-sel-chip is-act">${spEsc(MASTER_RECIPE_TEMPLATES.TINDAKAN?.children?.[el.value]?.name || el.value)}<button type="button" class="sp-sel-x" data-unact="${el.value}" title="Hapus">×</button></span>`).join('')
         : '<span class="sp-pkg-muted">Belum ada obat dipilih — klik nama obat di atas.</span>';
+      const an = menu.querySelector('#sp-kombi-act-n');
+      if (an) an.textContent = acts.length ? `${acts.length} dipilih` : '';
       const rc = menu.querySelector('#sp-pkg-rcount');
       if (rc) { rc.textContent = `${rCount} R/`; rc.classList.toggle('is-over', rCount > 5); }
       const warn = menu.querySelector('#sp-pkg-warn');
@@ -12503,7 +12543,7 @@
     }
 
     function renderPackageRecipeMenu() {
-      menu.classList.add("sp-package-modal");
+      menu.classList.add("sp-package-modal", "sp-kombi"); // v3.125.0: sp-kombi = tampilan rapi khusus panel ini
       const ageDisplay = spAgeText();
       const actionEntries = Object.entries(MASTER_RECIPE_TEMPLATES.TINDAKAN?.children || {});
       spPkg = { selected: new Set(), touched: false, hits: {} };
@@ -12511,23 +12551,21 @@
       const adult = Number.isFinite(ageForWeight) && ageForWeight > 17;
 
       menu.innerHTML = `
-        <div class="sp-title">📦 KOMBINASI RESEP</div>
+        <div class="sp-title">📦 KOMBINASI RESEP<small class="sp-kombi-sub">Obat & tindakan IGD · obat masuk sebagai draft</small></div>
 
-        <div class="sp-pkg-bar">
-          <span id="sp-pkg-branch" class="sp-pkg-badge">…</span>
-          <span class="sp-pkg-age">${ageDisplay ? spEsc(ageDisplay) : 'umur ?'}</span>
-          ${adult ? '' : `<label id="sp-package-weight-row" class="sp-pkg-bb">BB <input id="sp-package-weight" type="text" inputmode="decimal" autocomplete="off" placeholder="—"> kg</label>`}
-          <span id="sp-package-weight-help" class="sp-pkg-muted">${adult ? 'BB tidak diperlukan (>17 th)' : ''}</span>
+        <div class="sp-kombi-card sp-kombi-pt">
+          <div class="sp-pkg-bar">
+            <span id="sp-pkg-branch" class="sp-pkg-badge">…</span>
+            <span class="sp-pkg-age">${ageDisplay ? spEsc(ageDisplay) : 'umur ?'}</span>
+            ${adult ? '' : `<label id="sp-package-weight-row" class="sp-pkg-bb">BB <input id="sp-package-weight" type="text" inputmode="decimal" autocomplete="off" placeholder="—"> kg</label>`}
+            <span id="sp-package-weight-help" class="sp-pkg-muted">${adult ? 'BB tidak diperlukan (>17 th)' : ''}</span>
+          </div>
+          <div id="sp-pkg-hint" class="sp-pkg-hint" style="display:none"></div>
+          <div class="sp-pkg-anam-wrap">
+            <div id="sp-package-anamnesis" class="sp-pkg-anam">⏳ Membaca Assesment GADAR…</div>
+            <button type="button" class="sp-pkg-link" data-anam-toggle="1" style="display:none">Selengkapnya ▾</button>
+          </div>
         </div>
-        <div id="sp-pkg-hint" class="sp-pkg-hint" style="display:none"></div>
-
-        <div class="sp-pkg-anam-wrap">
-          <div id="sp-package-anamnesis" class="sp-pkg-anam">⏳ Membaca Assesment GADAR…</div>
-          <button type="button" class="sp-pkg-link" data-anam-toggle="1" style="display:none">Selengkapnya ▾</button>
-        </div>
-        <label class="sp-pkg-kel"><span>✏️ Keluhan pasien <small>— bisa diedit; dipakai untuk saran & cek obat (tidak mengubah GADAR)</small></span>
-          <textarea id="sp-pkg-keluhan" rows="2" placeholder="Tulis keluhan, mis. batuk pilek 3 hari, demam"></textarea>
-        </label>
 
         <div class="sp-pkg-sugrow">
           <div id="sp-drug-suggest-note" class="sp-pkg-sugnote">⏳ Mencari saran dari keluhan…</div>
@@ -12539,12 +12577,12 @@
 
         <div id="sp-drug-table-box"></div>
 
-        <div class="sp-pkg-row sp-pkg-row-act" style="--gc:#2563eb;--gb:#eff6ff">
-          <div class="sp-pkg-row-label">Tindakan<small>langsung disimpan per tindakan</small></div>
+        <details class="sp-kombi-card sp-kombi-act">
+          <summary>🩹 Tindakan <small>langsung disimpan per tindakan</small><span id="sp-kombi-act-n" class="sp-kombi-actn"></span></summary>
           <div class="sp-pkg-pills">
             ${actionEntries.map(([key, item]) => `<label class="sp-pill sp-act"><input type="checkbox" name="sp-package-action" value="${key}">${spEsc(item.name)}</label>`).join('')}
           </div>
-        </div>
+        </details>
 
         <div class="sp-pkg-foot">
           <div class="sp-pkg-foot-head"><b>Dipilih</b><span id="sp-pkg-rcount" class="sp-pkg-rcount">0 R/</span><span class="sp-pkg-muted">masuk sebagai draft · Simpan manual</span></div>
@@ -12619,28 +12657,18 @@
           : 'Tidak ada keluhan yang cocok dengan daftar obat — pilih manual.';
       };
 
-      // v3.124.0 (permintaan dokter 28 Okt 2026): keluhan bisa diedit; saran & tanda merah obat ikut keluhan yang diedit.
-      const kelBox = menu.querySelector('#sp-pkg-keluhan');
-      let kelEdited = false, kelTimer = 0;
-      const applyKeluhan = () => {
-        if (!spPkg || !menu.isConnected) return;
-        spPkg.kelText = kelBox.value;
-        spPkg.hits = spSuggestComplaints(kelBox.value);
-        spPkgApplySuggestions();
-        spPkgRenderDrugs();
-        showSuggestNote(String(kelBox.value).trim() ? null : 'Keluhan kosong — tulis keluhan untuk saran & cek obat, atau pilih manual.');
-      };
-      kelBox.addEventListener('input', () => { kelEdited = true; clearTimeout(kelTimer); kelTimer = setTimeout(applyKeluhan, 300); });
-
       // Anamnesis + saran. Bila form GADAR sedang terbuka, isi form yang dipakai (revisi ikut).
+      // v3.125.0 (dokter 28 Okt 2026): kotak edit keluhan v3.124.0 dihapus; tanda merah obat tetap dari keluhan GADAR.
       spLoadAnamnesisInto(anamBox).then((text) => {
         if (!anamBox.isConnected || !spPkg) return;
         anamBtn.style.display = anamBox.scrollHeight > anamBox.clientHeight + 2 ? '' : 'none';
-        if (kelEdited) return; // dokter sudah mengetik sendiri sebelum GADAR terbaca
-        if (!text) { showSuggestNote('Assesment GADAR belum ada — tulis keluhan di kotak ✏️ atau pilih obat manual.'); return; }
-        kelBox.value = text;
-        applyKeluhan();
-      }).catch(() => { if (!kelEdited) showSuggestNote('Saran tidak tersedia — tulis keluhan di kotak ✏️ atau pilih manual.'); });
+        if (!text) { showSuggestNote('Assesment GADAR belum ada — pilih obat manual.'); return; }
+        spPkg.kelText = text;
+        spPkg.hits = spSuggestComplaints(text);
+        spPkgApplySuggestions();
+        spPkgRenderDrugs();
+        showSuggestNote();
+      }).catch(() => showSuggestNote('Saran tidak tersedia — pilih obat manual.'));
 
       // v3.8.0: BB anak dari kolom berat Assesment GADAR terakhir (dokter tetap bisa mengubah).
       if (!adult) getLatestGadarWeight().then((w) => {
@@ -13184,7 +13212,7 @@
     function renderMultiCpptMenu(mode) {
       const isVisit = mode !== 'pulang';
       if (!spMv || spMv.mode !== mode) spMv = { mode, base: spSmartplusBase(), patients: null, selected: new Map(), drafts: [] };
-      menu.classList.add('sp-package-modal');
+      menu.classList.remove('sp-kombi'); menu.classList.add('sp-package-modal');
       menu.innerHTML = `
         <div class="sp-title">${isVisit ? '👥 MULTIPLE VISIT' : '🏠 MULTIPLE PULANG'}</div>
         <div class="sp-pkg-bar">
@@ -13264,7 +13292,7 @@
       const isVisit = spMv.mode !== 'pulang';
       const pats = [...spMv.selected.values()];
       if (spMvSaveBusy) { alert('Multiple visit/pulang sebelumnya masih menyimpan. Tunggu selesai dulu supaya CPPT tidak dobel.'); return; }
-      menu.classList.add('sp-package-modal'); // v3.73.0: dari ASISTEN SUARA (openMenu("mv-voice")) dulu tetap kotak kecil di samping
+      menu.classList.remove('sp-kombi'); menu.classList.add('sp-package-modal'); // v3.73.0: dari ASISTEN SUARA (openMenu("mv-voice")) dulu tetap kotak kecil di samping
       menu.innerHTML = `
         <div class="sp-title">${isVisit ? '👥 MULTIPLE VISIT' : '🏠 MULTIPLE PULANG'} — preview</div>
         <div class="sp-pkg-bar"><span class="sp-pkg-badge">${pats.length} PASIEN</span><span id="sp-mv-prog" class="sp-pkg-muted">⏳ Menyusun CPPT 0/${pats.length}…</span></div>
@@ -13836,7 +13864,7 @@
 
     // v3.50.0: PAKET KONSUL RANAP dari daftar e-Ranap / halaman lain -> pilih pasien dulu (cari nama / RM / kamar).
     function renderKonsulRanapPatientPicker() {
-      menu.classList.add("sp-package-modal");
+      menu.classList.remove('sp-kombi'); menu.classList.add("sp-package-modal");
       menu.innerHTML = `
         <div class="sp-title">📨 PAKET KONSUL RANAP — pilih pasien</div>
         <div class="sp-pkg-bar"><span class="sp-pkg-badge">RAWAT INAP</span><span id="sp-kr-pinfo" class="sp-pkg-muted">⏳ Memuat daftar pasien dirawat…</span></div>
@@ -13879,7 +13907,7 @@
     // No. RM, pilih pasien (daftar IGD 48 jam), konfirmasi, lalu halaman pasien dibuka dan PAKET KONSUL dilanjutkan otomatis
     // (spResumePendingPaketKonsul). Hanya membaca & membuka halaman; GADAR tetap tidak disimpan.
     function renderKonsulIgdPatientPicker() {
-      menu.classList.add("sp-package-modal");
+      menu.classList.remove('sp-kombi'); menu.classList.add("sp-package-modal");
       menu.innerHTML = `
         <div class="sp-title">📨 PAKET KONSUL IGD — pilih pasien</div>
         <div class="sp-pkg-bar"><span class="sp-pkg-badge">IGD</span><span id="sp-ki-pinfo" class="sp-pkg-muted">⏳ Memuat daftar pasien IGD 48 jam…</span></div>
@@ -13937,7 +13965,7 @@
 
     function renderResepPulangMenu() {
       if (!spRp) spRp = spRpNew();
-      menu.classList.add("sp-package-modal");
+      menu.classList.remove('sp-kombi'); menu.classList.add("sp-package-modal");
       // v3.49.0: dibuka dari DAFTAR pasien e-Ranap (belum ada pasien) -> pilih pasien dulu.
       if (!spRp.patient) { renderResepPulangPatientPicker(); return; }
       const ageText = spRp.ageText;
@@ -14146,7 +14174,7 @@
     function renderResepPulangPaste() {
       if (!spRp) spRp = spRpNew();
       if (!spRp.patient) { renderResepPulangPatientPicker(); return; }
-      menu.classList.add("sp-package-modal");
+      menu.classList.remove('sp-kombi'); menu.classList.add("sp-package-modal");
       const st = spRp.paste || (spRp.paste = { text: "", rows: [], ignored: [], gen: 0 });
       menu.innerHTML = `
         <div class="sp-title">📋 RESEP PULANG — tempel daftar obat</div>
@@ -14435,7 +14463,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     }
 
     function renderCpptMenu() {
-      menu.classList.remove("sp-package-modal");
+      menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
         <div class="sp-title">🛏️ RAWAT INAP</div>
         <div class="sp-section-title">CPPT</div>
@@ -14483,7 +14511,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
 
     // v3.19.0: order penunjang dikelompokkan (Lab, Ro Thorax, USG, CT Brain non kontras).
     function renderPenunjangMenu() {
-      menu.classList.remove("sp-package-modal");
+      menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
         <div class="sp-title">🧾 AUTO PENUNJANG</div>
         <div class="sp-note">Order otomatis; diagnosis dari GADAR terakhir, lalu Save. Lab Severe tidak memesan ulang pemeriksaan yang sudah ada dalam 1 minggu.</div>
@@ -14577,7 +14605,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       box.innerHTML = parts.join("") || `<div class="sp-note">Tidak ditemukan untuk "${spEsc(q)}". Coba kata lain (mis. nama awam, singkatan, ICD-10, merek obat).</div>`;
     }
     function renderKbMenu() {
-      menu.classList.add("sp-package-modal");
+      menu.classList.remove('sp-kombi'); menu.classList.add("sp-package-modal");
       menu.innerHTML = `
         <div class="sp-title">📚 REFERENSI KLINIS</div>
         <input id="sp-kb-q" class="sp-kb-q" type="search" autocomplete="off" placeholder="Cari keluhan, diagnosis, ICD-10, obat / merek…" value="${spEsc(spKbQuery)}">
@@ -14616,7 +14644,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       return { td: t.td || "", nadi: t.nadiMin && t.nadiMax ? Math.round((t.nadiMin + t.nadiMax) / 2) : "", rr: t.rr || "", suhu: t.suhu || "" };
     }
     function renderCekGadarMenu() {
-      menu.classList.add("sp-package-modal");
+      menu.classList.remove('sp-kombi'); menu.classList.add("sp-package-modal");
       const root = spAsistenFormRoot();
       if (!root) {
         menu.innerHTML = `<div class="sp-title">🩺 CEK & SARAN ASGADAR</div>
@@ -14683,7 +14711,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
 
     // v3.63.0: AUTO IGD — PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM (dulu langsung di menu utama).
     function renderIgdMenu() {
-      menu.classList.remove("sp-package-modal");
+      menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
         <div class="sp-title">🚑 AUTO IGD</div>
 
@@ -14719,9 +14747,9 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     }
 
     function renderMain() {
-      menu.classList.remove("sp-package-modal");
+      menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.124.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.125.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -14757,7 +14785,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     }
 
     function renderDiseaseMenu() {
-      menu.classList.remove("sp-package-modal");
+      menu.classList.remove("sp-package-modal", "sp-kombi");
       // v3.63.0 (instruksi dokter): Febris ec VI dd BI paling atas.
       const diseaseEntries = Object.entries(TEMPLATES)
         .sort(([a], [b]) => (b === "FEBRIS_VI_BI") - (a === "FEBRIS_VI_BI"));
@@ -14919,7 +14947,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     }
 
     function renderAdultRecipeMenu() {
-      menu.classList.remove("sp-package-modal");
+      menu.classList.remove("sp-package-modal", "sp-kombi");
       const entries = Object.entries(COMPLAINT_RECIPE_MAP);
 
       menu.innerHTML = `
@@ -14945,7 +14973,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     }
 
     function renderChildRecipeMenu() {
-      menu.classList.remove("sp-package-modal");
+      menu.classList.remove("sp-package-modal", "sp-kombi");
       const entries = Object.entries(COMPLAINT_RECIPE_MAP);
       const ageDisplay = getPatientAgeDisplay();
 
@@ -14973,7 +15001,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     }
 
     function renderComplaintMenu() {
-      menu.classList.remove("sp-package-modal");
+      menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
         <div class="sp-title">⚡ MASTER TEMPLATE RESEP – BERDASARKAN KELUHAN</div>
         <div class="sp-note">Masukkan BB sekali, lalu pilih keluhan. &gt;40 kg = Dewasa; &lt;40 kg = Anak. BB 40 kg dipilih manual.</div>
@@ -14998,7 +15026,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     }
 
     function renderRecipeMenu() {
-      menu.classList.remove("sp-package-modal");
+      menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
         <div class="sp-title">💊 MASTER TEMPLATE RESEP</div>
         <div class="sp-note">Pilih jenis master template resep dari MASTER TEMPLATE:</div>
@@ -15029,7 +15057,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     }
 
     function renderRacikanMenu() {
-      menu.classList.remove("sp-package-modal");
+      menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
         <div class="sp-title">🧪 MASTER TEMPLATE RESEP – RACIKAN</div>
         <div class="sp-note">Pilih jenis racikan:</div>
@@ -15102,7 +15130,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     }
 
     function renderActionMenu() {
-      menu.classList.remove("sp-package-modal");
+      menu.classList.remove("sp-package-modal", "sp-kombi");
       const children = MASTER_RECIPE_TEMPLATES.TINDAKAN.children;
 
       menu.innerHTML = `
