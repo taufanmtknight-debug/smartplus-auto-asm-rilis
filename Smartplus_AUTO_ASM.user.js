@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.123.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.124.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.123.0
-// @description  v3.123.0 (permintaan dokter 27 Okt 2026): 🧠 TANYA AI — 📎 Baca data pasien kini mengirim SEMUA data pasien apa adanya, bukan ringkasan bergaya SOAP: semua CPPT dokter/perawat tanpa dipotong, semua nilai lab tiap lembar (normal & abnormal), semua ekspertise radiologi & e-resep kunjungan ini, riwayat poli; rawat inap juga Assesment GADAR saat masuk & e-resep sejak masuk. Chat dalam satu sesi kini bersambung: data pasien dikirim sekali (dikirim lagi sebagai TERBARU bila berubah), tiap pertanyaan membawa tanya-jawab sebelumnya, sesi per pasien tetap ada walau halaman dimuat ulang (tab yang sama), ＋ Sesi baru untuk pasien/topik lain. Berlaku untuk kunci Claude maupun ChatGPT. Nama/No.RM/No.Reg tetap disamarkan; tidak mengisi atau menyimpan apa pun.
+// @version      3.124.0
+// @description  v3.124.0 (permintaan dokter 28 Okt 2026): KOMBINASI RESEP IGD — keluhan pasien kini bisa diedit di kotak ✏️ Keluhan (terisi otomatis dari Assesment GADAR; tidak mengubah GADAR); saran obat 💡 ikut keluhan yang diedit. Obat terpilih yang tidak sesuai keluhan (mis. obat diare untuk pasien batuk, obat diare pada sembelit, obat gula saat hipoglikemia) ditandai MERAH dengan alasannya, dan sebelum ACC muncul pengingat. Hanya pengingat: obat tetap bisa dimasukkan, tidak ada yang dihapus/disimpan otomatis.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -54,8 +54,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.123.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.123.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.124.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.124.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -2693,6 +2693,50 @@
     if (!spSuggestDrugKeys(branchKey, complaintHits).includes(key)) return [];
     const map = SP_SUGGEST_ONE[branchKey] || {};
     return [...new Set(Object.entries(map).filter(([c, keys]) => keys.includes(key) && complaintHits[c]).map(([c]) => complaintHits[c]))];
+  }
+
+  // v3.124.0 (permintaan dokter 28 Okt 2026: "pernah salah meresepkan obat diare untuk pasien batuk"): obat terpilih di
+  // KOMBINASI RESEP yang tidak sesuai keluhan ditandai merah. HANYA pengingat — obat tetap bisa dipilih & dimasukkan.
+  // Keluhan sekeluarga dianggap sesuai (mis. Ibuprofen untuk demam, Domperidon untuk vertigo) supaya tidak terlalu sering merah.
+  const SP_FIT_FAMILY = [
+    ["DEMAM", "NYERI", "SAKIT_KEPALA", "NYERI_OTOT"],
+    ["NYERI_ULU_HATI", "GERD", "ULKUS", "KEMBUNG", "MUAL_MUNTAH", "MUNTAH_HEBAT"],
+    ["MUAL_MUNTAH", "MUNTAH_HEBAT", "VERTIGO", "MABUK"],
+    ["BATUK_PILEK", "BATUK_KERING", "RADANG_BENGKAK", "ALERGI", "ASMA"],
+    ["DIARE", "DIARE_NONINFEKSI"],
+    ["INFEKSI_BAKTERI", "INFEKSI_KULIT", "ISK_TIFOID"],
+    ["HERPES", "VARISELA", "HERPES_SIMPLEX"],
+    ["DM", "DM_GDS300"]
+  ];
+  // Obat tanpa `why` di DRUG_OPTIONS.
+  const SP_FIT_EXTRA = { BAPIL_CET: ["BATUK_PILEK", "ALERGI"], CEFIXIME_PUYER: ["ISK_TIFOID"], SANMOL_DROP: ["DEMAM", "NYERI"] };
+  // Obat untuk keluhan A berlawanan dengan keluhan B pasien (mis. obat diare pada pasien sembelit).
+  const SP_FIT_CONTRA = [[["DIARE", "DIARE_NONINFEKSI"], "KONSTIPASI"], [["KONSTIPASI"], "DIARE"]];
+  const SP_FIT_LABEL = { ISK_TIFOID: "ISK/tifoid", DM_GDS300: "DM (GDS ≥300)", DM: "DM", GERD: "GERD", NYERI_OTOT: "nyeri otot/sendi" };
+  const spFitLabel = (c) => SP_FIT_LABEL[c] || c.toLowerCase().replace(/_/g, " ");
+
+  // null = sesuai / tidak bisa dinilai; { contra, msg } = tidak sesuai keluhan (contra = berlawanan dengan keluhan).
+  function spDrugMismatch(branchKey, key, complaintHits, text) {
+    const hits = complaintHits || {};
+    const opt = (DRUG_OPTIONS[branchKey] || []).find((o) => o.key === key);
+    if (!opt) return null;
+    const map = SP_SUGGEST_ONE[branchKey] || {};
+    const own = new Set([...(opt.why || []), ...(SP_FIT_EXTRA[key] || []), ...Object.keys(map).filter((c) => map[c].includes(key))]);
+    if (!own.size) return null;
+    const label = [...own].slice(0, 2).map(spFitLabel).join("/");
+    if ((own.has("DM") || own.has("DM_GDS300")) && /hipoglik|hypoglyc/i.test(String(text || ""))) {
+      return { contra: true, msg: "obat penurun gula, padahal ada hipoglikemia" };
+    }
+    if ([...own].some((c) => hits[c])) return null;
+    for (const [drugFor, against] of SP_FIT_CONTRA) {
+      if (drugFor.some((c) => own.has(c)) && hits[against]) return { contra: true, msg: `obat untuk ${label}, padahal keluhan "${hits[against]}"` };
+    }
+    const found = [...new Set(Object.values(hits))];
+    if (!found.length) return null;
+    const near = new Set(own);
+    SP_FIT_FAMILY.forEach((f) => { if (f.some((c) => own.has(c))) f.forEach((c) => near.add(c)); });
+    if (Object.keys(hits).some((c) => near.has(c))) return null;
+    return { contra: false, msg: `obat untuk ${label}; keluhan terbaca: ${found.join(", ")}` };
   }
 
   // =========================
@@ -11531,6 +11575,12 @@
       #${MENU_ID} .sp-pill.is-sug{border-color:#f59e0b;border-style:dashed;background:#fffbeb;}
       #${MENU_ID} .sp-pill.is-on{background:#16a34a;border:1px solid #16a34a;color:#fff;}
       #${MENU_ID} .sp-pill.is-on:hover{background:#15803d;}
+      #${MENU_ID} .sp-pill.is-on.is-bad,#${MENU_ID} .sp-pill.is-on.is-bad:hover{background:#dc2626;border-color:#b91c1c;color:#fff;}
+      #${MENU_ID} .sp-sel-chip.is-bad{background:#fee2e2;border-color:#fca5a5;color:#b91c1c;}
+      #${MENU_ID} .sp-pkg-mis{margin-top:6px;padding:5px 8px;border-radius:8px;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-size:11.5px;line-height:1.4;max-height:70px;overflow:auto;}
+      #${MENU_ID} .sp-pkg-kel{display:block;margin:0 0 8px;font:700 11.5px/1.3 Arial,sans-serif;color:#1e3a5f;}
+      #${MENU_ID} .sp-pkg-kel small{font-weight:400;color:#6b7280;}
+      #${MENU_ID} .sp-pkg-kel textarea{display:block;width:100%;box-sizing:border-box;margin-top:3px;min-height:40px;max-height:120px;resize:vertical;padding:5px 8px;border:1px solid #bfdbfe;border-radius:8px;font:400 12.5px/1.35 Arial,sans-serif;color:#111827;background:#fff;}
       #${MENU_ID} .sp-pill.is-err:not(.is-on){color:#a1a1aa;border-style:dashed;background:#fafafa;}
       #${MENU_ID} .sp-pill-ic{font-size:11px;}
       #${MENU_ID} .sp-act input{display:none;}
@@ -12328,8 +12378,10 @@
         const res = spResolveDrugOption(opt, ctx);
         const on = spPkg.selected.has(opt.key);
         const why = spSuggestWhy(ctx.branch, opt.key, spPkg.hits); // v3.57.0: hanya obat yang benar-benar disarankan
-        const tip = (res.error ? '⚠ ' + res.error : res.text) + (why.length ? `\n💡 Saran dari keluhan: ${why.join(', ')}` : '');
-        return `<button type="button" class="sp-pill${on ? ' is-on' : ''}${why.length ? ' is-sug' : ''}${res.error ? ' is-err' : ''}" data-drug="${opt.key}" title="${spEsc(tip)}">${on ? '<span class="sp-pill-ic">✓</span>' : why.length ? '<span class="sp-pill-ic">💡</span>' : ''}${spEsc(opt.label)}</button>`;
+        // v3.124.0: obat terpilih yang tidak sesuai keluhan = merah (pengingat saja, tetap bisa dimasukkan).
+        const bad = on ? spDrugMismatch(ctx.branch, opt.key, spPkg.hits, spPkg.kelText) : null;
+        const tip = (bad ? `⚠ TIDAK SESUAI KELUHAN: ${bad.msg}\n` : '') + (res.error ? '⚠ ' + res.error : res.text) + (why.length ? `\n💡 Saran dari keluhan: ${why.join(', ')}` : '');
+        return `<button type="button" class="sp-pill${on ? ' is-on' : ''}${bad ? ' is-bad' : ''}${why.length ? ' is-sug' : ''}${res.error ? ' is-err' : ''}" data-drug="${opt.key}" title="${spEsc(tip)}">${bad ? '<span class="sp-pill-ic">⚠</span>' : on ? '<span class="sp-pill-ic">✓</span>' : why.length ? '<span class="sp-pill-ic">💡</span>' : ''}${spEsc(opt.label)}</button>`;
       };
       const groups = [];
       DRUG_OPTIONS[ctx.branch].forEach((opt) => {
@@ -12355,8 +12407,10 @@
       // ("Jumlah R Sudah Melebihi Batas"), obat yang sudah ada di draft ikut dihitung.
       const rCount = picked.reduce((n, o) => { const r = spResolveDrugOption(o, ctx); return n + r.items.length + r.racikan.length; }, 0);
       const acts = [...menu.querySelectorAll('input[name="sp-package-action"]:checked')];
+      const bads = picked.map((o) => ({ o, bad: spDrugMismatch(ctx.branch, o.key, spPkg.hits, spPkg.kelText) })).filter((x) => x.bad);
+      const isBad = (k) => bads.some((x) => x.o.key === k);
       sel.innerHTML = picked.length || acts.length
-        ? picked.map((o) => `<span class="sp-sel-chip" title="${spEsc(spResolveDrugOption(o, ctx).text || '')}">${spEsc(o.label)}<button type="button" class="sp-sel-x" data-unpick="${o.key}" title="Hapus">×</button></span>`).join('') +
+        ? picked.map((o) => `<span class="sp-sel-chip${isBad(o.key) ? ' is-bad' : ''}" title="${spEsc(spResolveDrugOption(o, ctx).text || '')}">${spEsc(o.label)}<button type="button" class="sp-sel-x" data-unpick="${o.key}" title="Hapus">×</button></span>`).join('') +
           acts.map((el) => `<span class="sp-sel-chip is-act">${spEsc(MASTER_RECIPE_TEMPLATES.TINDAKAN?.children?.[el.value]?.name || el.value)}<button type="button" class="sp-sel-x" data-unact="${el.value}" title="Hapus">×</button></span>`).join('')
         : '<span class="sp-pkg-muted">Belum ada obat dipilih — klik nama obat di atas.</span>';
       const rc = menu.querySelector('#sp-pkg-rcount');
@@ -12365,6 +12419,11 @@
       if (warn) {
         warn.textContent = rCount > 5 ? '⚠ Lebih dari 5 R/ — pasien BPJS: Smartplus bisa menolak sisanya ("Jumlah R Sudah Melebihi Batas").' : '';
         warn.style.display = rCount > 5 ? '' : 'none';
+      }
+      const mis = menu.querySelector('#sp-pkg-mis');
+      if (mis) {
+        mis.innerHTML = bads.map((x) => `<div>⚠ <b>${spEsc(x.o.label)}</b> ${x.bad.contra ? 'BERLAWANAN dengan keluhan' : 'tidak sesuai keluhan'} — ${spEsc(x.bad.msg)}</div>`).join('');
+        mis.style.display = bads.length ? '' : 'none';
       }
       const acc = menu.querySelector('#sp-pkg-acc');
       if (acc) {
@@ -12382,6 +12441,9 @@
       const drugs = DRUG_OPTIONS[ctx.branch].filter((o) => spPkg.selected.has(o.key));
       const actions = [...menu.querySelectorAll('input[name="sp-package-action"]:checked')].map((el) => el.value).filter(Boolean);
       if (!drugs.length && !actions.length) { toast('KOMBINASI RESEP: pilih minimal satu obat atau satu tindakan.'); return; }
+      // v3.124.0: pengingat terakhir bila ada obat yang tidak sesuai keluhan (dokter tetap bisa lanjut).
+      const bads = drugs.map((o) => [o, spDrugMismatch(ctx.branch, o.key, spPkg.hits, spPkg.kelText)]).filter((x) => x[1]);
+      if (bads.length && !window.confirm(`⚠ Obat berikut TIDAK SESUAI keluhan pasien:\n\n${bads.map(([o, b]) => `• ${o.label}: ${b.msg}`).join('\n')}\n\nTetap masukkan?`)) return;
 
       const regularItems = [];
       const racikanJobs = [];
@@ -12463,6 +12525,9 @@
           <div id="sp-package-anamnesis" class="sp-pkg-anam">⏳ Membaca Assesment GADAR…</div>
           <button type="button" class="sp-pkg-link" data-anam-toggle="1" style="display:none">Selengkapnya ▾</button>
         </div>
+        <label class="sp-pkg-kel"><span>✏️ Keluhan pasien <small>— bisa diedit; dipakai untuk saran & cek obat (tidak mengubah GADAR)</small></span>
+          <textarea id="sp-pkg-keluhan" rows="2" placeholder="Tulis keluhan, mis. batuk pilek 3 hari, demam"></textarea>
+        </label>
 
         <div class="sp-pkg-sugrow">
           <div id="sp-drug-suggest-note" class="sp-pkg-sugnote">⏳ Mencari saran dari keluhan…</div>
@@ -12485,6 +12550,7 @@
           <div class="sp-pkg-foot-head"><b>Dipilih</b><span id="sp-pkg-rcount" class="sp-pkg-rcount">0 R/</span><span class="sp-pkg-muted">masuk sebagai draft · Simpan manual</span></div>
           <div id="sp-pkg-selected" class="sp-pkg-selected"></div>
           <div id="sp-pkg-warn" class="sp-pkg-warn" style="display:none"></div>
+          <div id="sp-pkg-mis" class="sp-pkg-mis" style="display:none"></div>
           <div class="sp-pkg-actions">
             <button type="button" class="sp-pkg-back" data-back="main" title="Kembali ke menu utama">←</button>
             <button type="button" id="sp-pkg-acc" class="sp-pkg-acc" data-package-submit="1">✓ ACC – Masukkan ke Resep</button>
@@ -12553,16 +12619,28 @@
           : 'Tidak ada keluhan yang cocok dengan daftar obat — pilih manual.';
       };
 
+      // v3.124.0 (permintaan dokter 28 Okt 2026): keluhan bisa diedit; saran & tanda merah obat ikut keluhan yang diedit.
+      const kelBox = menu.querySelector('#sp-pkg-keluhan');
+      let kelEdited = false, kelTimer = 0;
+      const applyKeluhan = () => {
+        if (!spPkg || !menu.isConnected) return;
+        spPkg.kelText = kelBox.value;
+        spPkg.hits = spSuggestComplaints(kelBox.value);
+        spPkgApplySuggestions();
+        spPkgRenderDrugs();
+        showSuggestNote(String(kelBox.value).trim() ? null : 'Keluhan kosong — tulis keluhan untuk saran & cek obat, atau pilih manual.');
+      };
+      kelBox.addEventListener('input', () => { kelEdited = true; clearTimeout(kelTimer); kelTimer = setTimeout(applyKeluhan, 300); });
+
       // Anamnesis + saran. Bila form GADAR sedang terbuka, isi form yang dipakai (revisi ikut).
       spLoadAnamnesisInto(anamBox).then((text) => {
         if (!anamBox.isConnected || !spPkg) return;
         anamBtn.style.display = anamBox.scrollHeight > anamBox.clientHeight + 2 ? '' : 'none';
-        if (!text) { showSuggestNote('Assesment GADAR belum ada — pilih obat manual.'); return; }
-        spPkg.hits = spSuggestComplaints(text);
-        spPkgApplySuggestions();
-        spPkgRenderDrugs();
-        showSuggestNote();
-      }).catch(() => showSuggestNote('Saran tidak tersedia — pilih obat manual.'));
+        if (kelEdited) return; // dokter sudah mengetik sendiri sebelum GADAR terbaca
+        if (!text) { showSuggestNote('Assesment GADAR belum ada — tulis keluhan di kotak ✏️ atau pilih obat manual.'); return; }
+        kelBox.value = text;
+        applyKeluhan();
+      }).catch(() => { if (!kelEdited) showSuggestNote('Saran tidak tersedia — tulis keluhan di kotak ✏️ atau pilih manual.'); });
 
       // v3.8.0: BB anak dari kolom berat Assesment GADAR terakhir (dokter tetap bisa mengubah).
       if (!adult) getLatestGadarWeight().then((w) => {
@@ -14643,7 +14721,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.123.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.124.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
