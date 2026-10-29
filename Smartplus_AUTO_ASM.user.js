@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.125.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.126.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.125.0
-// @description  v3.125.0 (permintaan dokter 28 Okt 2026): panel 📦 KOMBINASI RESEP lebih rapi — judul berwarna dengan keterangan singkat, data pasien + keluhan GADAR dalam satu kartu, golongan obat dalam satu kartu putih bergaris tipis (titik warna per golongan), Tindakan dilipat (jumlah terpilih terlihat). Kotak edit keluhan v3.124.0 dihapus; tanda merah obat yang tidak sesuai keluhan GADAR dan pengingat sebelum ACC tetap ada.
+// @version      3.126.0
+// @description  v3.126.0 (permintaan dokter 29 Okt 2026): ASGADAR PENYAKIT BP (Bronkopneumonia) — kolom Pernafasan/RR kini ikut mencatat saturasi, mis. "31 spo2 93-94%" (RR tetap acak 29–34). Kolom SpO2 dan template lain tidak berubah.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -54,8 +54,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.125.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.125.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.126.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.126.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -14749,7 +14749,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.125.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.126.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -15680,6 +15680,8 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
         : randomRangeVital
           ? getRandomNormalSpO2(data.vital)
           : data.vital.spo2;
+    // v3.126.0 (dokter 29 Okt 2026): BP -> kolom RR juga mencatat saturasi, mis. "31 spo2 93-94%".
+    const rrText = key === "BP" ? `${randomRR} spo2 93-94%` : randomRR;
 
     toast("AUTO ASM: mengisi template...");
 
@@ -15771,7 +15773,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     );
 
     doSet("Pernafasan", () =>
-      setByLabel(root, ["Pernafasan", "Pernapasan", "RR"], randomRR)
+      setByLabel(root, ["Pernafasan", "Pernapasan", "RR"], rrText)
     );
 
     const randomTemperature =
@@ -15929,7 +15931,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       setByLabel(root, ["Nadi"], randomNadi, false);
 
       if (key === "BP" || key === "NORMAL" || key === "KEJANG_DEMAM_ANAK") {
-        setByLabel(root, ["Pernafasan", "Pernapasan", "RR"], randomRR, false);
+        setByLabel(root, ["Pernafasan", "Pernapasan", "RR"], rrText, false);
         setByLabel(root, ["SpO2", "SPO2", "Saturasi Oksigen"], randomSpO2, false);
       }
 
@@ -15946,7 +15948,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       console.log("GCS:", data.gcs);
       console.log("Nyeri:", data.nyeri);
       console.log("Nadi:", randomNadi + " x/menit");
-      console.log("RR:", randomRR + " x/menit");
+      console.log("RR:", rrText + " x/menit");
       console.log("SpO2:", randomSpO2 + "%");
       console.log("Diagnosis:", data.diagnosis);
       console.log("Jam Datang/Tinggi/Berat: dikosongkan");
