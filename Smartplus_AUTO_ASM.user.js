@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.127.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.128.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.127.0
-// @description  v3.127.0 (permintaan dokter 29 Okt 2026): 🛏 CEK ADVIS PASIEN DAPAT KAMAR kini hanya memeriksa pasien IGD 12 jam terakhir (dulu 24 jam), dan 🔎 Cari advis di WhatsApp hanya membuka chat & membaca advis 12 jam terakhir. 📤 Advis → ASGADAR di WhatsApp Web tetap 24 jam.
+// @version      3.128.0
+// @description  v3.128.0 (permintaan dokter 9 Nov 2026): ASGADAR — Riwayat Penyakit Dahulu kini hanya memuat kunjungan TERBARU tiap spesialis. Bila ASGADAR dibuat ulang pada kunjungan IGD baru dan pasien sudah kontrol lagi ke spesialis yang sama, riwayat lama spesialis itu (mis. beberapa bulan sebelumnya, juga yang terbawa dari kunjungan sebelumnya dan terselip di tengah isi kolom) dihapus lalu diganti kunjungan barunya; teks lain di kolom tetap. Entri lama ganda dari spesialis yang sama disaring ke tanggal terbaru.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -54,8 +54,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.127.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.127.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.128.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.128.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -8620,6 +8620,15 @@
   // ("- dd-mm-yyyy dr ...: Dx ...", "  Th/", "  • obat", "     - racikan"); judul versi lama juga ikut dibersihkan.
   const SP_RIWAYAT_POLI_LINE_RE = /^- \d{2}-\d{2}-\d{4}\b.*: Dx /;
   const SP_RIWAYAT_POLI_CONT_RE = /^(?:\s+Th\/.*|\s+•.*|\s{3,}- .*)$/;
+  // v3.128.0 (permintaan dokter 9 Nov 2026): ASGADAR dibuat ulang pada kunjungan IGD baru -> riwayat spesialis yang SAMA
+  // dengan kunjungan baru tidak boleh tertinggal dua kali. Entri lama (di mana pun letaknya di kolom, juga yang terbawa dari
+  // kunjungan sebelumnya) untuk spesialisasi yang ada di daftar baru dihapus; yang baru ditulis di bawah. Entri lama dengan
+  // spesialisasi sama yang masih tersisa disaring: hanya tanggal terbaru yang dipertahankan.
+  function spRiwayatEntryKey(firstLine) {
+    const m = String(firstLine || "").match(/^- (\d{2})-(\d{2})-(\d{4})\b(.*?): Dx /);
+    if (!m) return null;
+    return { key: spSpecialtyKey({ dokter: m[4] }), date: `${m[3]}${m[2]}${m[1]}` };
+  }
   function mergeRiwayatPoli(existing, lines) {
     let rows = String(existing || "").split(/\r?\n/);
     const oldHead = rows.findIndex((r) => /^Riwayat kontrol poli spesialis:\s*$/i.test(r.trim()));
@@ -8630,11 +8639,26 @@
         rows = rows.slice(0, start);
       }
     }
-    const base = rows.join("\n").replace(/\s+$/, "");
+    // Pecah sisa isi menjadi teks biasa + entri riwayat poli (baris "- dd-mm-yyyy dr ...: Dx" + lanjutan Th/ • -).
+    const items = [];
+    for (const r of rows) {
+      const info = SP_RIWAYAT_POLI_LINE_RE.test(r) ? spRiwayatEntryKey(r) : null;
+      if (info) items.push({ info, rows: [r] });
+      else if (items.length && items[items.length - 1].info && SP_RIWAYAT_POLI_CONT_RE.test(r)) items[items.length - 1].rows.push(r);
+      else items.push({ info: null, rows: [r] });
+    }
+    const newKeys = new Set(lines.map((l) => spRiwayatEntryKey(String(l).split("\n")[0])).filter(Boolean).map((x) => x.key));
+    const newest = new Map();
+    for (const it of items) {
+      if (!it.info || newKeys.has(it.info.key)) continue;
+      const cur = newest.get(it.info.key);
+      if (!cur || it.info.date > cur.info.date) newest.set(it.info.key, it);
+    }
+    const kept = items.filter((it) => !it.info || newest.get(it.info.key) === it);
+    const base = kept.flatMap((it) => it.rows).join("\n").replace(/\s+$/, "");
     if (!lines.length) return base;
     return (base ? base + "\n" : "") + lines.join("\n");
   }
-
   // =========================
   // v3.11.0: AUTO PENUNJANG (Lab + Film radiologi) untuk konsul — v3.13.0 berganti nama menjadi AUTO SCREENSHOT
   // =========================
@@ -14750,7 +14774,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.127.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.128.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
