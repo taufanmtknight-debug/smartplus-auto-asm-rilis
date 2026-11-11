@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.128.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.129.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.128.0
-// @description  v3.128.0 (permintaan dokter 9 Nov 2026): ASGADAR — Riwayat Penyakit Dahulu kini hanya memuat kunjungan TERBARU tiap spesialis. Bila ASGADAR dibuat ulang pada kunjungan IGD baru dan pasien sudah kontrol lagi ke spesialis yang sama, riwayat lama spesialis itu (mis. beberapa bulan sebelumnya, juga yang terbawa dari kunjungan sebelumnya dan terselip di tengah isi kolom) dihapus lalu diganti kunjungan barunya; teks lain di kolom tetap. Entri lama ganda dari spesialis yang sama disaring ke tanggal terbaru.
+// @version      3.129.0
+// @description  v3.129.0 (permintaan dokter 12 Nov 2026): WhatsApp Web — tombol 📤 Advis → ASGADAR kini bawaan di KANAN ATAS (di bawah judul chat, tidak lagi menutupi kolom ketik pesan di kanan bawah) dan bisa digeser dengan mouse atau jari; posisinya diingat. Menggeser tombol tidak membuka panel advis; klik/ketuk biasa tetap membuka. Fungsi advis tidak berubah.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -54,8 +54,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.128.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.128.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.129.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.129.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -7223,14 +7223,65 @@
       };
     }
 
+    // v3.129.0: tombol bisa digeser (mouse & sentuh). Klik biasa tetap membuka panel; setelah digeser, klik diabaikan.
+    const BTN_POS = "sp_wa_advis_btn_pos_v1";
+    function waBtnPosLoad() {
+      try { const p = JSON.parse(localStorage.getItem(BTN_POS) || "null"); return p && isFinite(p.left) && isFinite(p.top) ? p : null; } catch (_) { return null; }
+    }
+    function waBtnPlace(b, p) {
+      if (!p) { b.style.left = "auto"; b.style.top = "72px"; b.style.right = "20px"; b.style.bottom = "auto"; return; }
+      const w = b.offsetWidth || 170, h = b.offsetHeight || 36;
+      const left = Math.max(0, Math.min(window.innerWidth - w, p.left));
+      const top = Math.max(0, Math.min(window.innerHeight - h, p.top));
+      b.style.left = left + "px"; b.style.top = top + "px"; b.style.right = "auto"; b.style.bottom = "auto";
+    }
+    function waBtnDrag(b) {
+      let st = null, moved = false;
+      b.addEventListener("pointerdown", (e) => {
+        if (e.button !== undefined && e.button !== 0) return;
+        const r = b.getBoundingClientRect();
+        st = { x: e.clientX, y: e.clientY, dx: e.clientX - r.left, dy: e.clientY - r.top };
+        moved = false;
+        const move = (ev) => {
+          if (!st) return;
+          if (!moved && Math.hypot(ev.clientX - st.x, ev.clientY - st.y) < 6) return;
+          moved = true;
+          b.style.cursor = "grabbing";
+          waBtnPlace(b, { left: ev.clientX - st.dx, top: ev.clientY - st.dy });
+          ev.preventDefault();
+        };
+        const end = () => {
+          document.removeEventListener("pointermove", move, true);
+          document.removeEventListener("pointerup", end, true);
+          document.removeEventListener("pointercancel", end, true);
+          b.style.cursor = "grab";
+          if (moved) {
+            const r2 = b.getBoundingClientRect();
+            try { localStorage.setItem(BTN_POS, JSON.stringify({ left: Math.round(r2.left), top: Math.round(r2.top) })); } catch (_) {}
+          }
+          st = null;
+        };
+        document.addEventListener("pointermove", move, true);
+        document.addEventListener("pointerup", end, true);
+        document.addEventListener("pointercancel", end, true);
+      });
+      // Klik sesudah menggeser = bukan perintah membuka panel.
+      b.addEventListener("click", (e) => { if (moved) { moved = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+      window.addEventListener("resize", () => waBtnPlace(b, waBtnPosLoad()));
+      setTimeout(() => waBtnPlace(b, waBtnPosLoad()), 0);
+    }
+
     function ensureBtn() {
       const inChat = !!document.querySelector("#main");
       let b = document.getElementById(BTN);
       if (!inChat) { if (b) b.style.display = "none"; return; }
       if (!b) {
-        b = el("button", "position:fixed;right:20px;bottom:84px;z-index:2147483646;padding:9px 14px;border:0;border-radius:22px;background:#e91e63;color:#fff;font:600 13px Arial,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.3);cursor:pointer", "📤 Advis → ASGADAR");
+        // v3.129.0 (dokter 12 Nov 2026): dulu di kanan bawah menutupi kolom ketik pesan -> bawaan di KANAN ATAS (di bawah
+        // judul chat) dan bisa digeser; posisi diingat (localStorage web.whatsapp.com). Geser > 6px tidak memicu klik.
+        b = el("button", "position:fixed;right:20px;top:72px;z-index:2147483646;padding:9px 14px;border:0;border-radius:22px;background:#e91e63;color:#fff;font:600 13px Arial,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.3);cursor:grab;touch-action:none;user-select:none;white-space:nowrap", "📤 Advis → ASGADAR");
         b.id = BTN;
-        b.title = "Kirim advis DPJP ke kolom Rencana Assesment GADAR di Smartplus (blok teks dulu bila hanya sebagian)";
+        b.title = "Kirim advis DPJP ke kolom Rencana Assesment GADAR di Smartplus (blok teks dulu bila hanya sebagian). Tahan & geser untuk memindah tombol.";
+        waBtnDrag(b);
         // mousedown: ambil teks yang diblok sebelum fokus pindah ke tombol.
         b.addEventListener("mousedown", (e) => {
           e.preventDefault();
@@ -14774,7 +14825,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.128.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.129.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
