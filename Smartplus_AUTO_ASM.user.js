@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.129.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.130.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.129.0
-// @description  v3.129.0 (permintaan dokter 12 Nov 2026): WhatsApp Web — tombol 📤 Advis → ASGADAR kini bawaan di KANAN ATAS (di bawah judul chat, tidak lagi menutupi kolom ketik pesan di kanan bawah) dan bisa digeser dengan mouse atau jari; posisinya diingat. Menggeser tombol tidak membuka panel advis; klik/ketuk biasa tetap membuka. Fungsi advis tidak berubah.
+// @version      3.130.0
+// @description  v3.130.0 (permintaan dokter 12 Nov 2026): film Ro/CT langsung dari PACS Orthanc — isi Alamat PACS luar RS di 🧠 Tanya AI ⚙ (disimpan di browser ini saja, tidak di script). 🧠 Tanya AI 🩻 Film Ro/CT lalu mencari study pasien langsung di Orthanc per No.RM (rontgen & CT 1 bulan terakhir, juga yang tanpa tombol FILM di Smartplus; USG dilewati); 🩻 Film Ro/CT & AUTO SCREENSHOT membuka film lewat alamat luar RS bila alamat PACS jaringan RS tidak menjawab (alamat yang menjawab diingat). Ekspertise tetap dari Smartplus (Orthanc tidak menyimpan bacaan radiolog). Hanya membaca, tidak menyimpan apa pun.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -54,8 +54,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.129.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.129.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.130.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.130.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -8721,6 +8721,46 @@
   //        lewat REST Orthanc (same-origin), mengirimnya ke Smartplus via postMessage, lalu menutup diri.
   //        Alamat/kata sandi PACS TIDAK ditulis di script; diambil dari tombol FILM di halaman.
   const SP_FILM_WINDOW_PREFIX = "spcap|";
+  // v3.130.0 (permintaan dokter 12 Nov 2026): PACS Orthanc juga punya alamat yang bisa dibuka dari LUAR jaringan RS.
+  // Alamatnya diisi dokter di ⚙ Tanya AI dan HANYA disimpan di browser ini (localStorage situs Smartplus), tidak di script.
+  // Dipakai untuk (1) membuka film bila alamat FILM Smartplus (jaringan lokal RS) tidak menjawab, dan (2) mencari study
+  // pasien langsung di Orthanc per No.RM (PatientID), juga yang tidak punya tombol FILM di Smartplus.
+  const SP_PACS_LUAR_KEY = "sp-auto-asm-pacs-luar";
+  const SP_PACS_PAKAI_KEY = "sp-auto-asm-pacs-pakai"; // alamat yang terakhir menjawab: "luar" | "rs"
+  // "alamat:8042/app/explorer.html" -> "http://alamat:8042" (fungsi murni, diuji). Bukan http(s) -> "".
+  function spPacsNormOrigin(text) {
+    let s = String(text || "").trim();
+    if (!s) return "";
+    if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(s)) s = "http://" + s;
+    try { const u = new URL(s); return /^https?:$/.test(u.protocol) && u.hostname ? u.origin : ""; } catch (_) { return ""; }
+  }
+  // Ganti server (protokol+host+port) alamat film; jalur & ?study= tetap (fungsi murni, diuji).
+  function spPacsSwapOrigin(url, origin) {
+    try { const u = new URL(url, location.href), o = new URL(origin); u.protocol = o.protocol; u.host = o.host; return u.href; } catch (_) { return url; }
+  }
+  function spPacsLuar() { try { return spPacsNormOrigin(localStorage.getItem(SP_PACS_LUAR_KEY) || ""); } catch (_) { return ""; } }
+  function spPacsSetLuar(text) {
+    const o = spPacsNormOrigin(text);
+    try { if (o) localStorage.setItem(SP_PACS_LUAR_KEY, o); else localStorage.removeItem(SP_PACS_LUAR_KEY); localStorage.removeItem(SP_PACS_PAKAI_KEY); } catch (_) {}
+    return o;
+  }
+  function spPacsPakai() { try { return localStorage.getItem(SP_PACS_PAKAI_KEY) || ""; } catch (_) { return ""; } }
+  function spPacsSetPakai(v) { try { localStorage.setItem(SP_PACS_PAKAI_KEY, v); } catch (_) {} }
+  // "yyyymmdd" -> "dd-mm-yyyy" (fungsi murni).
+  function spDicomDateText(d) { const m = String(d || "").match(/^(\d{4})(\d{2})(\d{2})/); return m ? `${m[3]}-${m[2]}-${m[1]}` : ""; }
+  // Daftar study Orthanc per No.RM -> film [{url, caption}] terbaru dulu (fungsi murni, diuji): study sejak batas
+  // tanggal cutKey (yyyy-mm-dd); bila tidak ada -> study di tanggal terakhir. Study berisi USG saja dilewati (cukup ekspertise).
+  function spPacsRmFilmList(studies, origin, cutKey) {
+    const rows = (studies || []).filter((s) => s && s.id && !((s.mods || []).length && s.mods.every((m) => /^(US|SR|PR|KO|DOC)$/i.test(m))))
+      .map((s) => ({ ...s, key: String(s.date || "").replace(/^(\d{4})(\d{2})(\d{2}).*/, "$1-$2-$3") }))
+      .sort((a, b) => `${b.key} ${b.time || ""}`.localeCompare(`${a.key} ${a.time || ""}`));
+    let pick = rows.filter((r) => r.key >= cutKey);
+    if (!pick.length && rows.length) pick = rows.filter((r) => r.key === rows[0].key);
+    return pick.map((r) => ({
+      url: `${origin}/osimis-viewer/app/index.html?study=${encodeURIComponent(r.id)}`,
+      caption: `${r.desc || (r.mods || []).join("/") || "Radiologi"} ${spDicomDateText(r.date)}`.trim()
+    }));
+  }
 
   function smartplusBaseUrl() {
     const m = location.href.match(/^(.*?\/smartplus)(?:\/|$)/i);
@@ -9042,10 +9082,31 @@
   // lalu jendela ditutup dan lanjut ke penunjang berikutnya.
   const SP_FILM_TIMEOUT_MS = 6000;
   // v3.121.0: mode "ai" (🧠 TANYA AI) -> CT/MRI juga diambil (irisan merata dari seri aksial), bukan dilewati.
-  function spCaptureFilm(url, index, timeoutMs = SP_FILM_TIMEOUT_MS, mode = "") {
+  // v3.130.0: bila alamat PACS luar RS diisi, alamat yang terakhir menjawab dicoba dulu; bila jendela tidak menjawab,
+  // dicoba alamat yang lain (RS <-> luar RS), lalu yang menjawab diingat.
+  async function spCaptureFilm(url, index, timeoutMs = SP_FILM_TIMEOUT_MS, mode = "") {
+    const luar = spPacsLuar();
+    let asal = "";
+    try { asal = new URL(url, location.href).origin; } catch (_) {}
+    if (!luar || !asal || asal === luar) {
+      const res = await spCaptureFilmOnce(url, index, timeoutMs, mode);
+      if (res.noReply && !luar) res.error += " — dari luar RS: isi Alamat PACS luar RS di 🧠 Tanya AI ⚙";
+      return res;
+    }
+    const alt = spPacsSwapOrigin(url, luar);
+    const order = spPacsPakai() === "luar" ? [alt, url] : [url, alt];
+    const tag = (u) => (u === alt ? "luar" : "rs");
+    let res = await spCaptureFilmOnce(order[0], index, timeoutMs, mode);
+    if (!res.noReply || res.blocked) { if (!res.blocked) spPacsSetPakai(tag(order[0])); return res; }
+    res = await spCaptureFilmOnce(order[1], index, timeoutMs, mode);
+    if (!res.noReply) { if (!res.blocked) spPacsSetPakai(tag(order[1])); return res; }
+    res.error = "jendela film tidak menjawab di alamat PACS RS maupun alamat luar RS — buka alamat PACS luar RS sekali di Chrome & login, atau sambung ke jaringan RS";
+    return res;
+  }
+  function spCaptureFilmOnce(url, index, timeoutMs = SP_FILM_TIMEOUT_MS, mode = "", extra = "") {
     return new Promise((resolve) => {
       const nonce = `${Date.now()}_${index}_${Math.random().toString(36).slice(2, 8)}`;
-      const name = SP_FILM_WINDOW_PREFIX + encodeURIComponent(location.origin) + "|" + nonce + (mode ? "|" + mode : "");
+      const name = SP_FILM_WINDOW_PREFIX + encodeURIComponent(location.origin) + "|" + nonce + (mode ? "|" + mode : "") + (extra ? "|" + extra : "");
       const got = [];
       let label = "";
       let done = false;
@@ -9070,6 +9131,7 @@
         if (d.part === "image") { got[d.k] = d.image; return; }
         if (d.part === "meta") return;
         if (Array.isArray(d.images)) d.images.forEach((img, k) => { got[k] = img; });
+        if (Array.isArray(d.studies)) { finish({ ok: true, studies: d.studies }); return; }
         finish({ ok: d.ok !== false && (!!collected().length || !!d.skipped), skipped: d.skipped, error: d.error });
       };
       window.addEventListener("message", onMsg);
@@ -9084,6 +9146,17 @@
           : `jendela film tidak menjawab dalam ${Math.round(timeoutMs / 1000)} detik — PACS hanya terbuka dari jaringan RS (Wi-Fi/LAN RS); bila sudah di RS, cek viewer PACS bisa dibuka`
       }), timeoutMs);
     });
+  }
+
+  // v3.130.0: cari study pasien langsung di Orthanc per No.RM (jendela viewer di alamat PACS luar RS; No.RM lewat
+  // window.name, tidak di alamat). Hasil: { studies:[{id,date,time,desc,mods}] } atau { studies:null, error }.
+  async function spPacsStudiesByRm(rm, timeoutMs = 15000) {
+    const luar = spPacsLuar();
+    if (!luar || !rm) return { studies: null };
+    const res = await spCaptureFilmOnce(`${luar}/osimis-viewer/app/index.html`, "rm", timeoutMs, "rmlist", encodeURIComponent(rm));
+    if (Array.isArray(res.studies)) return { studies: res.studies };
+    if (res.blocked) return { studies: null, blocked: true };
+    return { studies: null, noReply: !!res.noReply, error: res.noReply ? "alamat PACS luar RS tidak menjawab (sudah login Orthanc di Chrome?)" : res.error || "pencarian No.RM di PACS gagal" };
   }
 
   function spShowPenunjangPanel(items, notes, opts = {}) {
@@ -9559,13 +9632,28 @@
     const blobToDataUrl = (blob) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(blob); });
     const byInstanceNumber = (a, b) => (Number(a.MainDicomTags?.InstanceNumber) || 0) - (Number(b.MainDicomTags?.InstanceNumber) || 0);
     try {
-      const study = new URLSearchParams(location.search).get("study");
-      if (!study) throw new Error("ID study tidak ada di alamat viewer.");
-      const get = async (path) => {
-        const r = await fetch(location.origin + path, { credentials: "include" });
+      const get = async (path, opt) => {
+        const r = await fetch(location.origin + path, { credentials: "include", ...(opt || {}) });
         if (!r.ok) throw new Error(`PACS ${r.status} (${path.split("/")[1]})`);
         return r;
       };
+      // v3.130.0: mode "rmlist" -> daftar study pasien per No.RM (PatientID; cepat, tidak memakai pencarian per tanggal
+      // yang berat bagi server). Modality tiap study diambil dari daftar serinya.
+      if (parts[3] === "rmlist") {
+        const rm = decodeURIComponent(parts[4] || "").trim();
+        if (!rm) throw new Error("No.RM kosong.");
+        const found = await (await get("/tools/find", { method: "POST", body: JSON.stringify({ Level: "Study", Query: { PatientID: rm }, Expand: true, Limit: 100 }) })).json();
+        const studies = await Promise.all((found || []).slice(0, 60).map(async (st) => {
+          const ser = await get(`/studies/${st.ID}/series`).then((r) => r.json()).catch(() => []);
+          const t = st.MainDicomTags || {};
+          return { id: st.ID, date: t.StudyDate || "", time: t.StudyTime || "", desc: String(t.StudyDescription || "").trim(), mods: [...new Set((ser || []).map((x) => String(x.MainDicomTags?.Modality || "").toUpperCase()).filter(Boolean))] };
+        }));
+        send({ part: "done", ok: true, studies });
+        setTimeout(() => { try { window.close(); } catch (_) {} }, 300);
+        return;
+      }
+      const study = new URLSearchParams(location.search).get("study");
+      if (!study) throw new Error("ID study tidak ada di alamat viewer.");
       const studyInfoP = get(`/studies/${study}`).then((r) => r.json()).catch(() => null);
       const series = await (await get(`/studies/${study}/series`)).json();
       const isImg = (s) => !/^(SR|PR|KO|DOC|REG|SEG)$/i.test(s.MainDicomTags?.Modality || "");
@@ -14825,7 +14913,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.129.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.130.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -18649,7 +18737,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     ${P} .ak-ai-set-note a{color:#6d28d9!important;font-weight:700!important;text-decoration:underline!important;}
     ${P} .ak-ai-set-row{display:flex!important;gap:6px!important;align-items:center!important;font:600 11px/1.4 ${F}!important;color:#4c1d95!important;}
     ${P} .ak-ai-set-row + .ak-ai-set-row,${P} .ak-ai-set-row + .ak-ai-set-title{margin-top:6px!important;}
-    ${P} .ak-ai-key,${P} .ak-ai-model{flex:1!important;min-width:0!important;height:30px!important;padding:0 8px!important;border:1.5px solid #a78bfa!important;
+    ${P} .ak-ai-key,${P} .ak-ai-pacs,${P} .ak-ai-model{flex:1!important;min-width:0!important;height:30px!important;padding:0 8px!important;border:1.5px solid #a78bfa!important;
       border-radius:8px!important;background:#fff!important;font:500 12px ${F}!important;color:#0f172a!important;}
     ${P} .ak-ai-settings button{height:28px!important;padding:0 10px!important;border:0!important;border-radius:8px!important;
       background:#7c3aed!important;color:#fff!important;font:700 11.5px ${F}!important;cursor:pointer!important;}
@@ -18738,6 +18826,10 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     <div class="ak-ai-set-note">Buat di <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com → API keys</a>, lalu tempel di sini. Disimpan di browser ini saja. Cukup isi salah satu kunci, lalu pilih modelnya di bawah.</div>
     <div class="ak-ai-set-row"><input type="password" class="ak-ai-key" data-prov="openai" placeholder="sk-..." autocomplete="off" spellcheck="false"><button type="button" data-act="savekey" data-prov="openai">Simpan</button></div>
     <div class="ak-ai-set-row ak-ai-key-status" data-prov="openai"></div>
+    <div class="ak-ai-set-title">Alamat PACS luar RS (Orthanc)</div>
+    <div class="ak-ai-set-note">Untuk 🩻 Film Ro/CT & AUTO SCREENSHOT dari luar jaringan RS, dan mencari film pasien langsung di PACS per No.RM. Tempel alamat Orthanc dari kolom alamat Chrome (cukup server & port). Disimpan di browser ini saja, tidak masuk script. Buka alamat itu sekali di Chrome dan login dulu.</div>
+    <div class="ak-ai-set-row"><input type="text" class="ak-ai-pacs" placeholder="http://alamat-pacs:8042" autocomplete="off" spellcheck="false"><button type="button" data-act="savepacs">Simpan</button></div>
+    <div class="ak-ai-set-row ak-ai-pacs-status"></div>
     <div class="ak-ai-set-title">Model (ganti model = percakapan baru)</div>
     <div class="ak-ai-set-row"><select class="ak-ai-model">${["claude", "openai"].map((pv) => `<optgroup label="${pv === "openai" ? "ChatGPT (OpenAI)" : "Claude (Anthropic)"}">${SP_AI_MODELS.filter((m) => m.prov === pv).map((m) => `<option value="${m.id}">${escapeHtmlText(`${m.label} · ${m.hint}`)}</option>`).join("")}</optgroup>`).join("")}</select></div>
   </div>
@@ -18775,6 +18867,10 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
         if (k) st.insertAdjacentHTML("beforeend", ` <button type="button" data-act="delkey" data-prov="${pv}">Hapus</button>`);
       });
       if (!spAiGetKey(curProv())) settings.hidden = false;
+      // v3.130.0: alamat PACS luar RS
+      const pacs = spPacsLuar(), ps = $(".ak-ai-pacs-status");
+      ps.textContent = pacs ? `Tersimpan: ${pacs}` : "Belum diisi (film hanya dari alamat PACS jaringan RS).";
+      if (pacs) ps.insertAdjacentHTML("beforeend", ` <button type="button" data-act="delpacs">Hapus</button>`);
     };
     refreshKey();
 
@@ -18872,10 +18968,25 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       let pushed = false;
       // Film diambil lebih dulu (jendela pertama dibuka langsung bila daftar film sudah siap -> tidak diblokir pop-up).
       const filmsP = !wantFilms ? Promise.resolve({ films: [], notes: [] }) : (async () => {
+        // v3.130.0: alamat PACS luar RS diisi -> study pasien dicari langsung di Orthanc per No.RM (juga yang tanpa
+        // tombol FILM di Smartplus). Gagal / tidak ketemu -> daftar FILM dari riwayat radiologi Smartplus seperti dulu.
+        const pre = [];
+        const rm = spAiPageKind() === "igd" ? getCurrentIgdNorm() : "";
+        if (spPacsLuar() && rm) {
+          setWait("Mencari film pasien di PACS (per No.RM)…");
+          const r = await spPacsStudiesByRm(rm);
+          if (r.studies) {
+            const rmList = spPacsRmFilmList(r.studies, spPacsLuar(), spCutoffKey(SP_RAD_WINDOW));
+            if (rmList.length) return spAiCaptureFilms(rmList, setWait);
+            pre.push("Tidak ada film rontgen/CT di PACS untuk No.RM ini — dicoba dari riwayat radiologi Smartplus.");
+          } else if (r.blocked) pre.push("Jendela PACS diblokir browser: izinkan pop-up untuk situs Smartplus.");
+          else if (r.error) pre.push(`Cari per No.RM: ${r.error} — dicoba dari riwayat radiologi Smartplus.`);
+        }
         const list = filmListFor === filmNoreg && filmList ? filmList
           : spAiFilmList(await spFetchRadEntries(smartplusBaseUrl(), filmNoreg).catch(() => []));
-        if (!list.length) return { films: [], notes: ["Tidak ada film rontgen/CT di PACS untuk pasien ini."] };
-        return spAiCaptureFilms(list, setWait);
+        if (!list.length) return { films: [], notes: [...pre, "Tidak ada film rontgen/CT di PACS untuk pasien ini."] };
+        const res = await spAiCaptureFilms(list, setWait);
+        return { ...res, notes: [...pre, ...res.notes] };
       })().catch((e) => ({ films: [], notes: [`Film gagal diambil: ${(e && e.message) || e}`] }));
       try {
         // Data dibaca ulang bila pratinjau sudah lebih dari 1 menit (form/CPPT bisa berubah).
@@ -18952,6 +19063,13 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
         toast("API key tersimpan."); return;
       }
       if (act === "delkey") { spAiSetKey("", t.dataset.prov || "claude"); refreshKey(); return; }
+      if (act === "savepacs") {
+        const inp = $(".ak-ai-pacs"), o = spPacsNormOrigin(inp.value);
+        if (!o) { toast("Alamat PACS tidak terbaca — tempel alamat dari kolom alamat Chrome, mis. http://alamat-pacs:8042"); return; }
+        spPacsSetLuar(o); inp.value = ""; refreshKey(); spAiChat.filmFor = "";
+        toast("Alamat PACS luar RS tersimpan di browser ini."); return;
+      }
+      if (act === "delpacs") { spPacsSetLuar(""); refreshKey(); return; }
       if (t.dataset.chip != null) {
         const q = SP_AI_QUICK[Number(t.dataset.chip)];
         input.value = q[1];
