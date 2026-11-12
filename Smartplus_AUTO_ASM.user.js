@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.131.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.132.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.131.0
-// @description  v3.131.0 (permintaan dokter 12 Nov 2026): PAKET KONSUL IGD & PAKET KONSUL RANAP kini mengambil film rontgen DAN CT scan; bila Alamat PACS luar RS sudah diisi (🧠 Tanya AI ⚙), film dicari langsung di PACS Orthanc per No.RM (1 bulan terakhir, USG dilewati), bila tidak memakai tombol FILM Smartplus. CT dikirim sebagai SATU gambar lembar film 7×4: scout/localizer lalu 27 irisan aksial merata dari dasar tengkorak ke vertex. Ekspertise tetap dari Smartplus; AUTO SCREENSHOT biasa & 🧠 Tanya AI tidak berubah. Hanya membaca, tidak menyimpan apa pun.
+// @version      3.132.0
+// @description  v3.132.0 (uji HP dokter 12 Nov 2026): film per No.RM di PACS Orthanc kini juga ketemu bila PatientID di Orthanc ditulis beda dengan No.RM Smartplus (nol di depan dibuang/ditambah, lalu cari akhiran angka No.RM). PAKET KONSUL IGD & RANAP: bila per No.RM tidak ada film tapi Smartplus punya baris radiologi, dipakai tombol FILM Smartplus (dulu tidak ada film sama sekali). Film yang sudah tampil di jendela PACS kini benar-benar sampai ke panel di HP (Quetta): hasil juga dikirim lewat penyimpanan Violentmonkey bila tab HP tidak meneruskan pesan antarjendela, dan jendela PACS yang sedang memuat film diberi waktu sampai 3x lebih lama.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -15,6 +15,7 @@
 // @downloadURL  https://raw.githubusercontent.com/taufanmtknight-debug/smartplus-auto-asm-rilis/main/Smartplus_AUTO_ASM.user.js
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_deleteValue
 // @grant        GM_addValueChangeListener
 // @grant        GM_removeValueChangeListener
 // ==/UserScript==
@@ -54,8 +55,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.131.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.131.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.132.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.132.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -8751,6 +8752,21 @@
   // Daftar study Orthanc per No.RM -> film [{url, caption}] terbaru dulu (fungsi murni, diuji): study sejak batas
   // tanggal cutKey (yyyy-mm-dd); bila tidak ada -> study di tanggal terakhir. Study berisi USG saja dilewati (cukup ekspertise).
   // v3.131.0: latestIfNone=false -> tidak mengambil study lama (PAKET KONSUL menawarkan tombol "Ambil radiologi terakhir").
+  // v3.132.0 (uji HP dokter 12 Nov 2026: film per No.RM tidak ketemu): PatientID di Orthanc belum tentu ditulis sama
+  // dengan No.RM Smartplus (nol di depan). Urutan pencarian: persis, tanpa nol depan, 8 digit dengan nol depan, lalu
+  // "*digit" (wildcard, paling berat -> terakhir). Hasil wildcard disaring: angka PatientID tanpa nol depan harus sama.
+  function spPacsRmVariants(rm) {
+    const raw = String(rm || "").trim(), key = raw.replace(/\D/g, "").replace(/^0+/, "");
+    const out = [raw];
+    if (key) out.push(key, key.padStart(8, "0"));
+    const uniq = [...new Set(out.filter(Boolean))];
+    if (key.length >= 4) uniq.push("*" + key);
+    return uniq;
+  }
+  function spPacsRmSame(pid, rm) {
+    const k = (v) => String(v || "").replace(/\D/g, "").replace(/^0+/, "");
+    return !!k(rm) && k(pid) === k(rm);
+  }
   function spPacsRmFilmList(studies, origin, cutKey, latestIfNone = true) {
     const rows = (studies || []).filter((s) => s && s.id && !((s.mods || []).length && s.mods.every((m) => /^(US|SR|PR|KO|DOC)$/i.test(m))))
       .map((s) => ({ ...s, key: String(s.date || "").replace(/^(\d{4})(\d{2})(\d{2}).*/, "$1-$2-$3") }))
@@ -9082,6 +9098,7 @@
   // v3.13.0: tunggu maks SP_FILM_TIMEOUT_MS (6 detik). Gambar yang sudah masuk tetap dipakai,
   // lalu jendela ditutup dan lanjut ke penunjang berikutnya.
   const SP_FILM_TIMEOUT_MS = 6000;
+  const SP_FILM_GM_PREFIX = "sp_film_v1_"; // v3.132.0: + nonce -> hasil jendela film lewat penyimpanan Violentmonkey
   // v3.121.0: mode "ai" (🧠 TANYA AI) -> CT/MRI juga diambil (irisan merata dari seri aksial), bukan dilewati.
   // v3.130.0: bila alamat PACS luar RS diisi, alamat yang terakhir menjawab dicoba dulu; bila jendela tidak menjawab,
   // dicoba alamat yang lain (RS <-> luar RS), lalu yang menjawab diingat.
@@ -9118,6 +9135,7 @@
         if (done) return;
         done = true;
         window.removeEventListener("message", onMsg);
+        gmOff();
         try { if (w && !w.closed) w.close(); } catch (_) {}
         resolve({ label, ...val, images: collected() });
       };
@@ -9127,6 +9145,27 @@
         const d = ev.data;
         if (!d || d.type !== "sp-film" || d.nonce !== nonce) return;
         if (filmOrigin && ev.origin !== filmOrigin) return; // hanya dari server film itu sendiri
+        handle(d);
+      };
+      // v3.132.0: jalur cadangan lewat penyimpanan Violentmonkey (lihat runOrthancCapture) untuk tab HP.
+      const gmKey = SP_FILM_GM_PREFIX + nonce;
+      let gmLid = null;
+      const gmOff = () => {
+        try { if (gmLid != null && typeof GM_removeValueChangeListener === "function") GM_removeValueChangeListener(gmLid); } catch (_) {}
+        gmLid = null;
+        try { if (typeof GM_deleteValue === "function") GM_deleteValue(gmKey); else if (typeof GM_setValue === "function") GM_setValue(gmKey, null); } catch (_) {}
+      };
+      try {
+        if (typeof GM_addValueChangeListener === "function") gmLid = GM_addValueChangeListener(gmKey, (n, o, v) => {
+          if (!v || typeof v !== "object") return;
+          if (v.label) handle({ part: "meta", label: v.label });
+          Object.keys(v.images || {}).forEach((k) => handle({ part: "image", k: Number(k), image: v.images[k] }));
+          if (v.done) handle(v.done);
+          else if (!heard) handle({ part: "meta" });
+        });
+      } catch (_) {}
+      const handle = (d) => {
+        if (done) return;
         heard = true;
         if (d.label) label = d.label;
         if (d.part === "image") { got[d.k] = d.image; return; }
@@ -9138,14 +9177,23 @@
       window.addEventListener("message", onMsg);
       w = window.open(url, name, "width=900,height=700");
       if (!w) { finish({ ok: false, blocked: true, url }); return; }
-      setTimeout(() => finish({
+      // v3.132.0: jendela yang sudah menjawab (sedang memuat film, mis. di HP lewat data seluler) diberi waktu
+      // tambahan sampai 3x batas; jendela yang tidak menjawab sama sekali tetap dihentikan pada batas biasa.
+      let ext = 0;
+      const onTimeout = () => {
+        if (done) return;
+        if (heard && !collected().length && ext < 2) { ext++; setTimeout(onTimeout, timeoutMs); return; }
+        finishTimeout();
+      };
+      const finishTimeout = () => finish({
         ok: !!collected().length,
         timedOut: true,
         noReply: !heard,
         // v3.121.3 (uji laptop di luar RS 24 Okt 2026): PACS di jaringan lokal RS tidak terjangkau -> jendela film tidak pernah menjawab.
-        error: collected().length ? "" : heard ? `film tidak muncul dalam ${Math.round(timeoutMs / 1000)} detik`
+        error: collected().length ? "" : heard ? `film tidak muncul dalam ${Math.round(timeoutMs * (ext + 1) / 1000)} detik`
           : `jendela film tidak menjawab dalam ${Math.round(timeoutMs / 1000)} detik — PACS hanya terbuka dari jaringan RS (Wi-Fi/LAN RS); bila sudah di RS, cek viewer PACS bisa dibuka`
-      }), timeoutMs);
+      });
+      setTimeout(onTimeout, timeoutMs);
     });
   }
 
@@ -9569,7 +9617,9 @@
       const { recent, latestOlder } = spPickRecentEntries(radList.list, SP_RAD_WINDOW);
       const filmRows = recent.filter((r) => filmExamOk(r.exam));
       await addExpertise(recent);
-      const rmFilms = await rmFilmsOf(false);
+      let rmFilms = await rmFilmsOf(false);
+      // v3.132.0: per No.RM tidak ada film 1 bulan tapi Smartplus punya baris radiologi -> pakai tombol FILM Smartplus.
+      if (rmFilms && !rmFilms.length && filmRows.length) { notes.push({ text: "Film per No.RM tidak ketemu di PACS — dipakai tombol FILM Smartplus." }); rmFilms = null; }
       const films = rmFilms || filmsOf(filmRows);
       const noFilm = rmFilms ? [] : filmRows.filter((r) => !r.films.length);
       if (noFilm.length) notes.push({ text: `Tombol FILM belum tersedia: ${noFilm.map((r) => `${r.exam} ${r.dateText}`).join(", ")}.` });
@@ -9674,9 +9724,22 @@
     const nonce = parts[2] || "";
     const aiMode = parts[3] === "ai"; // v3.121.0: dibuka 🧠 TANYA AI -> CT/MRI ikut diambil
     const konsulMode = parts[3] === "konsul"; // v3.131.0: PAKET KONSUL -> CT/MRI = satu gambar 7x4 (scout + 27 irisan)
+    // v3.132.0 (uji HP dokter 12 Nov 2026, Quetta): film tampil di jendela PACS lalu jendela tertutup, tapi gambar tidak
+    // sampai ke Smartplus (window.opener / postMessage tidak andal di tab HP). Hasil juga dititipkan lewat penyimpanan
+    // Violentmonkey (GM_setValue, satu kunci per nonce, berisi keadaan lengkap) yang didengar tab Smartplus.
+    const gmKey = "sp_film_v1_" + nonce; // = SP_FILM_GM_PREFIX (literal: fungsi ini jalan sebelum konstanta dibuat)
+    const gmState = { images: {}, label: "", done: null };
     const send = (payload) => {
       try { if (window.opener && targetOrigin) window.opener.postMessage({ type: "sp-film", nonce, ...payload }, targetOrigin); } catch (_) {}
+      if (!nonce || typeof GM_setValue !== "function") return;
+      try {
+        if (payload.label) gmState.label = payload.label;
+        if (payload.part === "image") gmState.images[payload.k] = payload.image;
+        else if (payload.part === "done") gmState.done = { ...payload, images: undefined };
+        GM_setValue(gmKey, { ...gmState, ts: Date.now() });
+      } catch (_) {}
     };
+    send({ part: "meta" }); // tanda jendela film hidup (Smartplus menunggu lebih lama bila jendela menjawab)
     const blobToDataUrl = (blob) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(blob); });
     const byInstanceNumber = (a, b) => (Number(a.MainDicomTags?.InstanceNumber) || 0) - (Number(b.MainDicomTags?.InstanceNumber) || 0);
     try {
@@ -9690,14 +9753,19 @@
       if (parts[3] === "rmlist") {
         const rm = decodeURIComponent(parts[4] || "").trim();
         if (!rm) throw new Error("No.RM kosong.");
-        const found = await (await get("/tools/find", { method: "POST", body: JSON.stringify({ Level: "Study", Query: { PatientID: rm }, Expand: true, Limit: 100 }) })).json();
+        let found = [];
+        for (const pid of spPacsRmVariants(rm)) {
+          const r = await (await get("/tools/find", { method: "POST", body: JSON.stringify({ Level: "Study", Query: { PatientID: pid }, Expand: true, Limit: 100 }) })).json();
+          found = (r || []).filter((st) => !pid.startsWith("*") || spPacsRmSame(st.PatientMainDicomTags?.PatientID, rm));
+          if (found.length) break;
+        }
         const studies = await Promise.all((found || []).slice(0, 60).map(async (st) => {
           const ser = await get(`/studies/${st.ID}/series`).then((r) => r.json()).catch(() => []);
           const t = st.MainDicomTags || {};
           return { id: st.ID, date: t.StudyDate || "", time: t.StudyTime || "", desc: String(t.StudyDescription || "").trim(), mods: [...new Set((ser || []).map((x) => String(x.MainDicomTags?.Modality || "").toUpperCase()).filter(Boolean))] };
         }));
         send({ part: "done", ok: true, studies });
-        setTimeout(() => { try { window.close(); } catch (_) {} }, 300);
+        setTimeout(() => { try { window.close(); } catch (_) {} }, 1200); // v3.132.0: beri waktu GM_setValue tersimpan
         return;
       }
       const study = new URLSearchParams(location.search).get("study");
@@ -9710,7 +9778,7 @@
       if (series.some(isImg) && series.filter(isImg).every(isUs)) {
         const m = series.filter(isImg).map((x) => String(x.MainDicomTags?.Modality || "").toUpperCase());
         send({ part: "done", ok: true, skipped: m.includes("CT") ? "CT" : m.includes("MR") ? "MRI" : "USG" });
-        setTimeout(() => { try { window.close(); } catch (_) {} }, 300);
+        setTimeout(() => { try { window.close(); } catch (_) {} }, 1200); // v3.132.0: beri waktu GM_setValue tersimpan
         return;
       }
       const st = await studyInfoP;
@@ -9754,7 +9822,7 @@
         if (!blobs.some(Boolean)) throw new Error("Gambar CT gagal dimuat.");
         send({ part: "image", k: 0, image: await spCtMontageDraw(blobs), label });
         send({ part: "done", ok: true, label });
-        setTimeout(() => { try { window.close(); } catch (_) {} }, 300);
+        setTimeout(() => { try { window.close(); } catch (_) {} }, 1200); // v3.132.0: beri waktu GM_setValue tersimpan
         return;
       }
       if (!targets.length) throw new Error("Tidak ada gambar di study ini.");
@@ -9773,7 +9841,7 @@
     } catch (err) {
       send({ part: "done", ok: false, error: String(err && err.message || err) });
     }
-    setTimeout(() => { try { window.close(); } catch (_) {} }, 300);
+    setTimeout(() => { try { window.close(); } catch (_) {} }, 1200); // v3.132.0: beri waktu GM_setValue tersimpan
   }
 
   function clickVisibleText(phrases) {
@@ -14977,7 +15045,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.131.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.132.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
