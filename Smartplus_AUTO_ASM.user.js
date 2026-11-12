@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.137.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.138.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.137.0
-// @description  v3.137.0 (uji PAKET KONSUL RANAP pada pasien jantung, penyakit dalam & anak di Smartplus asli 12 Nov 2026): keluhan saat ini mengutamakan DPJP/dokter jaga, bukan catatan konsulen; keluhan saat masuk tanpa RPD / riwayat poli / resep yang ikut di RPS GADAR; pemeriksaan fisik membaca s.d. 4 CPPT dokter yang berisi pemeriksaan (NT epigastrium Sp.PD tidak terlewat, salah ketik "epihgastrium" terbaca); "TAMBAHAN Valisanbe" tidak lagi tertulis "AN VALISANBE"; insulin basal & rapid dibaca sebagai dua obat (dosis baru = perubahan, bukan obat baru); fenitoin loading -> maintenance = satu obat; baris lanjutan dosis digabung; KU "tampak lemah" terbaca.
+// @version      3.138.0
+// @description  v3.138.0 (permintaan dokter 12 Nov 2026): PAKET KONSUL RANAP menulis "Rencana DPJP (tgl)" di bagian P — instruksi DPJP terbaru yang bukan obat (mis. "Rujuk pro PCI", "Acc transfusi 1 bag", "dpl ulang", "pulang"). Dari uji pasien bedah: "pulang" + obat pulang menggantikan infus/injeksi sebelumnya; pasien pasca operasi tidak lagi ditulis "nt McBurney +" dari diagnosis apendisitis; RPD / riwayat poli / resep yang tersimpan di kolom Keluhan Utama GADAR tidak ikut ke keluhan saat masuk.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -55,8 +55,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.137.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.137.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.138.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.138.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -5196,6 +5196,21 @@
     return null;
   }
 
+  // v3.138.0 (permintaan dokter 12 Nov 2026): instruksi DPJP yang BUKAN obat ("Rujuk pro PCI", "Acc transfusi 1 bag", "EKG ulang
+  // besok", "dpl ulang") -> baris "Rencana DPJP" di bagian P. Fungsi murni (diuji): baris terapi, stop/ganti, pembuka advis,
+  // "terapi lanjut", serah terima perawat, dan rutinitas (observasi tanda vital, edukasi) tidak ikut. Maks. 8 baris.
+  function spRencanaNonObat(text) {
+    const out = [];
+    String(text || "").replace(/\r/g, "").replace(/\s*=>\s*yang (?:menyerahkan|menerima)[\s\S]*$/i, "").split("\n").flatMap(spTxSplitLong).forEach((raw) => {
+      const l = raw.replace(/^\s*(?:[-•*·>]+|\d+[.)])\s*/, "").replace(/\s+/g, " ").trim();
+      if (l.replace(/[^a-z0-9]/gi, "").length < 3 || spTxLine(l)) return;
+      if (/^(?:(?:terapi|th|tx|obat|insulin|lain|lain[- ]lain|yang lain)\s+)?(?:lanjut|lnjut|lanjutkan|dilanjutkan|teruskan)\b/i.test(l) || /\b(?:lanjut|teruskan)(?:\s+sesuai\s+\w+)?\.?$/i.test(l)) return;
+      if (/^(?:dx|diagnos\w*|a\/|s\/|o\/)\s*:?$/i.test(l) || /^(?:observasi|obs|monitor|awasi)\s+(?:tanda vital|ttv|ku|keadaan umum)\b/i.test(l) || /^observasi$/i.test(l) || /^edukasi\b/i.test(l)) return;
+      if (!out.some((x) => x.toLowerCase() === l.toLowerCase())) out.push(l.length > 140 ? l.slice(0, 140).replace(/\s+\S*$/, "") + " …" : l);
+    });
+    return out.slice(0, 8);
+  }
+
   // Perjalanan terapi. events (urut lama -> baru): { when, label, kind: "igd" | "advis" | "ward", text }.
   //  - "igd": terapi awal (digabung). Daftar lengkap (>= 3 obat, tanpa kata "lanjut") = daftar terapi baru (pengganti):
   //    obat yang tidak tertulis lagi dianggap dihentikan. Daftar pendek / ada "lanjut" = tambahan/perubahan saja.
@@ -5258,7 +5273,10 @@
         else if (nums(state.get(k)) !== nums(line)) log.push(`${short(state.get(k))} → ${short(line)}`);
         state.set(k, line);
       };
-      if (ev.kind !== "igd" && next.size >= 3 && !keepOthers) {
+      // v3.138.0 (uji Smartplus asli 12 Nov 2026): "pulang / cefixime 2x1 / na diclofenac 3x1" = obat pulang -> infus & injeksi
+      // sebelumnya dianggap selesai walau daftarnya pendek (dulu infus + injeksi tetap tertulis "berjalan").
+      const discharge = /(?:^|\n)\s*(?:[-•*]\s*)?(?:acc\s+|boleh\s+|rencana\s+|pasien\s+)?(?:pulang|blpl)\b/i.test(String(ev.text || ""));
+      if (ev.kind !== "igd" && !keepOthers && (next.size >= 3 || (discharge && next.size >= 1))) {
         const old = state;
         state = new Map();
         for (const [k, line] of next) { if (old.has(k)) state.set(k, old.get(k)); put(k, line); }
@@ -5358,6 +5376,8 @@
     }
     // v3.58.4 (instruksi dokter): penunjuk "Advis spesialis lain (lihat gambar CPPT terlampir): - Sp.X (tgl)" dihapus dari
     // teks; advis spesialis lain cukup dari gambar CPPT di panel. Advis yang masih berisi teks (a.text) tetap ditulis.
+    // v3.138.0: rencana DPJP yang bukan obat (CPPT DPJP terbaru).
+    if (d.rencana && (d.rencana.items || []).length) L.push("", `Rencana DPJP${d.rencana.when ? ` (${d.rencana.when})` : ""}:`, ...d.rencana.items.map((x) => `- ${x}`));
     const advisTxt = (d.advis || []).filter((a) => a.text);
     if (advisTxt.length) L.push("", "Advis spesialis lain:", ...advisTxt.map((a) => `- ${a.sp}${a.when ? ` (${a.when})` : ""}: ${a.text}`));
     if (ch.length) {
@@ -5464,7 +5484,7 @@
     const kelRow = (kelOwn && kelAny && (kelAny.time || 0) - (kelOwn.time || 0) <= 864e5 ? kelOwn : kelAny) || recentPref((r) => kelOf(r));
     let masuk = null;
     if (gadar) {
-      const ku = one(spCleanGadarText(g.kel_utama)), rps = one(spRpsOnly(spCleanGadarText(g.riwayat_sakit_now)));
+      const ku = one(spRpsOnly(spCleanGadarText(g.kel_utama))), rps = one(spRpsOnly(spCleanGadarText(g.riwayat_sakit_now)));
       const kuWord = norm(ku).split(" ").find((w) => w.length >= 4) || "";
       const cap = (x) => x.charAt(0).toUpperCase() + x.slice(1);
       const txt = rps ? (!ku || (kuWord && norm(rps).includes(kuWord)) ? cap(rps) : `${cap(ku)}. ${cap(rps)}`) : cap(ku);
@@ -5524,8 +5544,12 @@
     // dulu temuan positif pemeriksaan lama / GADAR (rh +/+, retraksi +) tetap ditulis.
     const newestO = doc.find((r) => !isAnes(r) && String(r.objective || "").trim());
     const dbnNow = !!newestO && spPemfisDbn(newestO.objective);
+    // v3.138.0 (uji Smartplus asli 12 Nov 2026): pasien PASCA OPERASI ("nyeri luka operasi", "post op") — "nt McBurney +" dari
+    // diagnosis apendisitis tidak lagi ditulis (tanda pra-operasi).
+    const postOp = doc.slice(0, 3).some((r) => /luka (?:post\s*)?op(?:erasi)?\b|\bpost\s*-?\s*op\b|pasca\s*(?:operasi|bedah)|\bpod\s*\d/i.test(`${kelOf(r)} ${r.objective || ""}`));
+    const dxForPf = (t) => (postOp ? String(t || "").replace(/a?p?pendi[sc]itis|apendisitis|appendicitis/gi, " ") : t);
     const pemfis = dbnNow ? CPPT_NORMAL_TEMPLATE_FISIK : pfExams.length
-      ? spPemfisFromContext({ exams: pfExams, dx: [dxRow ? dxRow.diagnosis : pt.dx, spCleanGadarText(g.diagnosa_banding)].filter(Boolean).join("; ") }, CPPT_NORMAL_TEMPLATE_FISIK).text
+      ? spPemfisFromContext({ exams: pfExams, dx: dxForPf([dxRow ? dxRow.diagnosis : pt.dx, spCleanGadarText(g.diagnosa_banding)].filter(Boolean).join("; ")) }, CPPT_NORMAL_TEMPLATE_FISIK).text
       : "";
 
     // P: perjalanan terapi = advis di Rencana GADAR -> instruksi CPPT DPJP & dokter umum (urut waktu).
@@ -5557,6 +5581,13 @@
       if (text) events.push({ time: r.time || 0, when: dm(r.time), kind: "ward", label: "", text, dropBeforeAdvis: !isSp(r) });
     });
     events.sort((a, b) => a.time - b.time);
+    // v3.138.0: rencana non-obat dari CPPT DPJP / spesialis sejawat TERBARU yang memuatnya.
+    let rencana = null;
+    for (const r of doc) {
+      if (isAnes(r) || !(isDpjp(r) || sameSp(r))) continue;
+      const items = spRencanaNonObat(r.instruksi || r.pText);
+      if (items.length) { rencana = { when: dm(r.time), items }; break; }
+    }
     const tl = spTherapyTimeline(events);
     let currentTitle = "";
     let current = tl.current;
@@ -5624,6 +5655,7 @@
       pemfis,
       dx,
       tx: { start: tl.start, changes: tl.changes, current, currentTitle },
+      rencana,
       advis: advis.map((a) => ({ sp: a.sp, when: a.when, text: "" })), advisAttached: shots.length > 0
     });
     return { text, shots, notes };
@@ -15180,7 +15212,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.137.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.138.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
