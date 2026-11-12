@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.133.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.134.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.133.0
-// @description  v3.133.0 (uji HP dokter 12 Nov 2026): film Ro/CT dari Orthanc di HP — catatan panel "jendela film tidak menjawab dalam 30 detik": viewer Osimis terlalu berat dimuat di HP. Jendela pengambil film (PAKET KONSUL, 🧠 Tanya AI 🩻, AUTO SCREENSHOT) kini membuka halaman Orthanc Explorer yang ringan di server yang sama; gambar tetap diambil lewat REST Orthanc, jendela tertutup sendiri setelah selesai.
+// @version      3.134.0
+// @description  v3.134.0 (permintaan dokter 12 Nov 2026): film rontgen & CT dari Orthanc (PAKET KONSUL IGD/RANAP & AUTO SCREENSHOT) kini diberi pita hitam di atas gambar berisi identitas pasien (nama, No.RM, jenis kelamin, tanggal lahir) dan pemeriksaan + tanggal-jam periksa, dibaca dari data DICOM di Orthanc. Lembar CT 7x4 mendapat pita yang sama. 🧠 Tanya AI tetap tanpa identitas (nama disamarkan).
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -55,8 +55,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.133.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.133.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.134.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.134.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -9706,11 +9706,47 @@
     return [...head, ...spEvenSlices(ax.length, cells - head.length).map((i) => ax[i])];
   }
   // Gambar lembar 7 kolom x 4 baris (kotak 256 px, latar hitam, garis pemisah abu-abu) -> dataURL JPEG.
-  async function spCtMontageDraw(blobs, cols = 7, rows = 4, tile = 256) {
+  // v3.134.0 (permintaan dokter 12 Nov 2026): identitas & waktu pemeriksaan di atas film Ro/CT (PAKET KONSUL & AUTO
+  // SCREENSHOT; tidak untuk 🧠 Tanya AI yang menyamarkan nama). st = JSON /studies/<id> Orthanc -> [baris1, baris2] (murni, diuji).
+  function spFilmIdentLines(st, mods = "") {
+    const p = (st && st.PatientMainDicomTags) || {}, t = (st && st.MainDicomTags) || {};
+    const d8 = (v) => { const m = String(v || "").match(/^(\d{4})(\d{2})(\d{2})/); return m ? `${m[3]}-${m[2]}-${m[1]}` : ""; };
+    const hm = (v) => { const m = String(v || "").match(/^(\d{2})(\d{2})/); return m ? `${m[1]}:${m[2]}` : ""; };
+    const name = String(p.PatientName || "").replace(/\^+/g, " ").replace(/\s+/g, " ").trim();
+    const sex = /^M/i.test(p.PatientSex || "") ? "L" : /^F/i.test(p.PatientSex || "") ? "P" : "";
+    const l1 = [name, p.PatientID ? `No.RM ${String(p.PatientID).trim()}` : "", sex, d8(p.PatientBirthDate) ? `lahir ${d8(p.PatientBirthDate)}` : ""].filter(Boolean).join("  •  ");
+    const when = [d8(t.StudyDate), hm(t.StudyTime)].filter(Boolean).join(" ");
+    const l2 = [String(t.StudyDescription || "").trim() || mods, when ? `Tgl periksa ${when}` : ""].filter(Boolean).join("  •  ");
+    return [l1, l2].filter(Boolean);
+  }
+  // Pita hitam berisi baris identitas di atas gambar (lebar ikut gambar, huruf ikut lebar).
+  function spFilmBand(g, width, lines) {
+    const fs = Math.max(14, Math.round(width / 50)), lh = Math.round(fs * 1.35), h = lines.length ? lines.length * lh + Math.round(fs * 0.6) : 0;
+    if (!h) return 0;
+    g.fillStyle = "#000"; g.fillRect(0, 0, width, h);
+    g.fillStyle = "#fff"; g.textBaseline = "top";
+    lines.forEach((l, i) => { g.font = `${i ? "" : "bold "}${fs}px Arial, sans-serif`; g.fillText(l, Math.round(fs * 0.5), Math.round(fs * 0.3) + i * lh, width - fs); });
+    return h;
+  }
+  function spFilmBandHeight(width, lines) { const fs = Math.max(14, Math.round(width / 50)); return lines.length ? lines.length * Math.round(fs * 1.35) + Math.round(fs * 0.6) : 0; }
+  async function spFilmStamp(blob, lines) {
+    const bmp = await createImageBitmap(blob);
     const cv = document.createElement("canvas");
-    cv.width = cols * tile; cv.height = rows * tile;
+    const bh = spFilmBandHeight(bmp.width, lines);
+    cv.width = bmp.width; cv.height = bmp.height + bh;
+    const g = cv.getContext("2d");
+    spFilmBand(g, cv.width, lines);
+    g.drawImage(bmp, 0, bh);
+    return cv.toDataURL("image/jpeg", 0.92);
+  }
+  async function spCtMontageDraw(blobs, cols = 7, rows = 4, tile = 256, lines = []) {
+    const cv = document.createElement("canvas");
+    const bh = spFilmBandHeight(cols * tile, lines);
+    cv.width = cols * tile; cv.height = rows * tile + bh;
     const g = cv.getContext("2d");
     g.fillStyle = "#000"; g.fillRect(0, 0, cv.width, cv.height);
+    spFilmBand(g, cv.width, lines);
+    g.translate(0, bh);
     for (let i = 0; i < Math.min(blobs.length, cols * rows); i++) {
       if (!blobs[i]) continue;
       try {
@@ -9721,7 +9757,7 @@
       } catch (_) {}
     }
     g.strokeStyle = "#555"; g.lineWidth = 1;
-    for (let c = 1; c < cols; c++) { g.beginPath(); g.moveTo(c * tile + 0.5, 0); g.lineTo(c * tile + 0.5, cv.height); g.stroke(); }
+    for (let c = 1; c < cols; c++) { g.beginPath(); g.moveTo(c * tile + 0.5, 0); g.lineTo(c * tile + 0.5, rows * tile); g.stroke(); }
     for (let r = 1; r < rows; r++) { g.beginPath(); g.moveTo(0, r * tile + 0.5); g.lineTo(cv.width, r * tile + 0.5); g.stroke(); }
     return cv.toDataURL("image/jpeg", 0.9);
   }
@@ -9795,6 +9831,7 @@
       const mods = [...new Set(series.filter(isImg).filter((s) => !isUs(s)).map((s) => s.MainDicomTags?.Modality).filter(Boolean))].join("/");
       const label = [mods, st?.MainDicomTags?.StudyDescription].filter(Boolean).join(" ").trim();
       if (label) send({ part: "meta", label });
+      const ident = aiMode ? [] : spFilmIdentLines(st, mods); // v3.134.0: Tanya AI tanpa identitas (nama disamarkan)
       const usable = series
         .filter((s) => isImg(s) && !isUs(s))
         .map((s) => ({ id: s.ID, n: (s.Instances || []).length, num: Number(s.MainDicomTags?.SeriesNumber) || 9999, mod: String(s.MainDicomTags?.Modality || "").toUpperCase() }))
@@ -9830,7 +9867,7 @@
         const blobs = await Promise.all(ids.map((id) => get(`/instances/${id}/rendered`).then((r) => r.blob())
           .catch(() => get(`/instances/${id}/preview`).then((r) => r.blob())).catch(() => null)));
         if (!blobs.some(Boolean)) throw new Error("Gambar CT gagal dimuat.");
-        send({ part: "image", k: 0, image: await spCtMontageDraw(blobs), label });
+        send({ part: "image", k: 0, image: await spCtMontageDraw(blobs, 7, 4, 256, ident), label });
         send({ part: "done", ok: true, label });
         setTimeout(() => { try { window.close(); } catch (_) {} }, 1200); // v3.132.0: beri waktu GM_setValue tersimpan
         return;
@@ -9842,7 +9879,7 @@
           let blob = null;
           if (cross) blob = await get(`/instances/${id}/rendered`).then((r) => r.blob()).catch(() => null);
           if (!blob) blob = await (await get(`/instances/${id}/preview`)).blob();
-          const image = await blobToDataUrl(blob);
+          const image = ident.length ? await spFilmStamp(blob, ident).catch(() => blobToDataUrl(blob)) : await blobToDataUrl(blob);
           send({ part: "image", k, image, label });
           sent++;
         } catch (_) {}
@@ -15055,7 +15092,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.133.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.134.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
