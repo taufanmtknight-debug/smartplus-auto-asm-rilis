@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.135.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.136.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.135.0
-// @description  v3.135.0 (evaluasi PAKET KONSUL RANAP di Smartplus asli 12 Nov 2026): instruksi terapi DPJP yang dipisah <br> tidak lagi tersambung jadi satu baris (terapi berjalan & riwayat perubahan kembali per obat); kolom tanda vital CPPT perawat yang berderet terbaca per kolom (dulu Kesadaran berisi "CM * Tekanan Darah ..."); tanda vital berumur >24 jam diberi tanggal, tidak disebut "saat ini"; keluhan saat ini = CPPT dokter terbaru walau hanya "membaik"; "pemfis dbn" dokter terbaru = pemeriksaan normal (temuan lama tidak dibawa); "mengi" = wheezing; pemberian "extra" sekali tidak masuk terapi berjalan; "<br />" mentah GADAR tidak ikut tertulis.
+// @version      3.136.0
+// @description  v3.136.0 (uji ulang PAKET KONSUL RANAP di Smartplus asli 12 Nov 2026): terapi "Inh respivent 3x" / "Inh budesma 2x" tidak lagi hilang dari terapi berjalan; instruksi spesialis pengganti dengan spesialisasi sama seperti DPJP (mis. "O2 4 lpm") ikut alur terapi; advis yang ditempel di Rencana GADAR sebagai satu baris panjang dipecah per obat; baris "selanjutnya Infus RL ..." digabung dengan baris RL sebelumnya (dulu tercatat "stop selanjutnya ..."). (v3.135.0: terapi per baris, tanda vital per kolom & bertanggal bila lama, keluhan/pemfis dokter terbaru, "extra" sekali.)
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -55,8 +55,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.135.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.135.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.136.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.136.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -5140,10 +5140,10 @@
     [/^(rl|ringer)/, "rl"],
     [/^(nacl|ns)$/, "nacl"]
   ];
-  const SP_TX_LEAD = /^(?:pasang|beri(?:kan)?|lanjut(?:kan)?|inj(?:eksi|ection)?|drip|ivfd|infus|inf|nebu(?:lisasi|lizer|l)?|neb|inhalasi|tab(?:let)?|syr(?:up)?|sirup|supp?|kaps(?:ul)?|caps?|puyer|pulv|drop|gtt|salep|cream|krim|p\.?o|iv|im|sc|oral|cairan|koreksi)\b\.?\s*/i;
+  const SP_TX_LEAD = /^(?:selanjutnya|kemudian|lalu|dilanjutkan|pasang|beri(?:kan)?|lanjut(?:kan)?|inj(?:eksi|ection)?|drip|ivfd|infus|inf|nebu(?:lisasi|lizer|l)?|neb|inhalasi|inh|tab(?:let)?|syr(?:up)?|sirup|supp?|kaps(?:ul)?|caps?|puyer|pulv|drop|gtt|salep|cream|krim|p\.?o|iv|im|sc|oral|cairan|koreksi)\b\.?\s*/i;
   const SP_TX_NONDRUG = /^(?:obs(?:ervasi)?\b|monitor|cek\b|periksa|rencana|konsul|lapor|edukasi|diet|asi\b|mobilisasi|tirah|tidak puasa|puasa|fisioterapi|kompres|posisi|ubah posisi|miring|ro\b|rontgen|foto\b|usg|ct\b|ct-?scan|mri|ekg|lab\b|darah|dpl\b|dl\b|gds\b|rawat|pindah|acc\b|advi[cs]e?\b|terapi\b|th\b|tx\b|dx\b|diagnos|kaji|motivasi|bed ?rest|awasi|target|evaluasi|pasang (?:ngt|kateter|dc)\b|ganti verban|rawat luka)/i;
   const SP_TX_DOSE = /\d\s*(?:mg|mcg|µg|g|gr|gram|ml|cc|iu|ui|unit|tpm|lpm|l\/m|lt|liter|meq|%|tab|tablet|kaps|kapsul|sach|sachet|sacet|drop|tetes|gtt|puff|respule|resp|amp|ampul|vial|fls|flash|kolf|supp|cth|sdm|sdt|bungkus|bks)\b|\b\d+\s*x\s*\d|\b\d\s*x\s*(?:sehari|\/hari|perhari)|\/\s*\d+(?:\s*-\s*\d+)?\s*jam|\btiap\s*\d+\s*jam|\b(?:k\/p|prn|bila perlu|ekstra|extra)\b/i;
-  const SP_TX_ROUTE = /^(?:pasang\s+)?(?:inj(?:eksi)?\b|drip\b|ivfd\b|infus\b|nebu|inhalasi|o2\b|oksigen|transfusi|tab\b|syr\b|sirup|supp\b|p\.?o\b)/i;
+  const SP_TX_ROUTE = /^(?:pasang\s+)?(?:inj(?:eksi)?\b|drip\b|ivfd\b|infus\b|nebu|inhalasi|inh\b|o2\b|oksigen|transfusi|tab\b|syr\b|sirup|supp\b|p\.?o\b)/i;
   const SP_TX_STOPW = /\b(?:stop(?:kan)?|hentikan|dihentikan|aff|lepas|dilepas|cabut|dicabut|tidak dilanjutkan|dc)\b/i;
   const SP_TX_SWAPW = /\b(?:diganti|ganti(?:kan)?|switch|diubah)\b/i;
   // Baris pembuka advis / instruksi DPJP ("Advis dr. X SpA (14.20):", "ADVICE DR. X SP. A;", "RAWAT INAP DR. X SP.A :").
@@ -5195,6 +5195,16 @@
   //  - "stop/aff/lepas X", "ganti X dengan Y", "tambah X" dibaca sebagai perintah.
   // -> { igd: [baris], start: { when, label, items } | null, changes: [{ when, label, items }], current: [baris] }
   //    start = daftar terapi PERTAMA bila belum ada terapi IGD (pasien dari poli / IGD tanpa terapi tertulis).
+  // v3.136.0 (uji Smartplus asli 12 Nov 2026): advis yang ditempel ke Rencana GADAR tanpa baris baru ("Pasang O2 2l/m Infus RL ...
+  // Inj. Ceftriaxone ... Nebulisasi ...") dulu menjadi SATU butir terapi -> baris panjang (>100 huruf) dengan >=3 kata pembuka
+  // obat dipecah di depan kata pembuka itu (fungsi murni, diuji).
+  const SP_TX_SPLIT_LEAD = /\s+(?=(?:inj\.?|injeksi|infus|ivfd|drip|nebulisasi|nebu|inhalasi|diet|observasi|fisioterapi)\s)/gi;
+  function spTxSplitLong(line) {
+    const t = String(line || "");
+    if (t.length <= 100 || (t.match(SP_TX_SPLIT_LEAD) || []).length < 3) return [t];
+    return t.split(SP_TX_SPLIT_LEAD).map((x) => x.trim()).filter(Boolean);
+  }
+
   function spTherapyTimeline(events) {
     let state = new Map();
     let igd = [];
@@ -5204,7 +5214,7 @@
     const short = (t) => String(t).replace(/\s+/g, " ").trim().slice(0, 110);
     const isFluid = (t) => /^(?:infus|ivfd|inf\b|drip)|\b(?:rl|ringer|nacl|ns|d5|d10|kaen\w*|asering|futrolit|tutofusin|aminofluid)\b/i.test(t);
     for (const ev of events) {
-      const ops = String(ev.text || "").replace(/\r/g, "").split("\n").map(spTxLine).filter(Boolean);
+      const ops = String(ev.text || "").replace(/\r/g, "").split("\n").flatMap(spTxSplitLong).map(spTxLine).filter(Boolean);
       // Baris berkunci sama dalam satu bagian digabung ("RL 500cc habis 4 jam, selanjutnya" + "RL 20cc/jam");
       // bagian sesudah baris advis menggantikan bagian sebelumnya.
       const next = new Map(), seg = new Map(), once = [];
@@ -5505,7 +5515,11 @@
         if (!dpjpHead) { const t = spAdvisSummary(sg.lines.join("\n")); if (t) advis.push({ sp, when: dm(gTime), text: t, full: [sg.head, ...sg.lines].join("\n").trim() }); }
       });
     }
-    doc.filter((r) => !isAnes(r) && (isDpjp(r) || !isSp(r))).forEach((r) => {
+    // v3.136.0 (uji Smartplus asli 12 Nov 2026): spesialis PENGGANTI dengan spesialisasi sama seperti DPJP (mis. Sp.P lain yang
+    // visit saat DPJP libur: "O2 4 lpm") ikut alur terapi — dulu instruksinya tidak terbaca sehingga O2 tercatat stop.
+    const dpjpSp = spSpecialty(pt.dokter || "");
+    const sameSp = (r) => !!dpjpSp && spSpecialty(r.ppa) === dpjpSp;
+    doc.filter((r) => !isAnes(r) && (isDpjp(r) || !isSp(r) || sameSp(r))).forEach((r) => {
       const text = r.instruksi || r.pText;
       if (text) events.push({ time: r.time || 0, when: dm(r.time), kind: "ward", label: "", text, dropBeforeAdvis: !isSp(r) });
     });
@@ -15133,7 +15147,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.135.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.136.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
