@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.132.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.133.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.132.0
-// @description  v3.132.0 (uji HP dokter 12 Nov 2026): film per No.RM di PACS Orthanc kini juga ketemu bila PatientID di Orthanc ditulis beda dengan No.RM Smartplus (nol di depan dibuang/ditambah, lalu cari akhiran angka No.RM). PAKET KONSUL IGD & RANAP: bila per No.RM tidak ada film tapi Smartplus punya baris radiologi, dipakai tombol FILM Smartplus (dulu tidak ada film sama sekali). Film yang sudah tampil di jendela PACS kini benar-benar sampai ke panel di HP (Quetta): hasil juga dikirim lewat penyimpanan Violentmonkey bila tab HP tidak meneruskan pesan antarjendela, dan jendela PACS yang sedang memuat film diberi waktu sampai 3x lebih lama.
+// @version      3.133.0
+// @description  v3.133.0 (uji HP dokter 12 Nov 2026): film Ro/CT dari Orthanc di HP — catatan panel "jendela film tidak menjawab dalam 30 detik": viewer Osimis terlalu berat dimuat di HP. Jendela pengambil film (PAKET KONSUL, 🧠 Tanya AI 🩻, AUTO SCREENSHOT) kini membuka halaman Orthanc Explorer yang ringan di server yang sama; gambar tetap diambil lewat REST Orthanc, jendela tertutup sendiri setelah selesai.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -55,8 +55,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.132.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.132.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.133.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.133.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -8739,6 +8739,16 @@
   function spPacsSwapOrigin(url, origin) {
     try { const u = new URL(url, location.href), o = new URL(origin); u.protocol = o.protocol; u.host = o.host; return u.href; } catch (_) { return url; }
   }
+  // v3.133.0 (uji HP dokter 12 Nov 2026: "jendela film tidak menjawab dalam 30 detik"): viewer Osimis terlalu berat
+  // dimuat di HP, AUTO ASM baru jalan setelah halamannya siap. Jendela pengambil film kini membuka halaman Orthanc
+  // Explorer yang ringan (/app/explorer.html, server & ?study= sama); gambar tetap diambil lewat REST Orthanc.
+  function spPacsLightUrl(url) {
+    try {
+      const u = new URL(url, location.href);
+      if (/\/osimis-viewer\//i.test(u.pathname)) return `${u.origin}/app/explorer.html${u.search}`;
+    } catch (_) {}
+    return url;
+  }
   function spPacsLuar() { try { return spPacsNormOrigin(localStorage.getItem(SP_PACS_LUAR_KEY) || ""); } catch (_) { return ""; } }
   function spPacsSetLuar(text) {
     const o = spPacsNormOrigin(text);
@@ -9175,7 +9185,7 @@
         finish({ ok: d.ok !== false && (!!collected().length || !!d.skipped), skipped: d.skipped, error: d.error });
       };
       window.addEventListener("message", onMsg);
-      w = window.open(url, name, "width=900,height=700");
+      w = window.open(spPacsLightUrl(url), name, "width=900,height=700");
       if (!w) { finish({ ok: false, blocked: true, url }); return; }
       // v3.132.0: jendela yang sudah menjawab (sedang memuat film, mis. di HP lewat data seluler) diberi waktu
       // tambahan sampai 3x batas; jendela yang tidak menjawab sama sekali tetap dihentikan pada batas biasa.
@@ -15045,7 +15055,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.132.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.133.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
