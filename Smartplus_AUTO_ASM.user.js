@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.139.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.140.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.139.0
-// @description  v3.139.0 (uji PAKET KONSUL RANAP pada pasien ICU & anak di Smartplus asli 12 Nov 2026): tindakan yang sudah dikerjakan (intubasi, ekstubasi, "pasien dilakukan ...") tidak lagi tertulis sebagai terapi yang berjalan; keluhan saat ini mengutamakan DPJP/sejawat sebelum dokter jaga; "Rencana DPJP" hanya dari CPPT DPJP terbaru (s.d. 24 jam), bukan rencana berhari-hari lalu; advis satu baris berisi obat bermerek tanpa kata pembuka ("... iv/8jam Lacidofil 1 x 1 sachet Cetirizine drop ...") dipecah per obat.
+// @version      3.140.0
+// @description  v3.140.0 (instruksi dokter 13 Nov 2026): PAKET KONSUL RANAP — O2 mengikuti CPPT perawat terbaru: bila perawat menulis O2 masih terpasang (mis. "O2 terpasang Nasal Canul 2 lpm") dan daftar terapi DPJP tidak memuat O2, O2 tetap ditulis di terapi berjalan dengan keterangan "(CPPT perawat tgl)". Pemeriksaan fisik tetap template umum.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -55,8 +55,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.139.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.139.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.140.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.140.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -5324,6 +5324,18 @@
     return out.join("\n").trim();
   }
 
+  // v3.140.0 (instruksi dokter 13 Nov 2026: "O2 sesuai perawat"): O2 yang masih terpasang menurut CPPT perawat TERBARU
+  // ("O2 terpasang Nasal Canul 2 lpm", "terpasang o2 2lpm", "NK 5 lpm") -> "O2 nasal kanul 2 lpm"; "" bila tidak tertulis /
+  // dilepas / room air. Fungsi murni (diuji).
+  function spNurseO2(text) {
+    const t = String(text || "").replace(/\s+/g, " ");
+    const m = t.match(/\b(?:o2|oksigen)\b([^.;]{0,45}?)(\d{1,2})\s*(?:lpm|l\/m|lt\b|liter)/i) || t.match(/\b(nk|nrm|rm|nasal\s*k?c?an\w*)\s*(\d{1,2})\s*(?:lpm|l\/m|lp\b)/i);
+    if (!m) return "";
+    if (/\b(?:aff|lepas|dilepas|stop|tanpa|tidak|tdk)\b|\(\s*-\s*\)/i.test(m[1] || "")) return "";
+    const dev = /nrm|non\s*rebreath/i.test(m[0]) ? "NRM" : /\brm\b|rebreath/i.test(m[0]) ? "RM" : /simple\s*mask|\bsm\b/i.test(m[0]) ? "simple mask" : /nasal|\bnk\b|\bnc\b|kanul|canul/i.test(m[0]) ? "nasal kanul" : "";
+    return `O2 ${dev ? dev + " " : ""}${m[2]} lpm`;
+  }
+
   // v3.135.0: pemeriksaan fisik bebas yang berarti "dalam batas normal" tanpa temuan lain ("pemfis dbn", "dbn", "PF dalam batas normal").
   function spPemfisDbn(text) {
     const t = String(text || "").toLowerCase().replace(/\s+/g, " ").trim();
@@ -5629,6 +5641,12 @@
       current = src.filter(okObat).filter((o) => { const k = norm(o.nama); if (seen.has(k)) return false; seen.add(k); return true; }).map(fmt).slice(0, 20);
       if (current.length) currentTitle = "Obat yang berjalan saat ini (dari e-resep 48 jam; instruksi terapi belum tertulis):";
     }
+
+    // v3.140.0 (instruksi dokter 13 Nov 2026): O2 mengikuti CPPT perawat terbaru — bila perawat menulis O2 masih terpasang dan
+    // daftar terapi tidak memuat O2 (daftar DPJP tidak menuliskannya -> dulu tercatat "stop"), O2 tetap ditulis.
+    const nurseRow = rows.find((r) => !r.isDoctor && /kep\b|\bns\b|perawat|bidan|keb\b/i.test(r.ppa || "") && String(r.oText || "").trim());
+    const nurseO2 = nurseRow ? spNurseO2(nurseRow.oText) : "";
+    if (nurseO2 && !current.some((x) => /\b(?:o2|oksigen)\b/i.test(x))) current = [...current, `${nurseO2} (CPPT perawat ${dm(nurseRow.time)})`];
 
     // v3.57.0 (instruksi dokter): advis spesialis lain (bukan DPJP) = GAMBAR CPPT LENGKAP visit terakhir tiap spesialisasi
     // (S, O, A, P, Instruksi PPA, e-resep), dilampirkan di panel bersama gambar penunjang; di teks hanya penunjuk.
@@ -15223,7 +15241,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.139.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.140.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
