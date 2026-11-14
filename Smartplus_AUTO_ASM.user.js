@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.141.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.142.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.141.0
-// @description  v3.141.0 (uji film Orthanc asli 14 Nov 2026): pita identitas film tidak lagi menulis tanggal lahir palsu yang diisi alat rontgen sama dengan tanggal pemeriksaan (pasien 33 th tertulis "lahir 09-10-2026"); judul film tidak mengulang kata ("CT BRAIN 14-11-2026 — CT CT BRAIN" -> "CT BRAIN 14-11-2026").
+// @version      3.142.0
+// @description  v3.142.0 (laporan dokter 14 Nov 2026): PAKET KONSUL RANAP — film CT memakai seri aksial jaringan lunak/brain window; bone window (label "bone" atau WindowWidth >= 1000) hanya bila tidak ada seri lain (dulu CT BRAIN 128 irisan terkirim bone window). Kesadaran (dan GCS) selalu dicari: bila CPPT dengan tanda vital terbaru tidak menulisnya, diambil dari CPPT dokter/perawat lain dalam 24 jam ("kesadaran somnolen", "Kes CM").
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -55,8 +55,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.141.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.141.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.142.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.142.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -5336,6 +5336,23 @@
     return `O2 ${dev ? dev + " " : ""}${m[2]} lpm`;
   }
 
+  // v3.142.0: kesadaran dari teks bebas CPPT ("kesadaran somnolen", "Kes CM", "kes: compos mentis", baris pertama "cm")
+  // -> "CM"/"Apatis"/... ; "" bila tidak tertulis (fungsi murni, diuji).
+  function spKesadaranText(text) {
+    const t = String(text || "");
+    const m = t.match(/\b(?:kes(?:adaran)?|kesdaran|ksdrn)\.?\s*[:=]?\s*(cm\b|c\.m\.?|compos\s*-?\s*mentis|cmc\b|apatis|somnolen\w*|sopor\w*|soporo\s*koma(?:tous)?|koma|coma|delirium|delir)/i) ||
+      t.trim().split("\n")[0].trim().match(/^(cm|compos\s*mentis|apatis|somnolen\w*|sopor\w*|koma|delirium)$/i);
+    if (!m) return "";
+    const k = m[1].toLowerCase().replace(/\s+/g, "");
+    if (/^(cm|c\.m\.?|composmentis|compos-mentis|cmc)$/.test(k)) return "CM";
+    if (/^somnolen/.test(k)) return "Somnolen";
+    if (/^soporokoma/.test(k)) return "Sopor koma";
+    if (/^sopor/.test(k)) return "Sopor";
+    if (/^(koma|coma)$/.test(k)) return "Koma";
+    if (/^delir/.test(k)) return "Delirium";
+    return "Apatis";
+  }
+
   // v3.135.0: pemeriksaan fisik bebas yang berarti "dalam batas normal" tanpa temuan lain ("pemfis dbn", "dbn", "PF dalam batas normal").
   function spPemfisDbn(text) {
     const t = String(text || "").toLowerCase().replace(/\s+/g, " ").trim();
@@ -5521,15 +5538,21 @@
     let nowKu = "";
     if (vRow) {
       const tt = String(vRow.oText || "");
-      const kes = tt.match(/\bkes(?:adaran)?\.?\s*:?\s*(cm\b|compos\s*mentis|apatis|somnolen|sopor|koma|delirium)/i);
-      if (!now.kesadaran && kes) now.kesadaran = kes[1];
-      // v3.135.0: O yang hanya berisi "cm" / "apatis" (tanpa kata "kes") = kesadaran.
-      const bare = tt.trim().split("\n")[0].trim().match(/^(cm|compos\s*mentis|apatis|somnolen|sopor|koma|delirium)$/i);
-      if (!now.kesadaran && bare) now.kesadaran = bare[1];
+      if (!now.kesadaran) now.kesadaran = spKesadaranText(tt);
       const ku = tt.match(/\b(?:ku|keadaan umum)\.?\s*:?\s*(baik|sedang|lemah|buruk|tampak sakit \w+|tampak (?:lemah|baik|sedang)|sakit \w+)/i);
       nowKu = now.keadaan_umum || (ku ? ku[1] : "");
       const sp = tt.match(/\b(?:spo2|saturasi|sat)\s*:?\s*(\d{2,3})\s*%?/i);
       if (sp && +sp[1] <= 100) now.spo2 = sp[1];
+    }
+    // v3.142.0 (laporan dokter 14 Nov 2026: "kadang di SOAP tidak tertulis kesadaran"): CPPT dengan tanda vital terbaru sering
+    // tidak menulis kesadaran -> diambil dari CPPT lain (dokter/perawat) terbaru yang menulisnya, maks 24 jam sebelumnya.
+    if (vRow && !now.kesadaran) {
+      const kRow = rows.find((r) => r !== vRow && (vRow.time || 0) - (r.time || 0) <= 864e5 && (r.time || 0) <= (vRow.time || 0) + 864e5 && (r.fields.kesadaran || spKesadaranText(r.oText)));
+      if (kRow) now.kesadaran = kRow.fields.kesadaran || spKesadaranText(kRow.oText);
+    }
+    if (vRow && !now.gcs) {
+      const gRow = rows.find((r) => r !== vRow && Math.abs((vRow.time || 0) - (r.time || 0)) <= 864e5 && vitOf(r).gcs);
+      if (gRow) now.gcs = vitOf(gRow).gcs;
     }
     const kesShort = (k) => { const x = String(k || "").trim(); return /^(cm|compos\s*mentis)$/i.test(x) ? "CM" : x; };
     const KES = { 1: "CM", 2: "Apatis", 3: "Somnolen", 4: "Sopor", 5: "Koma" };
@@ -9842,13 +9865,17 @@
 
   // v3.121.0: seri CT/MRI yang dipakai TANYA AI (fungsi murni, diuji): seri 10–80 gambar dengan nomor seri terkecil
   // (aksial tebal), bila tidak ada -> seri ≥10 gambar terkecil, bila tidak ada -> seri terbesar.
+  // v3.142.0 (laporan dokter 14 Nov 2026: CT BRAIN terkirim bone window): seri berisi desc (SeriesDescription) & ww
+  // (WindowWidth irisan tengah). Urutan: aksial jaringan lunak/brain -> potongan lain (koronal/sagital) jaringan lunak ->
+  // bone window (desc "bone"/"tulang"/"lung" atau WindowWidth >= 1000) hanya bila tidak ada yang lain.
   function spPickCrossSeries(list) {
     const L = (list || []).filter((s) => s && s.n > 0);
     if (!L.length) return null;
-    const mid = L.filter((s) => s.n >= 10 && s.n <= 80).sort((a, b) => a.num - b.num);
-    if (mid.length) return mid[0];
-    const big = L.filter((s) => s.n >= 10).sort((a, b) => a.n - b.n);
-    return big.length ? big[0] : L.reduce((a, b) => (a.n >= b.n ? a : b));
+    const bone = (s) => /\b(bone|tulang|lung|paru)\b/i.test(s.desc || "") || Number(s.ww) >= 1000;
+    const plane = (s) => /coronal|coronar|sagit|\bcor\b|\bsag\b|scout|localizer|topogram|surview/i.test(s.desc || "");
+    const pen = (s) => (bone(s) ? 2 : 0) + (plane(s) ? 1 : 0);
+    const size = (s) => (s.n >= 10 && s.n <= 80 ? 0 : s.n > 80 ? 1 : 2);
+    return [...L].sort((a, b) => pen(a) - pen(b) || size(a) - size(b) || (size(a) === 1 ? a.n - b.n : size(a) === 2 ? b.n - a.n : 0) || a.num - b.num)[0];
   }
   // k indeks merata dari n gambar (fungsi murni, diuji).
   function spEvenSlices(n, k) {
@@ -9995,9 +10022,16 @@
       const ident = aiMode ? [] : spFilmIdentLines(st, mods); // v3.134.0: Tanya AI tanpa identitas (nama disamarkan)
       const usable = series
         .filter((s) => isImg(s) && !isUs(s))
-        .map((s) => ({ id: s.ID, n: (s.Instances || []).length, num: Number(s.MainDicomTags?.SeriesNumber) || 9999, mod: String(s.MainDicomTags?.Modality || "").toUpperCase() }))
+        .map((s) => ({ id: s.ID, n: (s.Instances || []).length, num: Number(s.MainDicomTags?.SeriesNumber) || 9999, mod: String(s.MainDicomTags?.Modality || "").toUpperCase(),
+          desc: String(s.MainDicomTags?.SeriesDescription || ""), mid: (s.Instances || [])[Math.floor((s.Instances || []).length / 2)] }))
         .filter((s) => s.n > 0)
         .sort((a, b) => a.num - b.num);
+      // v3.142.0: WindowWidth irisan tengah tiap seri CT/MRI (>=10 gambar) untuk mengenali bone window tanpa label "bone".
+      if (aiMode || konsulMode) {
+        await Promise.all(usable.filter((s) => (s.mod === "CT" || s.mod === "MR") && s.n >= 10 && s.mid).map(async (s) => {
+          try { const tg = await get(`/instances/${s.mid}/simplified-tags`).then((r) => r.json()); s.ww = parseFloat(String(tg.WindowWidth || "").split("\\")[0]) || 0; } catch (_) {}
+        }));
+      }
       // v3.121.0 (TANYA AI): CT/MRI -> 12 irisan merata dari seri aksial utama (10–80 gambar, nomor seri terkecil;
       // bukan scout/localizer yang hanya 1–3 gambar), dirender dengan windowing DICOM bila server mendukung.
       const cross = aiMode || konsulMode ? spPickCrossSeries(usable.filter((s) => s.mod === "CT" || s.mod === "MR")) : null;
@@ -15253,7 +15287,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.141.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.142.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
