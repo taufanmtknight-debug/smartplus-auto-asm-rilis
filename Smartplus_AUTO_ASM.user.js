@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.145.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.146.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.145.0
-// @description  v3.145.0 (permintaan dokter 14 Nov 2026): 📡 ADVIS WA REALTIME — tombol WhatsApp Web kanan atas kini saklar on/off (Alt+klik = panel Advis → ASGADAR lama). Saat ON, balasan advis spesialis berpasien di chat medis/konsul (chat terbuka, dan chat belum dibaca saat WA tidak dipakai 60 detik) langsung dibuka di tab Smartplus BARU: panel ADVIS SPESIALIS untuk pasien itu, advis sudah ditambahkan di bawah Rencana, tombol 💾 Simpan Rencana terpilih — tekan Enter untuk menyimpan. 🔎 Cari advis WA dari 🛏 CEK ADVIS kini juga mencari pasien IGD 18 jam yang BELUM dapat kamar; yang Rencana-nya belum ada advis ikut diantrekan.
+// @version      3.146.0
+// @description  v3.146.0 (permintaan dokter 14 Nov 2026): 📡 Advis WA realtime membuka tab Smartplus baru di LATAR, berjejer di ujung (tab yang sedang dipakai tidak berpindah); judul tab memuat nama pasien, tombol Simpan terpilih saat tab dibuka (Enter = simpan). 📨 PAKET KONSUL IGD: selama panel terbuka, SOAP ikut diperbarui otomatis saat form Assesment GADAR diedit (keluhan, TTV, pemeriksaan, diagnosis, Rencana/terapi) dan langsung tersalin.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -56,8 +56,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.145.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.145.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.146.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.146.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -7770,8 +7770,9 @@
       if (!base) { rtNote("📡 Advis baru untuk " + item.patient.label + " — buka Smartplus sekali di browser ini supaya tab bisa dibuka otomatis."); return false; }
       const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       try { GM_setValue(RT_KEY, { id, ts: Date.now(), ...item }); } catch (_) { return false; }
-      try { GM_openInTab(base + "/soap_igd/pasien_igd_list#sp-rt=" + id, { active: true, insert: true }); } catch (_) { return false; }
-      rtNote("📡 Advis " + item.patient.label + " dibuka di tab Smartplus baru.");
+      // v3.146.0 (dokter 14 Nov 2026): tab baru dibuka di LATAR & berjejer di ujung (tab yang sedang dipakai tidak berpindah).
+      try { GM_openInTab(base + "/soap_igd/pasien_igd_list#sp-rt=" + id, { active: false, insert: false }); } catch (_) { return false; }
+      rtNote("📡 Advis " + item.patient.label + " siap di tab Smartplus baru (di belakang) — buka tab itu lalu tekan Enter.");
       return true;
     }
     // Baca chat yang sedang terbuka -> advis baru (sejak ON) berpasien.
@@ -7870,6 +7871,13 @@
     const pt = v.patient;
     const label = pt.label || [pt.nama, pt.rm].filter(Boolean).join(" / ");
     runAdvisSpesialis({ waQueue: [{ patient: { ...pt, label }, texts: [v.text] }], realtime: true });
+    // v3.146.0: tab dibuka di latar -> judul tab memuat nama pasien; saat tab dibuka, tombol Simpan difokus lagi (Enter = simpan).
+    document.title = "📩 Advis " + (pt.nama || label) + " · " + document.title;
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) return;
+      const b = document.querySelector("#sp-advis-panel .sp-adv-go");
+      if (b && !b.disabled) setTimeout(() => { try { b.focus(); } catch (_) {} }, 100);
+    });
     toast(`📡 Advis WA realtime: ${label}${v.chat ? " (chat " + v.chat + ")" : ""} — periksa, lalu tekan Enter untuk menyimpan.`);
   }
   // Pasien dari pesan WA ({nama, rm}) sama dengan pasien Smartplus ({nama, norm})? No. RM didahulukan, lalu nama.
@@ -9808,7 +9816,7 @@
     } else {
       toast("PAKET KONSUL: SOAP tidak bisa disusun (GADAR kunjungan ini tidak ditemukan). Lanjut penunjang saja.");
     }
-    await runAutoPenunjang({
+    const pk = {
       soapText: soap || "",
       soapCopied: copied,
       konsulFilm: true, // v3.131.0: film rontgen + CT 7x4, dicari per No.RM di Orthanc
@@ -9816,7 +9824,50 @@
       refreshSoap: async () => {
         try { return await runAutoSoap({ returnOnly: true, refresh: true }); } catch (err) { console.warn("[PAKET KONSUL] update soap", err); return null; }
       }
-    });
+    };
+    const stopLive = spPaketKonsulLiveSoap(pk);
+    try { await runAutoPenunjang(pk); } catch (err) { stopLive(); throw err; }
+  }
+
+  // v3.146.0 (permintaan dokter 14 Nov 2026): selama panel PAKET KONSUL IGD terbuka, perubahan di form Assesment GADAR
+  // (keluhan, TTV, pemeriksaan, diagnosis, Rencana/terapi) langsung menyusun ulang SOAP di panel (1,2 dtk sesudah berhenti
+  // mengetik) dan menyalinnya otomatis. Hanya membaca isi form (tidak mengubah form, tidak menyimpan).
+  function spPaketKonsulLiveSoap(pk) {
+    let timer = null, alive = true, last = pk.soapText || "";
+    const PANEL = "sp-auto-penunjang-panel";
+    const refresh = async () => {
+      timer = null;
+      if (!alive) return;
+      const modal = document.getElementById("modal_form_gadar"), form = document.getElementById("form_gadar");
+      if (!modal || !form || !visible(modal)) return;
+      const KES = { 1: "Compos mentis", 2: "Apatis", 3: "Somnolen", 4: "Sopor", 5: "Koma" };
+      const k = form.querySelector('[name="kesadaran"]:checked');
+      const kesadaran = k ? (((k.closest("label") || k.parentElement)?.innerText || "").trim() || KES[k.value] || "") : "";
+      let fresh = null;
+      try { fresh = await buildAndCopySoap(modal, { noCopy: true, kesadaran }); } catch (err) { console.warn("[PAKET KONSUL] SOAP otomatis", err); }
+      if (!fresh || fresh === last || !alive) return;
+      last = fresh;
+      pk.soapText = fresh;
+      pk.soapCopied = await copySoapText(fresh).catch(() => false);
+      if (typeof pk.__render === "function") pk.__render();
+      toast(pk.soapCopied ? "PAKET KONSUL: SOAP ikut diperbarui dari ASGADAR & tersalin." : "PAKET KONSUL: SOAP ikut diperbarui dari ASGADAR — tekan 📋 Salin SOAP.");
+    };
+    const onEdit = (e) => {
+      if (!alive) return;
+      if (!document.getElementById(PANEL) && pk.__render) { stop(); return; }
+      if (!(e.target && e.target.closest && e.target.closest("#form_gadar"))) return;
+      clearTimeout(timer);
+      timer = setTimeout(refresh, 1200);
+    };
+    const stop = () => {
+      alive = false;
+      clearTimeout(timer);
+      document.removeEventListener("input", onEdit, true);
+      document.removeEventListener("change", onEdit, true);
+    };
+    document.addEventListener("input", onEdit, true);
+    document.addEventListener("change", onEdit, true);
+    return stop;
   }
 
   // v3.83.0: PAKET KONSUL IGD yang dimulai dari DAFTAR pasien IGD dititipkan di sessionStorage tab ini, lalu halaman
@@ -9867,6 +9918,7 @@
     // Daftar radiologi diambil paralel sejak awal (lab tetap ditampilkan lebih dulu).
     const radListP = spFetchRadEntries(base, noreg).then((list) => ({ list }), (error) => ({ error }));
 
+    opts.__render = () => render(); // v3.146.0: dipakai PAKET KONSUL IGD (SOAP ikut update saat ASGADAR diedit)
     const render = () => {
       if (closedByUser) return;
       spShowPenunjangPanel(items, blockedFilms.length ? [...notes, {
@@ -15470,7 +15522,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.145.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.146.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
