@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.144.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.145.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.144.0
-// @description  v3.144.0 (permintaan dokter 14 Nov 2026): jendela advis 18 jam terakhir — 🛏 CEK ADVIS PASIEN DAPAT KAMAR (pasien IGD 18 jam, dulu 12) beserta 🔎 Cari advis di WhatsApp (chat & advis 18 jam, dulu 12), dan 📤 Advis → ASGADAR (advis 18 jam terakhir, dulu 24).
+// @version      3.145.0
+// @description  v3.145.0 (permintaan dokter 14 Nov 2026): 📡 ADVIS WA REALTIME — tombol WhatsApp Web kanan atas kini saklar on/off (Alt+klik = panel Advis → ASGADAR lama). Saat ON, balasan advis spesialis berpasien di chat medis/konsul (chat terbuka, dan chat belum dibaca saat WA tidak dipakai 60 detik) langsung dibuka di tab Smartplus BARU: panel ADVIS SPESIALIS untuk pasien itu, advis sudah ditambahkan di bawah Rencana, tombol 💾 Simpan Rencana terpilih — tekan Enter untuk menyimpan. 🔎 Cari advis WA dari 🛏 CEK ADVIS kini juga mencari pasien IGD 18 jam yang BELUM dapat kamar; yang Rencana-nya belum ada advis ikut diantrekan.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -18,6 +18,7 @@
 // @grant        GM_deleteValue
 // @grant        GM_addValueChangeListener
 // @grant        GM_removeValueChangeListener
+// @grant        GM_openInTab
 // ==/UserScript==
 
 (function () {
@@ -55,8 +56,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.144.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.144.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.145.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.145.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -6962,6 +6963,22 @@
     });
     return out;
   }
+  // v3.145.0 (permintaan dokter 14 Nov 2026): ADVIS WA REALTIME — advis spesialis (kartu tercentang bawaan) dalam mins menit
+  // terakhir yang pasiennya terbaca dari kutipan / pesan konsul -> [{ hash, patient, text, chat }] (fungsi murni, diuji).
+  function spWaRealtimeItems(msgs, nowMin, mins, chat) {
+    const out = [];
+    spWaCards(msgs, -1, mins, nowMin).filter((c) => c.def).forEach((c) => {
+      const pt = spWaPatientFor(msgs, c.idxs);
+      if (!pt || !(pt.nama || pt.rm)) return;
+      const text = spWaBuildAdvis(c.idxs.map((i) => msgs[i]));
+      if (!text) return;
+      const key = String(pt.rm || "").replace(/\D/g, "").replace(/^0+/, "") || String(pt.nama || "").toUpperCase().replace(/[^A-Z]+/g, " ").trim();
+      let h = 0;
+      for (const ch of key + "|" + text) h = (h * 31 + ch.charCodeAt(0)) | 0;
+      out.push({ hash: "h" + (h >>> 0).toString(36), patient: pt, text, chat: String(chat || "").slice(0, 60) });
+    });
+    return out;
+  }
   // v3.121.1 (permintaan dokter 24 Okt 2026: 40 chat ±8 menit terlalu lama): urutan baca chat (fungsi murni, diuji).
   // 0 = nama chat memuat nama DPJP pasien yang dicari, 1 = chat konsul/medis (dr, IGD, Sp, RS, ICU, ruangan, DPJP),
   // 2 = chat lain (keluarga, toko, promo) -> dilewati.
@@ -7484,7 +7501,8 @@
         // judul chat) dan bisa digeser; posisi diingat (localStorage web.whatsapp.com). Geser > 6px tidak memicu klik.
         b = el("button", "position:fixed;right:20px;top:72px;z-index:2147483646;padding:9px 14px;border:0;border-radius:22px;background:#e91e63;color:#fff;font:600 13px Arial,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.3);cursor:grab;touch-action:none;user-select:none;white-space:nowrap", "📤 Advis → ASGADAR");
         b.id = BTN;
-        b.title = "Kirim advis DPJP ke kolom Rencana Assesment GADAR di Smartplus (blok teks dulu bila hanya sebagian). Tahan & geser untuk memindah tombol.";
+        // v3.145.0 (permintaan dokter 14 Nov 2026): tombol ini kini SAKLAR "Advis WA realtime" (on/off). Alt+klik = panel lama.
+        b.title = "Advis WA realtime: saat ON, balasan advis spesialis untuk pasien di chat medis langsung dibuka di tab Smartplus baru (tekan Enter untuk menyimpan). Alt+klik = panel Advis → ASGADAR lama. Tahan & geser untuk memindah tombol.";
         waBtnDrag(b);
         // mousedown: ambil teks yang diblok sebelum fokus pindah ke tombol.
         b.addEventListener("mousedown", (e) => {
@@ -7493,9 +7511,10 @@
           const inMain = s && s.rangeCount && document.querySelector("#main")?.contains(s.getRangeAt(0).commonAncestorContainer);
           pickedSel = inMain ? String(s).trim() : "";
         });
-        b.addEventListener("click", openPanel);
+        b.addEventListener("click", (e) => { if (e.altKey) { openPanel(); return; } rtToggle(); });
         document.body.appendChild(b);
       }
+      rtPaint(b);
       b.style.display = "";
     }
     // =========================
@@ -7706,6 +7725,96 @@
         }, 1200);
       });
     }
+    // =========================
+    // v3.145.0 (permintaan dokter 14 Nov 2026): ADVIS WA REALTIME (on/off di tombol kanan atas). Saat ON, tiap 15 detik tab WA ini
+    // membaca chat yang sedang terbuka dan — bila dokter tidak sedang memakai WA (60 detik tanpa klik/ketik) atau tab di latar —
+    // chat medis/konsul yang punya pesan BELUM DIBACA. Balasan advis spesialis (pesan baru sejak ON, maks 18 jam) yang pasiennya
+    // terbaca dari kutipan / pesan konsul dikirim ke Smartplus: tab Smartplus BARU terbuka dengan panel ADVIS SPESIALIS untuk pasien
+    // itu, advis sudah ditambahkan di bawah Rencana, tombol Simpan sudah terpilih (dokter cukup menekan Enter).
+    // Hanya membuka & membaca chat (tidak mengetik / mengirim apa pun). Advis yang sama tidak dikirim dua kali.
+    // =========================
+    const RT_ON = "sp_wa_rt_on_v1", RT_SENT = "sp_wa_rt_sent_v1", RT_KEY = "sp_wa_rt_advis_v1", RT_BASE = "sp_smartplus_base_v1";
+    let rtBusy = false, lastUser = Date.now();
+    ["mousedown", "keydown", "wheel", "touchstart"].forEach((t) => document.addEventListener(t, (e) => { if (e.isTrusted) lastUser = Date.now(); }, true));
+    const rtState = () => { try { return GM_getValue(RT_ON, null) || null; } catch (_) { return null; } };
+    function rtPaint(b) {
+      b = b || document.getElementById(BTN);
+      if (!b) return;
+      const on = rtState();
+      const t = on ? "📡 Advis WA realtime: ON" : "📡 Advis WA realtime: OFF";
+      if (b.textContent !== t) b.textContent = t;
+      b.style.background = on ? "#2e7d32" : "#757575";
+    }
+    function rtToggle() {
+      if (!hasGM || typeof GM_openInTab !== "function") { alert("Advis WA realtime butuh AUTO ASM terbaru di Violentmonkey (izin membuka tab)."); return; }
+      const on = rtState();
+      try { GM_setValue(RT_ON, on ? null : { since: Date.now() }); } catch (_) {}
+      rtPaint();
+      if (!on) {
+        let base = "";
+        try { base = GM_getValue(RT_BASE, "") || ""; } catch (_) {}
+        rtNote(base ? "📡 Advis WA realtime ON — advis spesialis baru akan dibuka di tab Smartplus baru." : "📡 Realtime ON — buka Smartplus sekali di browser ini supaya alamatnya dikenali.");
+      } else rtNote("📡 Advis WA realtime OFF.");
+    }
+    function rtNote(t) {
+      let n = document.getElementById("sp-wa-rt-note");
+      if (!n) { n = el("div", "position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:2147483647;background:#263238;color:#fff;border-radius:10px;padding:8px 14px;font:600 13px Arial,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.3);max-width:90vw"); n.id = "sp-wa-rt-note"; document.body.appendChild(n); }
+      n.textContent = t;
+      clearTimeout(rtNote.t);
+      rtNote.t = setTimeout(() => n.remove(), 6000);
+    }
+    const rtSent = () => { try { return GM_getValue(RT_SENT, []) || []; } catch (_) { return []; } };
+    function rtSend(item) {
+      let base = "";
+      try { base = GM_getValue(RT_BASE, "") || ""; } catch (_) {}
+      if (!base) { rtNote("📡 Advis baru untuk " + item.patient.label + " — buka Smartplus sekali di browser ini supaya tab bisa dibuka otomatis."); return false; }
+      const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      try { GM_setValue(RT_KEY, { id, ts: Date.now(), ...item }); } catch (_) { return false; }
+      try { GM_openInTab(base + "/soap_igd/pasien_igd_list#sp-rt=" + id, { active: true, insert: true }); } catch (_) { return false; }
+      rtNote("📡 Advis " + item.patient.label + " dibuka di tab Smartplus baru.");
+      return true;
+    }
+    // Baca chat yang sedang terbuka -> advis baru (sejak ON) berpasien.
+    function rtScanOpen(sinceMs) {
+      const all = readMsgs();
+      const nowMin = Math.round(Date.now() / 60000);
+      const mins = Math.max(5, Math.min(1080, Math.ceil((Date.now() - sinceMs) / 60000) + 2));
+      return spWaRealtimeItems(all, nowMin, mins, chatName());
+    }
+    async function rtTick() {
+      const on = rtState();
+      rtPaint();
+      if (!on || rtBusy || cariBusy || document.getElementById(PANEL) || !sidePane()) return;
+      rtBusy = true;
+      try {
+        const since = Math.max(on.since || 0, Date.now() - 18 * 3600000);
+        const sent = rtSent();
+        const out = [];
+        const take = (items) => items.forEach((it) => { if (!sent.includes(it.hash) && !out.some((x) => x.hash === it.hash)) out.push(it); });
+        if (document.querySelector("#main [data-pre-plain-text]") && spWaChatPriority(chatName(), []) < 2) take(rtScanOpen(since));
+        // Chat medis lain dengan pesan belum dibaca: hanya saat dokter tidak sedang memakai WA (60 dtk) atau tab di latar.
+        if (document.hidden || Date.now() - lastUser > 60000) {
+          const start = chatName();
+          const unread = chatRows().filter((r) => r.querySelector('[aria-label*="unread" i], [aria-label*="belum dibaca" i], [aria-label*="tidak dibaca" i]'))
+            .map((r) => rowInfo(r).title).filter((t) => t && !sameChat(t, start) && spWaChatPriority(t, []) < 2).slice(0, 4);
+          for (const t of unread) {
+            if (!rtState() || (!document.hidden && Date.now() - lastUser < 60000)) break;
+            if (!(await openChat(t))) continue;
+            await sleep(500);
+            take(rtScanOpen(since));
+          }
+          if (start && !sameChat(chatName(), start) && (document.hidden || Date.now() - lastUser > 60000)) await openChat(start);
+        }
+        const done = [];
+        for (const it of out) { if (rtSend(it)) done.push(it.hash); await sleep(800); }
+        if (done.length) { try { GM_setValue(RT_SENT, [...done, ...rtSent()].slice(0, 300)); } catch (_) {} }
+      } catch (e) {
+        console.warn("[ADVIS WA realtime]", e);
+      } finally {
+        rtBusy = false;
+      }
+    }
+    if (hasGM && typeof GM_getValue === "function") setInterval(() => { rtTick(); }, 15000);
     setInterval(ensureBtn, 1500);
     ensureBtn();
   }
@@ -7718,6 +7827,9 @@
   function spWaAdvisInit() {
     if (typeof GM_addValueChangeListener !== "function" || spWaAdvisInit.done) return;
     spWaAdvisInit.done = true;
+    // v3.145.0: alamat Smartplus diingat di penyimpanan Violentmonkey (lokal, tidak di script) untuk tab realtime dari WA.
+    try { if (/\/smartplus\//i.test(location.pathname) && !/\/auth\//i.test(location.pathname)) GM_setValue("sp_smartplus_base_v1", smartplusBaseUrl()); } catch (_) {}
+    spWaRealtimeOpen();
     GM_addValueChangeListener(SP_WA_KEY, (n, o, v) => { spWaAdvisReceive(v).catch((e) => console.warn("[ADVIS WA]", e)); });
     // v3.77.0: tab WA meminta daftar pasien IGD 48 jam (untuk memilih/memperbaiki pasien penerima advis). Satu tab menjawab.
     GM_addValueChangeListener("sp_wa_plist_req_v1", async (n, o, v) => {
@@ -7744,6 +7856,21 @@
         try { GM_setValue("sp_wa_plist_v1", { id: v.id, ts: Date.now(), err: String((e && e.message) || e).slice(0, 80) }); } catch (_) {}
       }
     });
+  }
+  // v3.145.0: tab Smartplus yang dibuka ADVIS WA REALTIME (#sp-rt=<id>) -> panel ADVIS SPESIALIS untuk pasien itu, advis ditambahkan,
+  // tombol 💾 Simpan Rencana terpilih (Enter = simpan; dokter yang menekan).
+  function spWaRealtimeOpen() {
+    const m = location.hash.match(/sp-rt=([a-z0-9]+)/i);
+    if (!m || typeof GM_getValue !== "function") return;
+    let v = null;
+    try { v = GM_getValue("sp_wa_rt_advis_v1", null); } catch (_) {}
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (_) {}
+    if (!v || v.id !== m[1] || Date.now() - (v.ts || 0) > 30 * 60000 || !v.patient || !v.text) { toast("📡 Advis WA realtime: data advis tidak ditemukan (sudah lewat / sudah dibuka)."); return; }
+    if (/\/auth\//i.test(location.pathname)) { toast("📡 Advis WA realtime: login Smartplus dulu, lalu buka lagi dari WhatsApp."); return; }
+    const pt = v.patient;
+    const label = pt.label || [pt.nama, pt.rm].filter(Boolean).join(" / ");
+    runAdvisSpesialis({ waQueue: [{ patient: { ...pt, label }, texts: [v.text] }], realtime: true });
+    toast(`📡 Advis WA realtime: ${label}${v.chat ? " (chat " + v.chat + ")" : ""} — periksa, lalu tekan Enter untuk menyimpan.`);
   }
   // Pasien dari pesan WA ({nama, rm}) sama dengan pasien Smartplus ({nama, norm})? No. RM didahulukan, lalu nama.
   function spWaSamePatient(pt, x) {
@@ -7942,6 +8069,11 @@
       waBox.textContent = `📩 Advis dari WhatsApp: ${r.added} ditambahkan${r.skipped ? `, ${r.skipped} sudah tertulis di Rencana (tidak ditulis ulang)` : ""} — ${chosen ? chosen.nama : ""}. Periksa pasien & isi, lalu tekan 💾 Simpan Rencana.`;
       ren.setSelectionRange(ren.value.length, ren.value.length);
       ren.scrollTop = ren.scrollHeight;
+      // v3.145.0: dibuka ADVIS WA REALTIME -> tombol Simpan terpilih, cukup tekan Enter (dokter yang menekan).
+      if (opts.realtime && r.added) {
+        waBox.textContent += " ⏎ Tekan Enter untuk menyimpan.";
+        setTimeout(() => { try { goBtn.focus(); goBtn.style.outline = "3px solid #2e7d32"; } catch (_) {} }, 50);
+      }
     };
     // Pasien dipilih otomatis hanya bila cocok TEPAT satu (nama saja tanpa No. RM bisa cocok beberapa -> dokter memilih).
     const waFind = (list) => {
@@ -8179,6 +8311,7 @@
       <div style="color:#777;font-size:11px;margin-bottom:6px">Pasien IGD 18 jam terakhir yang ada di daftar rawat inap (e-Ranap). Hanya membaca; advis ditulis & disimpan sendiri lewat ➕ Tambah advis.</div>
       <div class="sp-ca-msg" style="margin:4px 0;color:#555">⏳ Membaca daftar pasien IGD 18 jam & daftar rawat inap...</div>
       <div class="sp-ca-list"></div>
+      <div class="sp-ca-belumwrap" style="display:none;margin-top:8px"><div style="font-weight:600;color:#b45309">🕒 Belum dapat kamar — advis WA ditemukan, Rencana belum ada advis:</div><div class="sp-ca-belum"></div></div>
       <details class="sp-ca-okwrap" style="display:none;margin-top:8px"><summary style="cursor:pointer;color:#2e7d32;font-weight:600"></summary><div class="sp-ca-ok"></div></details>
       <div class="sp-ca-wa" style="display:none;margin-top:10px;padding:8px;border:1px solid #a5d6a7;background:#f1f8e9;border-radius:8px">
         <button type="button" class="sp-ca-wago" style="width:100%;padding:9px;font:600 13px Arial,sans-serif;background:#25d366;color:#fff;border:0;border-radius:6px;cursor:pointer"></button>
@@ -8195,7 +8328,7 @@
     const base = smartplusBaseUrl();
     let seq = 0;
 
-    const roomText = (p) => p.ranap ? [p.ranap.kamar, [p.ranap.noKamar, p.ranap.bed].filter(Boolean).join("/")].filter(Boolean).join(" ") : "kamar belum terbaca di e-Ranap";
+    const roomText = (p) => p.belumKamar ? "belum dapat kamar (masih IGD)" : p.ranap ? [p.ranap.kamar, [p.ranap.noKamar, p.ranap.bed].filter(Boolean).join("/")].filter(Boolean).join(" ") : "kamar belum terbaca di e-Ranap";
     const card = (p) => {
       const d = document.createElement("div");
       d.style.cssText = `border:1px solid ${p.has ? "#c8e6c9" : "#e1bee7"};background:${p.has ? "#f1f8e9" : "#fff"};border-radius:8px;padding:8px;margin:6px 0`;
@@ -8241,8 +8374,15 @@
       return d;
     };
     let rows = [];
+    // v3.145.0 (permintaan dokter 14 Nov 2026): pasien IGD 18 jam yang BELUM dapat kamar ikut dicari advisnya di WA; yang
+    // ditemukan & Rencana-nya belum ada advis ikut diantrekan, supaya advis sudah masuk saat pasien dapat kamar.
+    let belum = [], belumFound = [];
+    const belumWrap = body.querySelector(".sp-ca-belumwrap"), belumList = body.querySelector(".sp-ca-belum");
     const render = () => {
       const todo = rows.filter((p) => !p.has), done = rows.filter((p) => p.has);
+      belumList.textContent = "";
+      belumFound.filter((p) => !p.has || p.waSudah).forEach((p) => belumList.append(card(p)));
+      belumWrap.style.display = belumFound.length ? "" : "none";
       list.textContent = "";
       okList.textContent = "";
       todo.forEach((p) => list.append(card(p)));
@@ -8265,18 +8405,18 @@
     };
     const recheck = async (p) => { p.loading = true; await readOne(p); render(); };
     // v3.119.0: advis disimpan dari panel ADVIS SPESIALIS (antrean WA) -> pasien itu dicek ulang.
-    const onSavedAny = (sp) => { const r = rows.find((x) => x.noreg === sp.noreg); if (r) recheck(r); };
+    const onSavedAny = (sp) => { const r = rows.find((x) => x.noreg === sp.noreg) || belumFound.find((x) => x.noreg === sp.noreg); if (r) recheck(r); };
     const waBox = body.querySelector(".sp-ca-wa"), waGo = body.querySelector(".sp-ca-wago"), waMsg = body.querySelector(".sp-ca-wamsg");
     const waTargets = () => rows.filter((p) => !p.loading && !p.err && !p.has);
     const waIdle = () => {
       const n = waTargets().length;
-      waBox.style.display = n ? "" : "none";
+      waBox.style.display = n || belum.length ? "" : "none";
       waGo.disabled = false;
-      waGo.textContent = `🔎 Cari advis di WhatsApp untuk ${n} pasien belum advis`;
+      waGo.textContent = `🔎 Cari advis di WhatsApp untuk ${n} pasien belum advis` + (belum.length ? ` (+ ${belum.length} pasien IGD belum dapat kamar)` : "");
     };
     let waRun = 0;
     waGo.onclick = () => {
-      const targets = waTargets();
+      const targets = waTargets().concat(belum);
       if (!targets.length) return;
       if (typeof GM_setValue !== "function" || typeof GM_addValueChangeListener !== "function") {
         waMsg.textContent = "❌ Penyimpanan Violentmonkey tidak tersedia — perbarui AUTO ASM di Violentmonkey."; return;
@@ -8294,16 +8434,24 @@
         acked = true; last = Date.now();
         waMsg.textContent = "⏳ " + String(v.text || "");
       }));
-      lids.push(GM_addValueChangeListener("sp_wa_cari_hasil_v1", (k, o, v) => {
+      lids.push(GM_addValueChangeListener("sp_wa_cari_hasil_v1", async (k, o, v) => {
         if (!v || v.id !== id || my !== waRun || finished) return;
         end();
         const groups = spCekAdvisApplyWa(rows, v.items || []);
         const sudah = rows.filter((p) => p.waSudah).length;
+        // v3.145.0: pasien belum dapat kamar yang punya advis di WA -> Rencana GADAR dibaca; yang belum ada advis ikut diantrekan.
+        const keys = new Set((v.items || []).map((it) => it && it.key));
+        belumFound = belum.filter((p) => keys.has(p.noreg)).map((p) => ({ ...p, loading: true }));
+        await Promise.all(belumFound.map((p) => readOne(p)));
+        const belumOpen = belumFound.filter((p) => !p.err && !p.has);
+        const groupsBelum = spCekAdvisApplyWa(belumOpen, v.items || []);
+        groups.push(...groupsBelum);
         render();
         waIdle();
         const head = v.err ? `⚠️ Pencarian berhenti (${v.err}). ` : v.stopped ? "⏹ Dihentikan. " : "✅ Selesai. ";
         waMsg.textContent = head + `${v.scanned || 0} dari ${v.chats || 0} chat 18 jam dibaca · advis ditemukan untuk ${groups.length + sudah} dari ${targets.length} pasien` +
           (sudah ? ` (${sudah} ternyata sudah tertulis di Rencana → ✅)` : "") + "." +
+          (groupsBelum.length ? ` Termasuk ${groupsBelum.length} pasien yang belum dapat kamar (Rencana belum ada advis).` : "") +
           (groups.length ? " Advis sudah diisikan ke Rencana di panel ADVIS SPESIALIS: cek tiap pasien lalu 💾 Simpan Rencana." : " Tidak ada advis untuk pasien-pasien ini di chat 18 jam terakhir.");
         if (groups.length) runAdvisSpesialis({ waQueue: groups, onSavedAny });
         toast(`🔎 CARI ADVIS WA: advis ditemukan untuk ${groups.length} dari ${targets.length} pasien` + (groups.length ? " — cek lalu Simpan di ADVIS SPESIALIS." : "."));
@@ -8323,12 +8471,15 @@
     const load = async () => {
       const my = ++seq;
       reload.disabled = true;
-      list.textContent = ""; okWrap.style.display = "none"; waBox.style.display = "none";
+      list.textContent = ""; okWrap.style.display = "none"; waBox.style.display = "none"; belumWrap.style.display = "none";
       msg.textContent = "⏳ Membaca daftar pasien IGD 18 jam & daftar rawat inap...";
       try {
         const [igd, ranap] = await Promise.all([spAdvisLoadPatients(base, null, 18), spFetchRanapPatients(base, true)]);
         if (my !== seq) return;
         rows = spMatchDapatKamar(igd, ranap).map((p) => ({ ...p, loading: true }));
+        const inRows = new Set(rows.map((p) => p.noreg));
+        belum = igd.filter((p) => !inRows.has(p.noreg)).map((p) => ({ ...p, belumKamar: true }));
+        belumFound = [];
         render();
         // Baca Rencana 4 pasien bersamaan.
         let i = 0;
@@ -15319,7 +15470,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.144.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.145.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
