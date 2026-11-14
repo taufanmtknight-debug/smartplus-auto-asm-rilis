@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.140.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.141.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.140.0
-// @description  v3.140.0 (instruksi dokter 13 Nov 2026): PAKET KONSUL RANAP — O2 mengikuti CPPT perawat terbaru: bila perawat menulis O2 masih terpasang (mis. "O2 terpasang Nasal Canul 2 lpm") dan daftar terapi DPJP tidak memuat O2, O2 tetap ditulis di terapi berjalan dengan keterangan "(CPPT perawat tgl)". Pemeriksaan fisik tetap template umum.
+// @version      3.141.0
+// @description  v3.141.0 (uji film Orthanc asli 14 Nov 2026): pita identitas film tidak lagi menulis tanggal lahir palsu yang diisi alat rontgen sama dengan tanggal pemeriksaan (pasien 33 th tertulis "lahir 09-10-2026"); judul film tidak mengulang kata ("CT BRAIN 14-11-2026 — CT CT BRAIN" -> "CT BRAIN 14-11-2026").
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -55,8 +55,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.140.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.140.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.141.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.141.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -8926,6 +8926,13 @@
     const k = (v) => String(v || "").replace(/\D/g, "").replace(/^0+/, "");
     return !!k(rm) && k(pid) === k(rm);
   }
+  // v3.141.0: judul film + label viewer tanpa kata yang berulang (fungsi murni, diuji).
+  function spFilmCaption(caption, label) {
+    const c = String(caption || "");
+    const words = new Set(c.toUpperCase().split(/[^A-Z0-9]+/).filter(Boolean));
+    const r = [...new Set(String(label || "").split(/[\s/]+/).filter((w) => w && !words.has(w.toUpperCase())))].join(" ").trim();
+    return r ? `${c} — ${r}` : c;
+  }
   function spPacsRmFilmList(studies, origin, cutKey, latestIfNone = true) {
     const rows = (studies || []).filter((s) => s && s.id && !((s.mods || []).length && s.mods.every((m) => /^(US|SR|PR|KO|DOC)$/i.test(m))))
       .map((s) => ({ ...s, key: String(s.date || "").replace(/^(\d{4})(\d{2})(\d{2}).*/, "$1-$2-$3") }))
@@ -9722,7 +9729,8 @@
         const imgs = res.images || [];
         if (!imgs.length) { notes.push({ text: `${f.caption}: ${res.error || "gagal"} — dilewati.` }); continue; }
         if (res.timedOut) notes.push({ text: `${f.caption}: baru ${imgs.length} gambar dalam ${filmTimeout / 1000} detik — dipakai yang ada.` });
-        const cap = res.label ? `${f.caption} — ${res.label}` : f.caption;
+        // v3.141.0 (uji Orthanc asli 14 Nov 2026): label yang sudah ada di judul tidak diulang ("CT BRAIN 14-11 — CT CT BRAIN", "DX 11-11 — DX").
+        const cap = spFilmCaption(f.caption, res.label);
         imgs.forEach((src, k) => items.push({
           caption: `${cap}${imgs.length > 1 ? ` — gambar ${k + 1}` : ""}`,
           dataUrl: src,
@@ -9863,7 +9871,11 @@
     const hm = (v) => { const m = String(v || "").match(/^(\d{2})(\d{2})/); return m ? `${m[1]}:${m[2]}` : ""; };
     const name = String(p.PatientName || "").replace(/\^+/g, " ").replace(/\s+/g, " ").trim();
     const sex = /^M/i.test(p.PatientSex || "") ? "L" : /^F/i.test(p.PatientSex || "") ? "P" : "";
-    const l1 = [name, p.PatientID ? `No.RM ${String(p.PatientID).trim()}` : "", sex, d8(p.PatientBirthDate) ? `lahir ${d8(p.PatientBirthDate)}` : ""].filter(Boolean).join("  •  ");
+    // v3.141.0 (uji Orthanc asli 14 Nov 2026): alat rontgen kadang mengisi tanggal lahir = tanggal pemeriksaan (pasien 33 th
+    // tertulis "lahir 09-10-2026") -> tanggal lahir yang <= 45 hari sebelum/sesudah tanggal periksa tidak ditulis.
+    const ymd = (v) => { const m = String(v || "").match(/^(\d{4})(\d{2})(\d{2})/); return m ? Date.UTC(+m[1], +m[2] - 1, +m[3]) : NaN; };
+    const bornOk = d8(p.PatientBirthDate) && !(Math.abs(ymd(t.StudyDate) - ymd(p.PatientBirthDate)) <= 45 * 864e5);
+    const l1 = [name, p.PatientID ? `No.RM ${String(p.PatientID).trim()}` : "", sex, bornOk ? `lahir ${d8(p.PatientBirthDate)}` : ""].filter(Boolean).join("  •  ");
     const when = [d8(t.StudyDate), hm(t.StudyTime)].filter(Boolean).join(" ");
     const l2 = [String(t.StudyDescription || "").trim() || mods, when ? `Tgl periksa ${when}` : ""].filter(Boolean).join("  •  ");
     return [l1, l2].filter(Boolean);
@@ -15241,7 +15253,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.140.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.141.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -18688,7 +18700,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
         if (res.noReply) { if (i < list.length - 1) notes.push(`${list.length - 1 - i} film lain tidak dicoba.`); break; }
         continue;
       }
-      const cap = res.label ? `${f.caption} — ${res.label}` : f.caption;
+      const cap = spFilmCaption(f.caption, res.label);
       for (let k = 0; k < imgs.length; k++) {
         try { films.push({ ...(await spAiShrinkDataUrl(imgs[k])), caption: `${cap}${imgs.length > 1 ? ` — gambar ${k + 1}/${imgs.length}` : ""}` }); } catch (_) {}
       }
