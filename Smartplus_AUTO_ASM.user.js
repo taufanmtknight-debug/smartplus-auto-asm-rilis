@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.146.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.147.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.146.0
-// @description  v3.146.0 (permintaan dokter 14 Nov 2026): 📡 Advis WA realtime membuka tab Smartplus baru di LATAR, berjejer di ujung (tab yang sedang dipakai tidak berpindah); judul tab memuat nama pasien, tombol Simpan terpilih saat tab dibuka (Enter = simpan). 📨 PAKET KONSUL IGD: selama panel terbuka, SOAP ikut diperbarui otomatis saat form Assesment GADAR diedit (keluhan, TTV, pemeriksaan, diagnosis, Rencana/terapi) dan langsung tersalin.
+// @version      3.147.0
+// @description  v3.147.0 (uji WA & Smartplus asli 14 Nov 2026): Cari advis WA / Advis WA realtime — pertanyaan balik spesialis yang mengutip konsul ("Lagi hamil?") tidak lagi dianggap advis; advis lama yang sudah diketik di Rencana lalu diberi catatan ("Inj tomit ... -->stop") tidak ditambahkan dua kali.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -56,8 +56,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.146.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.146.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.147.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.147.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -6811,6 +6811,9 @@
   // Pesan masuk yang berupa advis: balasan atas pesan konsul, atau berisi istilah terapi/tindakan.
   function spWaIsAdvis(m) {
     if (!m || m.out || !String(m.text || "").trim() || spWaIsAck(m.text) || spWaIsKonsul(m.text) || spWaIsLapor(m.text)) return false;
+    // v3.147.0 (uji WA asli 14 Nov 2026): pertanyaan balik spesialis yang mengutip konsul ("Lagi hamil?") dulu ikut sebagai
+    // advis -> pesan yang SEMUA barisnya pertanyaan (berakhir "?") bukan advis.
+    if (String(m.text).split("\n").map((l) => l.trim()).filter(Boolean).every((l) => /\?\s*[\p{Emoji_Presentation}\s]*$/u.test(l))) return false;
     if (/konsul/i.test(m.quote || "")) return true;
     if (/\?/.test(m.text)) return false; // v3.78.0: pertanyaan / diskusi ("Apakah ada aturan baru??") bukan advis
     return /\b(inj|injeksi|infus|ivfd|iv|im|po|drip|mg|mcg|gr|cc|ml|tpm|nebul\w*|tab|syr|sirup|sachet|puyer|cek|periksa|lab|ro|usg|ct|rawat|ranap|pulang|kontrol|terapi|lanjut\w*|acc|stop|diet|observasi|o2|oksigen|transfusi|operasi|puasa|advis|bila perlu|x\s?\d|\d\s?x)\b/i.test(m.text);
@@ -7038,7 +7041,11 @@
       if (!owner || !me || owner === me) have.add(nz(l));
     });
     const lines = bl.filter((l) => l.trim() && !headRe.test(l)).map(nz).filter(Boolean);
-    return lines.length > 0 && lines.every((l) => have.has(l));
+    // v3.147.0 (uji WA asli 14 Nov 2026): advis yang sudah diketik di Rencana lalu diberi catatan ("Inj tomit ... -->stop")
+    // dulu dianggap belum tertulis -> advis lama tertulis dua kali. Baris Rencana yang DIAWALI baris advis (>= 6 huruf) = sama.
+    const haveList = [...have];
+    const hasLine = (l) => have.has(l) || (l.length >= 6 && haveList.some((h) => h.startsWith(l + " ") || h.startsWith(l)));
+    return lines.length > 0 && lines.every(hasLine);
   }
   function spNlPure(t) { return String(t ?? "").replace(/\r\n?/g, "\n"); }
   // Tambahkan teks advis (bisa beberapa blok "Advis ...:") di bawah Rencana; blok yang sudah tertulis dilewati.
@@ -15522,7 +15529,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.146.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.147.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
