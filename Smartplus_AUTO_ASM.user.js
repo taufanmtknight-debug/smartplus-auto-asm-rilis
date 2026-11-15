@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.147.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.148.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.147.0
-// @description  v3.147.0 (uji WA & Smartplus asli 14 Nov 2026): Cari advis WA / Advis WA realtime — pertanyaan balik spesialis yang mengutip konsul ("Lagi hamil?") tidak lagi dianggap advis; advis lama yang sudah diketik di Rencana lalu diberi catatan ("Inj tomit ... -->stop") tidak ditambahkan dua kali.
+// @version      3.148.0
+// @description  v3.148.0 (laporan dokter 15 Nov 2026): 📡 Advis WA realtime / ADVIS SPESIALIS — pasien yang sedang dirawat (e-Ranap) ikut dicari walau masuk IGD lebih dari 48 jam lalu (dulu advis Sp.JP untuk pasien rawat inap berhenti di "tidak ditemukan di daftar IGD 48 jam"); advis ditulis di Rencana Assesment GADAR kunjungan itu.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -56,8 +56,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.147.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.147.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.148.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.148.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -7989,6 +7989,19 @@
   }
 
   // v3.32.0 (instruksi dokter): pasien dipilih lewat pencarian nama (tanpa membuka halaman pasien).
+  // v3.148.0: daftar pasien IGD + pasien yang sedang dirawat (e-Ranap) yang belum ada di daftar (No.Reg / No.RM sama dilewati)
+  // -> [{noreg, norm, nama, reg, st, dok}] (fungsi murni, diuji).
+  function spAdvisAddRanap(igd, ranap) {
+    const out = [...(igd || [])];
+    const rmk = (v) => String(v || "").replace(/\D/g, "").replace(/^0+/, "");
+    const regs = new Set(out.map((x) => x.noreg)), rms = new Set(out.map((x) => rmk(x.norm)).filter(Boolean));
+    (ranap || []).forEach((r) => {
+      if (!r || !r.noreg || regs.has(r.noreg) || (rmk(r.normRm) && rms.has(rmk(r.normRm)))) return;
+      out.push({ noreg: r.noreg, norm: r.normRm || "", nama: r.name || "", reg: "rawat inap", ts: 0,
+        st: `Ranap ${[r.kamar, r.noKamar].filter(Boolean).join(" ")}`.trim(), dok: r.dokter || "" });
+    });
+    return out;
+  }
   // Daftar = pasien IGD 48 jam terakhir dari daftar pasien IGD (semua dokter), dicari langsung saat mengetik.
   // Dimuat 6 halaman sekaligus; onProgress(daftarSementara) dipanggil tiap gelombang supaya hasil cari langsung muncul.
   // v3.115.0: hours = rentang jam (bawaan 48; CEK ADVIS DAPAT KAMAR memakai 18 sejak v3.144.0; v3.127.0: 12, dulu 24).
@@ -8127,7 +8140,7 @@
       waBox.style.display = "block";
       waBox.textContent = !waPt ? "📩 Advis WA — pasien tidak terdeteksi dari chat: ketik / pilih pasien yang tepat." :
         loading ? `📩 Advis WA untuk ${waPt.label} — ⏳ mencari pasien di daftar IGD...` :
-          `📩 Advis WA untuk ${waPt.label} — pasien belum bisa dipastikan otomatis (tidak ada / lebih dari satu di daftar IGD 48 jam): ketik / pilih pasien yang tepat.`;
+          `📩 Advis WA untuk ${waPt.label} — pasien belum bisa dipastikan otomatis (tidak ada / lebih dari satu di daftar IGD 48 jam & rawat inap): ketik / pilih pasien yang tepat.`;
       if (pq.value) setTimeout(() => pq.focus(), 0);
     };
     const nextQ = () => waQueue.findIndex((q) => !q.done);
@@ -8171,7 +8184,7 @@
       if (!q || chosen) { plist.style.display = "none"; return; }
       const hit = (patients || []).filter((p) => (p.nama + " " + p.noreg).toLowerCase().includes(q)).slice(0, 12);
       plist.style.display = "block";
-      plist.innerHTML = hit.length ? "" : `<div style="padding:6px;color:#777">${loading ? "⏳ Mencari..." : "Tidak ditemukan di daftar IGD 48 jam terakhir."}</div>`;
+      plist.innerHTML = hit.length ? "" : `<div style="padding:6px;color:#777">${loading ? "⏳ Mencari..." : "Tidak ditemukan di daftar IGD 48 jam & pasien rawat inap."}</div>`;
       hit.forEach((p) => {
         const d = document.createElement("div");
         d.style.cssText = "padding:6px 8px;border-bottom:1px solid #f0f0f0;cursor:pointer;";
@@ -8189,6 +8202,14 @@
     // v3.115.0: dibuka dari CEK ADVIS DAPAT KAMAR -> pasien langsung terpilih.
     else if (opts.pick) choose(opts.pick);
     spAdvisLoadPatients(base, (part) => { patients = part; if (waPt && !chosen) { const p = waFind(part); if (p) { choose(p); return; } } showList(); })
+      // v3.148.0 (laporan dokter 15 Nov 2026: advis WA realtime Sp.JP untuk pasien rawat inap "tidak ditemukan di daftar IGD 48 jam"):
+      // pasien yang SEDANG DIRAWAT (e-Ranap) ikut dicari, walau masuk IGD lebih dari 48 jam lalu. Advis ditulis di Rencana
+      // Assesment GADAR kunjungan itu (No.Reg yang sama).
+      .then(async (r) => {
+        let ranap = [];
+        try { ranap = await spFetchRanapPatients(base); } catch (_) {}
+        return spAdvisAddRanap(r, ranap);
+      })
       .then((r) => {
         patients = r; loading = false;
         if (waQueue.length) {
@@ -15529,7 +15550,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.147.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.148.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
