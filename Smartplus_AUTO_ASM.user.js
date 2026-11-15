@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.151.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.152.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.151.0
-// @description  v3.151.0 (permintaan dokter 15 Nov 2026): AUTO ASM kini HANYA aktif bila yang login Smartplus dr. Muhamad Taufan Kurniawan (nama di sidebar, toleran huruf besar/kecil & gelar); user lain tidak mendapat tombol, shortcut, lanjutan otomatis, maupun advis WA realtime. Tombol AUTO ASM 🎙️ 🧠 🩺 di HP tetap di kanan atas layar yang terlihat walau halaman diperbesar/digeser. REVIEW GADAR membaca daftar IGD 6 halaman sekaligus (lebih cepat). Peta Smartplus di notes/smartplus_peta.md.
+// @version      3.152.0
+// @description  v3.152.0 (permintaan dokter 16 Nov 2026): siapa yang login Smartplus kini DICEK BERKALA tiap 2 menit (dari tab Smartplus dan dari WhatsApp Web lewat beranda Smartplus). Bila logout, sesi habis, atau yang login bukan dr. Muhamad Taufan Kurniawan: tombol & panel Advis WA hilang, Advis WA realtime berhenti, dan tombol AUTO ASM di tab Smartplus dilepas; semuanya kembali sendiri setelah dr. Taufan login lagi. Izin baru: GM_xmlhttpRequest.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -19,6 +19,8 @@
 // @grant        GM_addValueChangeListener
 // @grant        GM_removeValueChangeListener
 // @grant        GM_openInTab
+// @grant        GM_xmlhttpRequest
+// @connect      *
 // ==/UserScript==
 
 (function () {
@@ -47,6 +49,7 @@
       runWaKonsulOpen(); // v3.118.0: tab WA ini membuka chat konsul yang diminta tab Smartplus (tidak pernah mengirim)
     };
     // v3.151.0: kunci user — hanya bila pemeriksaan terakhir di Smartplus menemukan dr. Muhamad Taufan Kurniawan login.
+    spUserPollWa(); // v3.152.0: cek berkala siapa yang login Smartplus
     if (spUserWaOk()) spWaStart();
     else if (typeof GM_addValueChangeListener === "function") {
       const id = GM_addValueChangeListener("sp_user_ok_v1", (k, o, v) => {
@@ -67,8 +70,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.151.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.151.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.152.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.152.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -182,6 +185,57 @@
   function spUserWaOk() { return !spUserLockOn() || spUserStoredOk(); }
   // Status di halaman Smartplus ini (diisi 29_lanjutan_mulai.js setelah spUserCheck). Dipakai tombol & shortcut.
   let spUserOkNow = false;
+
+  // v3.152.0 (permintaan dokter 16 Nov 2026): cek BERKALA siapa yang login Smartplus (dulu hanya saat halaman dimuat).
+  // Logout / sesi habis / user lain -> "sp_user_ok_v1" false -> Advis WA realtime & tombol Advis WA hilang, tab Smartplus
+  // melepas tombol AUTO ASM, sampai dr. Muhamad Taufan Kurniawan login lagi. Beranda Smartplus ringan (±15 KB, ±0,02 dtk)
+  // dan memuat nama login di sidebar; sesi habis = dialihkan ke /auth/login (ada kolom kata sandi).
+  const SP_USER_POLL_MS = 120000;
+  // Hasil membaca HTML beranda: true/false, atau null bila tidak bisa dipastikan (gangguan jaringan / halaman lain).
+  function spUserFromHtml(html, finalUrl) {
+    const t = String(html || "");
+    if (/\/auth\/login/i.test(String(finalUrl || "")) || /<input[^>]+type=["']?password/i.test(t)) return false;
+    const m = t.match(/<li[^>]*class=["'][^"']*\bnav-label\b[^"']*["'][^>]*>([\s\S]*?)<\/li>/i);
+    if (!m) return null;
+    const name = m[1].replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").trim();
+    return name ? spUserIsDoctor(name) : null;
+  }
+  function spUserStoredTs() {
+    try { const s = typeof GM_getValue === "function" ? GM_getValue("sp_user_ok_v1", null) : null; return (s && s.ts) || 0; } catch (_) { return 0; }
+  }
+  // Tab Smartplus: cek beranda (sama asal). onChange(ok) dipanggil bila hasilnya pasti.
+  function spUserPollSmartplus(base, onChange) {
+    if (!spUserLockOn()) return;
+    const tick = async () => {
+      if (Date.now() - spUserStoredTs() < SP_USER_POLL_MS * 0.75) { onChange(spUserStoredOk()); return; } // tab lain/WA baru mengecek
+      try {
+        const r = await fetch(base + "/", { credentials: "same-origin", cache: "no-store" });
+        const ok = spUserFromHtml(await r.text(), r.url);
+        if (ok === null) return;
+        spUserStore(ok);
+        onChange(ok);
+      } catch (_) { /* jaringan putus: biarkan hasil terakhir */ }
+    };
+    setInterval(tick, SP_USER_POLL_MS);
+  }
+  // WhatsApp Web: cek beranda Smartplus lewat GM_xmlhttpRequest (alamat dari GM "sp_smartplus_base_v1", tidak ditulis di script).
+  function spUserPollWa() {
+    if (!spUserLockOn() || typeof GM_xmlhttpRequest !== "function" || typeof GM_getValue !== "function") return;
+    const tick = () => {
+      let base = "";
+      try { base = GM_getValue("sp_smartplus_base_v1", "") || ""; } catch (_) {}
+      if (!/^https?:\/\//i.test(base)) return;
+      if (Date.now() - spUserStoredTs() < SP_USER_POLL_MS * 0.75) return;
+      try {
+        GM_xmlhttpRequest({
+          method: "GET", url: base + "/", timeout: 20000,
+          onload: (r) => { const ok = spUserFromHtml(r.responseText, r.finalUrl); if (ok !== null) spUserStore(ok); },
+        });
+      } catch (_) {}
+    };
+    setTimeout(tick, 5000);
+    setInterval(tick, SP_USER_POLL_MS);
+  }
   const TEMPLATES = {
     BP: {
       keluhan: "Batuk disertai rasa sesak",
@@ -7573,7 +7627,10 @@
     function ensureBtn() {
       const inChat = !!document.querySelector("#main");
       let b = document.getElementById(BTN);
-      if (!inChat) { if (b) b.style.display = "none"; return; }
+      // v3.152.0: logout / bukan dr. Taufan di Smartplus -> tombol & panel Advis WA disembunyikan (fitur mati).
+      const userOk = spUserWaOk();
+      if (!userOk) { const p = document.getElementById(PANEL); if (p) p.remove(); }
+      if (!inChat || !userOk) { if (b) b.style.display = "none"; return; }
       if (!b) {
         // v3.129.0 (dokter 12 Nov 2026): dulu di kanan bawah menutupi kolom ketik pesan -> bawaan di KANAN ATAS (di bawah
         // judul chat) dan bisa digeser; posisi diingat (localStorage web.whatsapp.com). Geser > 6px tidak memicu klik.
@@ -15671,7 +15728,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.151.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.152.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -20216,6 +20273,17 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     try { spWaAdvisInit(); } catch (err) { console.warn("[ADVIS WA] gagal dipasang", err); }
     try { spServerGuardInit(); } catch (err) { console.warn("[AUTO ASM] pengaman simpan gagal dipasang", err); }
   }).catch((err) => console.warn("[AUTO ASM] pemeriksaan user gagal", err));
+  // v3.152.0: cek berkala (tab ini bisa terbuka berjam-jam): logout / user lain -> tombol AUTO ASM dilepas; login lagi
+  // sebagai dr. Taufan -> tombol kembali.
+  try {
+    spUserPollSmartplus(smartplusBaseUrl(), (ok) => {
+      if (ok === spUserOkNow) return;
+      spUserOkNow = ok;
+      if (ok) { bootAutoAsmCrossBrowser(); return; }
+      console.warn("[AUTO ASM] nonaktif: user login Smartplus berganti / logout.");
+      [BUTTON_ID, MENU_ID, SP_AS_BTN_ID, SP_AI_BTN_ID, SP_CEK_BTN_ID, SP_AS_PANEL_ID].forEach((id) => { const e = document.getElementById(id); if (e) e.remove(); });
+    });
+  } catch (err) { console.warn("[AUTO ASM] cek login berkala gagal dipasang", err); }
 
   // Firefox Back/Forward Cache dan tab yang dipulihkan.
   window.addEventListener('pageshow', bootAutoAsmCrossBrowser, true);
