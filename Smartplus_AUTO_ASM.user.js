@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.148.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.149.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.148.0
-// @description  v3.148.0 (laporan dokter 15 Nov 2026): 📡 Advis WA realtime / ADVIS SPESIALIS — pasien yang sedang dirawat (e-Ranap) ikut dicari walau masuk IGD lebih dari 48 jam lalu (dulu advis Sp.JP untuk pasien rawat inap berhenti di "tidak ditemukan di daftar IGD 48 jam"); advis ditulis di Rencana Assesment GADAR kunjungan itu.
+// @version      3.149.0
+// @description  v3.149.0 (laporan dokter 15 Nov 2026: advis WA realtime kadang tidak memunculkan tab Smartplus): chat yang menerima pesan baru dicatat sebagai antrean dan tetap diperiksa walau sudah sempat dibaca dokter (dulu hanya chat bertanda belum dibaca); chat kontak pribadi spesialis ikut dipantau bila pesannya berisi konsul/terapi; advis yang pasiennya belum terbaca -> riwayat 18 jam dimuat dulu, bila tetap tidak terbaca advis tetap dibuka di Smartplus dan dokter memilih pasien; keterangan tombol menampilkan waktu cek terakhir & jumlah advis yang dibuka.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -56,8 +56,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.148.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.148.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.149.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.149.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -6968,14 +6968,15 @@
   }
   // v3.145.0 (permintaan dokter 14 Nov 2026): ADVIS WA REALTIME — advis spesialis (kartu tercentang bawaan) dalam mins menit
   // terakhir yang pasiennya terbaca dari kutipan / pesan konsul -> [{ hash, patient, text, chat }] (fungsi murni, diuji).
-  function spWaRealtimeItems(msgs, nowMin, mins, chat) {
+  // v3.149.0: noPatient = true -> advis yang pasiennya tidak terbaca ikut dikembalikan (patient null; dokter memilih pasien di Smartplus).
+  function spWaRealtimeItems(msgs, nowMin, mins, chat, noPatient = false) {
     const out = [];
     spWaCards(msgs, -1, mins, nowMin).filter((c) => c.def).forEach((c) => {
-      const pt = spWaPatientFor(msgs, c.idxs);
-      if (!pt || !(pt.nama || pt.rm)) return;
+      let pt = spWaPatientFor(msgs, c.idxs);
+      if (!pt || !(pt.nama || pt.rm)) { if (!noPatient) return; pt = null; }
       const text = spWaBuildAdvis(c.idxs.map((i) => msgs[i]));
       if (!text) return;
-      const key = String(pt.rm || "").replace(/\D/g, "").replace(/^0+/, "") || String(pt.nama || "").toUpperCase().replace(/[^A-Z]+/g, " ").trim();
+      const key = pt ? (String(pt.rm || "").replace(/\D/g, "").replace(/^0+/, "") || String(pt.nama || "").toUpperCase().replace(/[^A-Z]+/g, " ").trim()) : "?";
       let h = 0;
       for (const ch of key + "|" + text) h = (h * 31 + ch.charCodeAt(0)) | 0;
       out.push({ hash: "h" + (h >>> 0).toString(36), patient: pt, text, chat: String(chat || "").slice(0, 60) });
@@ -7774,20 +7775,44 @@
     function rtSend(item) {
       let base = "";
       try { base = GM_getValue(RT_BASE, "") || ""; } catch (_) {}
-      if (!base) { rtNote("📡 Advis baru untuk " + item.patient.label + " — buka Smartplus sekali di browser ini supaya tab bisa dibuka otomatis."); return false; }
+      const lbl = item.patient ? item.patient.label || item.patient.nama : "(pasien belum terbaca)";
+      if (!base) { rtNote("📡 Advis baru untuk " + lbl + " — buka Smartplus sekali di browser ini supaya tab bisa dibuka otomatis."); return false; }
       const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       try { GM_setValue(RT_KEY, { id, ts: Date.now(), ...item }); } catch (_) { return false; }
       // v3.146.0 (dokter 14 Nov 2026): tab baru dibuka di LATAR & berjejer di ujung (tab yang sedang dipakai tidak berpindah).
       try { GM_openInTab(base + "/soap_igd/pasien_igd_list#sp-rt=" + id, { active: false, insert: false }); } catch (_) { return false; }
-      rtNote("📡 Advis " + item.patient.label + " siap di tab Smartplus baru (di belakang) — buka tab itu lalu tekan Enter.");
+      rtNote("📡 Advis " + lbl + " siap di tab Smartplus baru (di belakang) — buka tab itu lalu tekan Enter.");
       return true;
     }
-    // Baca chat yang sedang terbuka -> advis baru (sejak ON) berpasien.
-    function rtScanOpen(sinceMs) {
+    // v3.149.0 (laporan dokter 15 Nov 2026: "kadang advis masuk tidak muncul tab Smartplus"). Penyebab yang ditemukan:
+    //  (a) chat lain hanya dicek bila ada tanda BELUM DIBACA — advis yang sempat dibaca dokter (atau chatnya dibuka < 15 dtk)
+    //      tidak pernah diproses; (b) chat kontak pribadi spesialis (nama tanpa "dr"/"Sp") dilewati; (c) advis yang tidak mengutip
+    //      konsul & pesan konsulnya belum termuat di layar -> pasien tidak terbaca -> advis dibuang diam-diam.
+    // Kini: tiap chat yang baris daftarnya BERUBAH (pesan baru) dicatat sebagai antrean & diperiksa saat WA tidak dipakai; chat
+    // dipantau bila namanya medis, atau isi pesan terakhirnya / chatnya memuat konsul / istilah terapi; pasien tak terbaca ->
+    // riwayat 18 jam dimuat dulu, bila tetap tak terbaca advis tetap dibuka di Smartplus (dokter memilih pasien).
+    const rtPending = new Map(); // judul chat -> waktu dicatat
+    let rtRows = null, rtLast = 0, rtCount = 0;
+    const rtRowText = (r) => String(r.textContent || "").replace(/\s+/g, " ").trim();
+    const rtLooksMedis = (title, preview) => spWaChatPriority(title, []) < 2 || spWaIsAdvis({ text: preview || "" }) || /konsul|advis|advice|\bacc\b/i.test(preview || "");
+    const rtHasKonsul = (all) => all.some((m) => m.out && spWaIsKonsul(m.text));
+    function rtScanOpen(sinceMs, noPatient) {
       const all = readMsgs();
       const nowMin = Math.round(Date.now() / 60000);
       const mins = Math.max(5, Math.min(1080, Math.ceil((Date.now() - sinceMs) / 60000) + 2));
-      return spWaRealtimeItems(all, nowMin, mins, chatName());
+      return { all, items: spWaRealtimeItems(all, nowMin, mins, chatName(), noPatient) };
+    }
+    // Chat yang sedang terbuka: advis berpasien; bila ada advis tanpa pasien & dokter tidak memakai WA -> muat riwayat 18 jam lalu ulangi.
+    async function rtReadChat(since, idle, sent) {
+      let r = rtScanOpen(since, true);
+      const fresh = (it) => !sent.includes(it.hash);
+      if (idle && r.items.some((it) => !it.patient && fresh(it))) {
+        await loadHistory(Math.round(Date.now() / 60000) - 1080 - 30, null);
+        if (snapshot.expanded) { snapshot.expanded = false; await sleep(300); }
+        r = rtScanOpen(since, true);
+      }
+      // Tanpa pasien hanya dikirim saat riwayat sudah dimuat (dokter tidak memakai WA); kalau tidak, ditunda ke putaran berikut.
+      return r.items.filter((it) => it.patient || idle);
     }
     async function rtTick() {
       const on = rtState();
@@ -7796,26 +7821,44 @@
       rtBusy = true;
       try {
         const since = Math.max(on.since || 0, Date.now() - 18 * 3600000);
+        const idle = document.hidden || Date.now() - lastUser > 60000;
         const sent = rtSent();
         const out = [];
         const take = (items) => items.forEach((it) => { if (!sent.includes(it.hash) && !out.some((x) => x.hash === it.hash)) out.push(it); });
-        if (document.querySelector("#main [data-pre-plain-text]") && spWaChatPriority(chatName(), []) < 2) take(rtScanOpen(since));
-        // Chat medis lain dengan pesan belum dibaca: hanya saat dokter tidak sedang memakai WA (60 dtk) atau tab di latar.
-        if (document.hidden || Date.now() - lastUser > 60000) {
+        // Antrean: baris chat yang berubah sejak putaran lalu (pesan baru) atau bertanda belum dibaca.
+        const rows = chatRows().map((r) => ({ r, title: rowInfo(r).title, text: rtRowText(r) })).filter((x) => x.title);
+        const prev = rtRows;
+        rtRows = new Map(rows.map((x) => [x.title, x.text]));
+        rows.forEach((x) => {
+          const changed = prev && prev.get(x.title) !== undefined && prev.get(x.title) !== x.text;
+          const unread = !!x.r.querySelector('[aria-label*="unread" i], [aria-label*="belum dibaca" i], [aria-label*="tidak dibaca" i]');
+          if ((changed || unread) && rtLooksMedis(x.title, x.text)) rtPending.set(x.title, Date.now());
+        });
+        // Chat yang sedang terbuka: selalu dibaca bila medis / memuat konsul kita.
+        const cur = chatName();
+        if (document.querySelector("#main [data-pre-plain-text]")) {
+          const all = readMsgs();
+          if (spWaChatPriority(cur, []) < 2 || rtHasKonsul(all) || rtPending.has(cur)) { take(await rtReadChat(since, idle, sent)); rtPending.delete(cur); }
+        }
+        // Chat lain di antrean: dibuka hanya saat dokter tidak memakai WA (60 dtk) atau tab di latar.
+        if (idle && rtPending.size) {
           const start = chatName();
-          const unread = chatRows().filter((r) => r.querySelector('[aria-label*="unread" i], [aria-label*="belum dibaca" i], [aria-label*="tidak dibaca" i]'))
-            .map((r) => rowInfo(r).title).filter((t) => t && !sameChat(t, start) && spWaChatPriority(t, []) < 2).slice(0, 4);
-          for (const t of unread) {
+          for (const [t] of [...rtPending].sort((x, y) => x[1] - y[1]).slice(0, 5)) {
             if (!rtState() || (!document.hidden && Date.now() - lastUser < 60000)) break;
-            if (!(await openChat(t))) continue;
+            if (sameChat(t, start)) { rtPending.delete(t); continue; }
+            if (!(await openChat(t))) { rtPending.delete(t); continue; }
             await sleep(500);
-            take(rtScanOpen(since));
+            take(await rtReadChat(since, true, sent));
+            rtPending.delete(t);
           }
           if (start && !sameChat(chatName(), start) && (document.hidden || Date.now() - lastUser > 60000)) await openChat(start);
         }
         const done = [];
-        for (const it of out) { if (rtSend(it)) done.push(it.hash); await sleep(800); }
+        for (const it of out) { if (rtSend(it)) { done.push(it.hash); rtCount++; } await sleep(800); }
         if (done.length) { try { GM_setValue(RT_SENT, [...done, ...rtSent()].slice(0, 300)); } catch (_) {} }
+        rtLast = Date.now();
+        const b = document.getElementById(BTN);
+        if (b) b.title = `📡 Advis WA realtime — cek terakhir ${new Date(rtLast).toTimeString().slice(0, 5)}, ${rtCount} advis dibuka di Smartplus sejak WA dimuat, antrean ${rtPending.size} chat. Alt+klik = panel Advis → ASGADAR lama.`;
       } catch (e) {
         console.warn("[ADVIS WA realtime]", e);
       } finally {
@@ -7873,11 +7916,12 @@
     let v = null;
     try { v = GM_getValue("sp_wa_rt_advis_v1", null); } catch (_) {}
     try { history.replaceState(null, "", location.pathname + location.search); } catch (_) {}
-    if (!v || v.id !== m[1] || Date.now() - (v.ts || 0) > 30 * 60000 || !v.patient || !v.text) { toast("📡 Advis WA realtime: data advis tidak ditemukan (sudah lewat / sudah dibuka)."); return; }
+    if (!v || v.id !== m[1] || Date.now() - (v.ts || 0) > 30 * 60000 || !v.text) { toast("📡 Advis WA realtime: data advis tidak ditemukan (sudah lewat / sudah dibuka)."); return; }
     if (/\/auth\//i.test(location.pathname)) { toast("📡 Advis WA realtime: login Smartplus dulu, lalu buka lagi dari WhatsApp."); return; }
-    const pt = v.patient;
-    const label = pt.label || [pt.nama, pt.rm].filter(Boolean).join(" / ");
-    runAdvisSpesialis({ waQueue: [{ patient: { ...pt, label }, texts: [v.text] }], realtime: true });
+    // v3.149.0: advis yang pasiennya tidak terbaca dari chat tetap dibuka — dokter memilih pasien di panel.
+    const pt = v.patient || { nama: "", rm: "" };
+    const label = v.patient ? (pt.label || [pt.nama, pt.rm].filter(Boolean).join(" / ")) : "pasien belum terbaca — pilih pasien";
+    runAdvisSpesialis({ waQueue: [{ patient: v.patient ? { ...pt, label } : null, texts: [v.text] }], realtime: true });
     // v3.146.0: tab dibuka di latar -> judul tab memuat nama pasien; saat tab dibuka, tombol Simpan difokus lagi (Enter = simpan).
     document.title = "📩 Advis " + (pt.nama || label) + " · " + document.title;
     document.addEventListener("visibilitychange", () => {
@@ -15550,7 +15594,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.148.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.149.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
