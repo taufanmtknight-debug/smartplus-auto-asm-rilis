@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.150.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.151.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.150.0
-// @description  v3.150.0 (permintaan dokter 15 Nov 2026: tombol kanan bawah menutupi isi tabel): tombol AUTO ASM bersama 🎙️ 🧠 🩺 kini bawaan di KANAN ATAS (di bawah kepala Smartplus) dan bisa DIGESER ke mana saja — tekan lalu tarik salah satu tombol (mouse atau sentuh di HP/tablet) untuk memindahkan seluruh kelompok; ketuk/klik biasa tetap membuka menunya. Posisi diingat di browser ini dan selalu dijaga di dalam layar. Menu AUTO ASM, gelembung dikte & panel 🧠 terbuka di dekat tombol (di bawahnya bila tombol di atas, di atasnya bila tombol di bawah).
+// @version      3.151.0
+// @description  v3.151.0 (permintaan dokter 15 Nov 2026): AUTO ASM kini HANYA aktif bila yang login Smartplus dr. Muhamad Taufan Kurniawan (nama di sidebar, toleran huruf besar/kecil & gelar); user lain tidak mendapat tombol, shortcut, lanjutan otomatis, maupun advis WA realtime. Tombol AUTO ASM 🎙️ 🧠 🩺 di HP tetap di kanan atas layar yang terlihat walau halaman diperbesar/digeser. REVIEW GADAR membaca daftar IGD 6 halaman sekaligus (lebih cepat). Peta Smartplus di notes/smartplus_peta.md.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -42,8 +42,19 @@
   }
   // v3.74.0: di WhatsApp Web hanya tombol kirim ADVIS DPJP -> Rencana ASGADAR (lihat runWaAdvisBridge).
   if (location.hostname === "web.whatsapp.com") {
-    if (document.body) runWaAdvisBridge(); else document.addEventListener("DOMContentLoaded", runWaAdvisBridge, { once: true });
-    runWaKonsulOpen(); // v3.118.0: tab WA ini membuka chat konsul yang diminta tab Smartplus (tidak pernah mengirim)
+    const spWaStart = () => {
+      if (document.body) runWaAdvisBridge(); else document.addEventListener("DOMContentLoaded", runWaAdvisBridge, { once: true });
+      runWaKonsulOpen(); // v3.118.0: tab WA ini membuka chat konsul yang diminta tab Smartplus (tidak pernah mengirim)
+    };
+    // v3.151.0: kunci user — hanya bila pemeriksaan terakhir di Smartplus menemukan dr. Muhamad Taufan Kurniawan login.
+    if (spUserWaOk()) spWaStart();
+    else if (typeof GM_addValueChangeListener === "function") {
+      const id = GM_addValueChangeListener("sp_user_ok_v1", (k, o, v) => {
+        if (!v || !v.ok) return;
+        try { GM_removeValueChangeListener(id); } catch (_) {}
+        spWaStart();
+      });
+    }
     return;
   }
   if (!isSmartplusPage()) return;
@@ -56,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.150.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.150.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.151.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.151.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -121,6 +132,56 @@
   const STYLE_ID = "sp-auto-asm-style-v268";
   const STATUS_ID = "sp-auto-asm-status-v268";
 
+
+  // =========================================================
+  // v3.151.0 (permintaan dokter 15 Nov 2026): KUNCI USER — AUTO ASM hanya bekerja bila yang login Smartplus adalah
+  // dr. Muhamad Taufan Kurniawan. Nama dibaca dari sidebar Smartplus (#sidebarnav li.nav-label, mis.
+  // "dr. Muhamad Taufan Kurniawan"); cocok toleran huruf besar/kecil, gelar, titik/koma, "Muhammad"/"Muh.".
+  // Selain itu: tidak ada tombol, shortcut, lanjutan otomatis, maupun advis WA realtime.
+  // Hasil pemeriksaan terakhir disimpan di browser ini (GM "sp_user_ok_v1") supaya halaman tanpa sidebar & WhatsApp Web
+  // ikut terkunci bila yang terakhir login orang lain. Semua fungsi di sini deklarasi (ter-hoist) karena cabang WhatsApp
+  // berhenti lebih awal di 00_header_inti.js.
+  // =========================================================
+  function spUserLockOn() { return true; } // SP_USER_LOCK_ON — tests/uji_e2e.sh membuat salinan uji lama dengan false
+  function spUserNameNorm(s) {
+    return String(s || "").toUpperCase().replace(/[^A-Z]+/g, " ").replace(/\s+/g, " ").trim();
+  }
+  function spUserIsDoctor(name) {
+    return /(?:^| )(?:MU?H?AM+AD|MOHAM+AD|MOCH?AM+AD|MUH|MOH|M) TAUFAN KURNIAWAN(?: |$)/.test(spUserNameNorm(name));
+  }
+  // Nama user login di sidebar Smartplus; null bila sidebar belum/tidak ada di halaman ini.
+  function spUserLoginName() {
+    try {
+      const el = document.querySelector("#sidebarnav li.nav-label, #sidebarnav .nav-label");
+      const t = el ? String(el.textContent || "").trim() : "";
+      return t || null;
+    } catch (_) { return null; }
+  }
+  function spUserStoredOk() {
+    try { const s = typeof GM_getValue === "function" ? GM_getValue("sp_user_ok_v1", null) : null; return !!(s && s.ok); } catch (_) { return false; }
+  }
+  function spUserStore(ok) {
+    try { if (typeof GM_setValue === "function") GM_setValue("sp_user_ok_v1", { ok: !!ok, ts: Date.now() }); } catch (_) {}
+  }
+  // Promise<boolean>: boleh berjalan di halaman Smartplus ini?
+  async function spUserCheck(waitMs = 8000) {
+    if (!spUserLockOn()) return true;
+    const t0 = Date.now();
+    for (;;) {
+      const n = spUserLoginName();
+      if (n) { const ok = spUserIsDoctor(n); spUserStore(ok); return ok; }
+      if (Date.now() - t0 >= waitMs) break;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+    // Halaman login (ada kolom kata sandi): belum ada user -> terkunci.
+    if (document.querySelector('input[type="password"]')) return false;
+    // Halaman Smartplus tanpa sidebar (cetak/pop-up): ikut hasil pemeriksaan terakhir di browser ini.
+    return spUserStoredOk();
+  }
+  // Untuk WhatsApp Web: hanya hasil pemeriksaan terakhir di Smartplus.
+  function spUserWaOk() { return !spUserLockOn() || spUserStoredOk(); }
+  // Status di halaman Smartplus ini (diisi 29_lanjutan_mulai.js setelah spUserCheck). Dipakai tombol & shortcut.
+  let spUserOkNow = false;
   const TEMPLATES = {
     BP: {
       keluhan: "Batuk disertai rasa sesak",
@@ -6302,19 +6363,28 @@
     const key = doctorName.toLowerCase().split(/\s+/).filter((w) => w.length > 2);
     const rows = [];
     let latest = 0;
-    for (let off = 0; off <= 900; off += 15) {
-      const d = spReviewDoc(await spFetch(`${base}/soap_igd/pasien_igd_list${off ? "/" + off : ""}`, { credentials: "same-origin" }).then((r) => r.text()));
+    // v3.151.0 (pelajari Smartplus): daftar IGD 15 pasien/halaman, tiap halaman ±0,6 dtk. Dulu dibaca satu per satu
+    // (24 jam ≈ 5–8 halaman = 3–5 dtk); kini 6 halaman sekaligus, diproses berurutan dengan aturan berhenti yang sama.
+    const parse = (html) => {
+      const d = spReviewDoc(html);
       const t = [...d.querySelectorAll("table")].find((x) => /Regdate/i.test(x.textContent));
-      if (!t) break;
-      const page = [...t.rows].slice(1).map((r) => {
+      if (!t) return null;
+      return [...t.rows].slice(1).map((r) => {
         const c = [...r.cells].map((x) => x.textContent.replace(/\s+/g, " ").trim());
         const m = (r.querySelector('a[href*="pasien_detail"]')?.getAttribute("href") || "").match(/pasien_detail\/([^/]+)\/([^/]+)/);
         return m ? { noreg: m[1], norm: m[2], nama: c[1] || "", reg: c[3] || "", ts: spReviewTs(c[3]), dok: c[5] || "", st: c[8] || "" } : null;
       }).filter(Boolean);
-      if (!page.length) break;
-      if (!latest) latest = Math.max(...page.map((p) => p.ts));
-      rows.push(...page);
-      if (Math.min(...page.map((p) => p.ts)) < latest - 86400000) break;
+    };
+    let stop = false;
+    for (let off = 0; off <= 900 && !stop; off += 90) {
+      const offs = [0, 15, 30, 45, 60, 75].map((x) => off + x).filter((o) => o <= 900);
+      const pages = await Promise.all(offs.map((o) => spFetch(`${base}/soap_igd/pasien_igd_list${o ? "/" + o : ""}`, { credentials: "same-origin" }).then((r) => r.text()).then(parse)));
+      for (const page of pages) {
+        if (!page || !page.length) { stop = true; break; }
+        if (!latest) latest = Math.max(...page.map((p) => p.ts));
+        rows.push(...page);
+        if (Math.min(...page.map((p) => p.ts)) < latest - 86400000) { stop = true; break; }
+      }
     }
     return { latest, patients: rows.filter((p) => p.ts >= latest - 86400000 && /done/i.test(p.st) && key.length && key.every((w) => p.dok.toLowerCase().includes(w))) };
   }
@@ -7817,7 +7887,7 @@
     async function rtTick() {
       const on = rtState();
       rtPaint();
-      if (!on || rtBusy || cariBusy || document.getElementById(PANEL) || !sidePane()) return;
+      if (!on || !spUserWaOk() || rtBusy || cariBusy || document.getElementById(PANEL) || !sidePane()) return;
       rtBusy = true;
       try {
         const since = Math.max(on.since || 0, Date.now() - 18 * 3600000);
@@ -15601,7 +15671,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.150.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.151.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -17139,7 +17209,17 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     const main = document.getElementById(BUTTON_ID);
     if (!main) return;
     const w = main.offsetWidth || 112, h = main.offsetHeight || 40;
-    const vw = document.documentElement.clientWidth || window.innerWidth, vh = window.innerHeight;
+    const lw = document.documentElement.clientWidth || window.innerWidth;
+    let vw = lw, vh = window.innerHeight, offR = 0, offT = 0;
+    // v3.151.0 (HP): bila halaman diperbesar/digeser (pinch-zoom, tabel lebar), posisi fixed mengikuti layout viewport
+    // sehingga tombol tampak di tengah layar. Posisi dihitung terhadap bagian layar yang benar-benar terlihat
+    // (visualViewport): kanan atas layar HP, bukan kanan atas halaman.
+    const vv = window.visualViewport;
+    if (vv && vv.width > 0 && vv.height > 0 && (Math.abs(vv.scale - 1) > 0.01 || vv.offsetLeft > 0.5 || vv.offsetTop > 0.5 || vv.width < lw - 1)) {
+      vw = vv.width; vh = vv.height;
+      offR = Math.max(0, lw - (vv.offsetLeft + vv.width));
+      offT = Math.max(0, vv.offsetTop);
+    }
     const p = spFbDragPos || spFbPosGet() || SP_FB_DEF;
     const groupW = w + 8 + 3 * SP_FB_SLOT; // ruang untuk 🎙️ 🧠 🩺 di kiri AUTO ASM
     const r = Math.round(Math.min(Math.max(4, p.r), Math.max(4, vw - groupW - 4)));
@@ -17149,8 +17229,8 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       [document.getElementById(SP_CEK_BTN_ID), r + w + 8 + 2 * SP_FB_SLOT, null]].forEach(([el, right, top]) => {
       if (!el) return;
       spFbImp(el, "position", "fixed");
-      spFbImp(el, "right", right + "px");
-      spFbImp(el, "top", (top != null ? top : Math.round(t + (h - 44) / 2)) + "px");
+      spFbImp(el, "right", Math.round(right + offR) + "px");
+      spFbImp(el, "top", Math.round(offT + (top != null ? top : t + (h - 44) / 2)) + "px");
       spFbImp(el, "bottom", "auto");
       spFbImp(el, "left", "auto");
       spFbBindDrag(el);
@@ -17159,11 +17239,11 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     const atTop = t + h / 2 < vh / 2;
     const ds = document.documentElement.style;
     const setVar = (k, v) => { if (ds.getPropertyValue(k) !== v) ds.setProperty(k, v); };
-    setVar("--sp-pop-r", Math.round(Math.min(Math.max(4, r), Math.max(4, vw - 324))) + "px");
-    setVar("--sp-pop-top", atTop ? (t + h + 8) + "px" : "auto");
-    setVar("--sp-pop-bottom", atTop ? "auto" : (vh - t + 8) + "px");
+    setVar("--sp-pop-r", Math.round(offR + Math.min(Math.max(4, r), Math.max(4, vw - 324))) + "px");
+    setVar("--sp-pop-top", atTop ? Math.round(offT + t + h + 8) + "px" : "auto");
+    setVar("--sp-pop-bottom", atTop ? "auto" : Math.round(Math.max(0, window.innerHeight - offT - vh) + vh - t + 8) + "px");
     setVar("--sp-pop-maxh", Math.round(Math.min(vh * 0.72, Math.max(200, atTop ? vh - (t + h + 8) - 8 : t - 16))) + "px");
-    setVar("--sp-ai-top", (atTop ? t + h + 8 : 8) + "px");
+    setVar("--sp-ai-top", Math.round(offT + (atTop ? t + h + 8 : 8)) + "px");
   }
 
   function spFbBindDrag(el) {
@@ -17207,6 +17287,13 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     }, true);
   }
   window.addEventListener("resize", () => { try { spPlaceFloatButtons(); } catch (_) {} });
+  // v3.151.0: ikuti pinch-zoom & geser di HP (visualViewport) supaya tombol tetap di kanan atas layar yang terlihat.
+  if (window.visualViewport) {
+    let spFbVvRaf = 0;
+    const spFbVv = () => { if (spFbVvRaf) return; spFbVvRaf = requestAnimationFrame(() => { spFbVvRaf = 0; try { spPlaceFloatButtons(); } catch (_) {} }); };
+    window.visualViewport.addEventListener("resize", spFbVv);
+    window.visualViewport.addEventListener("scroll", spFbVv);
+  }
   window.addEventListener("storage", (e) => { if (e.key === SP_FB_POS_KEY) { try { spPlaceFloatButtons(); } catch (_) {} } });
 
   document.addEventListener("keydown", (e) => {
@@ -18775,7 +18862,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     const show = !!spAsistenFormRoot();
     if ((b.style.display !== "none") !== show) b.style.display = show ? "" : "none";
   }
-  setInterval(() => { try { spEnsureCekButton(); } catch (_) {} }, 1200);
+  setInterval(() => { try { if (spUserOkNow) spEnsureCekButton(); } catch (_) {} }, 1200);
 
   // v3.71.0 (C): dokter menekan Simpan di form GADAR yang diisi asisten -> isi akhir dibandingkan dengan isian asisten dan
   // perbedaannya disimpan sebagai contoh gaya dokter (browser ini saja). Hanya membaca; klik Simpan tetap berjalan biasa.
@@ -18797,7 +18884,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
   }, true);
 
   document.addEventListener("keydown", (e) => {
-    if (e.altKey && !e.ctrlKey && String(e.key || "").toLowerCase() === "q") {
+    if (spUserOkNow && e.altKey && !e.ctrlKey && String(e.key || "").toLowerCase() === "q") {
       e.preventDefault();
       spAsistenOpen();
     }
@@ -19910,6 +19997,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
   function safeEnsureButton() {
     try {
       if (!document.documentElement) return false;
+      if (!spUserOkNow) return false; // v3.151.0: kunci user (lihat 00_kunci_user.js)
       ensureButton();
       spEnsureAsistenButton();
       spEnsureTanyaAiButton();
@@ -20113,12 +20201,21 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     spRpResumePayload = p;
     openMenu("rp-resume");
   }
-  spResumePendingResepPulang().catch((err) => console.warn("[RESEP PULANG] lanjutan gagal", err));
-  spResumePendingAsgadar().catch((err) => console.warn("[ASGADAR] lanjutan gagal", err));
-  spResumePendingPaketKonsul().catch((err) => console.warn("[PAKET KONSUL] lanjutan gagal", err));
-  spResumeAsistenJob().catch((err) => console.warn("[ASISTEN] lanjutan gagal", err));
-  try { spWaAdvisInit(); } catch (err) { console.warn("[ADVIS WA] gagal dipasang", err); }
-  try { spServerGuardInit(); } catch (err) { console.warn("[AUTO ASM] pengaman simpan gagal dipasang", err); }
+  // v3.151.0: semua fitur baru dimulai setelah user login dipastikan dr. Muhamad Taufan Kurniawan (00_kunci_user.js).
+  spUserCheck().then((ok) => {
+    spUserOkNow = ok;
+    if (!ok) {
+      console.warn("[AUTO ASM] nonaktif: user login Smartplus bukan dr. Muhamad Taufan Kurniawan.");
+      return;
+    }
+    bootAutoAsmCrossBrowser();
+    spResumePendingResepPulang().catch((err) => console.warn("[RESEP PULANG] lanjutan gagal", err));
+    spResumePendingAsgadar().catch((err) => console.warn("[ASGADAR] lanjutan gagal", err));
+    spResumePendingPaketKonsul().catch((err) => console.warn("[PAKET KONSUL] lanjutan gagal", err));
+    spResumeAsistenJob().catch((err) => console.warn("[ASISTEN] lanjutan gagal", err));
+    try { spWaAdvisInit(); } catch (err) { console.warn("[ADVIS WA] gagal dipasang", err); }
+    try { spServerGuardInit(); } catch (err) { console.warn("[AUTO ASM] pengaman simpan gagal dipasang", err); }
+  }).catch((err) => console.warn("[AUTO ASM] pemeriksaan user gagal", err));
 
   // Firefox Back/Forward Cache dan tab yang dipulihkan.
   window.addEventListener('pageshow', bootAutoAsmCrossBrowser, true);
@@ -20144,7 +20241,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
   }
 
   document.addEventListener("keydown", (e) => {
-    if (e.altKey && String(e.key || "").toLowerCase() === "a") { // v3.46.0: e.key bisa kosong pada event buatan
+    if (spUserOkNow && e.altKey && String(e.key || "").toLowerCase() === "a") { // v3.46.0: e.key bisa kosong pada event buatan
       e.preventDefault();
       openMenu();
     }
