@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.149.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.150.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.149.0
-// @description  v3.149.0 (laporan dokter 15 Nov 2026: advis WA realtime kadang tidak memunculkan tab Smartplus): chat yang menerima pesan baru dicatat sebagai antrean dan tetap diperiksa walau sudah sempat dibaca dokter (dulu hanya chat bertanda belum dibaca); chat kontak pribadi spesialis ikut dipantau bila pesannya berisi konsul/terapi; advis yang pasiennya belum terbaca -> riwayat 18 jam dimuat dulu, bila tetap tidak terbaca advis tetap dibuka di Smartplus dan dokter memilih pasien; keterangan tombol menampilkan waktu cek terakhir & jumlah advis yang dibuka.
+// @version      3.150.0
+// @description  v3.150.0 (permintaan dokter 15 Nov 2026: tombol kanan bawah menutupi isi tabel): tombol AUTO ASM bersama 🎙️ 🧠 🩺 kini bawaan di KANAN ATAS (di bawah kepala Smartplus) dan bisa DIGESER ke mana saja — tekan lalu tarik salah satu tombol (mouse atau sentuh di HP/tablet) untuk memindahkan seluruh kelompok; ketuk/klik biasa tetap membuka menunya. Posisi diingat di browser ini dan selalu dijaga di dalam layar. Menu AUTO ASM, gelembung dikte & panel 🧠 terbuka di dekat tombol (di bawahnya bila tombol di atas, di atasnya bila tombol di bawah).
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -56,8 +56,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.149.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.149.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.150.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.150.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -12285,7 +12285,7 @@
     const FONT = `-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif`;
     style.textContent = `
       #${BUTTON_ID}{
-        position:fixed!important; right:18px!important; bottom:82px!important;
+        position:fixed!important; right:18px!important; top:64px!important; bottom:auto!important;
         z-index:2147483647!important; background:#e91e63!important; color:#fff!important;
         border:0!important; border-radius:12px!important; padding:13px 18px!important;
         font:700 14px/1.1 ${FONT}!important; letter-spacing:.3px!important;
@@ -12346,9 +12346,9 @@
       /* v3.54.0 (UI): menu lebih rapi — judul menempel di atas (satu baris), tombol berbingkai tipis & proporsional,
          label kelompok kecil. Posisi (kanan bawah, di atas tombol AUTO ASM) tidak diubah. */
       #${MENU_ID}{
-        position:fixed!important; right:18px!important; bottom:140px!important;
+        position:fixed!important; right:var(--sp-pop-r,18px)!important; top:var(--sp-pop-top,auto)!important; bottom:var(--sp-pop-bottom,140px)!important;
         z-index:2147483647!important; width:320px!important; max-width:calc(100vw - 24px)!important;
-        max-height:72vh!important; overflow:auto!important; overscroll-behavior:contain; background:#fff!important;
+        max-height:var(--sp-pop-maxh,72vh)!important; overflow:auto!important; overscroll-behavior:contain; background:#fff!important;
         color:#1f2937!important; border:1px solid #f3d3e0!important; border-radius:14px!important;
         box-shadow:0 14px 36px rgba(15,23,42,.22),0 2px 8px rgba(15,23,42,.08)!important;
         padding:0 10px 10px!important; font:13.5px/1.35 ${FONT}!important;
@@ -12824,11 +12824,18 @@
     const s = el.dataset.spSizeKey ? spSizeGet(el.dataset.spSizeKey) : null;
     spImp(el, "box-sizing", "border-box");
     spImp(el, "max-width", Math.round(v.w - 8) + "px");
-    spImp(el, "max-height", Math.round(v.h - 8) + "px");
+    // v3.150.0: menu AUTO ASM yang belum digeser terbuka di bawah/atas kelompok tombol -> tinggi dibatasi ruang yang tersisa
+    // supaya tidak terdorong menutupi tombolnya (--sp-pop-maxh dihitung spPlaceFloatButtons).
+    let capH = v.h - 8;
+    if (el.id === MENU_ID && !el.dataset.spPosSet && !el.classList.contains("sp-package-modal")) {
+      const c = parseFloat(document.documentElement.style.getPropertyValue("--sp-pop-maxh"));
+      if (c > 0) capH = Math.min(capH, c);
+    }
+    spImp(el, "max-height", Math.round(capH) + "px");
     // v3.100.0: selama tepi/sudut sedang ditarik, ukuran tidak ditimpa ukuran tersimpan.
     if (!el._spRsBusy) {
       if (s) spImp(el, "width", Math.round(Math.min(s.w, v.w - 8)) + "px");
-      if (s && el.dataset.spMin !== "1") spImp(el, "height", Math.round(Math.min(s.h, v.h - 8)) + "px");
+      if (s && el.dataset.spMin !== "1") spImp(el, "height", Math.round(Math.min(s.h, capH)) + "px");
       else el.style.removeProperty("height");
     }
     const r = el.getBoundingClientRect();
@@ -15594,7 +15601,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.149.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.150.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -16349,6 +16356,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
 
     const host = document.body || document.documentElement;
     host.appendChild(btn);
+    try { spPlaceFloatButtons(); } catch (_) {}
   }
 
   // =========================
@@ -16901,7 +16909,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     if (!b) {
       b = document.createElement("div");
       b.id = SP_VOICE_BUBBLE_ID;
-      b.style.cssText = "position:fixed;right:18px;bottom:136px;z-index:2147483647;max-width:min(420px,calc(100vw - 36px));" +
+      b.style.cssText = "position:fixed;right:var(--sp-pop-r,18px);top:var(--sp-pop-top,auto);bottom:var(--sp-pop-bottom,136px);z-index:2147483647;max-width:min(420px,calc(100vw - 36px));" +
         "background:#263238;color:#fff;border-radius:10px;padding:8px 12px;font:13px/1.35 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;" +
         "box-shadow:0 4px 14px rgba(0,0,0,.25);white-space:pre-wrap;pointer-events:none;";
       document.documentElement.appendChild(b);
@@ -17106,15 +17114,100 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
   // v3.66.0 (audit): tombol 🎤 & 🧠 sebaris di KIRI tombol AUTO ASM. Dulu ditumpuk di atasnya (bottom 136/190 px) sehingga
   // menutupi bagian bawah menu AUTO ASM yang sedang terbuka (menu mulai di bottom 140 px).
   // v3.101.0: urutan 🎙️ ASISTEN SUARA, 🧠 TANYA AI, 🩺 CEK & SARAN.
+  // v3.150.0 (permintaan dokter 15 Nov 2026: tombol kanan bawah menutupi isi tabel): kelompok tombol (AUTO ASM, 🎙️, 🧠, 🩺)
+  // bawaan di KANAN ATAS (di bawah kepala Smartplus) dan bisa DIGESER ke mana saja (mouse & sentuh). Tekan lalu tarik salah
+  // satu tombol = geser seluruh kelompok; ketuk/klik biasa tetap membuka menunya. Posisi diingat di browser ini
+  // (localStorage) dan selalu dijaga di dalam layar (juga saat layar diputar/diubah ukurannya). Menu AUTO ASM, gelembung
+  // dikte dan panel 🧠 terbuka di dekat kelompok tombol: di bawahnya bila tombol di separuh atas layar, di atasnya bila di bawah.
+  const SP_FB_POS_KEY = "sp-auto-asm-tombol-pos";
+  const SP_FB_DEF = { r: 18, t: 64 };
+  const SP_FB_SLOT = 52; // lebar 1 tombol bulat (44) + jarak 8
+  let spFbDragPos = null;
+  function spFbPosGet() {
+    try {
+      const p = JSON.parse(localStorage.getItem(SP_FB_POS_KEY) || "null");
+      if (p && Number.isFinite(p.r) && Number.isFinite(p.t)) return p;
+    } catch (_) {}
+    return null;
+  }
+  function spFbPosSet(p) {
+    try { localStorage.setItem(SP_FB_POS_KEY, JSON.stringify({ r: Math.round(p.r), t: Math.round(p.t) })); } catch (_) {}
+  }
+  function spFbImp(el, p, v) { if (el.style.getPropertyValue(p) !== v || el.style.getPropertyPriority(p) !== "important") el.style.setProperty(p, v, "important"); }
+
   function spPlaceFloatButtons() {
     const main = document.getElementById(BUTTON_ID);
-    const w = main && main.offsetWidth ? main.offsetWidth : 112;
-    [[SP_AS_BTN_ID, 0], [SP_AI_BTN_ID, 1], [SP_CEK_BTN_ID, 2]].forEach(([id, slot]) => {
-      const el = document.getElementById(id);
-      const right = (18 + w + 8 + slot * 52) + "px";
-      if (el && el.style.right !== right) el.style.right = right;
+    if (!main) return;
+    const w = main.offsetWidth || 112, h = main.offsetHeight || 40;
+    const vw = document.documentElement.clientWidth || window.innerWidth, vh = window.innerHeight;
+    const p = spFbDragPos || spFbPosGet() || SP_FB_DEF;
+    const groupW = w + 8 + 3 * SP_FB_SLOT; // ruang untuk 🎙️ 🧠 🩺 di kiri AUTO ASM
+    const r = Math.round(Math.min(Math.max(4, p.r), Math.max(4, vw - groupW - 4)));
+    const t = Math.round(Math.min(Math.max(4, p.t), Math.max(4, vh - h - 4)));
+    main._spFbPos = { r, t };
+    [[main, r, t], [document.getElementById(SP_AS_BTN_ID), r + w + 8, null], [document.getElementById(SP_AI_BTN_ID), r + w + 8 + SP_FB_SLOT, null],
+      [document.getElementById(SP_CEK_BTN_ID), r + w + 8 + 2 * SP_FB_SLOT, null]].forEach(([el, right, top]) => {
+      if (!el) return;
+      spFbImp(el, "position", "fixed");
+      spFbImp(el, "right", right + "px");
+      spFbImp(el, "top", (top != null ? top : Math.round(t + (h - 44) / 2)) + "px");
+      spFbImp(el, "bottom", "auto");
+      spFbImp(el, "left", "auto");
+      spFbBindDrag(el);
     });
+    // Letak kotak yang dibuka dari tombol (dipakai CSS menu AUTO ASM, gelembung dikte, panel 🧠).
+    const atTop = t + h / 2 < vh / 2;
+    const ds = document.documentElement.style;
+    const setVar = (k, v) => { if (ds.getPropertyValue(k) !== v) ds.setProperty(k, v); };
+    setVar("--sp-pop-r", Math.round(Math.min(Math.max(4, r), Math.max(4, vw - 324))) + "px");
+    setVar("--sp-pop-top", atTop ? (t + h + 8) + "px" : "auto");
+    setVar("--sp-pop-bottom", atTop ? "auto" : (vh - t + 8) + "px");
+    setVar("--sp-pop-maxh", Math.round(Math.min(vh * 0.72, Math.max(200, atTop ? vh - (t + h + 8) - 8 : t - 16))) + "px");
+    setVar("--sp-ai-top", (atTop ? t + h + 8 : 8) + "px");
   }
+
+  function spFbBindDrag(el) {
+    if (el._spFbDrag) return;
+    el._spFbDrag = true;
+    el.style.setProperty("touch-action", "none", "important"); // sentuh-tarik menggeser tombol, bukan menggulir halaman
+    el.addEventListener("pointerdown", (e) => {
+      if (e.button) return;
+      const main = document.getElementById(BUTTON_ID);
+      if (!main) return;
+      const start = main._spFbPos || SP_FB_DEF;
+      const sx = e.clientX, sy = e.clientY;
+      let moved = false;
+      const mv = (ev) => {
+        const dx = ev.clientX - sx, dy = ev.clientY - sy;
+        if (!moved && Math.hypot(dx, dy) < 8) return; // goyangan kecil saat mengetuk tetap dihitung ketukan
+        moved = true;
+        ev.preventDefault();
+        document.documentElement.classList.add("sp-rs-drag");
+        spFbDragPos = { r: start.r - dx, t: start.t + dy };
+        spPlaceFloatButtons();
+      };
+      const end = () => {
+        document.removeEventListener("pointermove", mv, true);
+        document.removeEventListener("pointerup", end, true);
+        document.removeEventListener("pointercancel", end, true);
+        document.documentElement.classList.remove("sp-rs-drag");
+        if (!moved) return;
+        spFbDragPos = null;
+        const m = document.getElementById(BUTTON_ID);
+        if (m && m._spFbPos) spFbPosSet(m._spFbPos);
+        spPlaceFloatButtons();
+        // Klik yang menyusul akhir geseran tidak membuka menu.
+        const kill = (ce) => { ce.preventDefault(); ce.stopImmediatePropagation(); window.removeEventListener("click", kill, true); };
+        window.addEventListener("click", kill, true);
+        setTimeout(() => window.removeEventListener("click", kill, true), 400);
+      };
+      document.addEventListener("pointermove", mv, true);
+      document.addEventListener("pointerup", end, true);
+      document.addEventListener("pointercancel", end, true);
+    }, true);
+  }
+  window.addEventListener("resize", () => { try { spPlaceFloatButtons(); } catch (_) {} });
+  window.addEventListener("storage", (e) => { if (e.key === SP_FB_POS_KEY) { try { spPlaceFloatButtons(); } catch (_) {} } });
 
   document.addEventListener("keydown", (e) => {
     // v3.67.0 (instruksi dokter): tombol 🎤 / Alt+V DIKTE SUARA terpisah dihapus; mic hanya lewat panel ASISTEN 🧠.
@@ -18655,7 +18748,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     b.title = "ASISTEN SUARA (Alt+Q): ucapan -> isian form GADAR lewat Claude, dengan pratinjau. Tidak menyimpan.";
     b.textContent = "🎙️"; // v3.101.0 (permintaan dokter): 🧠 -> 🎙️; 🧠 kini TANYA AI di sebelahnya
 
-    b.style.cssText = "position:fixed;right:190px;bottom:80px;z-index:2147483647;border:0;border-radius:22px;" +
+    b.style.cssText = "position:fixed;right:190px;top:66px;z-index:2147483647;border:0;border-radius:22px;" +
       "min-width:44px;height:44px;padding:0 12px;color:#fff;background:#6a1b9a;font:700 18px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;" +
       "box-shadow:0 4px 12px rgba(0,0,0,.25);cursor:pointer;";
     b.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); spAsistenOpen(); }, true);
@@ -18672,7 +18765,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       b.type = "button";
       b.title = "CEK & SARAN ASGADAR: saran diagnosis + ICD-10, catatan TTV, pemfis khas untuk form GADAR ini (pilih dulu, tidak menyimpan).";
       b.textContent = "🩺";
-      b.style.cssText = "position:fixed;right:294px;bottom:80px;z-index:2147483647;border:0;border-radius:22px;display:none;" +
+      b.style.cssText = "position:fixed;right:294px;top:66px;z-index:2147483647;border:0;border-radius:22px;display:none;" +
         "min-width:44px;height:44px;padding:0 12px;color:#fff;background:#0d9488;font:700 18px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;" +
         "box-shadow:0 4px 12px rgba(0,0,0,.25);cursor:pointer;";
       b.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); openMenu("cekgadar"); }, true);
@@ -19393,7 +19486,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       font:400 22px/1 ${F}!important;cursor:pointer!important;touch-action:manipulation!important;box-sizing:border-box!important;
       box-shadow:0 6px 18px rgba(109,40,217,.32),0 2px 6px rgba(15,23,42,.12)!important;}
     #${SP_AI_BTN_ID}:hover{filter:brightness(1.08)!important;}
-    ${P}{position:fixed!important;top:8px!important;right:8px!important;bottom:auto!important;left:auto!important;z-index:2147483646!important;
+    ${P}{position:fixed!important;top:var(--sp-ai-top,8px)!important;right:8px!important;bottom:auto!important;left:auto!important;z-index:2147483646!important;
       width:min(317px,69vw)!important;height:30vh!important;min-width:200px!important;min-height:220px!important;
       display:flex!important;flex-direction:column!important;overflow:hidden!important;background:#f8fafc!important;
       border:1px solid #94a3b8!important;border-radius:12px!important;box-shadow:0 12px 32px rgba(15,23,42,.28)!important;box-sizing:border-box!important;
@@ -19802,7 +19895,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     b.title = "Tanya AI";
     b.setAttribute("aria-label", "Tanya AI");
     b.textContent = "🧠";
-    b.style.cssText = "position:fixed;right:242px;bottom:80px;z-index:2147483647;";
+    b.style.cssText = "position:fixed;right:242px;top:66px;z-index:2147483647;";
     b.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); spAiOpen(); }, true);
     (document.body || document.documentElement).appendChild(b);
     spPlaceFloatButtons();
