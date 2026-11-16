@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.157.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.158.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.157.0
-// @description  v3.157.0 (laporan dokter 16 Nov 2026: "pasien tidak terdeteksi dari chat" sering muncul): bila pasien advis WA realtime tidak terbaca / tidak cocok, panel ADVIS SPESIALIS kini menampilkan sampai 3 PASIEN PALING MIRIP dengan chat (nama di teks, salah ketik 1 huruf, No.RM) untuk dipilih sekali klik, beserta potongan chat yang dibaca. Pencarian tetap di semua pasien IGD 48 jam + rawat inap.
+// @version      3.158.0
+// @description  v3.158.0 (permintaan dokter 16 Nov 2026): Advis WA realtime kini BERBASIS EVENT — setiap pesan baru di daftar chat atau di chat yang terbuka langsung diperiksa apakah advis (±1–3 dtk), tidak lagi menunggu putaran 15 dtk (putaran 15 dtk tetap sebagai cadangan). Pengaman tetap: tab Smartplus hanya terisi, Simpan ditekan dokter (Enter); hanya untuk login dr. Taufan.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -65,8 +65,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.157.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.157.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.158.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.158.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -8295,6 +8295,33 @@
       }
     }
     if (hasGM && typeof GM_getValue === "function") setInterval(() => { rtTick(); }, 15000);
+    // v3.158.0 (permintaan dokter 16 Nov 2026: "setiap ada chat langsung cek advis atau bukan"): selain cek berkala 15 dtk,
+    // kini BERBASIS EVENT — setiap perubahan di daftar chat (pesan baru masuk) atau di chat yang terbuka langsung memicu
+    // pemeriksaan (jeda 1,2 dtk supaya pesan yang datang beruntun dibaca sekali). Saat pemeriksaan sedang berjalan, satu
+    // pemeriksaan ulang dijadwalkan sesudahnya. Pengaman tetap: tab Smartplus hanya mengisi, Simpan = dokter (Enter).
+    if (hasGM && typeof GM_getValue === "function" && typeof MutationObserver === "function") {
+      // Perubahan yang dibuat pemeriksaan itu sendiri (membuka chat lain, memuat riwayat) diabaikan selama berjalan + 1,5 dtk
+      // sesudahnya supaya tidak memicu dirinya terus-menerus; kolom ketik dokter (footer) juga diabaikan.
+      let rtEvTimer = 0, rtSelfUntil = 0;
+      const rtKick = () => {
+        if (!rtState()) return;
+        clearTimeout(rtEvTimer);
+        rtEvTimer = setTimeout(async () => {
+          if (rtBusy) return;
+          await rtTick();
+          rtSelfUntil = Date.now() + 1500;
+        }, 1200);
+      };
+      new MutationObserver((muts) => {
+        if (!rtState() || rtBusy || Date.now() < rtSelfUntil) return;
+        for (const m of muts) {
+          const t = m.target && (m.target.nodeType === 1 ? m.target : m.target.parentElement);
+          if (!t || !t.closest) continue;
+          if (t.closest("#" + BTN + ", #" + PANEL + ", footer")) continue;
+          if (t.closest("#pane-side, #main")) { rtKick(); return; }
+        }
+      }).observe(document.body, { childList: true, subtree: true, characterData: true });
+    }
     setInterval(ensureBtn, 1500);
     ensureBtn();
   }
@@ -16255,7 +16282,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.157.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.158.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
