@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.161.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.162.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.161.0
-// @description  v3.161.0 (permintaan dokter 16 Nov 2026): menu AUTO IGD — 🩺 Cek & saran ASGADAR dan 📚 Referensi Klinis dihapus dari menu (🩺 Cek & saran tetap ada di tombol mengambang di samping 🧠), diganti 📋 MULTIPLE CPPT: pilih pasien IGD 24 jam, CPPT tiap pasien disusun seperti MULTIPLE VISIT (keluhan & TTV dari Assesment GADAR bila belum ada CPPT), dicek/diedit lalu "Save multiple CPPT". Advis ke ASGADAR kini juga ditulis di CPPT (S & P: "advis dr. X Sp.Y", advis di bawahnya) saat dokter menekan 💾 Simpan Rencana (centang "Tulis juga di CPPT") atau tombol "📋 Tulis juga di CPPT" setelah advis WA masuk ke form terbuka.
+// @version      3.162.0
+// @description  v3.162.0 (uji Smartplus asli 16 Nov 2026): MULTIPLE CPPT IGD — GCS "0" dari Assesment GADAR (kolom kosong) tidak lagi masuk CPPT; GCS GADAR hanya dipakai bila 3–15 / E-V-M, selain itu vital normal sesuai umur. Diuji di Smartplus asli tanpa Simpan: daftar 92 pasien IGD 24 jam, kartu 3 pasien, form CPPT dokter terbuka normal untuk No.Reg IGD.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -66,8 +66,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.161.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.161.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.162.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.162.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -15182,7 +15182,10 @@
           // v3.161.0: pasien IGD belum ber-CPPT -> TTV dari Assesment GADAR kunjungan ini, baru vital normal sesuai umur.
           const gd = p.igd && plan.gadar ? plan.gadar : null;
           const gv = (x) => { const t = spCleanGadarText(x); return /^\d/.test(t) ? t : ''; };
-          const fromG = gd ? { td: gv(gd.td), nadi: gv(gd.nadi), suhu: gv(gd.suhu), nafas: gv(gd.nafas), gcs: gv(gd.glosgow_coma) } : {};
+          // v3.162.0 (uji Smartplus asli 16 Nov 2026): GADAR menyimpan glosgow_coma "0" bila tidak diisi -> CPPT tertulis "GCS 0".
+          // GCS hanya dipakai bila 3–15 (atau E/V/M); selain itu dipakai vital normal sesuai umur.
+          const spGcsOk = (t) => { const s = String(t || "").trim(); const n = Number((s.match(/^\d+/) || [])[0]); return /E\s*\d/i.test(s) || (n >= 3 && n <= 15) ? s : ""; };
+          const fromG = gd ? { td: gv(gd.td), nadi: gv(gd.nadi), suhu: gv(gd.suhu), nafas: gv(gd.nafas), gcs: spGcsOk(gv(gd.glosgow_coma)) } : {};
           const fromGadar = [];
           ['td', 'nadi', 'suhu', 'nafas', 'gcs', 'kesadaran', 'keadaan_umum', 'reaksi_cahaya'].forEach((k) => {
             if (plan.vitals[k]) { v[k] = plan.vitals[k]; return; }
@@ -16442,7 +16445,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.161.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.162.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
