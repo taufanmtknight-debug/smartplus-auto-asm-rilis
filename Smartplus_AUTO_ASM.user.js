@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.158.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.159.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.158.0
-// @description  v3.158.0 (permintaan dokter 16 Nov 2026): Advis WA realtime kini BERBASIS EVENT — setiap pesan baru di daftar chat atau di chat yang terbuka langsung diperiksa apakah advis (±1–3 dtk), tidak lagi menunggu putaran 15 dtk (putaran 15 dtk tetap sebagai cadangan). Pengaman tetap: tab Smartplus hanya terisi, Simpan ditekan dokter (Enter); hanya untuk login dr. Taufan.
+// @version      3.159.0
+// @description  v3.159.0 (foto dokter 16 Nov 2026): resep tindakan — kotak "Resep berhasil dibuat" dari Smartplus tidak lagi menahan proses (pesannya dibaca otomatis, tidak perlu menekan OK) dan dipakai sebagai bukti tersimpan; form Resep Online baru dimuat bila perlu sehingga KOMBINASI langsung lanjut ke obat oral. Advis WA realtime: chat lain diproses setelah 30 dtk WA tidak dipakai (dulu 60 dtk).
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -65,8 +65,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.158.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.158.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.159.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.159.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -8250,7 +8250,7 @@
       rtBusy = true;
       try {
         const since = Math.max(on.since || 0, Date.now() - 18 * 3600000);
-        const idle = document.hidden || Date.now() - lastUser > 60000;
+        const idle = document.hidden || Date.now() - lastUser > 30000; // v3.159.0 (dokter): 60 -> 30 dtk tidak memakai WA
         const sent = rtSent();
         const out = [];
         const take = (items) => items.forEach((it) => { if (!sent.includes(it.hash) && !out.some((x) => x.hash === it.hash)) out.push(it); });
@@ -8269,18 +8269,18 @@
           const all = readMsgs();
           if (spWaChatPriority(cur, []) < 2 || rtHasKonsul(all) || rtPending.has(cur)) { take(await rtReadChat(since, idle, sent)); rtPending.delete(cur); }
         }
-        // Chat lain di antrean: dibuka hanya saat dokter tidak memakai WA (60 dtk) atau tab di latar.
+        // Chat lain di antrean: dibuka hanya saat dokter tidak memakai WA (30 dtk; v3.159.0, dulu 60) atau tab di latar.
         if (idle && rtPending.size) {
           const start = chatName();
           for (const [t] of [...rtPending].sort((x, y) => x[1] - y[1]).slice(0, 5)) {
-            if (!rtState() || (!document.hidden && Date.now() - lastUser < 60000)) break;
+            if (!rtState() || (!document.hidden && Date.now() - lastUser < 30000)) break;
             if (sameChat(t, start)) { rtPending.delete(t); continue; }
             if (!(await openChat(t))) { rtPending.delete(t); continue; }
             await sleep(500);
             take(await rtReadChat(since, true, sent));
             rtPending.delete(t);
           }
-          if (start && !sameChat(chatName(), start) && (document.hidden || Date.now() - lastUser > 60000)) await openChat(start);
+          if (start && !sameChat(chatName(), start) && (document.hidden || Date.now() - lastUser > 30000)) await openChat(start);
         }
         const done = [];
         for (const it of out) { if (rtSend(it)) { done.push(it.hash); rtCount++; } await sleep(800); }
@@ -12272,19 +12272,34 @@
         const noreg = typeof getCurrentIgdNoreg === "function" ? getCurrentIgdNoreg() : "";
         const beforeId = noreg ? await spResepMaxId(noreg).catch(() => null) : null;
         const oldDraft = document.getElementById("tbody_draft");
+        // v3.159.0 (foto dokter 16 Nov 2026): sesudah Simpan, Smartplus memunculkan kotak browser "Resep berhasil dibuat" (alert)
+        // yang menghentikan halaman sampai dokter menekan OK -> obat oral tertahan. Selama menyimpan, alert itu ditangkap
+        // (pesannya dibaca, tidak perlu menekan OK) lalu dikembalikan seperti semula.
+        let alertMsg = "";
+        const origAlert = window.alert;
+        try { window.alert = function (m) { alertMsg = String(m == null ? "" : m); console.log("[AUTO RESEP] pesan Smartplus:", alertMsg); }; } catch (_) {}
         const saved = clickRecipeSaveButtonOnly();
         if (saved) {
           const swalText = () => { const b = [...document.querySelectorAll(".swal2-popup, .sweet-alert")].find(visible); return b ? (b.innerText || "").replace(/\s+/g, " ").replace(/\bOK\b\s*$/, "").trim() : ""; };
-          await waitFor(() => (oldDraft && !oldDraft.isConnected) || swalText(), 20000, 200);
-          const msg = swalText();
+          await waitFor(() => (oldDraft && !oldDraft.isConnected) || swalText() || alertMsg, 20000, 200);
+          if (alertMsg && oldDraft && oldDraft.isConnected) await waitFor(() => !oldDraft.isConnected, 4000, 100);
+          const msg = swalText() || alertMsg;
           let afterId = null;
           if (noreg && beforeId != null) {
-            for (let t = 0; t < 5 && !(afterId > beforeId); t++) { await recipeSleep(t ? 1200 : 300); afterId = await spResepMaxId(noreg).catch(() => null); }
+            for (let t = 0; t < 5 && !(afterId > beforeId) && !(t && /berhasil/i.test(alertMsg)); t++) { await recipeSleep(t ? 1200 : 300); afterId = await spResepMaxId(noreg).catch(() => null); }
           }
-          const confirmed = beforeId != null && afterId > beforeId;
-          if (msg) spCloseSwal();
+          const confirmed = (beforeId != null && afterId > beforeId) || /berhasil/i.test(alertMsg);
+          try { window.alert = origAlert; } catch (_) {}
+          if (swalText()) spCloseSwal();
           // Form Resep Online baru (kosong) siap untuk obat berikutnya.
-          await waitFor(() => { const o = document.getElementById("obat"), a = document.getElementById("addrow"); return o && a && visible(o) && document.getElementById("tbody_draft") !== oldDraft; }, 10000, 150);
+          const fresh = () => { const o = document.getElementById("obat"), ad = document.getElementById("addrow"); return o && ad && visible(o) && document.getElementById("tbody_draft") !== oldDraft; };
+          if (!(await waitFor(fresh, 6000, 150)) && confirmed) {
+            // v3.159.0: jawaban Simpan tidak berisi form baru -> isi tab Resep Online dimuat ulang (cache inner_loader dilepas).
+            try { if (window.loader_keys) window.loader_keys["#box_new_eresep"] = false; } catch (_) {}
+            const tab = document.getElementById("a_new_eresep");
+            if (tab) tab.click();
+            await waitFor(fresh, 10000, 150);
+          }
           if (confirmed) {
             toast(`TINDAKAN ${action.name} TERSIMPAN: ${success} item, duplikasi dilewati: ${plan.skipped.length}.`);
           } else {
@@ -12293,6 +12308,7 @@
           }
           result.saved = confirmed;
         } else {
+          try { window.alert = origAlert; } catch (_) {}
           result.saveFailed = true;
           toast(
             `TINDAKAN ${action.name}: ${success} item masuk, duplikasi dilewati: ${plan.skipped.length}, tombol Simpan tidak ditemukan. Simpan manual.`
@@ -16282,7 +16298,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.158.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.159.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
