@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.165.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.166.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.165.0
-// @description  v3.165.0 (permintaan dokter 16 Nov 2026, saran lanjutan 1+2+3): 🔎 Cari advis WA lebih cepat & tepat — chat hanya digulir sampai jam masuk IGD pasien paling awal yang dicari (bukan selalu 6/12/18 jam) dan advis yang lebih tua dari jam masuk pasien (mis. pasien bernama sama kunjungan sebelumnya) tidak dipakai; saat Advis WA realtime ON dan WA tidak dipakai, chat konsul dibaca & dicatat di latar sehingga 🔎 hampir langsung selesai; chat milik DPJP diingat dan dibaca paling dulu.
+// @version      3.166.0
+// @description  v3.166.0 (QA harian 16 Nov 2026, Smartplus asli tanpa Simpan): ASGADAR/Resep/Order Lab/Radiologi — tab yang tampak "aktif" tetapi isinya belum dimuat kini langsung dibuka (dulu menunggu 8 dtk; ASGADAR kini ±1 dtk); bila skrip halaman Smartplus gagal termuat (tab tidak bisa dibuka), isi tab dimuat langsung oleh AUTO ASM; AUTO PENUNJANG tepat sesudah resep tidak lagi gagal karena form GADAR dibuka kembali di tengah order.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -66,8 +66,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.165.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.165.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.166.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.166.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -4401,9 +4401,55 @@
   // Dipakai AUTO PENUNJANG / KOMBINASI sebelum pindah sub-tab. backupForReload: simpan isian GADAR di sessionStorage
   // (Save Order Lab memuat ulang halaman). Hasil: fungsi untuk membuka kembali form GADAR (dipanggil setelah selesai).
   // allowRestore=false: alur yang mengisi form GADAR BARU sesudahnya (template ASGADAR, ASISTEN) -> tidak dipulihkan.
+  // v3.166.0 (QA harian 16 Nov 2026): form GADAR yang dijadwalkan dibuka kembali sesudah resep (jeda 0,6 dtk) bisa menutup
+  // form Order Radiologi/Lab yang baru dibuka bila AUTO PENUNJANG langsung dijalankan sesudah resep -> order gagal. Kini jadwal
+  // itu dibatalkan dan diambil alih oleh alur berikutnya (form GADAR dibuka kembali di akhir alur itu).
+  let spGadarRestoreTimer = 0;
+  // v3.166.0 (QA harian): sub-tab Smartplus (Assesment GADAR / Order Lab / Order Radiologi) dimuat AJAX saat DIKLIK. Tab yang
+  // "aktif" bawaan HTML belum tentu sudah dimuat (dulu tidak diklik -> menunggu 8 dtk dulu). Klik bila belum aktif ATAU isinya
+  // (tombol sel) belum ada. Hasil: "dead" = skrip halaman Smartplus gagal termuat (tab tanpa handler klik) -> perlu F5.
+  // Ditemukan saat QA: kadang jquery Smartplus gagal termuat saat halaman dibuka ("$ is not defined") sehingga skrip pengikat
+  // tab tidak berjalan — tab Assesment GADAR / Resep Online / Order Lab / Radiologi tidak bisa dibuka (juga oleh dokter). Bila
+  // jQuery sekarang ada, isi tab dimuat sendiri dengan alamat yang sama dengan skrip Smartplus lalu tabnya ditampilkan.
+  function spSubTabUrl(boxId) {
+    const m = location.pathname.match(/pasien_detail\/([^/]+)\/([^/?#]+)/i);
+    if (!m) return "";
+    const base = smartplusBaseUrl(), r = encodeURIComponent(decodeURIComponent(m[1])), n = encodeURIComponent(decodeURIComponent(m[2]));
+    return ({
+      box_gadar: `${base}/soap_igd/content_gadar/${r}/${n}`,
+      box_new_eresep: `${base}/soap_eresep/add_new/${r}/${n}/`,
+      box_labmodal: `${base}/lab/splab/lab_modal_lad/${r}`,
+      box_radmodal: `${base}/rad/radiologi/rad_modal_lad/${r}`,
+    })[boxId] || "";
+  }
+  function spOpenSubTab(tab, boxId, sel) {
+    if (!tab) return "none";
+    let dead = false;
+    try {
+      const $ = spPageWin().jQuery, ev = $ && $._data ? $._data(tab, "events") : null;
+      dead = !!($ && $._data && !(ev && ev.click));
+    } catch (_) {}
+    if (dead) {
+      const $ = spPageWin().jQuery, url = spSubTabUrl(boxId), box = document.getElementById(boxId);
+      if (!$ || !url || !box) return "dead";
+      try { $(tab).tab("show"); } catch (_) {
+        tab.closest(".nav")?.querySelectorAll(".nav-link.active").forEach((a) => a.classList.remove("active", "show"));
+        box.parentElement?.querySelectorAll(":scope > .tab-pane.active").forEach((p) => p.classList.remove("active", "show"));
+        tab.classList.add("active", "show"); box.classList.add("active", "show");
+      }
+      if (!box.querySelector(sel)) { try { $(box).load(url); } catch (_) { return "dead"; } }
+      toast("AUTO ASM: skrip halaman Smartplus tidak lengkap — isi tab dimuat langsung (bila masih macet, tekan F5).");
+      return "healed";
+    }
+    if (!tab.classList.contains("active") || !document.querySelector("#" + boxId + " " + sel)) tab.click();
+    return "ok";
+  }
+  const SP_DEAD_PAGE_MSG = "Halaman Smartplus belum termuat sempurna (skrip halaman gagal dimuat, tab tidak bisa dibuka) — tekan F5 untuk memuat ulang, lalu ulangi.";
   async function spPrepareTabSwitch(backupForReload = false, allowRestore = true) {
     const gm = document.getElementById("modal_form_gadar");
-    const gadarOpen = allowRestore && !!(gm && gm.classList.contains("show"));
+    const takeover = !!spGadarRestoreTimer;
+    if (spGadarRestoreTimer) { clearTimeout(spGadarRestoreTimer); spGadarRestoreTimer = 0; }
+    const gadarOpen = allowRestore && (takeover || !!(gm && gm.classList.contains("show")));
     if (gadarOpen && backupForReload) {
       const snap = spGadarSnapshot();
       const noreg = typeof getCurrentIgdNoreg === "function" ? getCurrentIgdNoreg() : "";
@@ -6305,7 +6351,9 @@
     await ensureMainEmrTab();
 
     const labTab = document.getElementById("a_labmodal");
-    if (labTab && visible(labTab)) { if (!labTab.classList.contains("active")) labTab.click(); }
+    if (labTab && visible(labTab)) {
+      if (spOpenSubTab(labTab, "box_labmodal", '[onclick*="indexlab"]') === "dead" && !document.querySelector('#box_labmodal [onclick*="indexlab"]')) { toast("AUTO LAB: " + SP_DEAD_PAGE_MSG); return; }
+    }
     else if (!clickVisibleText(["Order Lab"])) {
       toast("AUTO LAB: tombol Order Lab tidak ditemukan.");
       return;
@@ -6472,7 +6520,9 @@
     const restore = await spPrepareTabSwitch(!opts.noRestore, !opts.noRestore);
     await ensureMainEmrTab();
     const labTab = document.getElementById("a_labmodal");
-    if (labTab && visible(labTab)) { if (!labTab.classList.contains("active")) labTab.click(); }
+    if (labTab && visible(labTab)) {
+      if (spOpenSubTab(labTab, "box_labmodal", '[onclick*="indexlab"]') === "dead" && !document.querySelector('#box_labmodal [onclick*="indexlab"]')) { toast("AUTO LAB SEVERE: " + SP_DEAD_PAGE_MSG); await restore(); return; }
+    }
     else if (!clickVisibleText(["Order Lab"])) { toast("AUTO LAB SEVERE: tombol Order Lab tidak ditemukan."); await restore(); return; }
     const findLabTambah = () => [...document.querySelectorAll('#box_labmodal button[onclick*="indexlab"]')].find(visible) || null;
     let labTambah = await waitFor(findLabTambah, 6000, 100);
@@ -9907,7 +9957,9 @@
     const restore = await spPrepareTabSwitch(!opts.noRestore, !opts.noRestore);
     await ensureMainEmrTab();
     const tab = document.querySelector(RAD_SELECTORS.tab);
-    if (tab && visible(tab)) { if (!tab.classList.contains("active")) tab.click(); }
+    if (tab && visible(tab)) {
+      if (spOpenSubTab(tab, "box_radmodal", '[onclick*="indexrad"]') === "dead" && !document.querySelector('#box_radmodal [onclick*="indexrad"]')) { toast(`${T}: ` + SP_DEAD_PAGE_MSG); await restore(); return; }
+    }
     else if (!clickVisibleText(["Order Radiologi"])) {
       toast(`${T}: tab Order Radiologi tidak ditemukan.`);
       await restore();
@@ -11830,7 +11882,7 @@
   let spRecipeRestore = null;
   function clearRecipeProgress(message = "") {
     recipeProgress = null;
-    if (spRecipeRestore) { const r = spRecipeRestore; spRecipeRestore = null; setTimeout(() => { r().catch(() => {}); }, 600); }
+    if (spRecipeRestore) { const r = spRecipeRestore; spRecipeRestore = null; spGadarRestoreTimer = setTimeout(() => { spGadarRestoreTimer = 0; r().catch(() => {}); }, 600); }
     const t = document.getElementById(STATUS_ID);
     if (!t) return;
     if (message) {
@@ -11958,7 +12010,10 @@
     // Mengikuti pola yang sudah berhasil pada AUTO LAB: klik sekali lalu tunggu.
     // v3.153.0: tab tetap #a_new_eresep diutamakan; form ditunggu sampai 15 dtk (dimuat AJAX).
     const tab = document.getElementById("a_new_eresep");
-    if (tab && visible(tab)) tab.click();
+    if (tab && visible(tab)) {
+      if (spOpenSubTab(tab, "box_new_eresep", "#obat") === "dead" && !document.querySelector("#box_new_eresep #obat")) { toast("MASTER TEMPLATE RESEP: " + SP_DEAD_PAGE_MSG); return false; }
+      if (tab.classList.contains("active") && document.querySelector("#box_new_eresep #obat")) tab.click(); // tab tampil (isi di-cache)
+    }
     else if (!clickVisibleText(["Resep Online"])) {
       toast("MASTER TEMPLATE RESEP: tombol Resep Online tidak ditemukan.");
       return false;
@@ -16878,7 +16933,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.165.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.166.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -17730,7 +17785,9 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     // v3.52.0 (audit): utamakan tab tetap #new_gadar (peta DOM e-IGD), cadangan teks.
     // v3.153.0: tab yang sudah aktif tidak ditekan lagi.
     const gadarTab = document.getElementById("new_gadar");
-    if (gadarTab && visible(gadarTab)) { if (!gadarTab.classList.contains("active")) gadarTab.click(); }
+    if (gadarTab && visible(gadarTab)) {
+      if (spOpenSubTab(gadarTab, "box_gadar", '[onclick*="add_soap_gadar"]') === "dead" && !document.querySelector('#box_gadar [onclick*="add_soap_gadar"]')) { toast("AUTO ASGADAR: " + SP_DEAD_PAGE_MSG); return false; }
+    }
     else if (!clickVisibleText(["Assesment GADAR", "Assessment GADAR"])) {
       toast('AUTO ASGADAR: tombol Assesment GADAR tidak ditemukan.');
       return false;
