@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.160.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.161.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.160.0
-// @description  v3.160.0 (foto dokter 16 Nov 2026: kotak "Resep berhasil dibuat" masih muncul & obat oral tidak lanjut): penyebab sebenarnya — Violentmonkey menjalankan AUTO ASM di sandbox, sehingga alert, jQuery, dan fungsi halaman Smartplus tidak tersentuh langsung. Kini semua akses ke halaman lewat unsafeWindow: kotak "Resep berhasil dibuat" dibaca otomatis (tanpa OK), form ditutup/dibuka dengan cara Bootstrap, obat dipilih langsung dari daftar Smartplus; penantian dicek ulang sesudah kotak browser ditutup.
+// @version      3.161.0
+// @description  v3.161.0 (permintaan dokter 16 Nov 2026): menu AUTO IGD — 🩺 Cek & saran ASGADAR dan 📚 Referensi Klinis dihapus dari menu (🩺 Cek & saran tetap ada di tombol mengambang di samping 🧠), diganti 📋 MULTIPLE CPPT: pilih pasien IGD 24 jam, CPPT tiap pasien disusun seperti MULTIPLE VISIT (keluhan & TTV dari Assesment GADAR bila belum ada CPPT), dicek/diedit lalu "Save multiple CPPT". Advis ke ASGADAR kini juga ditulis di CPPT (S & P: "advis dr. X Sp.Y", advis di bawahnya) saat dokter menekan 💾 Simpan Rencana (centang "Tulis juga di CPPT") atau tombol "📋 Tulis juga di CPPT" setelah advis WA masuk ke form terbuka.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -66,8 +66,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.160.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.160.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.161.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.161.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -5399,6 +5399,7 @@
     plan.objectiveFrom = pf.positives.length ? `normal + ${pf.positives.join(", ")}` : "template normal";
     plan.dx = dx;
     plan.rowCount = rows.length;
+    plan.gadar = gadar ? gadar.data : null; // v3.161.0: MULTIPLE CPPT IGD (vital GADAR bila belum ada CPPT)
     return plan;
   }
 
@@ -8492,9 +8493,89 @@
     x.textContent = "✕";
     x.style.cssText = "border:0;background:transparent;cursor:pointer;font-size:14px";
     x.onclick = () => bar.remove();
-    bar.append(s, u, x);
+    // v3.161.0: advis yang ditambahkan ke form terbuka -> juga bisa ditulis di CPPT (dokter yang menekan).
+    const c = document.createElement("button");
+    c.textContent = "📋 Tulis juga di CPPT";
+    c.style.cssText = u.style.cssText.replace("#e91e63", "#1565c0");
+    c.onclick = async () => {
+      const noreg = getCurrentNoregAny();
+      const added = spAdvisAddedText(old, nv);
+      if (!noreg || !added) { s.textContent = "⚠ Pasien / advis tidak terbaca — tulis CPPT manual."; return; }
+      if (!window.confirm(`Tulis CPPT advis untuk ${nama || "pasien ini"}?\n\n${(spAdvisCpptValues(added) || { values: { p_instruksi: added } }).values.p_instruksi}`)) return;
+      c.disabled = true;
+      s.textContent = "⏳ Menulis advis di CPPT...";
+      try {
+        const cr = await spAdvisSaveCppt(smartplusBaseUrl(), noreg, added);
+        s.textContent = cr.already ? "📋 CPPT advis sudah ada (tidak ditulis ulang). Rencana: periksa lalu Save." : cr.unseen ? "📋 CPPT terkirim, belum terlihat di daftar CPPT — cek manual. Rencana: periksa lalu Save." : "📋 CPPT advis tersimpan. Rencana: periksa lalu Save.";
+      } catch (err) {
+        s.textContent = "⚠ CPPT advis belum tertulis: " + (err.message || err);
+        c.disabled = false;
+      }
+    };
+    bar.append(s, u, c, x);
     document.documentElement.appendChild(bar);
     setTimeout(() => bar.remove(), 60000);
+  }
+
+  // =========================
+  // v3.161.0 (permintaan dokter 16 Nov 2026): advis yang ditulis ke Rencana ASGADAR juga ditulis sebagai CPPT dokter:
+  //   S: advis dr. X Sp.Y            P: advis dr. X Sp.Y
+  //                                     <baris advis>
+  // Disimpan setelah dokter menekan 💾 Simpan Rencana (centang "Tulis juga di CPPT") atau tombol "📋 Tulis juga di CPPT".
+  // =========================
+  // Bagian Rencana yang baru ditambahkan (mine dibanding isi lama). Fungsi murni.
+  function spAdvisAddedText(baseText, mine) {
+    const b = spNlPure(baseText).replace(/\s+$/, ""), m = spNlPure(mine).replace(/\s+$/, "");
+    if (!b) return m.trim();
+    if (m.startsWith(b)) return m.slice(b.length).trim();
+    const have = new Set(b.split("\n").map((l) => l.trim().toLowerCase()).filter(Boolean));
+    return m.split("\n").filter((l) => !have.has(l.trim().toLowerCase())).join("\n").trim();
+  }
+  // "dr Budi SpPD" / "Dr. Budi, Sp PD" -> "dr. Budi Sp.PD". Fungsi murni.
+  function spAdvisDrName(n) {
+    let t = String(n || "").replace(/\s+/g, " ").replace(/[,\s]+$/, "").trim();
+    t = t.replace(/\bsp\s*\.?\s*([a-z]{1,6}(?:\s*\(k\))?)\b/gi, (m0, x) => "Sp." + x.toUpperCase().replace(/\s+/g, ""));
+    t = t.replace(/\s*,\s*(Sp\.)/g, " $1");
+    if (!/^dr\.?\s/i.test(t)) t = "dr. " + t;
+    return t.replace(/^dr\.?\s+/i, "dr. ");
+  }
+  // Teks advis ("Advis dr. X SpY (10.32):\n- ...") -> isian CPPT { keluhan_utama, p_instruksi, ... } atau null bila nama
+  // spesialis tidak terbaca. Kolom lain dikosongkan (hanya S & P sesuai permintaan dokter). Fungsi murni.
+  function spAdvisCpptValues(text) {
+    const head = /^\s*advi[cs]e?\s+((?:dr\.?|dokter)?\s*[^:\n]*?)\s*(?:\(\s*\d{1,2}[.:]\d{2}\s*\))?\s*:\s*(.*)$/i;
+    const blocks = [];
+    let cur = null;
+    for (const raw of spNlPure(text).split("\n")) {
+      const line = raw.replace(/\s+$/, "");
+      const m = line.match(head);
+      if (m && /\b(dr|dokter|sp)\b/i.test(m[1])) {
+        const name = spAdvisDrName(m[1].replace(/^dokter\s+/i, "dr. "));
+        cur = blocks.find((b) => b.name === name) || null;
+        if (!cur) { cur = { name, lines: [] }; blocks.push(cur); }
+        if (m[2].trim()) cur.lines.push(m[2].trim());
+        continue;
+      }
+      if (cur && line.trim()) cur.lines.push(line.trim());
+    }
+    const ok = blocks.filter((b) => b.lines.length);
+    if (!ok.length) return null;
+    const values = {};
+    SP_CPPT_SAVE_FIELDS.forEach((k) => { values[k] = ""; });
+    values.keluhan_utama = ok.map((b) => "advis " + b.name).join("\n");
+    values.p_instruksi = ok.map((b) => "advis " + b.name + "\n" + b.lines.join("\n")).join("\n\n");
+    return { values, names: ok.map((b) => b.name) };
+  }
+  // Simpan CPPT advis untuk pasien (noreg). Tidak menyimpan ulang bila CPPT advis yang sama (keluhan sama, dokter login)
+  // sudah ada dalam 6 jam terakhir. -> { ok, already, names } / melempar galat.
+  async function spAdvisSaveCppt(base, noreg, addedText) {
+    const cv = spAdvisCpptValues(addedText);
+    if (!cv) throw new Error("nama dokter spesialis tidak terbaca (baris \"Advis dr. … Sp.…:\")");
+    const prev = await spCpptFindSaved(base, noreg, Date.now() - 6 * 3600000, cv.values.keluhan_utama).catch(() => null);
+    if (prev && norm(`${prev.instruksi || ""} ${prev.pText || ""}`).includes(norm(cv.values.p_instruksi.split("\n").slice(1, 3).join(" ")))) return { ok: true, already: true, names: cv.names };
+    const t0 = Date.now();
+    await spCpptSaveDirect(base, noreg, cv.values);
+    const row = await spCpptFindSaved(base, noreg, t0, cv.values.keluhan_utama).catch(() => null);
+    return { ok: !!row, already: false, names: cv.names, unseen: !row };
   }
 
   // v3.32.0 (instruksi dokter): pasien dipilih lewat pencarian nama (tanpa membuka halaman pasien).
@@ -8577,6 +8658,7 @@
         <div style="font-weight:600">Rencana (Tindakan, Terapi, dll) :</div>
         <div style="color:#777;font-size:11px;margin-bottom:3px">Tambahkan advis / catatan di bawah isi yang ada. Tempelan chat WhatsApp otomatis dirapikan.</div>
         <textarea class="sp-adv-ren" rows="16" style="${ta}"></textarea>
+        <label class="sp-adv-cppt-l" style="display:flex;gap:6px;align-items:center;margin-top:6px;font-size:12px;color:#444;cursor:pointer"><input type="checkbox" class="sp-adv-cppt" checked> 📋 Tulis juga di CPPT (S &amp; P: advis dr. … Sp.… + isi advis)</label>
         <button type="button" class="sp-adv-go" style="margin-top:8px;width:100%;padding:10px;font:600 14px Arial,sans-serif;background:#e91e63;color:#fff;border:0;border-radius:6px;cursor:pointer">💾 Simpan Rencana</button>
       </div>
       <div class="sp-adv-wa" style="display:none;margin-top:6px;padding:6px 8px;background:#fce4ec;border-radius:6px;color:#880e4f"></div>
@@ -8781,6 +8863,8 @@
       if (spSameText(mine, baseText)) { msg.textContent = "Tidak ada perubahan."; return; }
       goBtn.disabled = true;
       const p = chosen;
+      const added = spAdvisAddedText(baseText, mine);
+      const wantCppt = !!(body.querySelector(".sp-adv-cppt") || {}).checked;
       msg.textContent = `⏳ Menyimpan Rencana ${p.nama}...`;
       try {
         const sres = await spAdvisForceSave(base, p, baseText, mine, (t) => { msg.textContent = t; });
@@ -8797,6 +8881,21 @@
           (sres.changed && sres.changed.length ? ` Perhatian: kolom berubah: ${sres.changed.join(", ")}` : "");
         msg.querySelector("b").textContent = p.nama;
         toast("ADVIS SPESIALIS: Rencana tersimpan — " + p.nama);
+        // v3.161.0: advis juga ditulis di CPPT (S & P). Gagal -> Rencana tetap tersimpan, dokter diberi tahu.
+        if (wantCppt && added) {
+          const cm = document.createElement("div");
+          cm.className = "sp-adv-cppt-msg";
+          cm.textContent = "⏳ Menulis advis di CPPT...";
+          msg.appendChild(cm);
+          try {
+            const cr = await spAdvisSaveCppt(base, p.noreg, added);
+            cm.textContent = cr.already ? `📋 CPPT advis ${cr.names.join(", ")} sudah ada (tidak ditulis ulang).`
+              : cr.unseen ? `📋 CPPT advis ${cr.names.join(", ")} terkirim, tetapi belum terlihat di daftar CPPT — cek manual.`
+                : `📋 CPPT advis ${cr.names.join(", ")} tersimpan.`;
+          } catch (err) {
+            cm.textContent = "⚠ CPPT advis belum tertulis: " + (err.message || err) + " — tulis manual di CPPT.";
+          }
+        }
         if (opts.pick && typeof opts.onSaved === "function" && opts.pick.noreg === p.noreg) { try { opts.onSaved(); } catch (_) {} }
         if (typeof opts.onSavedAny === "function") { try { opts.onSavedAny(p); } catch (_) {} } // v3.119.0: CEK ADVIS diperbarui
         // v3.78.0: antrean advis WA -> tandai selesai lalu lanjut ke pasien berikutnya.
@@ -14770,15 +14869,43 @@
       return months < 12 ? `${months} bln` : `${Math.floor(months / 12)} th`;
     }
 
+    // v3.161.0: label tiap mode (visit / pulang rawat inap, igd = MULTIPLE CPPT pasien IGD).
+    function spMvLabel(mode) {
+      if (mode === 'pulang') return { title: '🏠 MULTIPLE PULANG', build: '📝 Buat multiple pulang', save: 'Save multiple pulang', kind: 'rencana pulang', up: 'PULANG', badge: 'RAWAT INAP' };
+      if (mode === 'igd') return { title: '📋 MULTIPLE CPPT IGD', build: '📝 Buat multiple CPPT', save: 'Save multiple CPPT', kind: 'IGD', up: 'CPPT IGD', badge: 'IGD 24 JAM' };
+      return { title: '👥 MULTIPLE VISIT', build: '📝 Buat multiple visit', save: 'Save multiple visit', kind: 'visit', up: 'VISIT', badge: 'RAWAT INAP' };
+    }
+    // Baris keterangan pasien: rawat inap = kamar/bed, IGD = jam daftar & status.
+    function spMvPatSub(p) {
+      return p.igd ? `IGD ${spMvEsc(p.reg || '')} · ${spMvEsc(p.dx || '-')}` : `${spMvEsc(p.kamar)} ${spMvEsc(p.noKamar)}/${spMvEsc(p.bed)}`;
+    }
+    // v3.161.0: daftar pasien IGD 24 jam (semua dokter) dalam bentuk daftar rawat inap.
+    async function spFetchIgdPatientsMv(base) {
+      const list = await spAdvisLoadPatients(base, null, 24);
+      return list.map((x) => ({ igd: true, noreg: x.noreg, normRm: x.norm || '', name: x.nama || '', reg: x.reg || '', kamar: 'IGD', noKamar: '', bed: '', kelas: '', dx: x.st || '', dokter: x.dok || '' }));
+    }
+    // Umur (bulan) pasien IGD dari halaman pasien IGD ("... / L / 37 Thn 2 Bln"). null bila tidak terbaca.
+    async function spFetchIgdAgeMonths(base, p) {
+      try {
+        const html = await spFetch(`${base}/soap_igd/pasien_detail/${encodeURIComponent(p.noreg)}/${encodeURIComponent(p.normRm)}/0`, { credentials: 'same-origin' }).then((r) => r.text());
+        const t = new DOMParser().parseFromString(html, 'text/html').body.textContent.replace(/\s+/g, ' ');
+        const m = t.match(/(\d+)\s*Thn\s*(\d+)\s*Bln/i) || t.match(/(\d+)\s*Thn/i);
+        return m ? Number(m[1]) * 12 + Number(m[2] || 0) : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
     function renderMultiCpptMenu(mode) {
       const isVisit = mode !== 'pulang';
+      const L = spMvLabel(mode), isIgd = mode === 'igd';
       if (!spMv || spMv.mode !== mode) spMv = { mode, base: spSmartplusBase(), patients: null, selected: new Map(), drafts: [] };
       menu.classList.remove('sp-kombi'); menu.classList.add('sp-package-modal');
       menu.innerHTML = `
-        <div class="sp-title">${isVisit ? '👥 MULTIPLE VISIT' : '🏠 MULTIPLE PULANG'}</div>
+        <div class="sp-title">${L.title}</div>
         <div class="sp-pkg-bar">
-          <span class="sp-pkg-badge">RAWAT INAP</span>
-          <span id="sp-mv-info" class="sp-pkg-muted">⏳ Memuat daftar pasien dirawat…</span>
+          <span class="sp-pkg-badge">${L.badge}</span>
+          <span id="sp-mv-info" class="sp-pkg-muted">⏳ Memuat daftar pasien ${isIgd ? 'IGD' : 'dirawat'}…</span>
         </div>
         <input id="sp-mv-q" class="sp-mv-q" type="search" autocomplete="off" placeholder="🔍 Ketik nama pasien, No. RM, atau kamar…">
         <div id="sp-mv-results" class="sp-mv-results"></div>
@@ -14786,8 +14913,8 @@
           <div class="sp-pkg-foot-head"><b>Pasien dipilih</b><span id="sp-mv-n" class="sp-pkg-rcount">0</span><span class="sp-pkg-muted">klik × untuk membatalkan</span></div>
           <div id="sp-mv-selected" class="sp-pkg-selected"></div>
           <div class="sp-pkg-actions">
-            <button type="button" class="sp-pkg-back" data-cppt-menu="1" title="Kembali ke menu Rawat Inap">←</button>
-            <button type="button" id="sp-mv-build" class="sp-pkg-acc">${isVisit ? '📝 Buat multiple visit' : '📝 Buat multiple pulang'}</button>
+            <button type="button" class="sp-pkg-back" ${isIgd ? 'data-igd-menu="1" title="Kembali ke menu AUTO IGD"' : 'data-cppt-menu="1" title="Kembali ke menu Rawat Inap"'}>←</button>
+            <button type="button" id="sp-mv-build" class="sp-pkg-acc">${L.build}</button>
           </div>
         </div>`;
       const q = menu.querySelector('#sp-mv-q');
@@ -14800,20 +14927,20 @@
           : '<span class="sp-pkg-muted">Belum ada pasien — ketik nama lalu klik pasiennya.</span>';
         const b = menu.querySelector('#sp-mv-build');
         b.disabled = !sel.length;
-        b.textContent = `${isVisit ? '📝 Buat multiple visit' : '📝 Buat multiple pulang'}${sel.length ? ` (${sel.length} pasien)` : ''}`;
+        b.textContent = `${L.build}${sel.length ? ` (${sel.length} pasien)` : ''}`;
       };
       const renderResults = () => {
         if (!spMv.patients) return;
         const words = norm(q.value).split(' ').filter(Boolean);
         let list = spMv.patients;
         if (words.length) list = list.filter((p) => { const hay = norm(`${p.name} ${p.normRm} ${p.noreg} ${p.kamar} ${p.noKamar} ${p.dx} ${p.dokter}`); return words.every((w) => hay.includes(w)); });
-        else list = [];
-        results.innerHTML = !words.length
+        else list = isIgd ? list : []; // v3.161.0: IGD -> semua pasien 24 jam langsung tampil (terbaru dulu)
+        results.innerHTML = !words.length && !isIgd
           ? `<div class="sp-pkg-empty">Ketik nama pasien untuk mencari (${spMv.patients.length} pasien dirawat).</div>`
           : list.length
             ? list.slice(0, 40).map((p) => `<button type="button" class="sp-mv-item${spMv.selected.has(p.noreg) ? ' is-on' : ''}" data-mv-pick="${spMvEsc(p.noreg)}">
                 <span class="sp-mv-item-name">${spMv.selected.has(p.noreg) ? '✓ ' : ''}${spMvEsc(p.name)}</span>
-                <span class="sp-mv-item-sub">${spMvEsc(p.kamar)} ${spMvEsc(p.noKamar)}/${spMvEsc(p.bed)} · RM ${spMvEsc(p.normRm)} · ${spMvEsc(p.dx || '-')}</span>
+                <span class="sp-mv-item-sub">${p.igd ? spMvPatSub(p) : `${spMvPatSub(p)} · RM ${spMvEsc(p.normRm)} · ${spMvEsc(p.dx || '-')}`}${p.igd ? ` · RM ${spMvEsc(p.normRm)}` : ''}</span>
                 <span class="sp-mv-item-sub">${spMvEsc(p.dokter)}</span></button>`).join('') + (list.length > 40 ? `<div class="sp-pkg-empty">… ${list.length - 40} lainnya, perjelas pencarian.</div>` : '')
             : '<div class="sp-pkg-empty">Tidak ada pasien yang cocok.</div>';
       };
@@ -14836,10 +14963,10 @@
       });
       menu.querySelector('#sp-mv-build').addEventListener('click', () => { if (spMv.selected.size) buildMultiCpptDrafts(); });
       renderSelected();
-      spFetchRanapPatients(spMv.base).then((list) => {
+      (isIgd ? spFetchIgdPatientsMv(spMv.base) : spFetchRanapPatients(spMv.base)).then((list) => {
         if (!q.isConnected) return;
         spMv.patients = list;
-        menu.querySelector('#sp-mv-info').textContent = `${list.length} pasien dirawat · pilih satu per satu`;
+        menu.querySelector('#sp-mv-info').textContent = `${list.length} pasien ${isIgd ? 'IGD 24 jam' : 'dirawat'} · pilih satu per satu`;
         renderResults();
         q.focus();
       }).catch((err) => {
@@ -14852,10 +14979,10 @@
     async function buildMultiCpptDrafts() {
       const isVisit = spMv.mode !== 'pulang';
       const pats = [...spMv.selected.values()];
-      if (spMvSaveBusy) { alert('Multiple visit/pulang sebelumnya masih menyimpan. Tunggu selesai dulu supaya CPPT tidak dobel.'); return; }
+      if (spMvSaveBusy) { alert('Multiple visit/pulang/CPPT sebelumnya masih menyimpan. Tunggu selesai dulu supaya CPPT tidak dobel.'); return; }
       menu.classList.remove('sp-kombi'); menu.classList.add('sp-package-modal'); // v3.73.0: dari ASISTEN SUARA (openMenu("mv-voice")) dulu tetap kotak kecil di samping
       menu.innerHTML = `
-        <div class="sp-title">${isVisit ? '👥 MULTIPLE VISIT' : '🏠 MULTIPLE PULANG'} — preview</div>
+        <div class="sp-title">${spMvLabel(spMv.mode).title} — preview</div>
         <div class="sp-pkg-bar"><span class="sp-pkg-badge">${pats.length} PASIEN</span><span id="sp-mv-prog" class="sp-pkg-muted">⏳ Menyusun CPPT 0/${pats.length}…</span></div>
         <div id="sp-mv-cards"></div>
         <div id="sp-mv-extra"></div>
@@ -14864,7 +14991,7 @@
           <div id="sp-pkg-warn" class="sp-pkg-warn" style="display:none"></div>
           <div class="sp-pkg-actions">
             <button type="button" class="sp-pkg-back" id="sp-mv-back" title="Kembali memilih pasien">←</button>
-            <button type="button" id="sp-mv-save" class="sp-pkg-acc" disabled>💾 ${isVisit ? 'Save multiple visit' : 'Save multiple pulang'}</button>
+            <button type="button" id="sp-mv-save" class="sp-pkg-acc" disabled>💾 ${spMvLabel(spMv.mode).save}</button>
           </div>
         </div>`;
       menu.querySelector('#sp-mv-back').addEventListener('click', () => {
@@ -15042,7 +15169,7 @@
       dr = { warn: '', include: true, values: null, src: '', error: '', ageMonths: null };
       try {
         const ctx = { noreg: p.noreg, normRm: p.normRm, base: spMv.base };
-        dr.ageMonths = await spFetchRanapAgeMonths(spMv.base, p.noreg);
+        dr.ageMonths = p.igd ? await spFetchIgdAgeMonths(spMv.base, p) : await spFetchRanapAgeMonths(spMv.base, p.noreg);
         const normalV = spNormalVitalsForMonths(dr.ageMonths);
         const html = await spFetch(`${spMv.base}/nurse_station/eranap/cppt_viewer/${encodeURIComponent(p.noreg)}`, { credentials: 'same-origin' }).then((r) => r.text());
         const rows = spParseCpptViewer(html);
@@ -15052,9 +15179,18 @@
           const plan = await spBuildCpptVisitPlan(ctx);
           const v = {};
           const fromNormal = [];
-          ['td', 'nadi', 'suhu', 'nafas', 'gcs', 'kesadaran', 'keadaan_umum', 'reaksi_cahaya'].forEach((k) => { v[k] = plan.vitals[k] || normalV[k] || ''; if (!plan.vitals[k] && normalV[k]) fromNormal.push(k); });
+          // v3.161.0: pasien IGD belum ber-CPPT -> TTV dari Assesment GADAR kunjungan ini, baru vital normal sesuai umur.
+          const gd = p.igd && plan.gadar ? plan.gadar : null;
+          const gv = (x) => { const t = spCleanGadarText(x); return /^\d/.test(t) ? t : ''; };
+          const fromG = gd ? { td: gv(gd.td), nadi: gv(gd.nadi), suhu: gv(gd.suhu), nafas: gv(gd.nafas), gcs: gv(gd.glosgow_coma) } : {};
+          const fromGadar = [];
+          ['td', 'nadi', 'suhu', 'nafas', 'gcs', 'kesadaran', 'keadaan_umum', 'reaksi_cahaya'].forEach((k) => {
+            if (plan.vitals[k]) { v[k] = plan.vitals[k]; return; }
+            if (fromG[k]) { v[k] = fromG[k]; fromGadar.push(k); return; }
+            v[k] = normalV[k] || ''; if (normalV[k]) fromNormal.push(k);
+          });
           dr.values = { keluhan_utama: plan.keluhan || '', objective: plan.objective || CPPT_NORMAL_TEMPLATE.objective, ...v, p_instruksi: CPPT_NORMAL_TEMPLATE.instruksi };
-          dr.src = [plan.keluhan ? `Keluhan: ${plan.keluhanFrom}` : '⚠ keluhan tidak ditemukan', `Pemfis ${plan.objectiveFrom || 'template normal'}`, fromNormal.length ? `vital normal (${normalV.groupLabel}): ${fromNormal.join(', ')}` : 'vital dari CPPT sebelumnya'].join(' · ');
+          dr.src = [plan.keluhan ? `Keluhan: ${plan.keluhanFrom}` : '⚠ keluhan tidak ditemukan', `Pemfis ${plan.objectiveFrom || 'template normal'}`, fromGadar.length ? `vital GADAR: ${fromGadar.join(', ')}` : '', fromNormal.length ? `vital normal (${normalV.groupLabel}): ${fromNormal.join(', ')}` : fromGadar.length ? '' : 'vital dari CPPT sebelumnya'].filter(Boolean).join(' · ');
           if (!plan.keluhan) dr.warn = (dr.warn ? dr.warn + ' ' : '') + 'Keluhan kosong — isi dulu.';
         } else {
           dr.values = { keluhan_utama: CPPT_PULANG_TEMPLATE.keluhan, objective: CPPT_NORMAL_TEMPLATE.objective, td: normalV.td, nadi: normalV.nadi, suhu: normalV.suhu, nafas: normalV.nafas, gcs: '15', kesadaran: 'Compos Mentis', keadaan_umum: 'Tampak sakit sedang', reaksi_cahaya: '+/+', p_instruksi: CPPT_PULANG_TEMPLATE.instruksi };
@@ -15176,7 +15312,7 @@
         const p = dr.p;
         const head = `<div class="sp-mv-head">
             <label class="sp-mv-inc"><input type="checkbox" data-inc="${i}" ${dr.include ? 'checked' : ''} ${dr.values && dr.status !== 'ok' ? '' : 'disabled'}><b>${i + 1}. ${spMvEsc(p.name)}</b></label>
-            <span class="sp-pkg-muted">${spMvEsc(p.kamar)} ${spMvEsc(p.noKamar)}/${spMvEsc(p.bed)} · ${spMvAgeText(dr.ageMonths)} · ${spMvEsc(p.dx || '-')}</span>
+            <span class="sp-pkg-muted">${p.igd ? spMvPatSub(p) : `${spMvPatSub(p)} · ${spMvEsc(p.dx || '-')}`} · ${spMvAgeText(dr.ageMonths)}</span>
             <span class="sp-mv-status" data-status="${i}">${dr.status === 'ok' ? '✅ Tersimpan' : dr.status ? spMvEsc(dr.status) : ''}</span>
           </div>`;
         const voice = spMvVoiceHtml(dr, i);
@@ -15259,7 +15395,7 @@
       const save = menu.querySelector('#sp-mv-save');
       if (save) {
         save.disabled = !todo.length || spMv.saving;
-        save.textContent = spMv.saving ? '⏳ Menyimpan…' : `💾 ${isVisit ? 'Save multiple visit' : 'Save multiple pulang'}${todo.length ? ` (${todo.length} pasien)` : ''}`;
+        save.textContent = spMv.saving ? '⏳ Menyimpan…' : `💾 ${spMvLabel(spMv.mode).save}${todo.length ? ` (${todo.length} pasien)` : ''}`;
       }
     }
 
@@ -15269,7 +15405,7 @@
       if (!todo.length || spMv.saving) return;
       const empty = todo.filter((d) => !String(d.values.keluhan_utama || '').trim());
       if (empty.length) { alert(`Keluhan masih kosong pada: ${empty.map((d) => d.p.name).join(', ')}`); return; }
-      if (!window.confirm(`Simpan CPPT ${isVisit ? 'visit' : 'rencana pulang'} untuk ${todo.length} pasien?\n\n${todo.map((d) => '• ' + d.p.name).join('\n')}`)) return;
+      if (!window.confirm(`Simpan CPPT ${spMvLabel(spMv.mode).kind} untuk ${todo.length} pasien?\n\n${todo.map((d) => '• ' + d.p.name).join('\n')}`)) return;
       // v3.71.0 (C): koreksi dokter pada isian dari ucapan dipelajari (browser ini saja, tanpa identitas).
       try {
         const labels = { keluhan_utama: 'Keluhan', objective: 'Objective', td: 'TD', nadi: 'Nadi', suhu: 'Suhu', nafas: 'RR', gcs: 'GCS', kesadaran: 'Kesadaran', keadaan_umum: 'Keadaan umum', p_instruksi: 'Instruksi' };
@@ -15316,11 +15452,11 @@
         spMv.saving = false;
         spMvSaveBusy = false;
       }
-      if (!menu.isConnected) { toast(`MULTIPLE ${isVisit ? 'VISIT' : 'PULANG'}: ${ok} tersimpan${fail ? `, ${fail} perlu dicek` : ''}.`); return; }
+      if (!menu.isConnected) { toast(`MULTIPLE ${spMvLabel(spMv.mode).up}: ${ok} tersimpan${fail ? `, ${fail} perlu dicek` : ''}.`); return; }
       renderMultiCpptCards();
       const warn = menu.querySelector('#sp-pkg-warn');
       if (warn) { warn.style.display = ''; warn.textContent = fail ? `${ok} tersimpan, ${fail} perlu dicek (lihat status merah/kuning).` : `✅ ${ok} CPPT tersimpan.`; warn.style.color = fail ? '#b91c1c' : '#15803d'; }
-      toast(`MULTIPLE ${isVisit ? 'VISIT' : 'PULANG'}: ${ok} tersimpan${fail ? `, ${fail} perlu dicek` : ''}.`);
+      toast(`MULTIPLE ${spMvLabel(spMv.mode).up}: ${ok} tersimpan${fail ? `, ${fail} perlu dicek` : ''}.`);
     }
 
     // =========================
@@ -16293,14 +16429,10 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
           🛏 CEK ADVIS PASIEN DAPAT KAMAR 18 JAM
         </button>
 
-        <!-- v3.90.0 (pilihan dokter 13 Okt 2026): saran diagnosis/TTV/pemfis untuk form GADAR yang terbuka. -->
-        <button type="button" data-cek-gadar="1">
-          🩺 CEK & SARAN ASGADAR
-        </button>
-
-        <!-- v3.89.1 (permintaan dokter 13 Okt 2026): REFERENSI KLINIS pindah dari menu utama ke AUTO IGD. -->
-        <button type="button" data-kb-menu="1">
-          📚 REFERENSI KLINIS
+        <!-- v3.161.0 (permintaan dokter 16 Nov 2026): CEK & SARAN ASGADAR dan REFERENSI KLINIS dihapus dari menu ini
+             (🩺 Cek & saran tetap ada di tombol mengambang di samping 🧠), diganti MULTIPLE CPPT pasien IGD. -->
+        <button type="button" data-multi-cppt="igd">
+          📋 MULTIPLE CPPT
         </button>
 
         <button type="button" class="sp-back" data-back="main">← Kembali</button>
@@ -16310,7 +16442,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.160.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.161.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
