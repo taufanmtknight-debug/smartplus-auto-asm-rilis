@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.164.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.165.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.164.0
-// @description  v3.164.0 (permintaan dokter 16 Nov 2026): 🔎 Cari advis WA (🛏 CEK ADVIS) lebih tepat, lengkap & cepat — advis tetap langsung ke pasien paling mungkin (tidak terlalu ketat) tetapi diberi tanda 🟢 yakin / 🟡 mohon dicek + bukti (chat, jam, pengirim, baris pasien di WA) + tombol "ganti ke" pasien lain yang juga cocok; advis yang pasiennya belum jelas tampil 🔴 (tidak dibuang); balasan "Ok rawat inap" / "Oke acc ranap" tidak terlewat; chat tanpa dr/Sp yang berisi konsul ikut dibaca; pencarian tidak berhenti di advis pertama; ringkasan chat dibaca/dilewati; catatan chat 24 jam (hanya di Violentmonkey browser dokter) sehingga chat tanpa pesan baru tidak dibuka ulang.
+// @version      3.165.0
+// @description  v3.165.0 (permintaan dokter 16 Nov 2026, saran lanjutan 1+2+3): 🔎 Cari advis WA lebih cepat & tepat — chat hanya digulir sampai jam masuk IGD pasien paling awal yang dicari (bukan selalu 6/12/18 jam) dan advis yang lebih tua dari jam masuk pasien (mis. pasien bernama sama kunjungan sebelumnya) tidak dipakai; saat Advis WA realtime ON dan WA tidak dipakai, chat konsul dibaca & dicatat di latar sehingga 🔎 hampir langsung selesai; chat milik DPJP diingat dan dibaca paling dulu.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -66,8 +66,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.164.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.164.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.165.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.165.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -7464,9 +7464,9 @@
   // Satu chat -> semua advis (kartu tercentang bawaan) dalam mins menit untuk pasien yang dicari:
   // [{ key ("" = belum jelas), text, lvl (2 🟢 / 1 🟡 / 0 🔴), why, bukti, sender, ctx, alts: [key] }].
   // Advis untuk pasien Smartplus lain (others) dilewati; advis yang pasiennya tidak cocok siapa pun ikut sebagai 🔴.
-  function spWaAdvisCari(msgs, nowMin, targets, mins = 1080, others = []) {
+  function spWaAdvisCari(msgs, nowMin, targetsAll, mins = 1080, othersAll = []) {
     const out = [];
-    if (!(targets || []).length) return out;
+    if (!(targetsAll || []).length) return out;
     const cards = spWaCards(msgs, -1, mins, nowMin).filter((c) => c.def);
     const at = spWaAttrib(msgs, cards, mins), roles = spWaRoles(msgs);
     const SRC = { kutipan: "dari kutipan konsul", pesan: "nama pasien di pesan advis", konsul: "ditebak dari konsul terdekat (balasan tanpa kutipan)" };
@@ -7475,6 +7475,11 @@
       const text = spWaBuildAdvis(c.idxs.map((i) => msgs[i]));
       if (!text) return;
       const a = at[k];
+      // v3.165.0 (dokter 16 Nov 2026): advis SEBELUM pasien datang ke IGD (masuk = menit registrasi, toleransi 60 menit) bukan
+      // untuk kunjungan ini (mis. pasien bernama sama kemarin) -> pasien itu diperlakukan sebagai "pasien lain" untuk advis ini.
+      const tc = spWaTime(msgs[c.idxs[0]].pre);
+      const early = (x) => isFinite(tc) && Number.isFinite(x.masuk) && tc < x.masuk - 60;
+      const targets = (targetsAll || []).filter((x) => !early(x)), others = (othersAll || []).concat((targetsAll || []).filter(early));
       const lo = Math.max(0, Math.min(...c.idxs) - 8), hi = Math.max(...c.idxs);
       const ctx = msgs.slice(lo, hi + 1).map((m) => [m.quote, m.text].filter(Boolean).join(" ")).join("\n").replace(/\s+\n/g, "\n").slice(-1500);
       const it = { key: "", text, lvl: 0, why: "", bukti: a.pt ? a.pt.label : "", sender: roles.who(msgs[c.idxs[0]]), ctx, alts: [] };
@@ -8132,7 +8137,7 @@
     // =========================
     const CARI_REQ = "sp_wa_cari_req_v1", CARI_ACK = "sp_wa_cari_ack_v1", CARI_PROG = "sp_wa_cari_prog_v1", CARI_RES = "sp_wa_cari_hasil_v1";
     // v3.164.0: catatan chat 24 jam & daftar chat yang pernah berisi konsul (penyimpanan Violentmonkey di browser ini saja).
-    const CARI_LOG = "sp_wa_cari_log_v1", CHAT_MEDIS = "sp_wa_chat_medis_v1";
+    const CARI_LOG = "sp_wa_cari_log_v1", CHAT_MEDIS = "sp_wa_chat_medis_v1", CHAT_DPJP = "sp_wa_chat_dpjp_v1";
     const gmGet = (k, d) => { try { return typeof GM_getValue === "function" ? GM_getValue(k, d) : d; } catch (_) { return d; } };
     const gmSet = (k, val) => { try { if (typeof GM_setValue === "function") GM_setValue(k, val); } catch (_) {} };
     const tabId = Math.random().toString(36).slice(2, 10);
@@ -8287,7 +8292,11 @@
         const jamCari = [6, 12, 18].includes(Number(v.hours)) ? Number(v.hours) : 18, minsCari = jamCari * 60;
         say(`membaca daftar chat ${jamCari} jam terakhir... (jangan klik chat dulu)`);
         titles = await recentChats(60);
-        const nowMs = Date.now(), nowMin = Math.round(nowMs / 60000), winStart = nowMin - minsCari;
+        const nowMs = Date.now(), nowMin = Math.round(nowMs / 60000);
+        // v3.165.0 (dokter 16 Nov 2026): chat cukup digulir sampai jam masuk IGD pasien paling awal yang dicari (-60 menit), bukan
+        // selalu 6/12/18 jam penuh (konsul tidak mungkin sebelum pasien datang).
+        const masuk = (v.patients || []).map((p) => p.masuk);
+        const winStart = masuk.length && masuk.every(Number.isFinite) ? Math.max(nowMin - minsCari, Math.min(...masuk) - 60) : nowMin - minsCari;
         // v3.164.0 (dokter 16 Nov 2026: pencarian harus LENGKAP & lebih cepat):
         //  - chat yang pesan terakhirnya (jam di daftar chat hari ini) sebelum rentang dilewati (tidak mungkin ada advis);
         //  - urutan: chat bernama DPJP pasien, chat medis / chat yang pernah berisi konsul, lalu chat lain (kontak spesialis tanpa
@@ -8298,8 +8307,12 @@
         const learned = new Set(gmGet(CHAT_MEDIS, []) || []);
         let log = gmGet(CARI_LOG, {}) || {};
         const dw = spWaDpjpWords((v.patients || []).map((p) => p.dpjp));
+        // v3.165.0: chat yang pernah berisi advis DPJP pasien ini (diingat dari pencarian sebelumnya) dibaca paling dulu.
+        let dpjpChats = gmGet(CHAT_DPJP, {}) || {};
+        const dpKey = (n) => spWaDpjpWords([n]).sort().join(" ");
+        const dpTitles = new Set((v.patients || []).flatMap((p) => dpjpChats[dpKey(p.dpjp)] || []));
         const ranked = titles.map((t, i) => {
-          let p = spWaChatPriority(t, dw);
+          let p = dpTitles.has(t) ? 0 : spWaChatPriority(t, dw);
           if (p === 2 && (learned.has(t) || log[t])) p = 1;
           return { t, i, p, last: spWaChatLabelMin(chatLabel.get(t), nowMs) };
         }).filter((x) => !(isFinite(x.last) && x.last < winStart)).sort((a, b) => a.p - b.p || a.i - b.i);
@@ -8333,10 +8346,20 @@
             if (sig(msgs)) learned.add(title);
           }
           scanned.push(title);
-          spWaAdvisCari(msgs, nowMin, v.patients, minsCari, others).forEach((x) => found.push({ ...x, chat: title.slice(0, 60) }));
+          spWaAdvisCari(msgs, nowMin, v.patients, minsCari, others).forEach((x) => found.push({ ...x, chat: title.slice(0, 60), chatT: title }));
         }
         gmSet(CARI_LOG, log);
         gmSet(CHAT_MEDIS, [...learned].slice(-100));
+        // v3.165.0: ingat chat DPJP (advis 🟢/🟡 untuk pasien yang DPJP-nya diketahui).
+        found.filter((x) => x.key && x.lvl >= 1).forEach((x) => {
+          const p = (v.patients || []).find((q) => q.key === x.key), k = p && dpKey(p.dpjp);
+          if (!k) return;
+          const l = (dpjpChats[k] || []).filter((t) => t !== x.chatT);
+          dpjpChats[k] = [x.chatT, ...l].slice(0, 5);
+        });
+        const dk = Object.keys(dpjpChats);
+        if (dk.length > 80) dk.slice(0, dk.length - 80).forEach((k) => delete dpjpChats[k]);
+        gmSet(CHAT_DPJP, dpjpChats);
         await archClose();
         if (start && !sameChat(chatName(), start)) await openChat(start);
         send(CARI_RES, { items: found, scanned: scanned.length, chats: titles.length, stopped: stop, hours: jamCari, fromLog, skipped, partial, failed });
@@ -8485,6 +8508,39 @@
       // Tanpa pasien hanya dikirim saat riwayat sudah dimuat (dokter tidak memakai WA); kalau tidak, ditunda ke putaran berikut.
       return r.items.filter((it) => it.patient || idle);
     }
+    // v3.165.0 (dokter 16 Nov 2026): CATATAN DIPANASKAN DI LATAR — saat Advis WA realtime ON dan WA tidak dipakai (30 dtk / tab di
+    // latar), chat konsul (nama medis, pernah berisi konsul, chat DPJP, atau sudah tercatat) yang aktif 18 jam dan belum tercatat
+    // lengkap dibaca 2 chat per putaran, paling sering tiap 30 menit per chat; chat awal dikembalikan. 🔎 Cari advis WA lalu
+    // tinggal membaca catatan (chat tanpa pesan baru tidak dibuka). Hanya membuka & membaca (tidak mengetik / mengirim).
+    const warmDone = new Map();
+    async function warmStep() {
+      const idleW = () => document.hidden || Date.now() - lastUser > 30000; // sama dengan realtime (v3.159.0: 30 dtk)
+      if (!idleW() || cariBusy || !rtState()) return;
+      const nowMs = Date.now(), nowMin = Math.round(nowMs / 60000), winStart = nowMin - 1080;
+      const log0 = gmGet(CARI_LOG, {}) || {}, learned = new Set(gmGet(CHAT_MEDIS, []) || []);
+      const dp = new Set([].concat(...Object.values(gmGet(CHAT_DPJP, {}) || {})));
+      const todo = chatRows().map((r) => rowInfo(r)).filter((i) => {
+        if (!i.title || !i.recent || nowMs - (warmDone.get(i.title) || 0) < 1800000) return false;
+        const last = spWaChatLabelMin(i.label, nowMs);
+        if (isFinite(last) && last < winStart) return false;
+        if (!(spWaChatPriority(i.title, []) < 2 || learned.has(i.title) || dp.has(i.title) || log0[i.title])) return false;
+        const L = log0[i.title];
+        return !(L && Number.isFinite(L.from) && L.from <= winStart && isFinite(last) && L.upTo >= last);
+      });
+      if (!todo.length) return;
+      const start = chatName();
+      for (const i of todo.slice(0, 2)) {
+        if (!idleW() || !rtState()) break;
+        warmDone.set(i.title, Date.now());
+        if (!(await openChat(i.title))) continue;
+        const L = (gmGet(CARI_LOG, {}) || {})[i.title];
+        const until = L && Number.isFinite(L.from) && L.from <= winStart && Number.isFinite(L.upTo) ? L.upTo - 10 : winStart - 30;
+        const ok = await loadHistory(until, null);
+        if (snapshot.expanded) { snapshot.expanded = false; await sleep(300); }
+        gmSet(CARI_LOG, spWaLogPut(gmGet(CARI_LOG, {}) || {}, i.title, readMsgs(), spWaTime.md, nowMin, ok ? until : NaN));
+      }
+      if (start && !sameChat(chatName(), start) && idleW()) await openChat(start);
+    }
     async function rtTick() {
       const on = rtState();
       rtPaint();
@@ -8526,6 +8582,7 @@
         }
         const done = [];
         for (const it of out) { if (rtSend(it)) { done.push(it.hash); rtCount++; } await sleep(800); }
+        if (!rtPending.size) { try { await warmStep(); } catch (e) { console.warn("[ADVIS WA catatan]", e); } }
         if (done.length) { try { GM_setValue(RT_SENT, [...done, ...rtSent()].slice(0, 300)); } catch (_) {} }
         rtLast = Date.now();
         const b = document.getElementById(BTN);
@@ -9498,7 +9555,7 @@
       const tReg = new Set(targets.map((p) => p.noreg)), tRm = new Set(targets.map((p) => spRmKey(p.norm)).filter(Boolean));
       const others = spAdvisAddRanap(lastIgd, lastRanap).filter((p) => !tReg.has(p.noreg) && !tRm.has(spRmKey(p.norm)))
         .map((p) => ({ nama: String(p.nama || "").replace(/,.*$/, "").trim(), rm: p.norm || "" })).slice(0, 400);
-      GM_setValue("sp_wa_cari_req_v1", { id, ts: Date.now(), hours: jam, others, patients: targets.map((p) => { const x = spCekAdvisPatient(p); return { key: p.noreg, nama: x.nama, rm: x.rm, dpjp: (p.ranap && p.ranap.dokter) || "" }; }) });
+      GM_setValue("sp_wa_cari_req_v1", { id, ts: Date.now(), hours: jam, others, patients: targets.map((p) => { const x = spCekAdvisPatient(p); return { key: p.noreg, nama: x.nama, rm: x.rm, dpjp: (p.ranap && p.ranap.dokter) || "", masuk: p.ts ? Math.round(p.ts / 60000) : null }; }) });
       const watch = setInterval(() => {
         if (finished || my !== waRun) { clearInterval(watch); return; }
         if (!acked && Date.now() - last > 5000) {
@@ -16821,7 +16878,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.164.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.165.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
