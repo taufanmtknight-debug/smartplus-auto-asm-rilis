@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.152.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.153.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.152.0
-// @description  v3.152.0 (permintaan dokter 16 Nov 2026): siapa yang login Smartplus kini DICEK BERKALA tiap 2 menit (dari tab Smartplus dan dari WhatsApp Web lewat beranda Smartplus). Bila logout, sesi habis, atau yang login bukan dr. Muhamad Taufan Kurniawan: tombol & panel Advis WA hilang, Advis WA realtime berhenti, dan tombol AUTO ASM di tab Smartplus dilepas; semuanya kembali sendiri setelah dr. Taufan login lagi. Izin baru: GM_xmlhttpRequest.
+// @version      3.153.0
+// @description  v3.153.0 (permintaan dokter 16 Nov 2026, diuji di Chrome PC dokter): ASGADAR, AUTO PENUNJANG, KOMBINASI RESEP & AUTO IGD tidak lagi macet — form yang sedang terbuka dipakai (ASGADAR tidak menekan TAMBAH lagi) atau diparkir lalu dibuka kembali saat pindah tab (dulu latar gelap tertinggal); tombol TAMBAH & form ditunggu sampai Smartplus selesai memuat; obat resep dipilih langsung dari daftar obat Smartplus sehingga jenis obat & ID obat selalu terisi; pesan Smartplus ditutup otomatis; resep tindakan dipastikan tersimpan sebelum obat oral dilanjutkan.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -70,8 +70,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.152.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.152.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.153.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.153.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -4289,11 +4289,151 @@
     return hidden.length;
   }
 
+  // =========================================================
+  // v3.153.0 (laporan dokter 16 Nov 2026: ASGADAR / AUTO PENUNJANG / KOMBINASI "nyangkut"): form Smartplus (modal
+  // Bootstrap) berada DI DALAM sub-tab-nya. Diuji di Smartplus asli: form GADAR terbuka -> klik tab Order Lab -> form
+  // GADAR tak terlihat, tetapi latar gelap (backdrop) & status "terbuka" tertinggal; form berikutnya tidak tampil dan layar
+  // macet. Kini sebelum pindah sub-tab, form yang terbuka DIPARKIR dengan cara Bootstrap (isian tidak direset), backdrop
+  // yatim dibersihkan, dan form GADAR dibuka kembali bila halaman tidak dimuat ulang.
+  // =========================================================
+  const SP_GADAR_PARK_KEY = "sp-auto-asm-gadar-parkir";
+  function spShownModals() { return [...document.querySelectorAll(".modal.show")]; }
+  function spCleanStaleBackdrop() {
+    if (spShownModals().length) return false;
+    const bd = document.querySelectorAll(".modal-backdrop");
+    bd.forEach((b) => b.remove());
+    document.body.classList.remove("modal-open");
+    document.body.style.removeProperty("padding-right");
+    document.body.style.removeProperty("overflow");
+    return bd.length > 0;
+  }
+  // Parkir semua form terbuka kecuali keepIds. Hasil: id modal yang diparkir.
+  async function spParkModals(keepIds = []) {
+    const parked = spShownModals().filter((m) => !keepIds.includes(m.id));
+    for (const m of parked) {
+      try {
+        if (window.jQuery && window.jQuery.fn && window.jQuery.fn.modal) window.jQuery(m).modal("hide");
+        else m.classList.remove("show");
+      } catch (_) {}
+    }
+    if (parked.length) await waitFor(() => parked.every((m) => !m.classList.contains("show")), 2500, 80);
+    for (const m of parked) {
+      if (!m.classList.contains("show")) continue; // transisi Bootstrap tidak selesai (induk tersembunyi) -> paksa
+      m.classList.remove("show");
+      m.style.display = "none";
+      m.setAttribute("aria-hidden", "true");
+    }
+    spCleanStaleBackdrop();
+    return parked.map((m) => m.id).filter(Boolean);
+  }
+  // Isian form GADAR (untuk dibuka kembali setelah halaman dimuat ulang, mis. Save Order Lab).
+  function spGadarSnapshot() {
+    const f = document.getElementById("form_gadar");
+    if (!f) return null;
+    const fields = [];
+    for (const el of f.querySelectorAll("input, textarea, select")) {
+      if (!el.name || /^(button|submit|file)$/i.test(el.type)) continue;
+      if (/^(radio|checkbox)$/i.test(el.type)) fields.push([el.name, el.value, el.checked ? 1 : 0]);
+      else fields.push([el.name, el.value]);
+    }
+    const id = (f.querySelector('[name="id_gadar"]') || {}).value || "";
+    return { idGadar: String(id), fields };
+  }
+  function spGadarApplySnapshot(snap) {
+    const f = document.getElementById("form_gadar");
+    if (!f || !snap) return 0;
+    let n = 0;
+    const byName = {};
+    for (const el of f.querySelectorAll("input, textarea, select")) if (el.name) (byName[el.name] = byName[el.name] || []).push(el);
+    for (const [name, value, checked] of snap.fields || []) {
+      const els = byName[name] || [];
+      if (checked !== undefined) {
+        const el = els.find((e) => e.value === value);
+        if (el && el.checked !== !!checked) { el.checked = !!checked; fire(el); n++; }
+      } else {
+        const el = els.find((e) => !/^(radio|checkbox)$/i.test(e.type));
+        if (el && el.value !== value) { setValue(el, value); n++; }
+      }
+    }
+    return n;
+  }
+  // Buka kembali form GADAR yang diparkir (halaman sama). true bila tampil.
+  async function spRestoreGadarModal() {
+    const m = document.getElementById("modal_form_gadar");
+    if (!m) return false;
+    await spParkModals(["modal_form_gadar"]);
+    await ensureMainEmrTab();
+    const tab = document.getElementById("new_gadar");
+    if (tab && !tab.classList.contains("active")) tab.click();
+    await waitFor(() => { const p = document.getElementById("box_gadar"); return p && visible(p); }, 4000, 80);
+    try { if (window.jQuery && window.jQuery.fn.modal) window.jQuery(m).modal("show"); } catch (_) {}
+    return !!(await waitFor(() => m.classList.contains("show") && visible(m.querySelector(".modal-content") || m), 4000, 80));
+  }
+  // Dipakai AUTO PENUNJANG / KOMBINASI sebelum pindah sub-tab. backupForReload: simpan isian GADAR di sessionStorage
+  // (Save Order Lab memuat ulang halaman). Hasil: fungsi untuk membuka kembali form GADAR (dipanggil setelah selesai).
+  // allowRestore=false: alur yang mengisi form GADAR BARU sesudahnya (template ASGADAR, ASISTEN) -> tidak dipulihkan.
+  async function spPrepareTabSwitch(backupForReload = false, allowRestore = true) {
+    const gm = document.getElementById("modal_form_gadar");
+    const gadarOpen = allowRestore && !!(gm && gm.classList.contains("show"));
+    if (gadarOpen && backupForReload) {
+      const snap = spGadarSnapshot();
+      const noreg = typeof getCurrentIgdNoreg === "function" ? getCurrentIgdNoreg() : "";
+      if (snap && noreg) { try { sessionStorage.setItem(SP_GADAR_PARK_KEY, JSON.stringify({ ...snap, noreg, ts: Date.now() })); } catch (_) {} }
+    }
+    spCloseSwal();
+    await spParkModals();
+    return async () => {
+      try { sessionStorage.removeItem(SP_GADAR_PARK_KEY); } catch (_) {}
+      if (gadarOpen && await spRestoreGadarModal()) toast("Form Assesment GADAR yang tadi terbuka dibuka kembali (isian tetap).");
+    };
+  }
+  // Setelah halaman dimuat ulang (Save Order Lab): buka kembali form GADAR yang diparkir & isi ulang (pasien sama, < 5 menit).
+  async function spResumeParkedGadar() {
+    let p = null;
+    try { p = JSON.parse(sessionStorage.getItem(SP_GADAR_PARK_KEY) || "null"); } catch (_) { p = null; }
+    if (!p) return;
+    try { sessionStorage.removeItem(SP_GADAR_PARK_KEY); } catch (_) {}
+    const noreg = typeof getCurrentIgdNoreg === "function" ? getCurrentIgdNoreg() : "";
+    if (!noreg || noreg !== p.noreg || Date.now() - (p.ts || 0) > 300000) return;
+    await waitFor(() => document.getElementById("new_gadar"), 15000);
+    await ensureMainEmrTab();
+    const tab = document.getElementById("new_gadar");
+    if (tab) tab.click();
+    const m = document.getElementById("modal_form_gadar");
+    if (p.idGadar && typeof window.update_gadar === "function") {
+      window.update_gadar(p.idGadar); // mode edit GADAR yang sama
+      await waitFor(() => String((document.querySelector('#form_gadar [name="id_gadar"]') || {}).value || "") === p.idGadar, 8000);
+      await recipeSleep(500); // data server terisi dulu, lalu isian dokter yang belum disimpan ditimpakan
+    } else {
+      const add = await waitFor(() => [...document.querySelectorAll('#box_gadar [onclick*="add_soap_gadar"]')].find(visible), 15000);
+      if (!add) { toast("⚠️ Form GADAR yang belum disimpan tidak bisa dibuka kembali (tombol TAMBAH tidak muncul)."); return; }
+      add.click();
+    }
+    if (!(await waitFor(() => m && m.classList.contains("show") && visible(m.querySelector(".modal-content") || m), 8000))) return;
+    const n = spGadarApplySnapshot(p);
+    toast(`Form Assesment GADAR yang belum disimpan dibuka kembali setelah order lab (${n} isian dipulihkan). Cek lalu Simpan.`);
+  }
+
   // Buka GADAR terakhir kunjungan ini dalam mode edit (fungsi bawaan Smartplus update_gadar).
   async function openLatestGadarForEdit() {
     const g = await getLatestGadarData();
     if (!g) return null;
     const id = String(g.idGadar);
+    // v3.153.0: GADAR yang sama sudah terbuka (mis. dokter sedang mengedit) -> dipakai apa adanya; update_gadar akan
+    // mereset form & memuat ulang dari server (editan yang belum disimpan hilang). Form lain yang terbuka diparkir dulu.
+    const open = document.getElementById("modal_form_gadar");
+    const idNow = String((document.querySelector('#form_gadar [name="id_gadar"]') || {}).value || "");
+    await spParkModals(open && open.classList.contains("show") && idNow === id ? ["modal_form_gadar"] : []);
+    if (open && open.classList.contains("show") && idNow === id) {
+      if (!visible(open.querySelector(".modal-content") || open)) {
+        await ensureMainEmrTab();
+        const tab = document.getElementById("new_gadar");
+        if (tab && !tab.classList.contains("active")) tab.click();
+        if (!(await waitFor(() => visible(open.querySelector(".modal-content") || open), 3000, 80))) spRevealModalHost(open);
+      }
+      await recipeSleep(200);
+      return g;
+    }
     if (typeof window.update_gadar === "function") {
       window.update_gadar(id);
       spRevealModalHost(document.getElementById("modal_form_gadar"));
@@ -5993,6 +6133,11 @@
     if (key === "NORMAL" || spIsDraftGadarPage()) return;
     const noreg = getCurrentIgdNoreg();
     if (!noreg) return;
+    // v3.153.0: form GADAR LAMA yang sedang terbuka (mode edit) -> setelah halaman dimuat ulang oleh Save Order Lab,
+    // GADAR yang sama itu yang dibuka & diisi template (dulu selalu + TAMBAH = GADAR baru).
+    const gmOpen = document.getElementById("modal_form_gadar");
+    const gmWasOpen = !!(gmOpen && gmOpen.classList.contains("show"));
+    const editId = gmWasOpen ? String((document.querySelector('#form_gadar [name="id_gadar"]') || {}).value || "") : "";
     try {
       const html = await spFetch(`${smartplusBaseUrl()}/lab/splab/lab_modal_lad/${encodeURIComponent(noreg)}`, { credentials: "same-origin" }).then((r) => r.text());
       const orders = [...new DOMParser().parseFromString(html, "text/html").querySelectorAll("tr")].slice(1)
@@ -6015,8 +6160,9 @@
     window.addEventListener("beforeunload", onHide);
     const saved = await runAutoLabFebris({
       diagnosis: (TEMPLATES[key] && TEMPLATES[key].diagnosis) || "",
+      fromTemplate: true,
       // v3.58.3: alamat halaman pasien ikut dititipkan (back) agar bisa kembali bila Save mendarat di halaman lain.
-      beforeSave: () => { try { sessionStorage.setItem(SP_ASGADAR_PENDING_KEY, JSON.stringify({ key, noreg, back: location.pathname + location.search, ts: Date.now() })); } catch (_) {} }
+      beforeSave: () => { try { sessionStorage.setItem(SP_ASGADAR_PENDING_KEY, JSON.stringify({ key, noreg, idGadar: editId, back: location.pathname + location.search, ts: Date.now() })); } catch (_) {} }
     });
     if (saved) {
       toast("ASGADAR: order lab tersimpan — Assesment GADAR akan dibuka otomatis...");
@@ -6027,6 +6173,10 @@
     if (unloading) return "navigating"; // halaman dimuat ulang -> dilanjutkan oleh spResumePendingAsgadar
     try { sessionStorage.removeItem(SP_ASGADAR_PENDING_KEY); } catch (_) {}
     await recipeSleep(1000); // halaman tidak dimuat ulang -> beri waktu modal Order Lab menutup
+    await spParkModals(); // v3.153.0: form Order Lab yang masih terbuka ditutup sebelum Assesment GADAR dibuka
+    // v3.153.0: halaman tidak dimuat ulang & form GADAR tadi terbuka -> form yang SAMA dibuka lagi (mode edit/isian tetap),
+    // fillTemplate lalu mengisi form itu (bukan + TAMBAH baru).
+    if (gmWasOpen) await spRestoreGadarModal();
   }
 
   // v3.58.1: lanjutan ASGADAR setelah halaman dimuat ulang oleh Save Order Lab (titipan < 3 menit, pasien sama).
@@ -6065,6 +6215,17 @@
     await waitFor(() => document.getElementById("new_gadar") && document.getElementById(BUTTON_ID), 15000);
     await recipeSleep(800);
     toast("ASGADAR: order lab sudah tersimpan — melanjutkan mengisi Assesment GADAR...");
+    if (p.idGadar && typeof window.update_gadar === "function") {
+      // v3.153.0: GADAR lama yang tadi terbuka dibuka lagi dalam mode edit; fillTemplate memakai form yang terbuka itu.
+      await ensureMainEmrTab();
+      const tab = document.getElementById("new_gadar");
+      if (tab && !tab.classList.contains("active")) tab.click();
+      window.update_gadar(p.idGadar);
+      const gm = document.getElementById("modal_form_gadar");
+      await waitFor(() => gm && gm.classList.contains("show") && String((document.querySelector('#form_gadar [name="id_gadar"]') || {}).value || "") === p.idGadar, 8000);
+      if (gm && gm.classList.contains("show") && !visible(gm.querySelector(".modal-content") || gm)) spRevealModalHost(gm);
+      await recipeSleep(400);
+    }
     await spExclusive("ASGADAR", () => fillTemplate(p.key));
     try {
       const html = await spFetch(`${smartplusBaseUrl()}/lab/splab/lab_modal_lad/${encodeURIComponent(p.noreg)}`, { credentials: "same-origin" }).then((r) => r.text());
@@ -6077,7 +6238,33 @@
     } catch (_) {}
   }
 
+  // v3.153.0: form yang sedang terbuka (mis. Assesment GADAR) diparkir dulu sebelum pindah ke tab Order Lab (dulu form
+  // tersembunyi + latar gelap tertinggal = macet), lalu dibuka kembali setelah selesai. Save Order Lab memuat ulang
+  // halaman -> isian GADAR yang belum disimpan dicadangkan & dipulihkan setelah dimuat ulang (spResumeParkedGadar).
+  // Dari template ASGADAR (opts.fromTemplate) tidak dipulihkan: template yang mengisi form GADAR sesudahnya.
   async function runAutoLabFebris(opts = {}) {
+    const restore = await spPrepareTabSwitch(!opts.fromTemplate && !opts.noRestore, !opts.fromTemplate && !opts.noRestore);
+    let unloading = false;
+    const onHide = () => { unloading = true; };
+    window.addEventListener("pagehide", onHide);
+    window.addEventListener("beforeunload", onHide);
+    let res;
+    try {
+      res = await spRunAutoLabCore(opts);
+    } finally {
+      // Hanya setelah Save: form Order Lab yang belum disimpan dibiarkan terbuka untuk dicek dokter (cadangan GADAR tetap
+      // ada; bila dokter menekan Save sendiri dan halaman dimuat ulang, form GADAR dipulihkan).
+      if (!opts.fromTemplate && !opts.noRestore && res === true) {
+        await waitFor(() => unloading, 6000, 200);
+        if (!unloading) await restore();
+      }
+      window.removeEventListener("pagehide", onHide);
+      window.removeEventListener("beforeunload", onHide);
+    }
+    return res;
+  }
+
+  async function spRunAutoLabCore(opts = {}) {
     // v3.4.0: cek diagnosis GADAR terakhir dulu. v3.58.0: opts.diagnosis (dari template ASGADAR) diutamakan.
     toast("AUTO LAB: mengecek diagnosis Assesment GADAR terakhir...");
     const gadarDx = opts.diagnosis ? null : await getLatestGadarDiagnosis();
@@ -6088,27 +6275,29 @@
     await ensureMainEmrTab();
 
     const labTab = document.getElementById("a_labmodal");
-    if (labTab && visible(labTab)) labTab.click();
+    if (labTab && visible(labTab)) { if (!labTab.classList.contains("active")) labTab.click(); }
     else if (!clickVisibleText(["Order Lab"])) {
       toast("AUTO LAB: tombol Order Lab tidak ditemukan.");
       return;
     }
 
-    await recipeSleep(700);
-
-    // Utamakan TAMBAH milik Order Lab (indexlab). Fallback teks lama.
-    let labTambah = null;
-    for (let i = 0; i < 30 && !labTambah; i++) {
-      labTambah = [...document.querySelectorAll('#box_labmodal button[onclick*="indexlab"]')].find(visible) || null;
-      if (!labTambah) await recipeSleep(100);
+    // Utamakan TAMBAH milik Order Lab (indexlab).
+    // v3.153.0: ditunggu sampai 12 dtk (isi tab dimuat AJAX; dulu 3,7 dtk) dan cadangan teks hanya di kotak Order Lab
+    // (dulu TAMBAH mana pun di halaman, bisa mengenai TAMBAH Assesment GADAR).
+    const findLabTambah = () => [...document.querySelectorAll('#box_labmodal button[onclick*="indexlab"]')].find(visible) || null;
+    let labTambah = await waitFor(findLabTambah, 6000, 100);
+    if (!labTambah && labTab) {
+      const box = document.getElementById("box_labmodal");
+      if (box && !box.querySelector('[onclick*="indexlab"]')) labTab.click();
+      labTambah = await waitFor(findLabTambah, 6000, 100);
     }
     if (labTambah) labTambah.click();
-    else if (!clickVisibleText(["+ TAMBAH", "TAMBAH"])) {
-      toast("AUTO LAB: tombol + TAMBAH tidak ditemukan.");
+    else if (!clickVisibleTextWithin(document.getElementById("box_labmodal"), ["+ TAMBAH", "TAMBAH"])) {
+      toast("AUTO LAB: tombol + TAMBAH Order Lab belum muncul (Smartplus lambat) — coba lagi.");
       return;
     }
 
-    const root = await waitForVisibleLabModal(5000, 100);
+    const root = await waitForVisibleLabModal(8000, 100);
     if (!root) {
       toast("AUTO LAB: form Order Lab tidak ditemukan.");
       return;
@@ -6249,19 +6438,22 @@
     }
     const labDiagnosis = gadarDx ? gadarDx.diagnosis : "";
     toast("AUTO LAB SEVERE: membuka Order Lab...");
+    // v3.153.0: form yang terbuka diparkir dulu (isian GADAR dicadangkan: Save Order Lab memuat ulang halaman).
+    const restore = await spPrepareTabSwitch(!opts.noRestore, !opts.noRestore);
     await ensureMainEmrTab();
     const labTab = document.getElementById("a_labmodal");
-    if (labTab && visible(labTab)) labTab.click();
-    else if (!clickVisibleText(["Order Lab"])) { toast("AUTO LAB SEVERE: tombol Order Lab tidak ditemukan."); return; }
-    await recipeSleep(700);
-    let labTambah = null;
-    for (let i = 0; i < 30 && !labTambah; i++) {
-      labTambah = [...document.querySelectorAll('#box_labmodal button[onclick*="indexlab"]')].find(visible) || null;
-      if (!labTambah) await recipeSleep(100);
+    if (labTab && visible(labTab)) { if (!labTab.classList.contains("active")) labTab.click(); }
+    else if (!clickVisibleText(["Order Lab"])) { toast("AUTO LAB SEVERE: tombol Order Lab tidak ditemukan."); await restore(); return; }
+    const findLabTambah = () => [...document.querySelectorAll('#box_labmodal button[onclick*="indexlab"]')].find(visible) || null;
+    let labTambah = await waitFor(findLabTambah, 6000, 100);
+    if (!labTambah && labTab) {
+      const box = document.getElementById("box_labmodal");
+      if (box && !box.querySelector('[onclick*="indexlab"]')) labTab.click();
+      labTambah = await waitFor(findLabTambah, 6000, 100);
     }
-    if (!labTambah) { toast("AUTO LAB SEVERE: tombol + TAMBAH Order Lab tidak ditemukan."); return; }
+    if (!labTambah) { toast("AUTO LAB SEVERE: tombol + TAMBAH Order Lab belum muncul (Smartplus lambat) — coba lagi."); await restore(); return; }
     labTambah.click();
-    const root = await waitForVisibleLabModal(5000, 100);
+    const root = await waitForVisibleLabModal(8000, 100);
     if (!root) { toast("AUTO LAB SEVERE: form Order Lab tidak ditemukan."); return; }
     // Checkbox dimuat lewat AJAX: tunggu sampai daftar pemeriksaan ada.
     await waitFor(() => root.querySelector('input[type="checkbox"][value="Analisa gas darah"]'), 5000);
@@ -6293,6 +6485,15 @@
       toast(`AUTO LAB SEVERE: ${ordered}${saved ? " dipesan, Save ditekan." : " dipilih, tombol Save tidak ditemukan — Save manual."}${skipNote}${dxNote}`);
     }
     console.log("[AUTO LAB SEVERE]", { labDiagnosis, done, todo: todo.map((t) => t.key), fail });
+    if (saved) {
+      // v3.153.0: Save Order Lab biasanya memuat ulang halaman; bila tidak, form GADAR yang tadi terbuka dibuka kembali.
+      let unloading = false;
+      const onHide = () => { unloading = true; };
+      window.addEventListener("pagehide", onHide);
+      await waitFor(() => unloading, 6000, 200);
+      window.removeEventListener("pagehide", onHide);
+      if (!unloading) await restore();
+    }
     return saved; // v3.66.0 (audit): true hanya bila tombol Save benar-benar ditekan
   }
 
@@ -9004,17 +9205,28 @@
     console.log("[AUTO RAD]", order.label, "diagnosis dipakai:", radDiagnosis, gadarDx);
 
     toast(`${T}: membuka Order Radiologi...`);
+    // v3.153.0: form yang sedang terbuka (mis. Assesment GADAR) diparkir dulu — dulu pindah tab membuat form itu
+    // tersembunyi dengan latar gelap tertinggal (macet). Dibuka kembali setelah Save.
+    const restore = await spPrepareTabSwitch(!opts.noRestore, !opts.noRestore);
     await ensureMainEmrTab();
     const tab = document.querySelector(RAD_SELECTORS.tab);
-    if (tab && visible(tab)) tab.click();
+    if (tab && visible(tab)) { if (!tab.classList.contains("active")) tab.click(); }
     else if (!clickVisibleText(["Order Radiologi"])) {
       toast(`${T}: tab Order Radiologi tidak ditemukan.`);
+      await restore();
       return;
     }
 
-    const tambah = await waitForVisibleSelector(RAD_SELECTORS.tambah, 5000);
+    // v3.153.0: isi tab dimuat AJAX — ditunggu sampai 12 dtk (tab ditekan ulang sekali bila isinya belum dimuat).
+    let tambah = await waitForVisibleSelector(RAD_SELECTORS.tambah, 6000);
+    if (!tambah && tab) {
+      const box = document.getElementById("box_radmodal");
+      if (box && !box.querySelector('[onclick*="indexrad"]')) tab.click();
+      tambah = await waitForVisibleSelector(RAD_SELECTORS.tambah, 6000);
+    }
     if (!tambah) {
-      toast(`${T}: tombol TAMBAH Order Radiologi tidak ditemukan.`);
+      toast(`${T}: tombol TAMBAH Order Radiologi belum muncul (Smartplus lambat) — coba lagi.`);
+      await restore();
       return;
     }
     tambah.click();
@@ -9072,7 +9284,15 @@
       return;
     }
     if (opts.beforeSave) { try { opts.beforeSave(); } catch (_) {} }
+    let unloading = false;
+    const onHide = () => { unloading = true; };
+    window.addEventListener("pagehide", onHide);
     save.click();
+    setTimeout(async () => {
+      await waitFor(() => unloading, 6000, 200);
+      window.removeEventListener("pagehide", onHide);
+      if (!unloading) await restore();
+    }, 0);
     toast(`${T} selesai: ${[order.exam, ...(order.extras || []).map((x) => x.toUpperCase())].join(" + ")} dipilih dan Save ditekan.${dxNote}`);
     console.log("[AUTO RAD] selesai", { order: order.label, diagnosis: radDiagnosis, idGadar: gadarDx && gadarDx.idGadar });
     return true;
@@ -10588,8 +10808,105 @@
     return null;
   }
 
+  // v3.153.0 (laporan dokter 16 Nov 2026: KOMBINASI RESEP macet — "nama obat sudah masuk, jenis obat tidak muncul").
+  // Sebab: daftar autocomplete Smartplus (jQuery UI, AJAX) ditunggu jeda tetap 0,7 dtk; bila server lambat daftar belum
+  // muncul, kolom Obat hanya berisi teks ketikan -> #jenis_obat & #id_fa kosong -> "Masukan ke Resep" ditolak ("ID Obat
+  // Kosong") dan proses berantakan. Kini: daftar obat diambil langsung dari sumber autocomplete yang sama (GET
+  // inner_get_data_autocomplet_obat?term=…, dicoba ulang), item yang cocok dipilih lewat handler "select" milik Smartplus
+  // sendiri (mengisi jenis obat & ID obat), lalu diverifikasi. Cara lama (klik daftar) tinggal cadangan.
+  // Pilih item autocomplete yang paling cocok dengan nama di template (fungsi murni, diuji di tests/uji_v3_153.js).
+  function spPickAutocompleteItem(list, query) {
+    const items = (Array.isArray(list) ? list : []).filter((x) => x && (x.label || x.value || x.name));
+    const lab = (x) => norm(String(x.label || x.value || x.name || ""));
+    const loose = (s) => s.replace(/[^a-z0-9]+/g, "");
+    const q = norm(query), qBase = norm(String(query || "").replace(/\*+/g, ""));
+    const ql = loose(q), qbl = loose(qBase);
+    if (!qBase) return null;
+    return items.find((x) => lab(x) === q) ||
+      items.find((x) => lab(x) === qBase || norm(lab(x).replace(/\*+/g, "")) === qBase) ||
+      items.find((x) => loose(lab(x)) === ql || loose(lab(x)) === qbl) ||
+      items.find((x) => lab(x).startsWith(qBase)) ||
+      items.find((x) => (ql && loose(lab(x)).includes(ql)) || (qbl && loose(lab(x)).includes(qbl))) ||
+      (() => {
+        const tokens = qBase.split(/\s+/).filter(Boolean).slice(0, 4);
+        return tokens.length ? items.find((x) => tokens.every((t) => lab(x).includes(t))) || null : null;
+      })();
+  }
+
+  // true = terpilih & terverifikasi; null = cara ini tidak bisa dipakai / tidak ketemu (pakai cara lama).
+  async function spAutocompleteDirect(input, query) {
+    const $ = window.jQuery;
+    if (!$ || !input) return null;
+    let w = null;
+    try { w = $(input).data("ui-autocomplete") || $(input).data("autocomplete") || null; } catch (_) { w = null; }
+    const src = w && w.options && w.options.source;
+    if (typeof src !== "string" || !src) return null;
+    const base = String(query || "").replace(/\*+/g, "").replace(/\s+/g, " ").trim();
+    const words = base.split(" ");
+    const terms = [base, words.slice(0, 2).join(" "), words[0]].filter((t, i, a) => t && t.length >= 3 && a.indexOf(t) === i);
+    for (const term of terms) {
+      let list = null;
+      for (let attempt = 0; attempt < 3 && !Array.isArray(list); attempt++) {
+        try {
+          list = await spFetch(src + (src.includes("?") ? "&" : "?") + "term=" + encodeURIComponent(term), { credentials: "same-origin" }, 15000).then((r) => r.json());
+        } catch (err) {
+          if (/Sesi Smartplus habis/.test(String(err && err.message))) throw err;
+          await recipeSleep(700 * (attempt + 1));
+        }
+      }
+      const item = spPickAutocompleteItem(list, query);
+      if (!item) continue;
+      const text = String(item.value != null ? item.value : item.label);
+      input.focus();
+      setValue(input, text);
+      try { w._trigger("select", $.Event("autocompleteselect"), { item }); } catch (err) { console.warn("[AUTO RESEP] select autocomplete", err); }
+      if (norm(input.value) !== norm(text)) setValue(input, text);
+      // Kolom yang diisi handler Smartplus (form Resep Online: #jenis_obat, #id_fa). Bila handler tidak mengisinya,
+      // diisi langsung dari data item yang sama.
+      const scope = input.closest("form, .modal, .tab-pane") || document;
+      for (const key of ["jenis_obat", "id_fa"]) {
+        if (item[key] == null || item[key] === "") continue;
+        const f = scope.querySelector(`#${key}, [name="${key}"]`);
+        if (f && f !== input && String(f.value) !== String(item[key])) setValue(f, String(item[key]));
+      }
+      const idFa = scope.querySelector('#id_fa, [name="id_fa"]');
+      if (idFa && item.id_fa != null && String(idFa.value) !== String(item.id_fa)) return null;
+      try { $(input).autocomplete("close"); } catch (_) {}
+      return true;
+    }
+    return null;
+  }
+
+  // v3.153.0: tutup pesan SweetAlert Smartplus yang masih terbuka (tombol OK). true bila ada yang ditutup.
+  function spCloseSwal() {
+    try {
+      const S = window.Swal || window.swal;
+      if (S && typeof S.isVisible === "function" && S.isVisible() && typeof S.close === "function") { S.close(); return true; }
+    } catch (_) {}
+    const b = [...document.querySelectorAll(".swal2-confirm, .sweet-alert button.confirm")].find(visible);
+    if (b) { b.click(); return true; }
+    return false;
+  }
+
+  // Tutup lalu tunggu sampai pesan benar-benar hilang (animasi tutup SweetAlert) — supaya pesan obat sebelumnya tidak
+  // terbaca sebagai pesan obat berikutnya.
+  async function spCloseSwalWait() {
+    const shown = () => [...document.querySelectorAll(".swal2-popup, .sweet-alert")].some(visible);
+    if (!shown()) return false;
+    spCloseSwal();
+    await waitFor(() => !shown(), 2000, 50);
+    return true;
+  }
+
   async function selectAutocomplete(input, query) {
     if (!input) return false;
+
+    try {
+      if ((await spAutocompleteDirect(input, query)) === true) return true;
+    } catch (err) {
+      if (/Sesi Smartplus habis/.test(String(err && err.message))) throw err;
+      console.warn("[AUTO RESEP] pilih obat langsung gagal, pakai daftar autocomplete", err);
+    }
 
     setValue(input, "");
     input.focus();
@@ -10610,7 +10927,10 @@
       }));
     } catch (_) {}
 
-    await recipeSleep(700);
+    // v3.153.0: daftar autocomplete ditunggu sampai muncul (maks 6 dtk), bukan jeda tetap 0,7 dtk.
+    const qWait = norm(String(query || "").replace(/\*+/g, "")).split(/\s+/)[0] || "";
+    await waitFor(() => [...document.querySelectorAll(".ui-autocomplete li, .ui-menu-item, [role='option']")]
+      .some((el) => visible(el) && (!qWait || norm(el.innerText || el.textContent || "").includes(qWait))), 6000, 150);
 
     const selectors = [
       ".ui-autocomplete li",
@@ -10722,6 +11042,11 @@
         pickedValue = norm(input.value || "");
       }
 
+      if (pickedValue) {
+        // v3.153.0: tunggu handler Smartplus mengisi ID obat (#id_fa) sebelum dianggap terpilih.
+        const idFa = (input.closest("form, .modal, .tab-pane") || document).querySelector('#id_fa, [name="id_fa"]');
+        if (idFa && !(await waitFor(() => String(idFa.value || "").trim(), 3000, 100))) return false;
+      }
       return Boolean(pickedValue);
     }
 
@@ -10755,6 +11080,9 @@
 
     // Pastikan ada nilai setelah seleksi.
     const current = norm(input.value || "");
+    // v3.153.0: form Resep Online — teks ketikan saja belum berarti obat terpilih; ID obat (#id_fa) harus terisi.
+    const idFa = (input.closest("form, .modal, .tab-pane") || document).querySelector('#id_fa, [name="id_fa"]');
+    if (idFa && !String(idFa.value || "").trim()) return false;
     return current.length > 0;
   }
 
@@ -10801,8 +11129,11 @@
     return recipeStopRequested === true;
   }
 
+  // v3.153.0: form Assesment GADAR yang terbuka saat resep dimulai diparkir (openRecipeTab) lalu dibuka kembali di sini.
+  let spRecipeRestore = null;
   function clearRecipeProgress(message = "") {
     recipeProgress = null;
+    if (spRecipeRestore) { const r = spRecipeRestore; spRecipeRestore = null; setTimeout(() => { r().catch(() => {}); }, 600); }
     const t = document.getElementById(STATUS_ID);
     if (!t) return;
     if (message) {
@@ -10904,11 +11235,22 @@
   // Gunakan mekanisme yang SAMA persis dengan AUTO LAB untuk membuka menu.
   // AUTO LAB sudah terbukti dapat membuka "Order Lab" pada Smartplus ini.
   async function openRecipeTab() {
+    // v3.153.0: form yang terbuka (mis. Assesment GADAR) diparkir dulu — dulu pindah ke Resep Online membuat form itu
+    // tersembunyi dengan latar gelap tertinggal (layar macet). Form GADAR dibuka kembali setelah resep selesai.
+    if (!spRecipeRestore && document.querySelector("#modal_form_gadar.show")) spRecipeRestore = await spPrepareTabSwitch(false);
+    else await spParkModals();
     // v3.21.0: kembali ke tab E-RAWAT DARURAT dulu (draft Resep Online yang sudah ada tetap utuh).
     await ensureMainEmrTab();
     // Jangan klik ulang Resep Online bila form/draft sudah terbuka.
     // Pada Smartplus, klik ulang tab dapat merender ulang panel dan menghapus
     // draft yang sudah dimasukkan. Pilihan paket berikutnya harus ADDITIVE.
+    // v3.153.0: Resep Online sudah dimuat tetapi sub-tab lain aktif -> tampilkan lagi sub-tabnya. Aman: isi tab Smartplus
+    // di-cache (inner_loader), klik ulang tidak memuat ulang & draft tetap (diuji di Smartplus asli).
+    const eresepBox = document.getElementById("box_new_eresep"), eresepTab = document.getElementById("a_new_eresep");
+    if (eresepBox && eresepTab && !visible(eresepBox) && eresepBox.querySelector("#obat")) {
+      eresepTab.click();
+      await waitFor(() => visible(eresepBox), 3000, 80);
+    }
     if (findRecipeDraftRoot() || findRecipeReadyText()) {
       recipeStatus("Resep Online sudah terbuka — mempertahankan resep sebelumnya.");
       return true;
@@ -10917,13 +11259,16 @@
     recipeStatus("membuka Resep Online...");
 
     // Mengikuti pola yang sudah berhasil pada AUTO LAB: klik sekali lalu tunggu.
-    if (!clickVisibleText(["Resep Online"])) {
+    // v3.153.0: tab tetap #a_new_eresep diutamakan; form ditunggu sampai 15 dtk (dimuat AJAX).
+    const tab = document.getElementById("a_new_eresep");
+    if (tab && visible(tab)) tab.click();
+    else if (!clickVisibleText(["Resep Online"])) {
       toast("MASTER TEMPLATE RESEP: tombol Resep Online tidak ditemukan.");
       return false;
     }
 
-    await recipeSleep(700);
-    return !!(await waitForRecipeReady(8000, 100));
+    await recipeSleep(300);
+    return !!(await waitForRecipeReady(15000, 120));
   }
 
   async function addRecipeItem(item, index, total) {
@@ -10932,10 +11277,17 @@
     const obatField = findRecipeInput(["Obat"]);
     if (!obatField) throw new Error("Kolom Obat tidak ditemukan");
 
-    const selected = await selectAutocomplete(obatField, item.obat);
+    await spCloseSwalWait(); // v3.153.0: sisa pesan SweetAlert obat sebelumnya tidak menghalangi
+    let selected = await selectAutocomplete(obatField, item.obat);
+    if (!selected) { await recipeSleep(800); selected = await selectAutocomplete(obatField, item.obat); } // coba ulang sekali
     if (!selected) throw new Error(`Obat tidak ditemukan/terpilih: ${item.obat}`);
+    // v3.153.0: jenis obat (Oral/Injeksi/…) & ID obat wajib terisi sebelum "Masukan ke Resep".
+    const jenis = document.getElementById("jenis_obat"), idFa = document.getElementById("id_fa");
+    if (jenis && idFa && !(await waitFor(() => String(jenis.value || "").trim() && String(idFa.value || "").trim(), 3000, 100))) {
+      throw new Error(`Jenis/ID obat belum terisi untuk ${item.obat} (daftar obat Smartplus belum termuat)`);
+    }
 
-    await recipeSleep(300);
+    await recipeSleep(200);
 
     const mappings = [
       [["Jumlah"], item.jumlah],
@@ -10964,23 +11316,30 @@
     await recipeSleep(250);
 
     const draftBefore = recipeDraftSignature();
-    if (!clickVisibleText(["Masukan ke Resep", "Masukkan ke Resep"])) {
+    const addBtn = document.getElementById("addrow"); // tombol "Masukan ke Resep" form Resep Online (peta DOM)
+    if (addBtn && visible(addBtn)) addBtn.click();
+    else if (!clickVisibleText(["Masukan ke Resep", "Masukkan ke Resep"])) {
       throw new Error("Tombol 'Masukan ke Resep' tidak ditemukan");
     }
 
-    await recipeSleep(700);
     // v3.39.0: Smartplus menolak obat lewat SweetAlert (mis. "Jumlah R Sudah Melebihi Batas" pada pasien BPJS) —
     // laporkan sebagai gagal, jangan dianggap berhasil.
-    const alertBox = [...document.querySelectorAll(".swal2-popup, .sweet-alert")].find((el) => visible(el));
-    const alertText = alertBox ? (alertBox.innerText || "").replace(/\s+/g, " ").replace(/\bOK\b\s*$/, "").trim() : "";
+    // v3.153.0: "Masukan ke Resep" menjalankan 2–3 AJAX berantai (cek asuransi, cek obat kronis) sebelum baris masuk ->
+    // ditunggu sampai draft berubah ATAU muncul pesan Smartplus (maks 10 dtk), bukan jeda tetap. Pesan penolakan ditutup
+    // otomatis setelah dibaca supaya obat berikutnya tidak tertahan (dulu dokter harus menekan OK).
+    const readAlert = () => {
+      const box = [...document.querySelectorAll(".swal2-popup, .sweet-alert")].find((el) => visible(el));
+      return box ? (box.innerText || "").replace(/\s+/g, " ").replace(/\bOK\b\s*$/, "").trim() : "";
+    };
+    await waitFor(() => readAlert() || (draftBefore !== null && recipeDraftSignature() !== draftBefore), 10000, 150);
+    const alertText = readAlert();
     if (alertText && /melebihi|batas|tidak bisa|tidak dapat|gagal|habis|kosong/i.test(alertText)) {
+      await spCloseSwalWait();
       throw new Error(`Ditolak Smartplus: ${alertText}`);
     }
+    if (alertText) await spCloseSwalWait();
     // v3.49.3: pastikan draft resep benar-benar berubah (sebelumnya dianggap berhasil walau obat tidak masuk).
-    if (draftBefore !== null) {
-      for (let t = 0; t < 10 && recipeDraftSignature() === draftBefore; t++) await recipeSleep(300);
-      if (recipeDraftSignature() === draftBefore) throw new Error("Belum masuk ke draft resep (draft tidak berubah)");
-    }
+    if (draftBefore !== null && recipeDraftSignature() === draftBefore) throw new Error("Belum masuk ke draft resep (draft tidak berubah)");
   }
 
   // Tanda isi draft resep (jumlah baris + teks tabel); null bila draft tidak terbaca (verifikasi dilewati).
@@ -11664,23 +12023,24 @@
   }
 
   async function fillActionRecipe(actionKey, options = {}) {
+    const result = { saved: false, saveFailed: false }; // v3.153.0: dipakai KOMBINASI RESEP (obat oral hanya setelah tindakan tersimpan)
     if (recipeRunning) {
       toast("MASTER TEMPLATE RESEP: proses sebelumnya masih berjalan.");
-      return;
+      return { saveFailed: true };
     }
 
     const action = MASTER_RECIPE_TEMPLATES.TINDAKAN?.children?.[actionKey];
 
     if (!action) {
       toast("MASTER TEMPLATE RESEP: tindakan tidak ditemukan.");
-      return;
+      return { saveFailed: true };
     }
 
     const usiaTh = typeof getPatientAgeYears === "function" ? getPatientAgeYears() : null;
     const peringatan = spTindakanPeringatan(action, usiaTh);
     if (peringatan && !window.confirm(peringatan)) {
       toast(`TINDAKAN ${action.name} dibatalkan (dosis dewasa, pasien anak/lansia).`);
-      return;
+      return { saveFailed: true };
     }
 
     recipeRunning = true;
@@ -11693,13 +12053,13 @@
 
       if (!opened) {
         toast("MASTER TEMPLATE RESEP: buka tab Resep Online terlebih dahulu.");
-        return;
+        return { saveFailed: true };
       }
 
       const recipeRoot = await waitForRecipeDraftRoot(8000, 100);
       if (!recipeRoot) {
         toast(`MASTER TEMPLATE RESEP TINDAKAN: Form Input Resep Baru belum siap untuk ${action.name}.`);
-        return;
+        return { saveFailed: true };
       }
 
       // v3.120.0: paket per BB (kejang anak, loading fenitoin) & nama master yang dicari dulu (diazepam, fenitoin, D40).
@@ -11710,10 +12070,10 @@
           const v = Number(String(window.prompt(`TINDAKAN ${action.name}: BB pasien belum terisi di GADAR. Isi BB (kg):`) || "").replace(",", "."));
           bb = Number.isFinite(v) && v > 0 && v < 300 ? v : null;
         }
-        if (!bb) { toast(`TINDAKAN ${action.name} dibatalkan: BB pasien belum ada.`); return; }
+        if (!bb) { toast(`TINDAKAN ${action.name} dibatalkan: BB pasien belum ada.`); return { saveFailed: true }; }
       }
       const siap = await spTindakanSiapkan(action, { bb, usia: usiaTh, cariMaster: spCariMasterObat });
-      if (siap.error) { toast(`TINDAKAN ${action.name} tidak diisi: ${siap.error}. Isi manual.`); return; }
+      if (siap.error) { toast(`TINDAKAN ${action.name} tidak diisi: ${siap.error}. Isi manual.`); return { saveFailed: true }; }
 
       const seenSet = options.seenSet || null;
       const plan = seenSet ? uniqueRecipeItems(siap.items, seenSet) : { unique: siap.items, skipped: [] };
@@ -11745,17 +12105,39 @@
         toast(
           `TINDAKAN ${action.name}: ${success}/${plan.unique.length} item masuk. Duplikasi dilewati: ${plan.skipped.length}. Gagal ${errors.length}. Simpan manual.`
         );
+        result.saveFailed = options.autoSave !== false;
       } else if (options.autoSave !== false) {
-        await recipeSleep(500);
+        await recipeSleep(300);
         // v3.3.0: HANYA tombol simpan Resep Online (#butt_simpan_resep).
         // Dulu clickVisibleText(["Simpan"]) bisa mengenai tombol Simpan form lain di halaman IGD.
+        // v3.153.0 (laporan dokter 16 Nov 2026: resep tindakan sering belum tersimpan, obat oral lanjut ke form lama):
+        // Simpan Smartplus = cek AJAX lalu POST, kotak Resep Online diganti jawaban server. Ditunggu sampai kotak diganti
+        // dan ID resep terbesar di riwayat resep kunjungan ini bertambah (bukti tersimpan), lalu form baru siap.
+        const noreg = typeof getCurrentIgdNoreg === "function" ? getCurrentIgdNoreg() : "";
+        const beforeId = noreg ? await spResepMaxId(noreg).catch(() => null) : null;
+        const oldDraft = document.getElementById("tbody_draft");
         const saved = clickRecipeSaveButtonOnly();
         if (saved) {
-          await recipeSleep(700);
-          toast(
-            `TINDAKAN ${action.name} selesai: ${success} item masuk, duplikasi dilewati: ${plan.skipped.length}, lalu Simpan ditekan.`
-          );
+          const swalText = () => { const b = [...document.querySelectorAll(".swal2-popup, .sweet-alert")].find(visible); return b ? (b.innerText || "").replace(/\s+/g, " ").replace(/\bOK\b\s*$/, "").trim() : ""; };
+          await waitFor(() => (oldDraft && !oldDraft.isConnected) || swalText(), 20000, 200);
+          const msg = swalText();
+          let afterId = null;
+          if (noreg && beforeId != null) {
+            for (let t = 0; t < 5 && !(afterId > beforeId); t++) { await recipeSleep(t ? 1200 : 300); afterId = await spResepMaxId(noreg).catch(() => null); }
+          }
+          const confirmed = beforeId != null && afterId > beforeId;
+          if (msg) spCloseSwal();
+          // Form Resep Online baru (kosong) siap untuk obat berikutnya.
+          await waitFor(() => { const o = document.getElementById("obat"), a = document.getElementById("addrow"); return o && a && visible(o) && document.getElementById("tbody_draft") !== oldDraft; }, 10000, 150);
+          if (confirmed) {
+            toast(`TINDAKAN ${action.name} TERSIMPAN: ${success} item, duplikasi dilewati: ${plan.skipped.length}.`);
+          } else {
+            result.saveFailed = true;
+            toast(`⚠️ TINDAKAN ${action.name}: Simpan ditekan tetapi belum terbukti tersimpan${msg ? ` (Smartplus: ${msg})` : ""}. Cek Riwayat Resep — JANGAN simpan ulang sebelum dicek.`);
+          }
+          result.saved = confirmed;
         } else {
+          result.saveFailed = true;
           toast(
             `TINDAKAN ${action.name}: ${success} item masuk, duplikasi dilewati: ${plan.skipped.length}, tombol Simpan tidak ditemukan. Simpan manual.`
           );
@@ -11767,6 +12149,7 @@
       console.log("Berhasil:", success);
       console.log("Gagal:", errors);
       console.groupEnd();
+      return result;
 
     } finally {
       recipeRunning = false;
@@ -11844,6 +12227,13 @@
     return m && +m[1] <= 130 ? +m[1] : null;
   }
 
+
+  // v3.153.0: ID resep terbesar di riwayat resep kunjungan ini (load_resep_detail('id')) — bukti resep baru tersimpan.
+  async function spResepMaxId(noreg) {
+    const h = await spFetch(`${spSmartplusBase()}/soap_eresep/riwayat_resep/${encodeURIComponent(noreg)}`, { credentials: "same-origin" }).then((r) => r.text());
+    const ids = [...h.matchAll(/load_resep_detail\('(\d+)'\)/g)].map((m) => Number(m[1]));
+    return ids.length ? Math.max(...ids) : 0;
+  }
   function getPatientAgeYears(preferredRoot = null) {
     try {
       // Pada Form SP Laboratorium, umur berada pada field/input tepat di area
@@ -13483,13 +13873,21 @@
 
       const errors = [];
       let actionDone = 0;
+      let tindakanBlocked = false;
       // 1) TINDAKAN DAHULU: tiap tindakan diselesaikan lalu disimpan (#butt_simpan_resep, izin dokter v3.3.0).
       for (let actionIndex = 0; actionIndex < actions.length; actionIndex++) {
         if (isRecipeStopRequested()) break;
         const actionKey = actions[actionIndex];
         updateRecipeProgress(`KOMBINASI RESEP: tindakan ${actionIndex + 1}/${actions.length}`, actionIndex, actions.length, MASTER_RECIPE_TEMPLATES.TINDAKAN?.children?.[actionKey]?.name || actionKey);
         try {
-          await fillActionRecipe(actionKey, { autoSave: true, seenSet, internalPackage: true, bb: ctx.weight > 0 ? ctx.weight : null });
+          const r = await fillActionRecipe(actionKey, { autoSave: true, seenSet, internalPackage: true, bb: ctx.weight > 0 ? ctx.weight : null });
+          // v3.153.0: tindakan yang belum terbukti tersimpan -> obat oral TIDAK dilanjutkan (dulu obat masuk ke form lama
+          // yang sedang disimpan/diganti server sehingga hilang atau ikut tersimpan dobel).
+          if (r && r.saveFailed) {
+            errors.push(`Tindakan ${MASTER_RECIPE_TEMPLATES.TINDAKAN?.children?.[actionKey]?.name || actionKey}: belum tersimpan — obat oral belum dimasukkan`);
+            tindakanBlocked = true;
+            break;
+          }
           actionDone++;
         } catch (err) {
           console.error('[KOMBINASI RESEP] tindakan', actionKey, err);
@@ -13500,7 +13898,7 @@
 
       // 2) OBAT terpilih sebagai draft (tanpa Simpan).
       let res = { success: 0, skipped: 0, errors: [] };
-      if (!isRecipeStopRequested() && (regularItems.length || racikanJobs.length)) {
+      if (!isRecipeStopRequested() && !tindakanBlocked && (regularItems.length || racikanJobs.length)) {
         try {
           res = await runRecipePlan(regularItems, racikanJobs, {
             seenSet, age: ctx.ageYears, ageYears: ctx.ageYears, ageDisplay: ctx.ageDisplay, ageMonths: ctx.ageMonths,
@@ -15708,7 +16106,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
 
         <!-- v3.115.0 (permintaan dokter 20 Okt 2026): pasien IGD 24 jam yang dapat kamar & belum ada advis di Rencana. -->
         <button type="button" data-cek-advis="1">
-          🛏 CEK ADVIS PASIEN DAPAT KAMAR 12 JAM
+          🛏 CEK ADVIS PASIEN DAPAT KAMAR 18 JAM
         </button>
 
         <!-- v3.90.0 (pilihan dokter 13 Okt 2026): saran diagnosis/TTV/pemfis untuk form GADAR yang terbuka. -->
@@ -15728,7 +16126,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.152.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.153.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -16546,38 +16944,67 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
 
   async function openAssessmentGadarForTemplate() {
     if (spIsDraftGadarPage()) return openDraftGadarForTemplate();
-    toast('AUTO ASGADAR: membuka Assesment GADAR...');
-    await ensureMainEmrTab();
+    // v3.153.0 (laporan dokter 16 Nov 2026): form GADAR SUDAH terbuka (dokter menekan TAMBAH / membuka GADAR lama)
+    // -> form itu yang diisi. Dulu tab & TAMBAH ditekan lagi: TAMBAH mereset form (isian & mode edit hilang, GADAR lama
+    // malah tersimpan sebagai GADAR baru) dan form bisa tertutup/macet.
+    const gm = document.getElementById("modal_form_gadar");
+    if (gm && gm.classList.contains("show")) {
+      await spParkModals(["modal_form_gadar"]); // form lain (Order Lab/Radiologi) yang ikut terbuka ditutup
+      const content = gm.querySelector(".modal-content") || gm;
+      if (!visible(content)) {
+        // Form GADAR "terbuka" tapi tersembunyi karena sub-tab lain/Riwayat Kunjungan aktif -> tampilkan sub-tabnya
+        // (tab Bootstrap biasa, isi tidak dimuat ulang).
+        await ensureMainEmrTab();
+        const tab = document.getElementById("new_gadar");
+        if (tab && !tab.classList.contains("active")) tab.click();
+        if (!(await waitFor(() => visible(content), 3000, 80))) spRevealModalHost(gm);
+      }
+      if (await waitFor(() => visible(content), 2000, 80)) {
+        toast("AUTO ASGADAR: memakai form Assesment GADAR yang sedang terbuka.");
+        await recipeSleep(200);
+        return true;
+      }
+    }
 
-    // Sama seperti AUTO LAB -> clickVisibleText(["Order Lab"]).
-    // Ejaan tombol pada Smartplus screenshot: "Assesment GADAR".
+    toast('AUTO ASGADAR: membuka Assesment GADAR...');
+    await spParkModals(); // form lain yang terbuka (Order Lab/Radiologi/Resep racikan) -> latar gelap tidak tertinggal
+    // v3.153.0: Riwayat Kunjungan / Hasil Lab / Hasil Rad / Riwayat Resep yang sedang dibuka -> kembali ke E-RAWAT DARURAT
+    // dulu dan dipastikan tampil (dulu langsung lanjut walau tab belum pindah -> "tombol + TAMBAH tidak ditemukan").
+    if (!(await ensureMainEmrTab()) && document.querySelector('a[href="#planning"]')) {
+      await recipeSleep(400);
+      await ensureMainEmrTab();
+    }
+
     // v3.52.0 (audit): utamakan tab tetap #new_gadar (peta DOM e-IGD), cadangan teks.
+    // v3.153.0: tab yang sudah aktif tidak ditekan lagi.
     const gadarTab = document.getElementById("new_gadar");
-    if (gadarTab && visible(gadarTab)) gadarTab.click();
+    if (gadarTab && visible(gadarTab)) { if (!gadarTab.classList.contains("active")) gadarTab.click(); }
     else if (!clickVisibleText(["Assesment GADAR", "Assessment GADAR"])) {
       toast('AUTO ASGADAR: tombol Assesment GADAR tidak ditemukan.');
       return false;
     }
 
-    // Beri waktu halaman berpindah/dirender.
-    await recipeSleep(700);
-
     // Pada halaman Assessment GADAR, tombol yang dibutuhkan adalah + TAMBAH.
     // v3.52.0 (audit): utamakan TAMBAH milik Assesment GADAR (onclick add_soap_gadar) — halaman IGD juga punya TAMBAH
-    // Lab/Rad/Rehab; teks saja bisa mengenai tombol lain. Fallback teks lama bila selector tidak ada.
-    let gadarTambah = null;
-    for (let i = 0; i < 20 && !gadarTambah; i++) {
-      gadarTambah = [...document.querySelectorAll('button[onclick*="add_soap_gadar"], a[onclick*="add_soap_gadar"]')].find(visible) || null;
-      if (!gadarTambah) await recipeSleep(100);
+    // Lab/Rad/Rehab; teks saja bisa mengenai tombol lain.
+    // v3.153.0: isi tab (daftar GADAR ±216 KB) dimuat AJAX saat pertama dibuka; dulu ditunggu 2,7 dtk saja -> saat
+    // server lambat "tombol + TAMBAH tidak ditemukan". Kini ditunggu sampai 15 dtk; tab ditekan ulang sekali bila isinya
+    // belum dimuat. Cadangan teks hanya di dalam kotak Assesment GADAR (tidak lagi TAMBAH Lab/Rad).
+    const findTambah = () => [...document.querySelectorAll('button[onclick*="add_soap_gadar"], a[onclick*="add_soap_gadar"]')].find(visible) || null;
+    let gadarTambah = await waitFor(findTambah, 8000, 100);
+    if (!gadarTambah && gadarTab) {
+      const box = document.getElementById("box_gadar");
+      if (box && !box.querySelector('[onclick*="add_soap_gadar"]')) { gadarTab.click(); }
+      gadarTambah = await waitFor(findTambah, 7000, 100);
     }
     if (gadarTambah) gadarTambah.click();
-    else if (!clickVisibleText(["+ TAMBAH", "TAMBAH"])) {
-      toast('AUTO ASGADAR: tombol + TAMBAH tidak ditemukan.');
+    else if (!clickVisibleTextWithin(document.getElementById("box_gadar"), ["+ TAMBAH", "TAMBAH"])) {
+      toast('AUTO ASGADAR: tombol + TAMBAH Assesment GADAR belum muncul (Smartplus lambat) — coba lagi.');
       return false;
     }
 
     // Tunggu form/modal Assessment Gawat Darurat benar-benar muncul.
-    const root = await waitForAssessmentGadarModal(8000, 100);
+    const root = await waitForAssessmentGadarModal(10000, 100);
     if (!root) {
       toast('AUTO ASGADAR: form Assessment Gawat Darurat belum muncul.');
       return false;
@@ -18608,10 +19035,10 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       const rows = [...new DOMParser().parseFromString(html, "text/html").querySelectorAll("tr")].slice(1)
         .filter((tr) => tr.cells.length >= 6 && tr.textContent.trim());
       if (rows.length) return "sudah ada order lab kunjungan ini";
-      return runAutoLabFebris({ diagnosis: dx, beforeSave });
+      return runAutoLabFebris({ diagnosis: dx, beforeSave, noRestore: true });
     }
-    if (key === "LAB_SEVERE") return runAutoLabSevere({ diagnosis: dx, beforeSave });
-    return runAutoRadOrder(key, { diagnosis: dx, beforeSave });
+    if (key === "LAB_SEVERE") return runAutoLabSevere({ diagnosis: dx, beforeSave, noRestore: true });
+    return runAutoRadOrder(key, { diagnosis: dx, beforeSave, noRestore: true });
   }
 
   async function spAsistenRunJob(job) {
@@ -20270,6 +20697,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     spResumePendingAsgadar().catch((err) => console.warn("[ASGADAR] lanjutan gagal", err));
     spResumePendingPaketKonsul().catch((err) => console.warn("[PAKET KONSUL] lanjutan gagal", err));
     spResumeAsistenJob().catch((err) => console.warn("[ASISTEN] lanjutan gagal", err));
+    spResumeParkedGadar().catch((err) => console.warn("[GADAR] pemulihan form gagal", err));
     try { spWaAdvisInit(); } catch (err) { console.warn("[ADVIS WA] gagal dipasang", err); }
     try { spServerGuardInit(); } catch (err) { console.warn("[AUTO ASM] pengaman simpan gagal dipasang", err); }
   }).catch((err) => console.warn("[AUTO ASM] pemeriksaan user gagal", err));
