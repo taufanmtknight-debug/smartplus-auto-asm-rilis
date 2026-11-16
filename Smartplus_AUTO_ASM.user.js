@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.156.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.157.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.156.0
-// @description  v3.156.0 (laporan dokter 16 Nov 2026): Advis WA — kalimat pembuka pesan ("Assalamu'alikum dokter izin lapor pasien …", "Selamat malam dok, …") tidak lagi ikut terbaca sebagai nama pasien; nama diambil sesudah kata "pasien"/"a.n." sehingga pasien ditemukan di daftar IGD/rawat inap.
+// @version      3.157.0
+// @description  v3.157.0 (laporan dokter 16 Nov 2026: "pasien tidak terdeteksi dari chat" sering muncul): bila pasien advis WA realtime tidak terbaca / tidak cocok, panel ADVIS SPESIALIS kini menampilkan sampai 3 PASIEN PALING MIRIP dengan chat (nama di teks, salah ketik 1 huruf, No.RM) untuk dipilih sekali klik, beserta potongan chat yang dibaca. Pencarian tetap di semua pasien IGD 48 jam + rawat inap.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -65,8 +65,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.156.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.156.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.157.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.157.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -7323,6 +7323,41 @@
     });
     return out;
   }
+  // v3.157.0 (laporan dokter 16 Nov 2026: "pasien tidak terdeteksi dari chat" sering muncul): pasien paling mirip dengan teks
+  // chat. Skor: No.RM di teks (+10); tiap kata nama pasien (≥3 huruf, bukan sapaan/nama umum) yang ada di teks (+3, kata ≥5
+  // huruf) atau (+2); salah ketik 1 huruf pada kata ≥5 huruf (+2). Minimal 2 poin; urut skor lalu daftar asal. Fungsi murni.
+  function spWaLev1(a, b) {
+    if (a === b) return true;
+    if (Math.abs(a.length - b.length) > 1) return false;
+    let i = 0, j = 0, d = 0;
+    while (i < a.length && j < b.length) {
+      if (a[i] === b[j]) { i++; j++; continue; }
+      if (++d > 1) return false;
+      if (a.length > b.length) i++; else if (b.length > a.length) j++; else { i++; j++; }
+    }
+    return d + (a.length - i) + (b.length - j) <= 1;
+  }
+  function spWaSuggestPatients(ctx, list, max = 3) {
+    const T = String(ctx || "").toUpperCase();
+    const words = [...new Set(T.replace(/[^A-Z0-9]+/g, " ").split(" ").filter((w) => w.length >= 3))];
+    const wset = new Set(words);
+    const digits = new Set((T.match(/\d{5,8}/g) || []).map((d) => d.replace(/^0+/, "")));
+    const STOP = /^(TN|NY|NN|AN|BY|SDR|SDRI|NONA|BIN|BINTI|MUHAMMAD|MUHAMAD|MOHAMMAD|MOCH|MOH|MUH|SITI|NUR|NURUL|ABDUL|DAN|DENGAN|PASIEN|DOKTER)$/;
+    const scored = [];
+    (Array.isArray(list) ? list : []).forEach((p, idx) => {
+      const rm = String(p && p.norm || "").replace(/\D/g, "").replace(/^0+/, "");
+      let sc = rm && digits.has(rm) ? 10 : 0;
+      const nw = String(p && p.nama || "").toUpperCase().replace(/,.*$/, "").replace(/[^A-Z]+/g, " ").trim().split(" ").filter((w) => w.length >= 3 && !STOP.test(w));
+      for (const w of nw) {
+        if (wset.has(w)) sc += w.length >= 5 ? 3 : 2;
+        else if (w.length >= 5 && words.some((x) => x.length >= 4 && spWaLev1(w, x))) sc += 2;
+      }
+      if (sc >= 2) scored.push({ p, sc, idx });
+    });
+    scored.sort((a, b) => b.sc - a.sc || a.idx - b.idx);
+    return scored.slice(0, max).map((x) => x.p);
+  }
+
   // v3.145.0 (permintaan dokter 14 Nov 2026): ADVIS WA REALTIME — advis spesialis (kartu tercentang bawaan) dalam mins menit
   // terakhir yang pasiennya terbaca dari kutipan / pesan konsul -> [{ hash, patient, text, chat }] (fungsi murni, diuji).
   // v3.149.0: noPatient = true -> advis yang pasiennya tidak terbaca ikut dikembalikan (patient null; dokter memilih pasien di Smartplus).
@@ -7336,7 +7371,11 @@
       const key = pt ? (String(pt.rm || "").replace(/\D/g, "").replace(/^0+/, "") || String(pt.nama || "").toUpperCase().replace(/[^A-Z]+/g, " ").trim()) : "?";
       let h = 0;
       for (const ch of key + "|" + text) h = (h * 31 + ch.charCodeAt(0)) | 0;
-      out.push({ hash: "h" + (h >>> 0).toString(36), patient: pt, text, chat: String(chat || "").slice(0, 60) });
+      // v3.157.0: potongan chat di sekitar advis (8 pesan sebelumnya + advis) untuk menebak pasien di Smartplus bila
+      // pasien tidak terbaca / tidak cocok (ditampilkan + pasien paling mirip untuk dipilih sekali klik).
+      const lo = Math.max(0, Math.min(...c.idxs) - 8), hi = Math.max(...c.idxs);
+      const ctx = msgs.slice(lo, hi + 1).map((m) => [m.quote, m.text].filter(Boolean).join(" ")).join("\n").replace(/\s+\n/g, "\n").slice(-1500);
+      out.push({ hash: "h" + (h >>> 0).toString(36), patient: pt, text, chat: String(chat || "").slice(0, 60), ctx });
     });
     return out;
   }
@@ -8311,7 +8350,7 @@
     // v3.149.0: advis yang pasiennya tidak terbaca dari chat tetap dibuka — dokter memilih pasien di panel.
     const pt = v.patient || { nama: "", rm: "" };
     const label = v.patient ? (pt.label || [pt.nama, pt.rm].filter(Boolean).join(" / ")) : "pasien belum terbaca — pilih pasien";
-    runAdvisSpesialis({ waQueue: [{ patient: v.patient ? { ...pt, label } : null, texts: [v.text] }], realtime: true });
+    runAdvisSpesialis({ waQueue: [{ patient: v.patient ? { ...pt, label } : null, texts: [v.text], ctx: v.ctx || "", chat: v.chat || "" }], realtime: true });
     // v3.146.0: tab dibuka di latar -> judul tab memuat nama pasien; saat tab dibuka, tombol Simpan difokus lagi (Enter = simpan).
     document.title = "📩 Advis " + (pt.nama || label) + " · " + document.title;
     document.addEventListener("visibilitychange", () => {
@@ -8520,7 +8559,7 @@
     // v3.78.0: ANTREAN beberapa pasien [{ patient, texts }]; satu pasien per giliran -> Simpan -> otomatis ke pasien berikutnya.
     // Advis yang sudah tertulis di Rencana dilewati (spWaMergeAdvis).
     const waBox = body.querySelector(".sp-adv-wa"), qBox = body.querySelector(".sp-adv-q");
-    const waQueue = (opts.waQueue || []).map((g) => ({ patient: g.patient || null, texts: [...g.texts], done: false }));
+    const waQueue = (opts.waQueue || []).map((g) => ({ patient: g.patient || null, texts: [...g.texts], ctx: g.ctx || "", chat: g.chat || "", done: false }));
     let waCur = -1, waPt = null, waAdds = [];
     const applyWa = () => {
       if (!waAdds.length) return;
@@ -8575,6 +8614,34 @@
       waBox.textContent = !waPt ? "📩 Advis WA — pasien tidak terdeteksi dari chat: ketik / pilih pasien yang tepat." :
         loading ? `📩 Advis WA untuk ${waPt.label} — ⏳ mencari pasien di daftar IGD...` :
           `📩 Advis WA untuk ${waPt.label} — pasien belum bisa dipastikan otomatis (tidak ada / lebih dari satu di daftar IGD 48 jam & rawat inap): ketik / pilih pasien yang tepat.`;
+      // v3.157.0: pasien paling mirip dengan chat (nama / salah ketik / No.RM) — pilih sekali klik — + potongan chat yang dibaca.
+      const sug = patients ? spWaSuggestPatients([waPt && waPt.nama, waPt && waPt.rm, q.ctx, ...(q.texts || [])].filter(Boolean).join("\n"), patients) : [];
+      if (sug.length) {
+        const h = document.createElement("div");
+        h.style.cssText = "margin-top:6px;font-weight:600";
+        h.textContent = "Pasien paling mirip dengan chat — klik untuk memilih:";
+        waBox.append(h);
+        sug.forEach((p) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "sp-adv-sug";
+          b.style.cssText = "display:block;width:100%;text-align:left;margin:3px 0;padding:6px 8px;border:1px solid #e91e63;border-radius:6px;background:#fff;color:#880e4f;cursor:pointer;font:600 12px Arial,sans-serif";
+          b.textContent = `👤 ${p.nama} — ${p.norm || ""}${p.reg ? " · " + p.reg : ""}${p.dok ? " · " + p.dok : ""}`;
+          b.onclick = () => choose(p);
+          waBox.append(b);
+        });
+      }
+      if (q.ctx) {
+        const c = document.createElement("details");
+        c.style.cssText = "margin-top:6px;color:#555";
+        const sm = document.createElement("summary");
+        sm.textContent = `Potongan chat yang dibaca${q.chat ? " (" + q.chat + ")" : ""}`;
+        const pre = document.createElement("div");
+        pre.style.cssText = "white-space:pre-wrap;font:11px/1.35 Arial,sans-serif;max-height:140px;overflow:auto;background:#fff;border-radius:4px;padding:4px;margin-top:3px";
+        pre.textContent = q.ctx.slice(-700);
+        c.append(sm, pre);
+        waBox.append(c);
+      }
       if (pq.value) setTimeout(() => pq.focus(), 0);
     };
     const nextQ = () => waQueue.findIndex((q) => !q.done);
@@ -8583,7 +8650,7 @@
         const k = spWaPatientKey(g.patient);
         const q = g.patient ? waQueue.find((x) => !x.done && spWaPatientKey(x.patient) === k) : null;
         if (q) { g.texts.forEach((t) => q.texts.push(t)); if (waQueue.indexOf(q) === waCur) applyWa(); }
-        else waQueue.push({ patient: g.patient || null, texts: [...g.texts], done: false });
+        else waQueue.push({ patient: g.patient || null, texts: [...g.texts], ctx: g.ctx || "", chat: g.chat || "", done: false });
       });
       renderQueue();
       if (waCur < 0 || waQueue[waCur].done) { const n = nextQ(); if (n >= 0) selectQ(n); }
@@ -16188,7 +16255,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.156.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.157.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
