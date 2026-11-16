@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.153.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.154.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.153.0
-// @description  v3.153.0 (permintaan dokter 16 Nov 2026, diuji di Chrome PC dokter): ASGADAR, AUTO PENUNJANG, KOMBINASI RESEP & AUTO IGD tidak lagi macet — form yang sedang terbuka dipakai (ASGADAR tidak menekan TAMBAH lagi) atau diparkir lalu dibuka kembali saat pindah tab (dulu latar gelap tertinggal); tombol TAMBAH & form ditunggu sampai Smartplus selesai memuat; obat resep dipilih langsung dari daftar obat Smartplus sehingga jenis obat & ID obat selalu terisi; pesan Smartplus ditutup otomatis; resep tindakan dipastikan tersimpan sebelum obat oral dilanjutkan.
+// @version      3.154.0
+// @description  v3.154.0 (laporan dokter 16 Nov 2026: Advis WA realtime tidak muncul padahal dr. Taufan sudah login Smartplus): cek login dari WhatsApp Web bisa tanpa sesi Smartplus sehingga selalu terbaca "belum login" dan menyembunyikan Advis WA. Kini status dari tab Smartplus (pasti) diutamakan; hasil "belum login" dari WA hanya dipakai bila tidak ada tab Smartplus yang mengecek 10 menit terakhir. Bila terkunci, tombol Advis WA tetap tampil abu-abu 🔒 dengan keterangannya (klik = cek ulang), tidak hilang tanpa keterangan.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -48,16 +48,11 @@
       if (document.body) runWaAdvisBridge(); else document.addEventListener("DOMContentLoaded", runWaAdvisBridge, { once: true });
       runWaKonsulOpen(); // v3.118.0: tab WA ini membuka chat konsul yang diminta tab Smartplus (tidak pernah mengirim)
     };
-    // v3.151.0: kunci user — hanya bila pemeriksaan terakhir di Smartplus menemukan dr. Muhamad Taufan Kurniawan login.
+    // v3.151.0: kunci user. v3.154.0 (laporan dokter 16 Nov 2026: Advis WA tidak muncul padahal dr. Taufan login):
+    // jembatan WA selalu dipasang; bila login Smartplus belum terbukti dr. Taufan, tombol tampil abu-abu dengan
+    // keterangannya (klik = cek ulang) dan semua fitur Advis WA tetap mati (lihat ensureBtn/rtTick di 14_advis_wa.js).
     spUserPollWa(); // v3.152.0: cek berkala siapa yang login Smartplus
-    if (spUserWaOk()) spWaStart();
-    else if (typeof GM_addValueChangeListener === "function") {
-      const id = GM_addValueChangeListener("sp_user_ok_v1", (k, o, v) => {
-        if (!v || !v.ok) return;
-        try { GM_removeValueChangeListener(id); } catch (_) {}
-        spWaStart();
-      });
-    }
+    spWaStart();
     return;
   }
   if (!isSmartplusPage()) return;
@@ -70,8 +65,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.153.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.153.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.154.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.154.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -160,11 +155,17 @@
       return t || null;
     } catch (_) { return null; }
   }
-  function spUserStoredOk() {
-    try { const s = typeof GM_getValue === "function" ? GM_getValue("sp_user_ok_v1", null) : null; return !!(s && s.ok); } catch (_) { return false; }
+  // v3.154.0: {ok, ts, src: "sp" (tab Smartplus, sama asal = pasti) | "wa" (dari WhatsApp Web), why, spTs: cek terakhir tab Smartplus}.
+  function spUserState() {
+    try { return (typeof GM_getValue === "function" && GM_getValue("sp_user_ok_v1", null)) || null; } catch (_) { return null; }
   }
-  function spUserStore(ok) {
-    try { if (typeof GM_setValue === "function") GM_setValue("sp_user_ok_v1", { ok: !!ok, ts: Date.now() }); } catch (_) {}
+  function spUserStoredOk() { const s = spUserState(); return !!(s && s.ok); }
+  function spUserStore(ok, src = "sp", why = "") {
+    try {
+      if (typeof GM_setValue !== "function") return;
+      const prev = spUserState() || {}, now = Date.now();
+      GM_setValue("sp_user_ok_v1", { ok: !!ok, ts: now, src, why, spTs: src === "sp" ? now : (prev.spTs || 0) });
+    } catch (_) {}
   }
   // Promise<boolean>: boleh berjalan di halaman Smartplus ini?
   async function spUserCheck(waitMs = 8000) {
@@ -172,7 +173,7 @@
     const t0 = Date.now();
     for (;;) {
       const n = spUserLoginName();
-      if (n) { const ok = spUserIsDoctor(n); spUserStore(ok); return ok; }
+      if (n) { const ok = spUserIsDoctor(n); spUserStore(ok, "sp", ok ? "" : "login Smartplus: " + n); return ok; }
       if (Date.now() - t0 >= waitMs) break;
       await new Promise((r) => setTimeout(r, 250));
     }
@@ -191,47 +192,63 @@
   // melepas tombol AUTO ASM, sampai dr. Muhamad Taufan Kurniawan login lagi. Beranda Smartplus ringan (±15 KB, ±0,02 dtk)
   // dan memuat nama login di sidebar; sesi habis = dialihkan ke /auth/login (ada kolom kata sandi).
   const SP_USER_POLL_MS = 120000;
-  // Hasil membaca HTML beranda: true/false, atau null bila tidak bisa dipastikan (gangguan jaringan / halaman lain).
-  function spUserFromHtml(html, finalUrl) {
+  // Hasil membaca HTML beranda: {ok: true/false/null, login: halaman login?, name}. null = tidak bisa dipastikan.
+  function spUserHtmlInfo(html, finalUrl) {
     const t = String(html || "");
-    if (/\/auth\/login/i.test(String(finalUrl || "")) || /<input[^>]+type=["']?password/i.test(t)) return false;
+    if (/\/auth\/login/i.test(String(finalUrl || "")) || /<input[^>]+type=["']?password/i.test(t)) return { ok: false, login: true, name: "" };
     const m = t.match(/<li[^>]*class=["'][^"']*\bnav-label\b[^"']*["'][^>]*>([\s\S]*?)<\/li>/i);
-    if (!m) return null;
-    const name = m[1].replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").trim();
-    return name ? spUserIsDoctor(name) : null;
+    const name = m ? m[1].replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim() : "";
+    return { ok: name ? spUserIsDoctor(name) : null, login: false, name };
   }
-  function spUserStoredTs() {
-    try { const s = typeof GM_getValue === "function" ? GM_getValue("sp_user_ok_v1", null) : null; return (s && s.ts) || 0; } catch (_) { return 0; }
-  }
-  // Tab Smartplus: cek beranda (sama asal). onChange(ok) dipanggil bila hasilnya pasti.
+  function spUserFromHtml(html, finalUrl) { return spUserHtmlInfo(html, finalUrl).ok; }
+  // Tab Smartplus: cek beranda (sama asal) tiap 2 menit. onChange(ok) dipanggil bila hasilnya pasti.
+  // v3.154.0 (laporan dokter 16 Nov 2026: Advis WA tidak muncul padahal dr. Taufan login): hasil dari WhatsApp Web TIDAK
+  // lagi dipakai tab Smartplus (dulu hasil WA yang salah ikut melepas tombol AUTO ASM). Hanya hasil tab Smartplus lain.
   function spUserPollSmartplus(base, onChange) {
     if (!spUserLockOn()) return;
     const tick = async () => {
-      if (Date.now() - spUserStoredTs() < SP_USER_POLL_MS * 0.75) { onChange(spUserStoredOk()); return; } // tab lain/WA baru mengecek
+      const s = spUserState();
+      if (s && s.src === "sp" && Date.now() - (s.ts || 0) < SP_USER_POLL_MS * 0.75) { onChange(!!s.ok); return; } // tab Smartplus lain baru mengecek
       try {
         const r = await fetch(base + "/", { credentials: "same-origin", cache: "no-store" });
         const ok = spUserFromHtml(await r.text(), r.url);
         if (ok === null) return;
-        spUserStore(ok);
+        spUserStore(ok, "sp", ok ? "" : "logout / user lain");
         onChange(ok);
       } catch (_) { /* jaringan putus: biarkan hasil terakhir */ }
     };
     setInterval(tick, SP_USER_POLL_MS);
   }
   // WhatsApp Web: cek beranda Smartplus lewat GM_xmlhttpRequest (alamat dari GM "sp_smartplus_base_v1", tidak ditulis di script).
+  // v3.154.0: permintaan dari ekstensi bisa tanpa cookie sesi Smartplus -> selalu tampak "halaman login" walau dokter login
+  // (penyebab Advis WA hilang). Kini hasil "halaman login" dari WA hanya dipakai bila TIDAK ada tab Smartplus yang mengecek
+  // 10 menit terakhir; nama user lain = pasti (dipakai); nama dr. Taufan = pasti (dipakai).
+  function spUserPollWaNow(done) {
+    if (!spUserLockOn() || typeof GM_xmlhttpRequest !== "function" || typeof GM_getValue !== "function") { if (done) done(null); return; }
+    let base = "";
+    try { base = GM_getValue("sp_smartplus_base_v1", "") || ""; } catch (_) {}
+    if (!/^https?:\/\//i.test(base)) { if (done) done(null); return; }
+    const fin = (v) => { if (done) { try { done(v); } catch (_) {} } };
+    try {
+      GM_xmlhttpRequest({
+        method: "GET", url: base + "/", timeout: 20000,
+        onload: (r) => {
+          const info = spUserHtmlInfo(r.responseText, r.finalUrl);
+          if (info.ok === true) spUserStore(true, "wa");
+          else if (info.ok === false && !info.login) spUserStore(false, "wa", "login Smartplus: " + info.name);
+          else if (info.ok === false && Date.now() - ((spUserState() || {}).spTs || 0) > 600000) spUserStore(false, "wa", "Smartplus belum login");
+          fin(info);
+        },
+        onerror: () => fin(null), ontimeout: () => fin(null),
+      });
+    } catch (_) { fin(null); }
+  }
   function spUserPollWa() {
-    if (!spUserLockOn() || typeof GM_xmlhttpRequest !== "function" || typeof GM_getValue !== "function") return;
+    if (!spUserLockOn()) return;
     const tick = () => {
-      let base = "";
-      try { base = GM_getValue("sp_smartplus_base_v1", "") || ""; } catch (_) {}
-      if (!/^https?:\/\//i.test(base)) return;
-      if (Date.now() - spUserStoredTs() < SP_USER_POLL_MS * 0.75) return;
-      try {
-        GM_xmlhttpRequest({
-          method: "GET", url: base + "/", timeout: 20000,
-          onload: (r) => { const ok = spUserFromHtml(r.responseText, r.finalUrl); if (ok !== null) spUserStore(ok); },
-        });
-      } catch (_) {}
+      const s = spUserState();
+      if (s && Date.now() - (s.ts || 0) < SP_USER_POLL_MS * 0.75) return; // tab Smartplus baru mengecek
+      spUserPollWaNow();
     };
     setTimeout(tick, 5000);
     setInterval(tick, SP_USER_POLL_MS);
@@ -7828,10 +7845,12 @@
     function ensureBtn() {
       const inChat = !!document.querySelector("#main");
       let b = document.getElementById(BTN);
-      // v3.152.0: logout / bukan dr. Taufan di Smartplus -> tombol & panel Advis WA disembunyikan (fitur mati).
+      // v3.152.0: logout / bukan dr. Taufan di Smartplus -> fitur Advis WA mati.
+      // v3.154.0: tombol TIDAK disembunyikan lagi — tampil abu-abu "🔒" dengan keterangan (klik = cek ulang login), supaya
+      // dokter tahu sebabnya. Panel Advis lama ditutup.
       const userOk = spUserWaOk();
       if (!userOk) { const p = document.getElementById(PANEL); if (p) p.remove(); }
-      if (!inChat || !userOk) { if (b) b.style.display = "none"; return; }
+      if (!inChat) { if (b) b.style.display = "none"; return; }
       if (!b) {
         // v3.129.0 (dokter 12 Nov 2026): dulu di kanan bawah menutupi kolom ketik pesan -> bawaan di KANAN ATAS (di bawah
         // judul chat) dan bisa digeser; posisi diingat (localStorage web.whatsapp.com). Geser > 6px tidak memicu klik.
@@ -7847,7 +7866,7 @@
           const inMain = s && s.rangeCount && document.querySelector("#main")?.contains(s.getRangeAt(0).commonAncestorContainer);
           pickedSel = inMain ? String(s).trim() : "";
         });
-        b.addEventListener("click", (e) => { if (e.altKey) { openPanel(); return; } rtToggle(); });
+        b.addEventListener("click", (e) => { if (!spUserWaOk()) { lockedClick(); return; } if (e.altKey) { openPanel(); return; } rtToggle(); });
         document.body.appendChild(b);
       }
       rtPaint(b);
@@ -8073,9 +8092,37 @@
     let rtBusy = false, lastUser = Date.now();
     ["mousedown", "keydown", "wheel", "touchstart"].forEach((t) => document.addEventListener(t, (e) => { if (e.isTrusted) lastUser = Date.now(); }, true));
     const rtState = () => { try { return GM_getValue(RT_ON, null) || null; } catch (_) { return null; } };
+    // v3.154.0: keterangan tombol saat Advis WA terkunci (login Smartplus belum terbukti dr. Taufan).
+    function lockedInfo() {
+      const st = spUserState() || {};
+      const jam = st.ts ? new Date(st.ts).toTimeString().slice(0, 5) : "";
+      const why = st.why || (st.ts ? "Smartplus belum login dr. Taufan" : "belum ada tab Smartplus yang dibuka");
+      return `🔒 Advis WA nonaktif — ${why}${jam ? " (cek " + jam + ")" : ""}. Buka/login Smartplus sebagai dr. Muhamad Taufan Kurniawan; klik tombol ini untuk cek ulang.`;
+    }
+    function lockedClick() {
+      const b = document.getElementById(BTN);
+      if (b) b.textContent = "🔒 Mengecek login Smartplus…";
+      spUserPollWaNow((info) => {
+        rtPaint();
+        if (spUserWaOk()) return;
+        const msg = info && info.login
+          ? "Smartplus terbaca BELUM LOGIN dari WhatsApp. Bila dr. Taufan sudah login, buka/muat ulang satu tab Smartplus — Advis WA aktif sendiri dalam beberapa detik."
+          : info && info.name ? `Yang login di Smartplus: ${info.name}. Advis WA hanya untuk dr. Muhamad Taufan Kurniawan.`
+          : "Login Smartplus belum bisa dicek dari WhatsApp. Buka/muat ulang satu tab Smartplus (login dr. Taufan) — Advis WA aktif sendiri.";
+        alert(msg);
+      });
+    }
     function rtPaint(b) {
       b = b || document.getElementById(BTN);
       if (!b) return;
+      if (!spUserWaOk()) {
+        const t = "🔒 Advis WA: login Smartplus dr. Taufan";
+        if (b.textContent !== t) b.textContent = t;
+        b.style.background = "#9e9e9e";
+        b.title = lockedInfo();
+        return;
+      }
+      if (/^🔒/.test(b.title || "")) b.title = "Advis WA realtime: saat ON, balasan advis spesialis untuk pasien di chat medis langsung dibuka di tab Smartplus baru (tekan Enter untuk menyimpan). Alt+klik = panel Advis → ASGADAR lama.";
       const on = rtState();
       const t = on ? "📡 Advis WA realtime: ON" : "📡 Advis WA realtime: OFF";
       if (b.textContent !== t) b.textContent = t;
@@ -16126,7 +16173,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.153.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.154.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
