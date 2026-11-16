@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.159.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.160.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.159.0
-// @description  v3.159.0 (foto dokter 16 Nov 2026): resep tindakan — kotak "Resep berhasil dibuat" dari Smartplus tidak lagi menahan proses (pesannya dibaca otomatis, tidak perlu menekan OK) dan dipakai sebagai bukti tersimpan; form Resep Online baru dimuat bila perlu sehingga KOMBINASI langsung lanjut ke obat oral. Advis WA realtime: chat lain diproses setelah 30 dtk WA tidak dipakai (dulu 60 dtk).
+// @version      3.160.0
+// @description  v3.160.0 (foto dokter 16 Nov 2026: kotak "Resep berhasil dibuat" masih muncul & obat oral tidak lanjut): penyebab sebenarnya — Violentmonkey menjalankan AUTO ASM di sandbox, sehingga alert, jQuery, dan fungsi halaman Smartplus tidak tersentuh langsung. Kini semua akses ke halaman lewat unsafeWindow: kotak "Resep berhasil dibuat" dibaca otomatis (tanpa OK), form ditutup/dibuka dengan cara Bootstrap, obat dipilih langsung dari daftar Smartplus; penantian dicek ulang sesudah kotak browser ditutup.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -20,6 +20,7 @@
 // @grant        GM_removeValueChangeListener
 // @grant        GM_openInTab
 // @grant        GM_xmlhttpRequest
+// @grant        unsafeWindow
 // @connect      *
 // ==/UserScript==
 
@@ -65,8 +66,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.159.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.159.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.160.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.160.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -140,6 +141,11 @@
   // ikut terkunci bila yang terakhir login orang lain. Semua fungsi di sini deklarasi (ter-hoist) karena cabang WhatsApp
   // berhenti lebih awal di 00_header_inti.js.
   // =========================================================
+  // v3.160.0: window HALAMAN (bukan sandbox Violentmonkey) — untuk mengganti fungsi milik halaman (mis. alert).
+  function spPageWin() {
+    try { if (typeof unsafeWindow !== "undefined" && unsafeWindow) return unsafeWindow; } catch (_) {}
+    return window;
+  }
   function spUserLockOn() { return true; } // SP_USER_LOCK_ON — tests/uji_e2e.sh membuat salinan uji lama dengan false
   function spUserNameNorm(s) {
     return String(s || "").toUpperCase().replace(/[^A-Z]+/g, " ").replace(/\s+/g, " ").trim();
@@ -4266,6 +4272,9 @@
       try { const v = fn(); if (v) return v; } catch (_) {}
       await recipeSleep(interval);
     }
+    // v3.160.0: dicek sekali lagi di akhir — kotak alert browser menghentikan halaman (waktu tetap berjalan), dulu sesudah OK
+    // ditekan langsung dianggap gagal tanpa melihat keadaan terbaru.
+    try { const v = fn(); if (v) return v; } catch (_) {}
     return null;
   }
 
@@ -4300,8 +4309,8 @@
       if (el.dataset.spPrevStyle === undefined) el.dataset.spPrevStyle = el.getAttribute("style") || "";
       el.style.cssText += ";display:block !important;height:0 !important;min-height:0 !important;overflow:hidden !important;padding:0 !important;margin:0 !important;border:0 !important;";
     });
-    if (hidden.length && window.jQuery) {
-      window.jQuery(modal).one("hidden.bs.modal", () => hidden.forEach((el) => {
+    if (hidden.length && spPageWin().jQuery) {
+      spPageWin().jQuery(modal).one("hidden.bs.modal", () => hidden.forEach((el) => {
         el.setAttribute("style", el.dataset.spPrevStyle || "");
         delete el.dataset.spPrevStyle;
       }));
@@ -4332,7 +4341,7 @@
     const parked = spShownModals().filter((m) => !keepIds.includes(m.id));
     for (const m of parked) {
       try {
-        if (window.jQuery && window.jQuery.fn && window.jQuery.fn.modal) window.jQuery(m).modal("hide");
+        if (spPageWin().jQuery && spPageWin().jQuery.fn && spPageWin().jQuery.fn.modal) spPageWin().jQuery(m).modal("hide");
         else m.classList.remove("show");
       } catch (_) {}
     }
@@ -4386,7 +4395,7 @@
     const tab = document.getElementById("new_gadar");
     if (tab && !tab.classList.contains("active")) tab.click();
     await waitFor(() => { const p = document.getElementById("box_gadar"); return p && visible(p); }, 4000, 80);
-    try { if (window.jQuery && window.jQuery.fn.modal) window.jQuery(m).modal("show"); } catch (_) {}
+    try { if (spPageWin().jQuery && spPageWin().jQuery.fn.modal) spPageWin().jQuery(m).modal("show"); } catch (_) {}
     return !!(await waitFor(() => m.classList.contains("show") && visible(m.querySelector(".modal-content") || m), 4000, 80));
   }
   // Dipakai AUTO PENUNJANG / KOMBINASI sebelum pindah sub-tab. backupForReload: simpan isian GADAR di sessionStorage
@@ -4420,8 +4429,8 @@
     const tab = document.getElementById("new_gadar");
     if (tab) tab.click();
     const m = document.getElementById("modal_form_gadar");
-    if (p.idGadar && typeof window.update_gadar === "function") {
-      window.update_gadar(p.idGadar); // mode edit GADAR yang sama
+    if (p.idGadar && typeof spPageWin().update_gadar === "function") {
+      spPageWin().update_gadar(p.idGadar); // mode edit GADAR yang sama
       await waitFor(() => String((document.querySelector('#form_gadar [name="id_gadar"]') || {}).value || "") === p.idGadar, 8000);
       await recipeSleep(500); // data server terisi dulu, lalu isian dokter yang belum disimpan ditimpakan
     } else {
@@ -4454,8 +4463,8 @@
       await recipeSleep(200);
       return g;
     }
-    if (typeof window.update_gadar === "function") {
-      window.update_gadar(id);
+    if (typeof spPageWin().update_gadar === "function") {
+      spPageWin().update_gadar(id);
       spRevealModalHost(document.getElementById("modal_form_gadar"));
     } else {
       const tab = document.getElementById("new_gadar");
@@ -6235,12 +6244,12 @@
     await waitFor(() => document.getElementById("new_gadar") && document.getElementById(BUTTON_ID), 15000);
     await recipeSleep(800);
     toast("ASGADAR: order lab sudah tersimpan — melanjutkan mengisi Assesment GADAR...");
-    if (p.idGadar && typeof window.update_gadar === "function") {
+    if (p.idGadar && typeof spPageWin().update_gadar === "function") {
       // v3.153.0: GADAR lama yang tadi terbuka dibuka lagi dalam mode edit; fillTemplate memakai form yang terbuka itu.
       await ensureMainEmrTab();
       const tab = document.getElementById("new_gadar");
       if (tab && !tab.classList.contains("active")) tab.click();
-      window.update_gadar(p.idGadar);
+      spPageWin().update_gadar(p.idGadar);
       const gm = document.getElementById("modal_form_gadar");
       await waitFor(() => gm && gm.classList.contains("show") && String((document.querySelector('#form_gadar [name="id_gadar"]') || {}).value || "") === p.idGadar, 8000);
       if (gm && gm.classList.contains("show") && !visible(gm.querySelector(".modal-content") || gm)) spRevealModalHost(gm);
@@ -10991,7 +11000,7 @@
 
   // true = terpilih & terverifikasi; null = cara ini tidak bisa dipakai / tidak ketemu (pakai cara lama).
   async function spAutocompleteDirect(input, query) {
-    const $ = window.jQuery;
+    const $ = spPageWin().jQuery;
     if (!$ || !input) return null;
     let w = null;
     try { w = $(input).data("ui-autocomplete") || $(input).data("autocomplete") || null; } catch (_) { w = null; }
@@ -11036,7 +11045,7 @@
   // v3.153.0: tutup pesan SweetAlert Smartplus yang masih terbuka (tombol OK). true bila ada yang ditutup.
   function spCloseSwal() {
     try {
-      const S = window.Swal || window.swal;
+      const S = spPageWin().Swal || spPageWin().swal;
       if (S && typeof S.isVisible === "function" && S.isVisible() && typeof S.close === "function") { S.close(); return true; }
     } catch (_) {}
     const b = [...document.querySelectorAll(".swal2-confirm, .sweet-alert button.confirm")].find(visible);
@@ -11369,7 +11378,7 @@
       } catch (_) {}
     }
     try { el.click(); fired = true; } catch (_) {}
-    try { if (window.jQuery) window.jQuery(el).trigger("click"); } catch (_) {}
+    try { if (spPageWin().jQuery) spPageWin().jQuery(el).trigger("click"); } catch (_) {}
     return fired;
   }
 
@@ -12276,8 +12285,11 @@
         // yang menghentikan halaman sampai dokter menekan OK -> obat oral tertahan. Selama menyimpan, alert itu ditangkap
         // (pesannya dibaca, tidak perlu menekan OK) lalu dikembalikan seperti semula.
         let alertMsg = "";
-        const origAlert = window.alert;
-        try { window.alert = function (m) { alertMsg = String(m == null ? "" : m); console.log("[AUTO RESEP] pesan Smartplus:", alertMsg); }; } catch (_) {}
+        // v3.160.0 (foto dokter: kotak tetap muncul): Violentmonkey menjalankan script dalam "sandbox" — window.alert milik
+        // halaman hanya bisa diganti lewat unsafeWindow (spPageWin). Dulu yang diganti alert sandbox -> kotak tetap muncul.
+        const PW = spPageWin();
+        const origAlert = PW.alert;
+        try { PW.alert = function (m) { alertMsg = String(m == null ? "" : m); console.log("[AUTO RESEP] pesan Smartplus:", alertMsg); }; } catch (_) {}
         const saved = clickRecipeSaveButtonOnly();
         if (saved) {
           const swalText = () => { const b = [...document.querySelectorAll(".swal2-popup, .sweet-alert")].find(visible); return b ? (b.innerText || "").replace(/\s+/g, " ").replace(/\bOK\b\s*$/, "").trim() : ""; };
@@ -12289,13 +12301,13 @@
             for (let t = 0; t < 5 && !(afterId > beforeId) && !(t && /berhasil/i.test(alertMsg)); t++) { await recipeSleep(t ? 1200 : 300); afterId = await spResepMaxId(noreg).catch(() => null); }
           }
           const confirmed = (beforeId != null && afterId > beforeId) || /berhasil/i.test(alertMsg);
-          try { window.alert = origAlert; } catch (_) {}
+          try { PW.alert = origAlert; } catch (_) {}
           if (swalText()) spCloseSwal();
           // Form Resep Online baru (kosong) siap untuk obat berikutnya.
           const fresh = () => { const o = document.getElementById("obat"), ad = document.getElementById("addrow"); return o && ad && visible(o) && document.getElementById("tbody_draft") !== oldDraft; };
           if (!(await waitFor(fresh, 6000, 150)) && confirmed) {
             // v3.159.0: jawaban Simpan tidak berisi form baru -> isi tab Resep Online dimuat ulang (cache inner_loader dilepas).
-            try { if (window.loader_keys) window.loader_keys["#box_new_eresep"] = false; } catch (_) {}
+            try { if (PW.loader_keys) PW.loader_keys["#box_new_eresep"] = false; } catch (_) {}
             const tab = document.getElementById("a_new_eresep");
             if (tab) tab.click();
             await waitFor(fresh, 10000, 150);
@@ -12308,7 +12320,7 @@
           }
           result.saved = confirmed;
         } else {
-          try { window.alert = origAlert; } catch (_) {}
+          try { PW.alert = origAlert; } catch (_) {}
           result.saveFailed = true;
           toast(
             `TINDAKAN ${action.name}: ${success} item masuk, duplikasi dilewati: ${plan.skipped.length}, tombol Simpan tidak ditemukan. Simpan manual.`
@@ -12608,8 +12620,8 @@
     fire(el);
 
     try {
-      if (window.jQuery) {
-        window.jQuery(el).val(v).trigger("input").trigger("change").trigger("blur");
+      if (spPageWin().jQuery) {
+        spPageWin().jQuery(el).val(v).trigger("input").trigger("change").trigger("blur");
       }
     } catch (_) {}
 
@@ -15999,7 +16011,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       const before = await spMaxResepId(base, ctx.noreg).catch(() => null);
       updateRecipeProgress("RESEP PULANG: menyimpan resep…", items.length, items.length, "");
       // Sama dengan tombol Simpan asli (submit #frm_draft -> handler Smartplus -> POST save_eresep, kotak diganti jawaban).
-      if (btn) btn.click(); else if (window.jQuery) window.jQuery(form).trigger("submit");
+      if (btn) btn.click(); else if (spPageWin().jQuery) spPageWin().jQuery(form).trigger("submit");
       const changed = await waitFor(() => !box.isConnected || !box.querySelector("form#frm_draft") || !box.querySelector("#tbody_draft tr td"), 20000);
       let after = null;
       for (let t = 0; t < 4 && !(after > before); t++) { await recipeSleep(1500); after = await spMaxResepId(base, ctx.noreg).catch(() => null); }
@@ -16298,7 +16310,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.159.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.160.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -20819,7 +20831,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
   function spServerGuardInit() {
     // 1) Semua AJAX halaman Smartplus (tombol Simpan bawaan memakai jQuery).
     const hook = () => {
-      const jq = window.jQuery;
+      const jq = spPageWin().jQuery;
       if (!jq || !jq.fn || jq.__spSgHooked) return !!(jq && jq.__spSgHooked);
       jq.__spSgHooked = true;
       jq(document).ajaxComplete((_e, xhr, s) => {
