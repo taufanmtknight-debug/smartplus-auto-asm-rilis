@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.155.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.156.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.155.0
-// @description  v3.155.0 (laporan dokter 16 Nov 2026: Advis WA tetap tidak muncul setelah update): penyebab sebenarnya ditemukan — sejak v3.152.0 script di WhatsApp Web berhenti total karena error urutan kode (konstanta jeda cek login dipakai sebelum dibuat), sehingga tombol Advis WA tidak muncul sama sekali. Diperbaiki; uji WhatsApp baru memakai script asli dengan kunci user aktif (dulu uji memakai salinan tanpa kunci sehingga error ini lolos).
+// @version      3.156.0
+// @description  v3.156.0 (laporan dokter 16 Nov 2026): Advis WA — kalimat pembuka pesan ("Assalamu'alikum dokter izin lapor pasien …", "Selamat malam dok, …") tidak lagi ikut terbaca sebagai nama pasien; nama diambil sesudah kata "pasien"/"a.n." sehingga pasien ditemukan di daftar IGD/rawat inap.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -65,8 +65,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.155.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.155.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.156.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.156.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -7113,11 +7113,23 @@
   function spWaFindPatients(text) {
     // v3.80.0 (laporan dokter): teks kutipan WA bisa menempel tanpa baris baru ("IGD RSSA CIPONDOH3. NAMA PASIEN, Tn / ...")
     // -> nomor urut pasien diberi baris baru dulu supaya baris pasien terbaca.
-    const t = String(text || "").replace(/\r/g, "").replace(/([^\s\d])(\d{1,2}[.)]\s*[A-Za-z][A-Za-z .'`’-]{2,60}?\s*,\s*(?:Tn|Ny|Nn|An|By|Sdr|Sdri|Nona|Mr|Mrs)\b)/gi, "$1\n$2");
+    const t0 = String(text || "").replace(/\r/g, "").replace(/([^\s\d])(\d{1,2}[.)]\s*[A-Za-z][A-Za-z .'`’-]{2,60}?\s*,\s*(?:Tn|Ny|Nn|An|By|Sdr|Sdri|Nona|Mr|Mrs)\b)/gi, "$1\n$2");
+    // v3.156.0: salam pembuka yang dipisah koma di awal baris ("Assalamualaikum dok, izin konsul pasien X, Tn") dibuang dulu
+    // supaya baris pasien tetap terbaca (bagian "izin konsul pasien" dibersihkan di add()).
+    const t = t0.replace(/^(\s*)(?:ass?alamu\S*|selamat\s+(?:pagi|siang|sore|malam))(?:(?!pasien|\bpx\b|\ban\b)[^,\n]){0,25},\s*/gim, "$1");
     const out = [], seen = new Set();
     const add = (nama, title, rm) => {
       nama = String(nama || "").replace(/[*_~]/g, "").replace(/\s+/g, " ").trim().toUpperCase();
-      if (nama.length < 3 || /^(ADVIS|KELUHAN|RPS|RPD|DIAGNOSIS|TERAPI|ASSALAMUALAIKUM|DOKTER|DR)\b/.test(nama) || seen.has(nama)) return;
+      // v3.156.0 (laporan dokter 16 Nov 2026): kalimat pembuka ikut terbaca sebagai nama ("ASSALAMU'ALIKUM DOKTER IZIN LAPOR
+      // PASIEN AHMAD FATHUL ISLAM, Tn") -> pasien tidak ditemukan. Bila ada kata sapaan/pembuka, nama = teks sesudah
+      // "PASIEN"/"PX"/"A.N."/"ATAS NAMA" terakhir; tanpa kata itu, kata pembuka di depan dibuang.
+      const SAPA = /\b(?:ASS?ALAMU'?\s?[A-Z]*|SELAMAT|PAGI|SIANG|SORE|MALAM|IZIN|IJIN|MOHON|MAAF|LAPOR|KONSUL|KONSULTASI|DOKTER|DOK|DR|YTH|SALAM|MENGINFOKAN|INFO|MELAPORKAN)\b/;
+      if (SAPA.test(nama)) {
+        const k = nama.match(/^.*\b(?:PASIEN|PX|PSN|A\.?\s?N\.?|ATAS NAMA)\s+(.+)$/);
+        if (k) nama = k[1].trim();
+        else nama = nama.replace(new RegExp("^(?:" + SAPA.source + "[\\s,.'!]*)+"), "").trim();
+      }
+      if (nama.length < 3 || /^(?:ASS?ALAMU|IZIN|IJIN|LAPOR|KONSUL|SELAMAT)/.test(nama) || /^(ADVIS|KELUHAN|RPS|RPD|DIAGNOSIS|TERAPI|ASSALAMUALAIKUM|DOKTER|DR)\b/.test(nama) || seen.has(nama)) return;
       seen.add(nama);
       out.push({ nama, title, rm, label: `${nama}${title ? ", " + title : ""}${rm ? " / " + rm : ""}` });
     };
@@ -16176,7 +16188,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.155.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.156.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
