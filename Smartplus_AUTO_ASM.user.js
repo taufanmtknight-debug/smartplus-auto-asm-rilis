@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.162.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.163.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.162.0
-// @description  v3.162.0 (uji Smartplus asli 16 Nov 2026): MULTIPLE CPPT IGD — GCS "0" dari Assesment GADAR (kolom kosong) tidak lagi masuk CPPT; GCS GADAR hanya dipakai bila 3–15 / E-V-M, selain itu vital normal sesuai umur. Diuji di Smartplus asli tanpa Simpan: daftar 92 pasien IGD 24 jam, kartu 3 pasien, form CPPT dokter terbuka normal untuk No.Reg IGD.
+// @version      3.163.0
+// @description  v3.163.0 (permintaan dokter 16 Nov 2026): 🛏 CEK ADVIS PASIEN DAPAT KAMAR — pilihan rentang 6 / 12 / 18 jam di atas panel (bawaan 18, pilihan terakhir diingat); daftar pasien IGD dan 🔎 Cari advis di WhatsApp memakai rentang yang dipilih. 📤 Advis → ASGADAR tetap 18 jam.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -66,8 +66,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.162.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.162.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.163.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.163.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -8092,7 +8092,9 @@
       let titles = [];
       try {
         await waitVisible();
-        say("membaca daftar chat 18 jam terakhir... (jangan klik chat dulu)");
+        // v3.163.0: rentang jam dari 🛏 CEK ADVIS (6/12/18; bawaan 18).
+        const jamCari = [6, 12, 18].includes(Number(v.hours)) ? Number(v.hours) : 18, minsCari = jamCari * 60;
+        say(`membaca daftar chat ${jamCari} jam terakhir... (jangan klik chat dulu)`);
         titles = await recentChats(40);
         // v3.121.1 (permintaan dokter: lebih cepat): chat bernama DPJP pasien dulu, lalu chat konsul/medis; chat lain (keluarga,
         // toko, promo) dilewati; berhenti bila semua pasien sudah dapat advis & chat DPJP sudah dibaca.
@@ -8107,15 +8109,15 @@
           await waitVisible();
           say(`chat ${i + 1}/${titles.length}: ${titles[i]} — ${found.length} advis ditemukan (jangan klik chat dulu)`);
           if (!(await openChat(titles[i]))) continue;
-          await loadHistory(nowMin - 1080 - 30, null); // v3.144.0: 18 jam
+          await loadHistory(nowMin - minsCari - 30, null); // v3.144.0: 18 jam; v3.163.0: 6/12/18 pilihan dokter
           if (snapshot.expanded) { snapshot.expanded = false; await sleep(400); }
           const all = readMsgs();
           scanned.push(titles[i]);
-          spWaAdvisForPatients(all, nowMin, v.patients).forEach((x) => found.push({ ...x, chat: titles[i].slice(0, 60) }));
+          spWaAdvisForPatients(all, nowMin, v.patients, minsCari).forEach((x) => found.push({ ...x, chat: titles[i].slice(0, 60) }));
         }
         await archClose();
         if (start && !sameChat(chatName(), start)) await openChat(start);
-        send(CARI_RES, { items: found, scanned: scanned.length, chats: titles.length, stopped: stop });
+        send(CARI_RES, { items: found, scanned: scanned.length, chats: titles.length, stopped: stop, hours: jamCari });
       } catch (e) {
         send(CARI_RES, { err: String((e && e.message) || e).slice(0, 120), items: found, scanned: scanned.length, chats: titles.length });
       } finally {
@@ -8920,7 +8922,8 @@
 
   // =========================
   // v3.115.0 (permintaan dokter 20 Okt 2026): CEK ADVIS PASIEN DAPAT KAMAR (v3.127.0, dokter 29 Okt 2026: 12 jam, dulu 24;
-  // v3.144.0, dokter 14 Nov 2026: 18 jam).
+  // v3.144.0, dokter 14 Nov 2026: 18 jam; v3.163.0, dokter 16 Nov 2026: pilihan 6 / 12 / 18 jam, bawaan 18, pilihan terakhir
+  // diingat di localStorage `sp-cek-advis-jam`; jendela yang sama dipakai CARI ADVIS DI WA).
   // Pasien IGD 18 jam terakhir yang DAPAT KAMAR = No.Reg (atau No.RM) ada di daftar pasien dirawat e-Ranap (`erm_ranap`),
   // atau status di daftar IGD menyebut rawat inap/MRS. Rencana GADAR terakhir kunjungan ini dibaca (GET saja);
   // SUDAH ADVIS = ada baris pembuka advis/instruksi DPJP (sama dengan PAKET KONSUL RANAP: "Advis dr. X SpY (jam):",
@@ -8967,6 +8970,14 @@
     return { nama, title: "", rm: p.norm || "", label: `${p.nama}${p.norm ? " / " + p.norm : ""}` };
   }
 
+  const SP_CEK_ADVIS_JAM = [6, 12, 18];
+  function spCekAdvisJam() {
+    let v = 18;
+    try { v = Number(localStorage.getItem("sp-cek-advis-jam")) || 18; } catch (_) {}
+    return SP_CEK_ADVIS_JAM.includes(v) ? v : 18;
+  }
+  function spCekAdvisSetJam(v) { try { localStorage.setItem("sp-cek-advis-jam", String(v)); } catch (_) {} }
+
   async function runCekAdvisRanap() {
     const PANEL_ID = "sp-cekadv-panel";
     document.getElementById(PANEL_ID)?.remove();
@@ -8980,14 +8991,15 @@
     spStyleHandle(head);
     const body = document.createElement("div");
     body.innerHTML = `
-      <div style="color:#777;font-size:11px;margin-bottom:6px">Pasien IGD 18 jam terakhir yang ada di daftar rawat inap (e-Ranap). Hanya membaca; advis ditulis & disimpan sendiri lewat ➕ Tambah advis.</div>
-      <div class="sp-ca-msg" style="margin:4px 0;color:#555">⏳ Membaca daftar pasien IGD 18 jam & daftar rawat inap...</div>
+      <div class="sp-ca-jam" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px"><span style="font-weight:600">Rentang:</span>${SP_CEK_ADVIS_JAM.map((h) => `<button type="button" data-jam="${h}" style="padding:5px 12px;font:600 12px Arial,sans-serif;border:1px solid #6a1b9a;border-radius:14px;cursor:pointer">${h} jam</button>`).join("")}</div>
+      <div class="sp-ca-info" style="color:#777;font-size:11px;margin-bottom:6px"></div>
+      <div class="sp-ca-msg" style="margin:4px 0;color:#555"></div>
       <div class="sp-ca-list"></div>
       <div class="sp-ca-belumwrap" style="display:none;margin-top:8px"><div style="font-weight:600;color:#b45309">🕒 Belum dapat kamar — advis WA ditemukan, Rencana belum ada advis:</div><div class="sp-ca-belum"></div></div>
       <details class="sp-ca-okwrap" style="display:none;margin-top:8px"><summary style="cursor:pointer;color:#2e7d32;font-weight:600"></summary><div class="sp-ca-ok"></div></details>
       <div class="sp-ca-wa" style="display:none;margin-top:10px;padding:8px;border:1px solid #a5d6a7;background:#f1f8e9;border-radius:8px">
         <button type="button" class="sp-ca-wago" style="width:100%;padding:9px;font:600 13px Arial,sans-serif;background:#25d366;color:#fff;border:0;border-radius:6px;cursor:pointer"></button>
-        <div class="sp-ca-wamsg" style="margin-top:5px;font-size:12px;color:#555">Membuka chat WhatsApp Web 18 jam terakhir satu per satu dan mengambil advis untuk pasien yang belum advis. Advis diisikan ke Rencana di panel ADVIS SPESIALIS — Dokter tinggal cek lalu 💾 Simpan.</div>
+        <div class="sp-ca-wamsg" style="margin-top:5px;font-size:12px;color:#555"></div>
       </div>
       <button type="button" class="sp-ca-reload" style="margin-top:10px;width:100%;padding:8px;font:600 13px Arial,sans-serif;background:#6a1b9a;color:#fff;border:0;border-radius:6px;cursor:pointer">🔄 Cek ulang</button>`;
     panel.append(head, body);
@@ -8999,6 +9011,19 @@
     const okWrap = body.querySelector(".sp-ca-okwrap"), okList = body.querySelector(".sp-ca-ok"), reload = body.querySelector(".sp-ca-reload");
     const base = smartplusBaseUrl();
     let seq = 0;
+    // v3.163.0: rentang jam pilihan dokter (6/12/18), diingat.
+    let jam = spCekAdvisJam();
+    const jamBox = body.querySelector(".sp-ca-jam"), info = body.querySelector(".sp-ca-info");
+    const waIntro = () => `Membuka chat WhatsApp Web ${jam} jam terakhir satu per satu dan mengambil advis untuk pasien yang belum advis. Advis diisikan ke Rencana di panel ADVIS SPESIALIS — Dokter tinggal cek lalu 💾 Simpan.`;
+    const paintJam = () => {
+      jamBox.querySelectorAll("[data-jam]").forEach((b) => {
+        const on = Number(b.dataset.jam) === jam;
+        b.style.background = on ? "#6a1b9a" : "#fff";
+        b.style.color = on ? "#fff" : "#6a1b9a";
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      info.textContent = `Pasien IGD ${jam} jam terakhir yang ada di daftar rawat inap (e-Ranap). Hanya membaca; advis ditulis & disimpan sendiri lewat ➕ Tambah advis.`;
+    };
 
     const roomText = (p) => p.belumKamar ? "belum dapat kamar (masih IGD)" : p.ranap ? [p.ranap.kamar, [p.ranap.noKamar, p.ranap.bed].filter(Boolean).join("/")].filter(Boolean).join(" ") : "kamar belum terbaca di e-Ranap";
     const card = (p) => {
@@ -9062,8 +9087,8 @@
       okWrap.style.display = done.length ? "" : "none";
       okWrap.querySelector("summary").textContent = `✅ Sudah ada advis: ${done.length} pasien`;
       const pending = rows.filter((p) => p.loading).length;
-      msg.textContent = !rows.length ? "Tidak ada pasien IGD 18 jam terakhir yang dapat kamar." :
-        `${rows.length} pasien IGD 18 jam dapat kamar · ❌ belum advis: ${todo.filter((p) => !p.loading && !p.err).length}` +
+      msg.textContent = !rows.length ? `Tidak ada pasien IGD ${jam} jam terakhir yang dapat kamar.` :
+        `${rows.length} pasien IGD ${jam} jam dapat kamar · ❌ belum advis: ${todo.filter((p) => !p.loading && !p.err).length}` +
         (todo.some((p) => p.err) ? ` · ⚠️ belum terbaca: ${todo.filter((p) => p.err).length}` : "") +
         ` · ✅ sudah: ${done.length}${pending ? ` · ⏳ membaca ${pending}...` : ""}`;
     };
@@ -9096,10 +9121,11 @@
       const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 7), my = ++waRun;
       const lids = [];
       let acked = false, last = Date.now(), finished = false;
-      const end = () => { finished = true; lids.forEach((l) => { try { GM_removeValueChangeListener(l); } catch (_) {} }); waGo.disabled = false; };
+      const end = () => { finished = true; lids.forEach((l) => { try { GM_removeValueChangeListener(l); } catch (_) {} }); waGo.disabled = false; jamBox.querySelectorAll("button").forEach((b) => { b.disabled = false; }); };
       waGo.disabled = true;
       waGo.textContent = "⏳ Mencari advis di WhatsApp...";
       waMsg.textContent = "⏳ Menghubungi tab WhatsApp Web...";
+      jamBox.querySelectorAll("button").forEach((b) => { b.disabled = true; });
       lids.push(GM_addValueChangeListener("sp_wa_cari_ack_v1", (k, o, v) => { if (v && v.id === id) { acked = true; last = Date.now(); } }));
       lids.push(GM_addValueChangeListener("sp_wa_cari_prog_v1", (k, o, v) => {
         if (!v || v.id !== id || my !== waRun || finished) return;
@@ -9121,14 +9147,14 @@
         render();
         waIdle();
         const head = v.err ? `⚠️ Pencarian berhenti (${v.err}). ` : v.stopped ? "⏹ Dihentikan. " : "✅ Selesai. ";
-        waMsg.textContent = head + `${v.scanned || 0} dari ${v.chats || 0} chat 18 jam dibaca · advis ditemukan untuk ${groups.length + sudah} dari ${targets.length} pasien` +
+        waMsg.textContent = head + `${v.scanned || 0} dari ${v.chats || 0} chat ${v.hours || jam} jam dibaca · advis ditemukan untuk ${groups.length + sudah} dari ${targets.length} pasien` +
           (sudah ? ` (${sudah} ternyata sudah tertulis di Rencana → ✅)` : "") + "." +
           (groupsBelum.length ? ` Termasuk ${groupsBelum.length} pasien yang belum dapat kamar (Rencana belum ada advis).` : "") +
-          (groups.length ? " Advis sudah diisikan ke Rencana di panel ADVIS SPESIALIS: cek tiap pasien lalu 💾 Simpan Rencana." : " Tidak ada advis untuk pasien-pasien ini di chat 18 jam terakhir.");
+          (groups.length ? " Advis sudah diisikan ke Rencana di panel ADVIS SPESIALIS: cek tiap pasien lalu 💾 Simpan Rencana." : ` Tidak ada advis untuk pasien-pasien ini di chat ${v.hours || jam} jam terakhir.`);
         if (groups.length) runAdvisSpesialis({ waQueue: groups, onSavedAny });
         toast(`🔎 CARI ADVIS WA: advis ditemukan untuk ${groups.length} dari ${targets.length} pasien` + (groups.length ? " — cek lalu Simpan di ADVIS SPESIALIS." : "."));
       }));
-      GM_setValue("sp_wa_cari_req_v1", { id, ts: Date.now(), patients: targets.map((p) => { const x = spCekAdvisPatient(p); return { key: p.noreg, nama: x.nama, rm: x.rm, dpjp: (p.ranap && p.ranap.dokter) || "" }; }) });
+      GM_setValue("sp_wa_cari_req_v1", { id, ts: Date.now(), hours: jam, patients: targets.map((p) => { const x = spCekAdvisPatient(p); return { key: p.noreg, nama: x.nama, rm: x.rm, dpjp: (p.ranap && p.ranap.dokter) || "" }; }) });
       const watch = setInterval(() => {
         if (finished || my !== waRun) { clearInterval(watch); return; }
         if (!acked && Date.now() - last > 5000) {
@@ -9144,9 +9170,10 @@
       const my = ++seq;
       reload.disabled = true;
       list.textContent = ""; okWrap.style.display = "none"; waBox.style.display = "none"; belumWrap.style.display = "none";
-      msg.textContent = "⏳ Membaca daftar pasien IGD 18 jam & daftar rawat inap...";
+      paintJam();
+      msg.textContent = `⏳ Membaca daftar pasien IGD ${jam} jam & daftar rawat inap...`;
       try {
-        const [igd, ranap] = await Promise.all([spAdvisLoadPatients(base, null, 18), spFetchRanapPatients(base, true)]);
+        const [igd, ranap] = await Promise.all([spAdvisLoadPatients(base, null, jam), spFetchRanapPatients(base, true)]);
         if (my !== seq) return;
         rows = spMatchDapatKamar(igd, ranap).map((p) => ({ ...p, loading: true }));
         const inRows = new Set(rows.map((p) => p.noreg));
@@ -9165,6 +9192,10 @@
       }
     };
     reload.onclick = load;
+    waMsg.textContent = waIntro();
+    jamBox.querySelectorAll("[data-jam]").forEach((b) => {
+      b.onclick = () => { const h = Number(b.dataset.jam); if (h === jam && !reload.disabled) return; jam = h; spCekAdvisSetJam(h); waMsg.textContent = waIntro(); load(); };
+    });
     await load();
   }
   // =========================
@@ -16429,7 +16460,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
 
         <!-- v3.115.0 (permintaan dokter 20 Okt 2026): pasien IGD 24 jam yang dapat kamar & belum ada advis di Rencana. -->
         <button type="button" data-cek-advis="1">
-          🛏 CEK ADVIS PASIEN DAPAT KAMAR 18 JAM
+          🛏 CEK ADVIS PASIEN DAPAT KAMAR 6/12/18 JAM
         </button>
 
         <!-- v3.161.0 (permintaan dokter 16 Nov 2026): CEK & SARAN ASGADAR dan REFERENSI KLINIS dihapus dari menu ini
@@ -16445,7 +16476,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.162.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.163.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
