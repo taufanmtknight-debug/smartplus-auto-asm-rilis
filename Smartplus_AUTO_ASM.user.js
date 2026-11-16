@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.154.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.155.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.154.0
-// @description  v3.154.0 (laporan dokter 16 Nov 2026: Advis WA realtime tidak muncul padahal dr. Taufan sudah login Smartplus): cek login dari WhatsApp Web bisa tanpa sesi Smartplus sehingga selalu terbaca "belum login" dan menyembunyikan Advis WA. Kini status dari tab Smartplus (pasti) diutamakan; hasil "belum login" dari WA hanya dipakai bila tidak ada tab Smartplus yang mengecek 10 menit terakhir. Bila terkunci, tombol Advis WA tetap tampil abu-abu 🔒 dengan keterangannya (klik = cek ulang), tidak hilang tanpa keterangan.
+// @version      3.155.0
+// @description  v3.155.0 (laporan dokter 16 Nov 2026: Advis WA tetap tidak muncul setelah update): penyebab sebenarnya ditemukan — sejak v3.152.0 script di WhatsApp Web berhenti total karena error urutan kode (konstanta jeda cek login dipakai sebelum dibuat), sehingga tombol Advis WA tidak muncul sama sekali. Diperbaiki; uji WhatsApp baru memakai script asli dengan kunci user aktif (dulu uji memakai salinan tanpa kunci sehingga error ini lolos).
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -65,8 +65,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.154.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.154.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.155.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.155.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -191,7 +191,10 @@
   // Logout / sesi habis / user lain -> "sp_user_ok_v1" false -> Advis WA realtime & tombol Advis WA hilang, tab Smartplus
   // melepas tombol AUTO ASM, sampai dr. Muhamad Taufan Kurniawan login lagi. Beranda Smartplus ringan (±15 KB, ±0,02 dtk)
   // dan memuat nama login di sidebar; sesi habis = dialihkan ke /auth/login (ada kolom kata sandi).
-  const SP_USER_POLL_MS = 120000;
+  // v3.155.0: FUNGSI, bukan const — dipakai cabang WhatsApp Web yang berhenti (return) di 00_header_inti.js SEBELUM baris
+  // const modul ini dijalankan; const di sini = ReferenceError (TDZ) -> seluruh script WA mati sejak v3.152.0 (tombol Advis
+  // WA tidak muncul sama sekali). Semua yang dipakai WA di modul ini harus deklarasi fungsi (ter-hoist).
+  function spUserPollMs() { return 120000; }
   // Hasil membaca HTML beranda: {ok: true/false/null, login: halaman login?, name}. null = tidak bisa dipastikan.
   function spUserHtmlInfo(html, finalUrl) {
     const t = String(html || "");
@@ -208,7 +211,7 @@
     if (!spUserLockOn()) return;
     const tick = async () => {
       const s = spUserState();
-      if (s && s.src === "sp" && Date.now() - (s.ts || 0) < SP_USER_POLL_MS * 0.75) { onChange(!!s.ok); return; } // tab Smartplus lain baru mengecek
+      if (s && s.src === "sp" && Date.now() - (s.ts || 0) < spUserPollMs() * 0.75) { onChange(!!s.ok); return; } // tab Smartplus lain baru mengecek
       try {
         const r = await fetch(base + "/", { credentials: "same-origin", cache: "no-store" });
         const ok = spUserFromHtml(await r.text(), r.url);
@@ -217,7 +220,7 @@
         onChange(ok);
       } catch (_) { /* jaringan putus: biarkan hasil terakhir */ }
     };
-    setInterval(tick, SP_USER_POLL_MS);
+    setInterval(tick, spUserPollMs());
   }
   // WhatsApp Web: cek beranda Smartplus lewat GM_xmlhttpRequest (alamat dari GM "sp_smartplus_base_v1", tidak ditulis di script).
   // v3.154.0: permintaan dari ekstensi bisa tanpa cookie sesi Smartplus -> selalu tampak "halaman login" walau dokter login
@@ -247,11 +250,11 @@
     if (!spUserLockOn()) return;
     const tick = () => {
       const s = spUserState();
-      if (s && Date.now() - (s.ts || 0) < SP_USER_POLL_MS * 0.75) return; // tab Smartplus baru mengecek
+      if (s && Date.now() - (s.ts || 0) < spUserPollMs() * 0.75) return; // tab Smartplus baru mengecek
       spUserPollWaNow();
     };
     setTimeout(tick, 5000);
-    setInterval(tick, SP_USER_POLL_MS);
+    setInterval(tick, spUserPollMs());
   }
   const TEMPLATES = {
     BP: {
@@ -16173,7 +16176,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.154.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.155.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
