@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.166.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.167.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.166.0
-// @description  v3.166.0 (QA harian 16 Nov 2026, Smartplus asli tanpa Simpan): ASGADAR/Resep/Order Lab/Radiologi — tab yang tampak "aktif" tetapi isinya belum dimuat kini langsung dibuka (dulu menunggu 8 dtk; ASGADAR kini ±1 dtk); bila skrip halaman Smartplus gagal termuat (tab tidak bisa dibuka), isi tab dimuat langsung oleh AUTO ASM; AUTO PENUNJANG tepat sesudah resep tidak lagi gagal karena form GADAR dibuka kembali di tengah order.
+// @version      3.167.0
+// @description  v3.167.0 (permintaan dokter 17 Nov 2026): KOMBINASI RESEP IGD — kotak 🔍 Obat lain untuk mencari obat yang tidak ada di tombol panel langsung di daftar obat Smartplus; obat yang diklik masuk sebagai baris yang dosis, frekuensi, jumlah, waktu & keterangannya diatur dokter (bawaan = pola tersering di riwayat resep, anak sediaan cair per kgBB, tablet 3 hari), lalu ikut masuk draft saat ACC (tanpa Simpan). Sukralfat kini tablet 1 tab 3x1 (sirup & pilihan 2 tablet dihapus). Puyer Ranitidin anak memakai dosis paling rendah 2 mg/kgBB/kali 2x sehari dari BB pasien, dibulatkan ke bawah per ½ tablet (dulu 3 mg/kgBB/kali per kelompok BB).
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -66,8 +66,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.166.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.166.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.167.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.167.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -1238,11 +1238,13 @@
       weightGroups: Object.fromEntries(
         // v3.105.0: kelompok 1–5 kg dihapus; Ranitidin i tab per 10 bungkus = 3 mg/kgBB/kali di BB batas bawah
         // (2x sehari = maks 6 mg/kg/hari; tukak 4–8, GERD 5–10 mg/kg/hari; maks 150 mg/kali).
+        // v3.167.0 (dokter 17 Nov 2026: dosis racikan paling minimal): 2 mg/kgBB/kali di BB batas bawah, tablet dibulatkan
+        // ke bawah per ½ tablet (min ½): 5 kg ½, 10 kg 1, 15 kg 2, 20 kg 2½, 25 kg 3, 30 kg 4, 35 kg 4½, 40 kg 5, 45 kg 6.
         Array.from({ length: 9 }, (_, n) => {
           const i = n + 1;
           const min = i * 5;
           const max = (i + 1) * 5;
-          const qty = String(i);
+          const qty = String(Math.max(0.5, Math.floor(((2 * min * 10) / 150) * 2 + 1e-9) / 2));
           const key = `${min}_${max}`;
           return [key, {
             label: `BB ${min}–${max} kg`,
@@ -1842,7 +1844,9 @@
         ["PCT500", "Demam & Nyeri", "Paracetamol 500 mg", "PARACETAMOL 500 MG TAB*", "10", "500 mg", "3x1", "", ["DEMAM"], { notWith: ["PCT"], cls: "ten" }],
         ["IBUPROFEN", "Demam & Nyeri", "Ibuprofen 400 mg", "IBUPROFEN 400MG TAB*", "10", "400 mg", "3x1", "sesudah makan", ["NYERI_OTOT"], { notWith: ["DIKLOFENAK50"], cls: "ten" }],
         ["OMEPRAZOLE", "Saluran cerna", "Omeprazole 20 mg", "OMEPRAZOLE CAPSUL*", "10", "20 mg", "2x1", "sebelum makan", ["GERD", "ULKUS"]],
-        ["SUKRALFAT", "Saluran cerna", "Sukralfat sirup", "SUKRALFAT SYR*", "1", "1 sendok makan", "3x1", "", ["ULKUS"]],
+        // v3.167.0 (dokter 17 Nov 2026: "sukralfat buat obatnya 3x1 tab saja"): sukralfat = tablet 500 mg 1 tab 3x1 (dulu sirup
+        // + pilihan terpisah "Sukralfat tablet" 2 tab 3x1). Jumlah ikut aturan dewasa (maks 6 tablet).
+        ["SUKRALFAT", "Saluran cerna", "Sukralfat tablet 3x1", "SUKRALFAT TAB", "6", "1 tablet", "3x1", "sebelum makan", ["ULKUS"]],
         ["ANTASIDA_SUSP", "Saluran cerna", "Antasida suspensi", "ANTASIDA DOEN SUSPNSI", "1", "1 sendok makan", "3x1", "", ["NYERI_ULU_HATI"], { notWith: ["SUKRALFAT"] }],
         ["ONDANSETRON", "Saluran cerna", "Ondansetron 4 mg", "ONDANSETRON TABLET 4 MG*", "6", "4 mg", "3x1", "bila mual/muntah", ["MUNTAH_HEBAT"]],
         // v3.117.0 (instruksi dokter 20 Okt 2026): Diatab IGD 10 tablet (cls "ten"); Lodia 4 tablet 2x1.
@@ -1874,7 +1878,6 @@
         ["DIKLOFENAK50", "Demam & Nyeri", "Natrium diklofenak 50 mg", "NATRIUM DIKLOFENAC 50 MG TAB*", "6", "50 mg", "2x1", "sesudah makan", ["NYERI_OTOT"], { notWith: ["KETOROLAC", "IBUPROFEN"] }],
         ["ASAM_MEFENAMAT", "Demam & Nyeri", "Asam mefenamat 500 mg", "ASAM MEFENAMAT 500 MG TAB*", "6", "500 mg", "3x1", "sesudah makan", ["NYERI"], { notWith: ["KETOROLAC", "IBUPROFEN"] }],
         ["SPASMINAL", "Saluran cerna", "Spasminal (kolik, dismenore)", "SPASMINAL TABLET", "6", "1 tablet", "3x1", "", ["NYERI"]],
-        ["SUKRALFAT_TAB", "Saluran cerna", "Sukralfat tablet 500 mg", "SUKRALFAT TAB", "6", "1 g (2 tablet)", "3x1", "sebelum makan", ["ULKUS"], { notWith: ["SUKRALFAT"] }],
         ["NAC", "Batuk, pilek & alergi", "Acetylcysteine 200 mg", "ACETYLCYSTEINE KAPSUL 200 MG*", "6", "200 mg", "3x1", "", ["BATUK_PILEK"], { notWith: ["AMBROXOL"] }],
         ["SANADRYL", "Batuk, pilek & alergi", "Sanadryl DMP sirup (batuk kering)", "SANADRYL DMP 60 ML SYRUP", "1", "10 ml", "3x1", "", ["BATUK_KERING"], { notWith: ["OBH"] }],
         ["MP8", "Batuk, pilek & alergi", "Methylprednisolon 8 mg (3–5 hari)", "METHYLPREDNISOLON TAB 8 MG*", "6", "8 mg", "2x1", "3–5 hari", ["ASMA"], { notWith: ["MP4", "DEXA"] }],
@@ -1906,7 +1909,10 @@
       { key: "RADANG", group: "Batuk, pilek & alergi", label: "Puyer Dexamethason + CTM", why: ["RADANG_BENGKAK"], notWith: ["BAPIL"], src: { kind: "racikan", key: "RADANG_BENGKAK_ANAK" } },
       { key: "ZINC", group: "Saluran cerna", label: "Zinc", why: ["DIARE"], src: { kind: "recipe", key: "KELUHAN_DIARE_ANAK", only: /^ZINc TABLET$/i } },
       { key: "ORALIT", group: "Saluran cerna", label: "Oralit", why: ["DIARE"], src: { kind: "recipe", key: "KELUHAN_DIARE_ANAK", only: /^ORALIT$/i } },
-      { key: "RANITIDIN", group: "Saluran cerna", label: "Puyer Ranitidin", why: ["NYERI_ULU_HATI", "GERD"], src: { kind: "racikan", key: "NYERI_ULU_HATI_ANAK" } },
+      // v3.167.0 (dokter 17 Nov 2026: "puyer ranitidin dibuat dosis racikan paling minimal"): dosis terendah 2 mg/kgBB/kali
+      // 2x sehari (rentang anak 2–4 mg/kg/kali, maks 150 mg/kali) dihitung dari BB pasien, tablet 150 mg dibulatkan ke BAWAH
+      // per ½ tablet (min ½ tablet), 10 bungkus. Dulu 3 mg/kg/kali per kelompok BB 5 kg (1 tablet tiap kenaikan 5 kg).
+      { key: "RANITIDIN", group: "Saluran cerna", label: "Puyer Ranitidin", why: ["NYERI_ULU_HATI", "GERD"], src: { kind: "perKgPuyer", nama: "Puyer Ranitidin", namaRacikan: "nyeri ulu hati anak", obat: "RANITIDIN 150 GEN*", tabMg: 150, mgPerKg: 2, maxMgKali: 150, bungkus: 10, halfTab: true, frekuensi: "2 X SEHARI", keterangan: "" } },
       { key: "ANTASIDA", group: "Saluran cerna", label: "Antasida (usia ≥5 th)", why: ["KEMBUNG"], src: COMPLAINT_RECIPE_MAP.KEMBUNG.child },
       { key: "AMOX", group: "Antibiotik", label: "Amoxicillin", why: ["INFEKSI_BAKTERI"], notWith: ["CEFADROXIL", "CEFIXIME"], src: COMPLAINT_RECIPE_MAP.INFEKSI_BAKTERI.child },
       // v3.39.0: sirup anak tambahan (disetujui dokter 5 Okt 2026). ml = BB × mlPerKg, dibulatkan 0,5 ml (min 0,5 ml).
@@ -3692,9 +3698,11 @@
         // (tablet utuh, tidak melewati mg/kgBB), maks maxMgKali per bungkus.
         if (!Number.isFinite(weight) || weight <= 0) throw new Error("isi BB");
         const bks = src.bungkus || 10;
-        let tabs = Math.floor((src.mgPerKg * weight * bks) / src.tabMg + 1e-9);
-        if (src.maxMgKali) tabs = Math.min(tabs, Math.floor((src.maxMgKali * bks) / src.tabMg));
-        if (tabs < 1) throw new Error(`BB ${weight} kg terlalu kecil untuk puyer tablet ${src.tabMg} mg, isi manual`);
+        // v3.167.0: halfTab = dibulatkan ke bawah per ½ tablet (Smartplus menerima 0.5), min ½ tablet.
+        const unit = src.halfTab ? 2 : 1;
+        let tabs = Math.floor(((src.mgPerKg * weight * bks) / src.tabMg) * unit + 1e-9) / unit;
+        if (src.maxMgKali) tabs = Math.min(tabs, Math.floor(((src.maxMgKali * bks) / src.tabMg) * unit) / unit);
+        if (tabs < 1 / unit) throw new Error(`BB ${weight} kg terlalu kecil untuk puyer tablet ${src.tabMg} mg, isi manual`);
         const per = (tabs * src.tabMg) / bks;
         const f2 = (x) => String(Math.round(x * 100) / 100).replace(".", ",");
         const tk = `PUYER_${opt.key}_PERKG`;
@@ -13846,7 +13854,7 @@
       #${MENU_ID}.sp-mfit .sp-pkg-acc, #${MENU_ID}.sp-mfit .sp-rp-btn{padding:15px 14px!important;font-size:16.5px!important;}
       #${MENU_ID}.sp-mfit .sp-pkg-back{width:56px!important;padding:14px 0!important;font-size:18px!important;}
       #${MENU_ID}.sp-mfit .sp-pkg-foot{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));}
-      #${MENU_ID}.sp-mfit .sp-rp-table input, #${MENU_ID}.sp-mfit .sp-rp-search input, #${MENU_ID}.sp-mfit .sp-pkg-bb input{font-size:16px!important;padding:8px!important;}
+      #${MENU_ID}.sp-mfit .sp-rp-table input, #${MENU_ID}.sp-mfit .sp-rp-search input, #${MENU_ID}.sp-mfit .sp-kx-f input, #${MENU_ID}.sp-mfit .sp-pkg-bb input{font-size:16px!important;padding:8px!important;}
       #${MENU_ID}.sp-mfit-narrow .sp-mv-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
       #${MENU_ID}.sp-mfit-narrow .sp-pkg-row{grid-template-columns:1fr;gap:5px;}
       #${MENU_ID}.sp-mfit-narrow .sp-pkg-row-label{padding-top:0;}
@@ -13896,6 +13904,23 @@
       #${MENU_ID}.sp-kombi .sp-kombi-actn:empty{display:none;}
       #${MENU_ID}.sp-kombi .sp-kombi-act .sp-pkg-pills{padding:0 0 10px;}
       #${MENU_ID}.sp-kombi .sp-pkg-foot{background:#fff;}
+      #${MENU_ID}.sp-kombi .sp-kombi-cari{padding:8px 10px;}
+      #${MENU_ID}.sp-kombi .sp-kombi-cari-h{font:800 11px/1.3 Arial,sans-serif;letter-spacing:.3px;text-transform:uppercase;color:#5b21b6;}
+      #${MENU_ID}.sp-kombi .sp-kombi-cari-h small{font:400 11px Arial,sans-serif;text-transform:none;letter-spacing:0;color:#6b7280;margin-left:4px;}
+      #${MENU_ID}.sp-kombi .sp-kombi-cari .sp-rp-search{margin:6px 0 0;}
+      #${MENU_ID}.sp-kombi #sp-kombi-extra:empty{display:none;}
+      #${MENU_ID}.sp-kombi .sp-kx-row{margin-top:8px;padding:7px 8px;border:1px solid #e7e3f3;border-left:4px solid #7c3aed;border-radius:9px;background:#faf9ff;}
+      #${MENU_ID}.sp-kombi .sp-kx-head{display:flex;align-items:center;gap:6px;font-size:12.5px;color:#1f2937;}
+      #${MENU_ID}.sp-kombi .sp-kx-head b{flex:1;min-width:0;overflow-wrap:anywhere;}
+      #${MENU_ID}.sp-kombi .sp-kx-row > small{display:block;font-size:11px;margin:1px 0 5px;}
+      #${MENU_ID}.sp-kombi .sp-kx-row > small.sp-rp-warn{color:#b45309;font-weight:700;}
+      #${MENU_ID}.sp-kombi .sp-kx-fields{display:flex;flex-wrap:wrap;gap:5px;}
+      #${MENU_ID}.sp-kombi .sp-kx-f{display:flex;flex-direction:column;flex:1 1 92px;min-width:0;margin:0;font:400 10.5px Arial,sans-serif;color:#6b7280;}
+      #${MENU_ID}.sp-kombi .sp-kx-f.is-qty{flex:0 1 64px;}
+      #${MENU_ID}.sp-kombi .sp-kx-f.is-ket{flex:2 1 150px;}
+      #${MENU_ID}.sp-kombi .sp-kx-f input{width:100%!important;box-sizing:border-box;padding:5px 7px!important;border:1px solid #d6d3e6!important;border-radius:7px!important;font:12.5px Arial,sans-serif!important;background:#fff!important;}
+      #${MENU_ID}.sp-kombi .sp-kx-f input.sp-kx-empty{border-color:#f59e0b!important;background:#fffbeb!important;}
+      #${MENU_ID}.sp-kombi .sp-sel-chip.is-extra{background:#f3effe;border-color:#c4b5fd;}
       @media(max-width:600px){
         #${MENU_ID}.sp-kombi .sp-kombi-drugs .sp-pkg-row{grid-template-columns:1fr;gap:5px;}
         #${MENU_ID}.sp-kombi .sp-kombi-drugs .sp-pkg-row-label{padding-top:0;}
@@ -14530,6 +14555,51 @@
       spPkg.selected = new Set(ctx.branch ? spSuggestDrugKeys(ctx.branch, spPkg.hits) : []);
     }
 
+    // =========================
+    // v3.167.0 (permintaan dokter 17 Nov 2026): 🔍 OBAT LAIN — obat yang tidak ada di tombol panel dicari langsung di daftar
+    // obat Smartplus (sumber autocomplete Resep Online yang sama, inner_get_data_autocomplet_obat), diklik -> baris yang bisa
+    // diatur dokter (dosis, frekuensi, jumlah, waktu, keterangan). Bawaan = pola tersering di riwayat resep (RP_DOSE_STATS);
+    // anak + sediaan cair = per kgBB (spPedsDose); jumlah tablet = 3 hari. Masuk sebagai draft bersama obat lain (tanpa Simpan).
+    // =========================
+    const SP_KOMBI_EXTRA_DAYS = 3;
+    function spKombiExtraQty(r) {
+      if (spIsLiquid(r.obat) || (r.jenis && !/oral/i.test(r.jenis))) return "1";
+      return spPulangQty({ dosis: r.dosis, frekuensi: r.frekuensi || "1 X SEHARI" }, SP_KOMBI_EXTRA_DAYS);
+    }
+    function spKombiExtraDefaults(name, jenis, ctx) {
+      const st = spRpStat(name);
+      const r = { obat: name, jenis: jenis || "", dosis: st ? st[0] : "1", frekuensi: st ? st[1] : "", waktu: st ? st[2] : "", keterangan: "",
+        note: st ? `pola tersering di resep (${st[3]}x)` : "⚠ belum ada di riwayat resep — isi dosis & frekuensi", qtyEdited: false, doseEdited: false };
+      if (ctx.branch !== 'adult') {
+        const pd = spPedsDose(name, ctx.weight, ctx.ageMonths);
+        if (pd) Object.assign(r, { dosis: pd.dosis, frekuensi: pd.frekuensi, keterangan: pd.ket || "", note: `anak ${pd.basis}` });
+        else if (!spIsLiquid(name) && /oral/i.test(r.jenis || "oral")) r.note += " · ⚠ sediaan dewasa untuk anak, cek dosis";
+      }
+      r.jumlah = spKombiExtraQty(r);
+      return r;
+    }
+    // Anak: BB berubah -> dosis sediaan cair yang belum diedit dokter dihitung ulang.
+    function spKombiExtraReweigh(ctx) {
+      if (!spPkg || !spPkg.extra || ctx.branch === 'adult') return;
+      spPkg.extra.forEach((r) => {
+        if (r.doseEdited) return;
+        const pd = spPedsDose(r.obat, ctx.weight, ctx.ageMonths);
+        if (pd) { Object.assign(r, { dosis: pd.dosis, frekuensi: pd.frekuensi, note: `anak ${pd.basis}` }); if (!r.qtyEdited) r.jumlah = spKombiExtraQty(r); }
+      });
+    }
+    function spKombiRenderExtra() {
+      const box = menu.querySelector('#sp-kombi-extra');
+      if (!box || !spPkg) return;
+      const ex = spPkg.extra || [];
+      const inp = (i, f, v, ph, cls) => `<label class="sp-kx-f${cls ? ' ' + cls : ''}"><span>${ph}</span><input data-kx="${i}" data-f="${f}" value="${spEsc(v)}" placeholder="${ph}" autocomplete="off"${!String(v || '').trim() && f !== 'waktu' && f !== 'keterangan' ? ' class="sp-kx-empty"' : ''}></label>`;
+      box.innerHTML = ex.map((r, i) => `<div class="sp-kx-row">
+          <div class="sp-kx-head"><b>${spEsc(r.obat.replace(/\*+$/, ''))}</b><button type="button" class="sp-sel-x" data-kx-del="${i}" title="Hapus">×</button></div>
+          <small class="${/⚠/.test(r.note) ? 'sp-rp-warn' : 'sp-pkg-muted'}">${spEsc([r.jenis, r.note].filter(Boolean).join(' · '))}</small>
+          <div class="sp-kx-fields">${inp(i, 'dosis', r.dosis, 'Dosis')}${inp(i, 'frekuensi', r.frekuensi, 'Frekuensi')}${inp(i, 'jumlah', r.jumlah, 'Jumlah', 'is-qty')}${inp(i, 'waktu', r.waktu, 'Waktu')}${inp(i, 'keterangan', r.keterangan, 'Keterangan', 'is-ket')}</div>
+        </div>`).join('');
+    }
+    const spKombiExtraMissing = (r) => ['dosis', 'frekuensi', 'jumlah'].filter((f) => !String(r[f] || '').trim());
+
     // v3.41.0 (instruksi dokter 5 Okt 2026): tampilan ringkas — obat = tombol-pil per golongan (satu baris per golongan),
     // kotak cari, anamnesis 2 baris, tindakan dilipat, daftar terpilih + tombol ACC menempel di bawah.
     // Aturan pakai tetap dari template (tooltip saat kursor di atas obat, dan di draft Resep Online setelah ACC).
@@ -14583,12 +14653,14 @@
       const picked = ctx.branch ? DRUG_OPTIONS[ctx.branch].filter((o) => spPkg.selected.has(o.key)) : [];
       // v3.39.0: jumlah R/ (tiap obat & tiap racikan = 1 R/). Uji pasien BPJS: R/ ke-6 ditolak Smartplus
       // ("Jumlah R Sudah Melebihi Batas"), obat yang sudah ada di draft ikut dihitung.
-      const rCount = picked.reduce((n, o) => { const r = spResolveDrugOption(o, ctx); return n + r.items.length + r.racikan.length; }, 0);
+      const extra = spPkg.extra || []; // v3.167.0: obat dari 🔍 Obat lain (1 R/ per obat)
+      const rCount = picked.reduce((n, o) => { const r = spResolveDrugOption(o, ctx); return n + r.items.length + r.racikan.length; }, 0) + extra.length;
       const acts = [...menu.querySelectorAll('input[name="sp-package-action"]:checked')];
       const bads = picked.map((o) => ({ o, bad: spDrugMismatch(ctx.branch, o.key, spPkg.hits, spPkg.kelText) })).filter((x) => x.bad);
       const isBad = (k) => bads.some((x) => x.o.key === k);
-      sel.innerHTML = picked.length || acts.length
+      sel.innerHTML = picked.length || acts.length || extra.length
         ? picked.map((o) => `<span class="sp-sel-chip${isBad(o.key) ? ' is-bad' : ''}" title="${spEsc(spResolveDrugOption(o, ctx).text || '')}">${spEsc(o.label)}<button type="button" class="sp-sel-x" data-unpick="${o.key}" title="Hapus">×</button></span>`).join('') +
+          extra.map((r, i) => `<span class="sp-sel-chip is-extra" title="${spEsc([r.dosis, r.frekuensi, r.jumlah ? 'jml ' + r.jumlah : ''].filter(Boolean).join(' · '))}">🔍 ${spEsc(r.obat.replace(/\*+$/, ''))}<button type="button" class="sp-sel-x" data-unextra="${i}" title="Hapus">×</button></span>`).join('') +
           acts.map((el) => `<span class="sp-sel-chip is-act">${spEsc(MASTER_RECIPE_TEMPLATES.TINDAKAN?.children?.[el.value]?.name || el.value)}<button type="button" class="sp-sel-x" data-unact="${el.value}" title="Hapus">×</button></span>`).join('')
         : '<span class="sp-pkg-muted">Belum ada obat dipilih — klik nama obat di atas.</span>';
       const an = menu.querySelector('#sp-kombi-act-n');
@@ -14607,7 +14679,7 @@
       }
       const acc = menu.querySelector('#sp-pkg-acc');
       if (acc) {
-        const parts = [picked.length ? `${picked.length} obat` : '', acts.length ? `${acts.length} tindakan` : ''].filter(Boolean);
+        const parts = [picked.length + extra.length ? `${picked.length + extra.length} obat` : '', acts.length ? `${acts.length} tindakan` : ''].filter(Boolean);
         acc.textContent = parts.length ? `✓ ACC – Masukkan ${parts.join(' + ')}` : '✓ ACC – Masukkan ke Resep';
         acc.disabled = !parts.length;
       }
@@ -14620,7 +14692,17 @@
       if (ctx.branch === 'child' && !(ctx.weight > 0)) { toast('KOMBINASI RESEP: untuk pasien ≤17 tahun, masukkan BB pasien terlebih dahulu.'); return; }
       const drugs = DRUG_OPTIONS[ctx.branch].filter((o) => spPkg.selected.has(o.key));
       const actions = [...menu.querySelectorAll('input[name="sp-package-action"]:checked')].map((el) => el.value).filter(Boolean);
-      if (!drugs.length && !actions.length) { toast('KOMBINASI RESEP: pilih minimal satu obat atau satu tindakan.'); return; }
+      const extra = (spPkg.extra || []).map((r) => ({ ...r })); // v3.167.0: 🔍 Obat lain
+      if (!drugs.length && !actions.length && !extra.length) { toast('KOMBINASI RESEP: pilih minimal satu obat atau satu tindakan.'); return; }
+      const kurang = extra.map((r) => [r, spKombiExtraMissing(r)]).filter((x) => x[1].length);
+      if (kurang.length) {
+        const msg = `Lengkapi ${kurang.map(([r, f]) => `${f.join('/')} ${r.obat.replace(/\*+$/, '')}`).join('; ')} (🔍 Obat lain).`;
+        const hint = menu.querySelector('#sp-pkg-hint');
+        if (hint) { hint.textContent = '⚠ ' + msg; hint.style.display = ''; }
+        toast('KOMBINASI RESEP: ' + msg);
+        menu.querySelector('#sp-kombi-extra .sp-kx-empty')?.focus();
+        return;
+      }
       // v3.124.0: pengingat terakhir bila ada obat yang tidak sesuai keluhan (dokter tetap bisa lanjut).
       const bads = drugs.map((o) => [o, spDrugMismatch(ctx.branch, o.key, spPkg.hits, spPkg.kelText)]).filter((x) => x[1]);
       if (bads.length && !window.confirm(`⚠ Obat berikut TIDAK SESUAI keluhan pasien:\n\n${bads.map(([o, b]) => `• ${o.label}: ${b.msg}`).join('\n')}\n\nTetap masukkan?`)) return;
@@ -14634,6 +14716,7 @@
         regularItems.push(...res.items);
         racikanJobs.push(...res.racikan);
       });
+      extra.forEach((r) => regularItems.push({ obat: r.obat, jumlah: String(r.jumlah).trim(), dosis: String(r.dosis).trim(), frekuensi: String(r.frekuensi).trim(), waktu: String(r.waktu || '').trim(), keterangan: String(r.keterangan || '').trim() }));
       if (problems.length && !window.confirm(`Obat berikut tidak bisa dimasukkan:\n\n${problems.map((p) => '• ' + p).join('\n')}\n\nLanjutkan tanpa obat tersebut?`)) return;
 
       const branchName = ctx.branch === 'adult' ? 'Dewasa' : 'Anak';
@@ -14686,7 +14769,7 @@
       if (isRecipeStopRequested()) clearRecipeProgress(`⛔ KOMBINASI RESEP dihentikan. ${done}. Review draft saat ini.`);
       else if (errors.length) clearRecipeProgress(`KOMBINASI RESEP selesai sebagian: ${done}. Cek ${errors.length} bagian: ${errors.slice(0, 3).join(' | ')}${errors.length > 3 ? ' …' : ''}`);
       else clearRecipeProgress(`KOMBINASI RESEP selesai: ${done}. Review lalu Simpan manual.`);
-      console.log('[KOMBINASI RESEP v3.37]', { ctx, obat: drugs.map((o) => o.key), tindakan: actions, regularItems, racikanJobs, errors });
+      console.log('[KOMBINASI RESEP v3.37]', { ctx, obat: drugs.map((o) => o.key), obatLain: extra.map((r) => r.obat), tindakan: actions, regularItems, racikanJobs, errors });
       recipeStopRequested = false;
     }
 
@@ -14694,7 +14777,7 @@
       menu.classList.add("sp-package-modal", "sp-kombi"); // v3.125.0: sp-kombi = tampilan rapi khusus panel ini
       const ageDisplay = spAgeText();
       const actionEntries = Object.entries(MASTER_RECIPE_TEMPLATES.TINDAKAN?.children || {});
-      spPkg = { selected: new Set(), touched: false, hits: {} };
+      spPkg = { selected: new Set(), touched: false, hits: {}, extra: [] };
       const ageForWeight = getPatientAgeYears();
       const adult = Number.isFinite(ageForWeight) && ageForWeight > 17;
 
@@ -14725,6 +14808,15 @@
 
         <div id="sp-drug-table-box"></div>
 
+        <div class="sp-kombi-card sp-kombi-cari">
+          <div class="sp-kombi-cari-h">🔍 Obat lain <small>tidak ada di atas? cari di daftar obat Smartplus, atur dosis sendiri</small></div>
+          <div class="sp-rp-search">
+            <input id="sp-kombi-q" type="search" autocomplete="off" placeholder="Ketik nama obat (min. 3 huruf)…">
+            <div id="sp-kombi-results" class="sp-rp-results"></div>
+          </div>
+          <div id="sp-kombi-extra"></div>
+        </div>
+
         <details class="sp-kombi-card sp-kombi-act">
           <summary>🩹 Tindakan <small>langsung disimpan per tindakan</small><span id="sp-kombi-act-n" class="sp-kombi-actn"></span></summary>
           <div class="sp-pkg-pills">
@@ -14750,7 +14842,66 @@
         if (spPkg.selected.has(k)) spPkg.selected.delete(k); else spPkg.selected.add(k);
         spPkgRenderDrugs();
       };
-      if (weightInput) weightInput.addEventListener('input', () => { spPkgApplySuggestions(); spPkgRenderDrugs(); });
+      if (weightInput) weightInput.addEventListener('input', () => { spPkgApplySuggestions(); spKombiExtraReweigh(spPkgContext()); spKombiRenderExtra(); spPkgRenderDrugs(); });
+
+      // v3.167.0: 🔍 Obat lain — cari live di daftar obat Smartplus (jeda 250 ms), oral & yang sering diresepkan di atas.
+      const kq = menu.querySelector('#sp-kombi-q');
+      const kres = menu.querySelector('#sp-kombi-results');
+      let kTimer = null, kSeq = 0;
+      kq.addEventListener('input', () => {
+        clearTimeout(kTimer);
+        const term = kq.value.trim();
+        if (term.length < 3) { kres.innerHTML = ''; return; }
+        kTimer = setTimeout(async () => {
+          const my = ++kSeq;
+          kres.innerHTML = '<div class="sp-pkg-muted" style="padding:6px">⏳ mencari di daftar obat Smartplus…</div>';
+          try {
+            const list = await spRpFetchMaster(term);
+            if (my !== kSeq || !kq.isConnected) return;
+            const seen = new Set();
+            const hits = list.filter((x) => { const k = spDrugKey(x.name); if (seen.has(k)) return false; seen.add(k); return true; })
+              .map((x, i) => ({ ...x, i, st: spRpStat(x.name), oral: /oral/i.test(x.jenis) }))
+              .sort((a, b) => (b.oral - a.oral) || (!!b.st - !!a.st) || ((b.st ? b.st[3] : 0) - (a.st ? a.st[3] : 0)) || a.i - b.i);
+            kres.innerHTML = hits.length
+              ? hits.slice(0, 25).map((x) => `<button type="button" class="sp-rp-hit" data-kx-add="${spEsc(x.name)}" data-jenis="${spEsc(x.jenis)}"><b>${spEsc(x.name)}</b><span>${spEsc([x.jenis, x.st ? `${x.st[0]} · ${x.st[1]} · ${x.st[2]}` : 'belum ada di riwayat resep'].filter(Boolean).join(' · '))}</span></button>`).join('')
+              : '<div class="sp-pkg-muted" style="padding:6px">Tidak ada obat yang cocok di daftar obat Smartplus.</div>';
+          } catch (err) {
+            if (my === kSeq) kres.innerHTML = `<div class="sp-pkg-muted" style="padding:6px">⚠ Pencarian gagal: ${spEsc(err.message || err)}</div>`;
+          }
+        }, 250);
+      });
+      kres.addEventListener('click', (e) => {
+        const b = e.target.closest('[data-kx-add]'); if (!b) return;
+        e.preventDefault();
+        const name = b.dataset.kxAdd;
+        if (!spPkg.extra.some((r) => spDrugKey(r.obat) === spDrugKey(name))) spPkg.extra.push(spKombiExtraDefaults(name, b.dataset.jenis || '', spPkgContext()));
+        kq.value = ''; kres.innerHTML = '';
+        spKombiRenderExtra(); spPkgSummary();
+        const last = menu.querySelector(`#sp-kombi-extra [data-kx="${spPkg.extra.findIndex((r) => spDrugKey(r.obat) === spDrugKey(name))}"][data-f="dosis"]`);
+        if (last) last.focus();
+      });
+      const kx = menu.querySelector('#sp-kombi-extra');
+      kx.addEventListener('input', (e) => {
+        const el = e.target.closest('[data-kx]'); if (!el) return;
+        const r = spPkg.extra[Number(el.dataset.kx)]; if (!r) return;
+        const f = el.dataset.f;
+        r[f] = el.value;
+        if (f === 'jumlah') r.qtyEdited = true;
+        if (f === 'dosis' || f === 'frekuensi') r.doseEdited = true;
+        if (f !== 'waktu' && f !== 'keterangan') el.classList.toggle('sp-kx-empty', !el.value.trim());
+        if ((f === 'dosis' || f === 'frekuensi') && !r.qtyEdited) {
+          r.jumlah = spKombiExtraQty(r);
+          const q = kx.querySelector(`[data-kx="${el.dataset.kx}"][data-f="jumlah"]`);
+          if (q) { q.value = r.jumlah; q.classList.toggle('sp-kx-empty', !r.jumlah); }
+        }
+        spPkgSummary();
+      });
+      kx.addEventListener('click', (e) => {
+        const x = e.target.closest('[data-kx-del]'); if (!x) return;
+        e.preventDefault();
+        spPkg.extra.splice(Number(x.dataset.kxDel), 1);
+        spKombiRenderExtra(); spPkgSummary();
+      });
 
       // Klik obat = pilih / batal. Obat yang belum bisa dihitung (mis. BB kosong) menampilkan alasannya.
       menu.querySelector('#sp-drug-table-box').addEventListener('click', (e) => {
@@ -14771,9 +14922,10 @@
         spPkgSummary();
       }));
       menu.querySelector('#sp-pkg-selected').addEventListener('click', (e) => {
-        const x = e.target.closest('[data-unpick], [data-unact]');
+        const x = e.target.closest('[data-unpick], [data-unact], [data-unextra]');
         if (!x) return;
         e.preventDefault();
+        if (x.dataset.unextra != null) { spPkg.extra.splice(Number(x.dataset.unextra), 1); spKombiRenderExtra(); spPkgSummary(); return; }
         if (x.dataset.unpick) { spPkg.touched = true; spPkg.selected.delete(x.dataset.unpick); spPkgRenderDrugs(); return; }
         const cb = menu.querySelector(`input[name="sp-package-action"][value="${x.dataset.unact}"]`);
         if (cb) { cb.checked = false; cb.dispatchEvent(new Event('change')); }
@@ -14786,6 +14938,8 @@
       menu.querySelector('[data-drug-clear]').addEventListener('click', () => {
         spPkg.touched = true;
         spPkg.selected.clear();
+        spPkg.extra = []; // v3.167.0: obat lain ikut dikosongkan
+        spKombiRenderExtra();
         spPkgRenderDrugs();
       });
       const anamBox = menu.querySelector('#sp-package-anamnesis');
@@ -16933,7 +17087,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.166.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.167.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -17261,7 +17415,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
         <div class="sp-note">
           Pilih kelompok BB untuk menentukan jumlah tablet bahan racikan.
           Bapil: setiap kenaikan 5 kg menambah 1 tablet tiap bahan.
-          Nyeri Ulu Hati Anak: ranitidin 150 mg, setiap kenaikan 5 kg menambah 1 tablet.
+          Nyeri Ulu Hati Anak: ranitidin 150 mg dosis minimal 2 mg/kgBB/kali (½–6 tablet per 10 bungkus).
         </div>
       `;
     }
