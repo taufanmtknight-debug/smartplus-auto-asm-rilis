@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.167.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.168.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.167.0
-// @description  v3.167.0 (permintaan dokter 17 Nov 2026): KOMBINASI RESEP IGD — kotak 🔍 Obat lain untuk mencari obat yang tidak ada di tombol panel langsung di daftar obat Smartplus; obat yang diklik masuk sebagai baris yang dosis, frekuensi, jumlah, waktu & keterangannya diatur dokter (bawaan = pola tersering di riwayat resep, anak sediaan cair per kgBB, tablet 3 hari), lalu ikut masuk draft saat ACC (tanpa Simpan). Sukralfat kini tablet 1 tab 3x1 (sirup & pilihan 2 tablet dihapus). Puyer Ranitidin anak memakai dosis paling rendah 2 mg/kgBB/kali 2x sehari dari BB pasien, dibulatkan ke bawah per ½ tablet (dulu 3 mg/kgBB/kali per kelompok BB).
+// @version      3.168.0
+// @description  v3.168.0 (laporan dokter 19 Nov 2026): Advis WA realtime tidak lagi membuka tab Smartplus berulang — sebelum tab dibuka, advis dicek dulu oleh tab Smartplus yang sudah terbuka: advis yang sudah tertulis di Rencana ASGADAR terakhir atau di CPPT kunjungan itu, dan pasien lama yang tidak ada lagi di daftar IGD 48 jam / rawat inap, dilewati (cukup keterangan kecil di WhatsApp). Isi advis yang sama untuk pasien yang sama tidak dibuka dua kali walau pesannya terbaca ulang / bertambah balasan. Bila tidak ada tab Smartplus yang menjawab, tab baru tetap dibuka lalu memeriksa sendiri dan menutup diri bila advis sudah ada.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -19,6 +19,7 @@
 // @grant        GM_addValueChangeListener
 // @grant        GM_removeValueChangeListener
 // @grant        GM_openInTab
+// @grant        window.close
 // @grant        GM_xmlhttpRequest
 // @grant        unsafeWindow
 // @connect      *
@@ -66,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.167.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.167.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.168.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.168.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -8516,6 +8517,33 @@
       rtNote.t = setTimeout(() => n.remove(), 6000);
     }
     const rtSent = () => { try { return GM_getValue(RT_SENT, []) || []; } catch (_) { return []; } };
+    // v3.168.0: catatan isi advis yang sudah dibuka/dilewati per pasien (48 jam) + tanya tab Smartplus sebelum membuka tab.
+    const RT_LINES = "sp_wa_rt_lines_v1", RT_CEK_REQ = "sp_wa_rt_cek_req_v1", RT_CEK = "sp_wa_rt_cek_v1";
+    const rtKey = (it) => (it.patient ? spWaPatientKey(it.patient) : "?");
+    const rtLinesGet = () => { try { return GM_getValue(RT_LINES, []) || []; } catch (_) { return []; } };
+    const rtLinesAdd = (it) => { try { GM_setValue(RT_LINES, spWaRtRecord(rtLinesGet(), rtKey(it), it.text, Date.now())); } catch (_) {} };
+    // -> { st } dari tab Smartplus; null = tidak ada tab yang menjawab dalam 5 dtk / hasil tidak datang dalam 60 dtk.
+    function rtCek(it) {
+      if (!it.patient || typeof GM_addValueChangeListener !== "function") return Promise.resolve(null);
+      // Tidak ada tab Smartplus (login) yang hidup 3 menit terakhir -> langsung buka tab (tab itu memeriksa sendiri).
+      let alive = 0;
+      try { alive = +GM_getValue("sp_wa_rt_alive_v1", 0) || 0; } catch (_) {}
+      if (Date.now() - alive > 180000) return Promise.resolve(null);
+      const id = "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      return new Promise((res) => {
+        let lid = null, busy = false, t = 0;
+        const end = (r) => { clearTimeout(t); try { if (lid != null) GM_removeValueChangeListener(lid); } catch (_) {} res(r); };
+        try {
+          lid = GM_addValueChangeListener(RT_CEK, (k, o, v) => {
+            if (!v || v.id !== id) return;
+            if (v.busy) { if (!busy) { busy = true; clearTimeout(t); t = setTimeout(() => end(null), 60000); } return; }
+            end(v);
+          });
+        } catch (_) { res(null); return; }
+        t = setTimeout(() => { if (!busy) end(null); }, 5000);
+        try { GM_setValue(RT_CEK_REQ, { id, ts: Date.now(), patient: it.patient, text: it.text }); } catch (_) { end(null); }
+      });
+    }
     function rtSend(item) {
       let base = "";
       try { base = GM_getValue(RT_BASE, "") || ""; } catch (_) {}
@@ -8639,7 +8667,20 @@
           if (start && !sameChat(chatName(), start) && (document.hidden || Date.now() - lastUser > 30000)) await openChat(start);
         }
         const done = [];
-        for (const it of out) { if (rtSend(it)) { done.push(it.hash); rtCount++; } await sleep(800); }
+        for (const it of out) {
+          // v3.168.0: isi sama untuk pasien sama sudah pernah dibuka/dilewati -> tidak dibuka lagi.
+          if (spWaRtSeen(rtLinesGet(), rtKey(it), it.text, Date.now())) { done.push(it.hash); continue; }
+          const ck = await rtCek(it);
+          if (ck && (ck.st === "ada" || ck.st === "lama")) {
+            done.push(it.hash); rtLinesAdd(it);
+            const lbl = it.patient ? it.patient.label || it.patient.nama || it.patient.rm : "";
+            rtNote(`📡 Advis ${lbl} ${ck.st === "ada" ? "sudah tertulis di " + ck.where : "— pasien lama (tidak ada di IGD 48 jam / rawat inap)"}: tab tidak dibuka.`);
+            continue;
+          }
+          if (ck) it.cek = ck.st;
+          if (rtSend(it)) { done.push(it.hash); rtCount++; rtLinesAdd(it); }
+          await sleep(800);
+        }
         if (!rtPending.size) { try { await warmStep(); } catch (e) { console.warn("[ADVIS WA catatan]", e); } }
         if (done.length) { try { GM_setValue(RT_SENT, [...done, ...rtSent()].slice(0, 300)); } catch (_) {} }
         rtLast = Date.now();
@@ -8695,6 +8736,21 @@
     try { if (/\/smartplus\//i.test(location.pathname) && !/\/auth\//i.test(location.pathname)) GM_setValue("sp_smartplus_base_v1", smartplusBaseUrl()); } catch (_) {}
     spWaRealtimeOpen();
     GM_addValueChangeListener(SP_WA_KEY, (n, o, v) => { spWaAdvisReceive(v).catch((e) => console.warn("[ADVIS WA]", e)); });
+    // v3.168.0: tab WA bertanya "advis ini perlu dibuka?" sebelum membuka tab baru. Satu tab Smartplus (yang sudah login)
+    // menjawab: segera "sedang dicek" lalu hasil spWaRtCek. Tidak ada jawaban -> WA membuka tab seperti dulu.
+    if (!/\/auth\//i.test(location.pathname)) {
+      const beat = () => { try { GM_setValue("sp_wa_rt_alive_v1", Date.now()); } catch (_) {} };
+      beat(); setInterval(beat, 30000);
+    }
+    GM_addValueChangeListener("sp_wa_rt_cek_req_v1", async (n, o, v) => {
+      if (!v || !v.id || Date.now() - (v.ts || 0) > 60000 || /\/auth\//i.test(location.pathname)) return;
+      await recipeSleep((document.hidden ? 300 : 0) + Math.random() * 250);
+      try { if (localStorage.getItem("sp_wa_rt_cek_done") === v.id) return; localStorage.setItem("sp_wa_rt_cek_done", v.id); } catch (_) {}
+      try { GM_setValue("sp_wa_rt_cek_v1", { id: v.id, ts: Date.now(), busy: true }); } catch (_) {}
+      let r = { st: "baru" };
+      try { r = await spWaRtCek(smartplusBaseUrl(), v.patient, v.text); } catch (e) { console.warn("[ADVIS WA cek]", e); }
+      try { GM_setValue("sp_wa_rt_cek_v1", { id: v.id, ts: Date.now(), ...r }); } catch (_) {}
+    });
     // v3.77.0: tab WA meminta daftar pasien IGD 48 jam (untuk memilih/memperbaiki pasien penerima advis). Satu tab menjawab.
     GM_addValueChangeListener("sp_wa_plist_req_v1", async (n, o, v) => {
       if (!v || !v.id || Date.now() - (v.ts || 0) > 60000) return;
@@ -8743,6 +8799,21 @@
       if (b && !b.disabled) setTimeout(() => { try { b.focus(); } catch (_) {} }, 100);
     });
     toast(`📡 Advis WA realtime: ${label}${v.chat ? " (chat " + v.chat + ")" : ""} — periksa, lalu tekan Enter untuk menyimpan.`);
+    // v3.168.0: belum dicek oleh tab Smartplus lain (tidak ada yang terbuka) -> cek di sini; sudah tertulis / pasien lama ->
+    // panel ditutup & tab ini ditutup sendiri (tidak ada yang disimpan).
+    if (!v.cek && v.patient) {
+      spWaRtCek(smartplusBaseUrl(), v.patient, v.text).then((r) => {
+        if (!r || (r.st !== "ada" && r.st !== "lama")) return;
+        const pnl = document.getElementById("sp-advis-panel");
+        const ta = pnl && pnl.querySelector(".sp-adv-ren");
+        if (ta && document.activeElement === ta) return; // dokter sedang mengetik -> biarkan
+        if (pnl) pnl.remove();
+        const why = r.st === "ada" ? `sudah tertulis di ${r.where}` : "pasien tidak ada di IGD 48 jam / rawat inap (pasien lama)";
+        document.title = "✅ Advis sudah ada · " + String(document.title).replace(/^📩 Advis [^·]*· /, "");
+        toast(`📡 Advis ${label} ${why} — tidak perlu disimpan, tab ini ditutup.`);
+        setTimeout(() => { try { window.close(); } catch (_) {} }, 2500);
+      }).catch(() => {});
+    }
   }
   // Pasien dari pesan WA ({nama, rm}) sama dengan pasien Smartplus ({nama, norm})? No. RM didahulukan, lalu nama.
   function spWaSamePatient(pt, x) {
@@ -8869,6 +8940,38 @@
   //   S: advis dr. X Sp.Y            P: advis dr. X Sp.Y
   //                                     <baris advis>
   // Disimpan setelah dokter menekan 💾 Simpan Rencana (centang "Tulis juga di CPPT") atau tombol "📋 Tulis juga di CPPT".
+  // v3.168.0 (laporan dokter 19 Nov 2026: "terlalu banyak tab advis baru, padahal pasiennya sudah lama & advis sudah ada di
+  // ASGADAR / CPPT"). Advis WA realtime kini disaring sebelum tab Smartplus dibuka (fungsi murni di bawah, diuji):
+  //  1) isi yang SAMA untuk pasien yang sama tidak dibuka lagi walau pesannya digabung/terbaca ulang berbeda (dulu hanya hash
+  //     teks utuh -> pesan "ok dok"/advis tambahan mengubah hash -> tab lama terbuka lagi);
+  //  2) advis yang sudah tertulis di Rencana ASGADAR terakhir ATAU di CPPT kunjungan itu -> tidak dibuka;
+  //  3) pasien yang tidak ada lagi di daftar IGD 48 jam / rawat inap (pasien lama, sudah pulang) -> tidak dibuka.
+  function spWaRtLines(text) {
+    const nz = (l) => String(l || "").toLowerCase().replace(/^\s*(?:[-•*]|\d+[.)])\s*/, "").replace(/[^a-z0-9%/.,]+/g, " ").trim();
+    return spNlPure(text).split("\n").filter((l) => l.trim() && !/^\s*advi[cs]e?\b[^:\n]*:\s*$/i.test(l)).map(nz).filter(Boolean);
+  }
+  // Sudah pernah dibuka/dilewati (isi sama, pasien sama, 48 jam)? records = [{k, l:[baris], ts}].
+  function spWaRtSeen(records, key, text, nowMs) {
+    const lines = spWaRtLines(text);
+    if (!lines.length) return false;
+    const have = new Set();
+    (records || []).forEach((r) => { if (r && r.k === key && nowMs - (r.ts || 0) < 48 * 3600000) (r.l || []).forEach((x) => have.add(x)); });
+    return lines.every((l) => have.has(l));
+  }
+  function spWaRtRecord(records, key, text, nowMs) {
+    const l = spWaRtLines(text);
+    const out = (records || []).filter((r) => r && nowMs - (r.ts || 0) < 48 * 3600000);
+    if (l.length) out.unshift({ k: key, l, ts: nowMs });
+    return out.slice(0, 200);
+  }
+  // Advis sudah ada di CPPT kunjungan ini? rows = hasil spParseCpptViewer (semua PPA: advis bisa ditulis dokter ruangan/perawat).
+  function spWaRtInCppt(rows, text) {
+    const all = (rows || []).filter((r) => r && r.type === "CPPT")
+      .map((r) => [r.keluhan, r.sText, r.pText, r.instruksi].filter(Boolean).join("\n")).join("\n");
+    if (!all.trim()) return false;
+    return !spWaMergeAdvis(all, [text]).added;
+  }
+
   // =========================
   // Bagian Rencana yang baru ditambahkan (mine dibanding isi lama). Fungsi murni.
   function spAdvisAddedText(baseText, mine) {
@@ -8978,6 +9081,39 @@
       if (j && String(j.id_reg) === p.noreg) return { gadar: j, idGadar: id };
     }
     return null;
+  }
+
+  // v3.168.0: periksa advis WA realtime SEBELUM tab dibuka. -> { st: "ada" | "lama" | "baru", where, nama }.
+  // "ada" = sudah tertulis di Rencana ASGADAR terakhir / CPPT; "lama" = pasien (dari chat) tidak ada di IGD 48 jam & rawat
+  // inap dan tidak ada yang mirip; "baru" = buka tab seperti biasa (juga bila pasien tidak terbaca / gagal membaca).
+  async function spWaRtCek(base, patient, text) {
+    if (!patient || !(patient.nama || patient.rm) || !String(text || "").trim()) return { st: "baru" };
+    const c = spWaRtCek.cache;
+    let list = c && Date.now() - c.ts < 300000 ? c.list : null;
+    if (!list) {
+      const igd = await spAdvisLoadPatients(base, null, 48);
+      let ranap = [];
+      try { ranap = await spFetchRanapPatients(base); } catch (_) {}
+      list = spAdvisAddRanap(igd, ranap);
+      if (!list.length) return { st: "baru" };
+      spWaRtCek.cache = { ts: Date.now(), list };
+    }
+    const hits = list.filter((x) => spWaSamePatient(patient, { nama: x.nama, norm: x.norm }));
+    if (!hits.length) {
+      const sug = spWaSuggestPatients([patient.nama, patient.rm].filter(Boolean).join("\n"), list);
+      return sug.length ? { st: "baru" } : { st: "lama", nama: patient.nama || patient.rm };
+    }
+    for (const p of hits.slice(0, 3)) {
+      try {
+        const g = await spAdvisLatestGadar(base, p);
+        if (g && !spWaMergeAdvis(String(g.gadar.rencana_tindakan || ""), [text]).added) return { st: "ada", where: "Rencana ASGADAR", nama: p.nama };
+      } catch (_) {}
+      try {
+        const html = await spFetch(`${base}/nurse_station/eranap/cppt_viewer/${encodeURIComponent(p.noreg)}`, { credentials: "same-origin" }).then((r) => r.text());
+        if (spWaRtInCppt(spParseCpptViewer(html), text)) return { st: "ada", where: "CPPT", nama: p.nama };
+      } catch (_) {}
+    }
+    return { st: "baru" };
   }
 
   // v3.34.0 (instruksi dokter): cari pasien -> SATU kotak berisi isi "Rencana (Tindakan, Terapi, dll)" GADAR terakhir saat ini;
@@ -17087,7 +17223,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.167.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.168.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
