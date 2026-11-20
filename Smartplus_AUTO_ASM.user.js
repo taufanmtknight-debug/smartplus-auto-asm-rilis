@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.168.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.169.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.168.0
-// @description  v3.168.0 (laporan dokter 19 Nov 2026): Advis WA realtime tidak lagi membuka tab Smartplus berulang — sebelum tab dibuka, advis dicek dulu oleh tab Smartplus yang sudah terbuka: advis yang sudah tertulis di Rencana ASGADAR terakhir atau di CPPT kunjungan itu, dan pasien lama yang tidak ada lagi di daftar IGD 48 jam / rawat inap, dilewati (cukup keterangan kecil di WhatsApp). Isi advis yang sama untuk pasien yang sama tidak dibuka dua kali walau pesannya terbaca ulang / bertambah balasan. Bila tidak ada tab Smartplus yang menjawab, tab baru tetap dibuka lalu memeriksa sendiri dan menutup diri bila advis sudah ada.
+// @version      3.169.0
+// @description  v3.169.0 (laporan dokter 20 Nov 2026: film rontgen dari Orthanc sering terlalu gelap / pucat-buram): foto Ro di PAKET KONSUL IGD/RANAP, AUTO SCREENSHOT & 🧠 Tanya AI kini ditampilkan seperti viewer radiologi — piksel asli 16-bit dibaca dari Orthanc lalu diberi window WindowCenter/WindowWidth dari DICOM (LINEAR/SIGMOID, Rescale), MONOCHROME1 dibalik searah tampilan Orthanc, dan bila tag window tidak ada/tidak masuk akal dipakai window otomatis (persentil 1–99,5%, latar kolimasi & piksel jenuh diabaikan). Resolusi penuh (maks 2048 px). Bila gagal: /rendered lalu /preview seperti dulu. CT 7x4 tidak berubah.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -67,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.168.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.168.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.169.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.169.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -11474,6 +11474,127 @@
     g.drawImage(bmp, 0, bh);
     return cv.toDataURL("image/jpeg", 0.92);
   }
+  // v3.169.0 (laporan dokter 20 Nov 2026: film rontgen dari Orthanc sering terlalu gelap / pucat-buram, tidak seperti
+  // tampilan radiologi): /preview Orthanc hanya meregang min–maks piksel sehingga foto thorax tampak abu-abu datar.
+  // Kini piksel asli 16-bit (/image-uint16) dibaca lalu diberi WINDOW seperti viewer radiologi: WindowCenter/WindowWidth
+  // dari DICOM (fungsi LINEAR/SIGMOID, RescaleSlope/Intercept), MONOCHROME1 dibalik, dan bila tag window tidak ada /
+  // tidak masuk akal -> window otomatis persentil 1–99,5% (latar kolimasi hitam & nilai jenuh diabaikan).
+  // Resolusi penuh (sisi terpanjang maks 2048 px). Gagal -> /rendered -> /preview seperti dulu.
+  async function spPng16Decode(buf) {
+    const u8 = new Uint8Array(buf);
+    const sig = [137, 80, 78, 71, 13, 10, 26, 10];
+    if (u8.length < 33 || sig.some((b, i) => u8[i] !== b)) throw new Error("bukan PNG");
+    const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+    let p = 8, w = 0, h = 0, depth = 0, ctype = 0, inter = 0;
+    const idat = [];
+    while (p + 8 <= u8.length) {
+      const len = dv.getUint32(p), type = String.fromCharCode(u8[p + 4], u8[p + 5], u8[p + 6], u8[p + 7]);
+      const d = u8.subarray(p + 8, p + 8 + len);
+      if (type === "IHDR") { w = dv.getUint32(p + 8); h = dv.getUint32(p + 12); depth = d[8]; ctype = d[9]; inter = d[12]; }
+      else if (type === "IDAT") idat.push(d);
+      else if (type === "IEND") break;
+      p += 12 + len;
+    }
+    if (!w || !h || ctype !== 0 || inter !== 0 || (depth !== 16 && depth !== 8)) throw new Error("PNG tidak didukung");
+    if (typeof DecompressionStream !== "function") throw new Error("DecompressionStream tidak ada");
+    const raw = new Uint8Array(await new Response(new Blob(idat).stream().pipeThrough(new DecompressionStream("deflate"))).arrayBuffer());
+    const bpp = depth / 8, stride = w * bpp;
+    if (raw.length < h * (stride + 1)) throw new Error("PNG terpotong");
+    const out = new Uint8Array(h * stride);
+    for (let y = 0; y < h; y++) {
+      const f = raw[y * (stride + 1)], src = y * (stride + 1) + 1, o = y * stride;
+      for (let x = 0; x < stride; x++) {
+        const a = x >= bpp ? out[o + x - bpp] : 0, b = y ? out[o - stride + x] : 0, c = y && x >= bpp ? out[o - stride + x - bpp] : 0;
+        let v = raw[src + x];
+        if (f === 1) v += a; else if (f === 2) v += b; else if (f === 3) v += (a + b) >> 1;
+        else if (f === 4) { const pp = a + b - c, pa = Math.abs(pp - a), pb = Math.abs(pp - b), pc = Math.abs(pp - c); v += pa <= pb && pa <= pc ? a : pb <= pc ? b : c; }
+        out[o + x] = v & 255;
+      }
+    }
+    const data = new Uint16Array(w * h);
+    if (depth === 16) for (let i = 0; i < data.length; i++) data[i] = (out[2 * i] << 8) | out[2 * i + 1];
+    else data.set(out);
+    return { w, h, data };
+  }
+  // Parameter tampilan: {lut: Uint8Array(65536)} dari nilai mentah -> 0..255, sudah memperhitungkan window & pembalikan.
+  function spXrayWindowLut(data, tags, invert) {
+    const num = (v, i = 0) => { const n = parseFloat(String(v == null ? "" : v).split("\\")[i]); return Number.isFinite(n) ? n : NaN; };
+    const slope = num(tags.RescaleSlope) || 1, icpt = Number.isFinite(num(tags.RescaleIntercept)) ? num(tags.RescaleIntercept) : 0;
+    const hist = new Uint32Array(65536);
+    let mn = 65535, mx = 0;
+    for (let i = 0; i < data.length; i++) { const v = data[i]; hist[v]++; if (v < mn) mn = v; if (v > mx) mx = v; }
+    // persentil tanpa nilai minimum & maksimum persis (latar kolimasi / jenuh)
+    let total = 0;
+    for (let v = mn + 1; v < mx; v++) total += hist[v];
+    const pct = (q) => { let acc = 0; const t = q * total; for (let v = mn + 1; v < mx; v++) { acc += hist[v]; if (acc >= t) return v; } return mx; };
+    const lo = total > 100 ? pct(0.01) : mn, hi = total > 100 ? pct(0.995) : mx;
+    let c = num(tags.WindowCenter), ww = num(tags.WindowWidth), source = "dicom";
+    const rv = (v) => v * slope + icpt;
+    if (Number.isFinite(c) && Number.isFinite(ww) && ww > 1) {
+      // window DICOM harus masuk akal: pusat di dalam rentang data & >=20% piksel tubuh berada di dalam window.
+      const a = c - ww / 2, b = c + ww / 2;
+      let inside = 0;
+      for (let v = mn + 1; v < mx; v++) { const r = rv(v); if (r >= a && r <= b) inside += hist[v]; }
+      if (!(c >= Math.min(rv(mn), rv(mx)) && c <= Math.max(rv(mn), rv(mx)) && total && inside / total >= 0.2)) source = "auto";
+    } else source = "auto";
+    if (source === "auto") { const r1 = rv(lo), r2 = rv(hi); c = (r1 + r2) / 2; ww = Math.max(2, Math.abs(r2 - r1)); }
+    const sigmoid = source === "dicom" && /SIGMOID/i.test(String(tags.VOILUTFunction || ""));
+    const lut = new Uint8Array(65536);
+    for (let v = 0; v < 65536; v++) {
+      const x = rv(v);
+      let y = sigmoid ? 1 / (1 + Math.exp(-4 * (x - c) / ww)) : (x - (c - 0.5)) / (ww - 1) + 0.5;
+      y = y < 0 ? 0 : y > 1 ? 1 : y;
+      if (invert) y = 1 - y;
+      lut[v] = Math.round(y * 255);
+    }
+    return { lut, source, c, ww };
+  }
+  // Arah terang-gelap piksel mentah dibandingkan /preview Orthanc (korelasi; negatif = perlu dibalik).
+  function spXrayCorr(a, aw, ah, b, bw, bh) {
+    const n = 64, xs = [], ys = [];
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+      xs.push(a[Math.floor(((j + 0.5) / n) * ah) * aw + Math.floor(((i + 0.5) / n) * aw)]);
+      ys.push(b[Math.floor(((j + 0.5) / n) * bh) * bw + Math.floor(((i + 0.5) / n) * bw)]);
+    }
+    // nilai ekstrem (piksel jenuh/penanda) dipotong ke persentil 2–98 agar tidak menguasai korelasi
+    const srt = xs.slice().sort((p, q) => p - q), lo = srt[Math.floor(srt.length * 0.02)], hi = srt[Math.floor(srt.length * 0.98)];
+    let sa = 0, sb = 0, saa = 0, sbb = 0, sab = 0;
+    const k = xs.length;
+    for (let i = 0; i < k; i++) { const x = Math.min(hi, Math.max(lo, xs[i])), y = ys[i]; sa += x; sb += y; saa += x * x; sbb += y * y; sab += x * y; }
+    const cov = sab / k - (sa / k) * (sb / k), va = saa / k - (sa / k) ** 2, vb = sbb / k - (sb / k) ** 2;
+    return va > 0 && vb > 0 ? cov / Math.sqrt(va * vb) : 0;
+  }
+  async function spXrayRender(get, id, maxSide = 2048) {
+    const tags = await get(`/instances/${id}/simplified-tags`).then((r) => r.json());
+    const pi = String(tags.PhotometricInterpretation || "").toUpperCase().trim();
+    if (!/^MONOCHROME[12]$/.test(pi) || String(tags.PixelRepresentation || "0").trim() === "1" || Number(tags.NumberOfFrames || 1) > 1) return null;
+    const img = await spPng16Decode(await (await get(`/instances/${id}/image-uint16`)).arrayBuffer());
+    let invert = pi === "MONOCHROME1";
+    if (invert) {
+      // Orthanc lama/baru bisa berbeda: pastikan arahnya sama dengan /preview (yang selama ini sudah benar terang-gelapnya).
+      try {
+        const bmp = await createImageBitmap(await (await get(`/instances/${id}/preview`)).blob());
+        const cv = document.createElement("canvas"); cv.width = 128; cv.height = 128;
+        const g = cv.getContext("2d"); g.drawImage(bmp, 0, 0, 128, 128);
+        const px = g.getImageData(0, 0, 128, 128).data, pv = new Uint8Array(128 * 128);
+        for (let i = 0; i < pv.length; i++) pv[i] = px[i * 4];
+        const r = spXrayCorr(img.data, img.w, img.h, pv, 128, 128);
+        if (r > 0.3) invert = false; // piksel mentah sudah searah tampilan -> jangan dibalik lagi
+      } catch (_) {}
+    }
+    const { lut } = spXrayWindowLut(img.data, invert === (pi === "MONOCHROME1") ? tags : {}, invert);
+    const full = document.createElement("canvas"); full.width = img.w; full.height = img.h;
+    const fg = full.getContext("2d"), id8 = fg.createImageData(img.w, img.h), d = id8.data;
+    for (let i = 0, j = 0; i < img.data.length; i++, j += 4) { const v = lut[img.data[i]]; d[j] = d[j + 1] = d[j + 2] = v; d[j + 3] = 255; }
+    fg.putImageData(id8, 0, 0);
+    const sc = Math.min(1, maxSide / Math.max(img.w, img.h));
+    let cv = full;
+    if (sc < 1) {
+      cv = document.createElement("canvas"); cv.width = Math.round(img.w * sc); cv.height = Math.round(img.h * sc);
+      const g = cv.getContext("2d"); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high"; g.drawImage(full, 0, 0, cv.width, cv.height);
+    }
+    return await new Promise((res) => cv.toBlob((b) => res(b), "image/jpeg", 0.93));
+  }
   async function spCtMontageDraw(blobs, cols = 7, rows = 4, tile = 256, lines = []) {
     const cv = document.createElement("canvas");
     const bh = spFilmBandHeight(cols * tile, lines);
@@ -11620,6 +11741,11 @@
         try {
           let blob = null;
           if (cross) blob = await get(`/instances/${id}/rendered`).then((r) => r.blob()).catch(() => null);
+          // v3.169.0: rontgen -> window DICOM / otomatis seperti viewer radiologi; gagal -> /rendered -> /preview.
+          else {
+            blob = await spXrayRender(get, id).catch(() => null);
+            if (!blob) blob = await get(`/instances/${id}/rendered`).then((r) => r.blob()).catch(() => null);
+          }
           if (!blob) blob = await (await get(`/instances/${id}/preview`)).blob();
           const image = ident.length ? await spFilmStamp(blob, ident).catch(() => blobToDataUrl(blob)) : await blobToDataUrl(blob);
           send({ part: "image", k, image, label });
@@ -17223,7 +17349,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.168.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.169.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
