@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.170.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.171.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.170.0
-// @description  v3.170.0 (permintaan dokter 21 Nov 2026): RESEP PULANG 📋 tempel daftar obat — obat langsung dipilih bila nama jelas (beberapa kekuatan/sediaan/merek -> yang tersering & sesuai dosis, ditandai ⚠ dipilih otomatis — cek; dokter tetap bisa mengganti). Dosis tanpa satuan ≥5 pada obat tablet dibaca mg: "Amlodipin 1x10" = 10 mg -> AMLODIPINE 10 MG 1 tab, jumlah 7 (dulu 70); "1x10 mg", "Metformin 2x1000" (2 tab 500), "Amlodipine 2,5 mg 1x1" (½ tab 5 mg) juga dihitung jadi jumlah tablet. Sirup/injeksi & angka 1–4 tetap jumlah tablet/ml seperti ditulis.
+// @version      3.171.0
+// @description  v3.171.0 (permintaan dokter 21 Nov 2026: "otomatis dibaca mg sesuai kemungkinan satuan sediaan saja, jangan jumlah"): RESEP PULANG 📋 tempel daftar obat — dosis angka tanpa satuan kini juga dibaca mg untuk angka 1–4 bila ada sediaan dengan kekuatan persis itu (Glimepirid 1x2 -> GLIMEPIRIDE 2 MG 1 tab, jumlah 7; Ondansetron 3x4 -> 4 mg). Bila tidak ada kekuatan persis (Paracetamol 3x1, Dexa 3x1) angka tetap dibaca tablet, tidak dipecah. Angka ≥5 tetap seperti v3.170.0 (Amlodipin 1x10 = 10 mg).
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -67,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.170.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.170.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.171.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.171.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -2676,7 +2676,9 @@
     if (/^mg$/i.test(u)) { const n = Number(ds.replace(",", ".").replace(/[^\d.]/g, "")); return n > 0 ? { mg: n, bare: false } : null; }
     if (!u && /^\d+(?:[.,]\d+)?$/.test(ds) && p.form !== "cair" && p.form !== "suntik" && p.form !== "luar" && p.form !== "mata" && p.form !== "inhal") {
       const n = Number(ds.replace(",", "."));
-      if (n >= 5) return { mg: n, bare: true };
+      // v3.171.0 (dokter 21 Nov 2026: "otomatis dibaca mg sesuai kemungkinan satuan sediaan saja, jangan jumlah"): angka 1–4
+      // juga dibaca mg, tetapi hanya bila ada sediaan dengan kekuatan PERSIS itu (Glimepiride 1x2 -> 2 mg; Dexa 3x1 tetap 1 tab).
+      if (n > 0) return { mg: n, bare: true, exactOnly: n < 5 };
     }
     return null;
   }
@@ -2700,7 +2702,7 @@
     const st = spRpStrengths(name);
     if (st.length !== 1) return null;
     const k = spRpTabCount(t.mg, st[0]);
-    return k ? spRpCountText(k) : null;
+    return k && (!t.exactOnly || k === 1) ? spRpCountText(k) : null;
   }
 
   // Pilih obat master untuk satu baris. cands = [{ name, jenis }]. Hasil: { status, pick, options[], note, dosis? }
@@ -2739,7 +2741,7 @@
     let target = spRpTargetMg(p);
     if (target && nameSt.length === 1) {
       // Kekuatan sudah di nama: "1x10" hanya dibaca mg bila pas dengan kekuatan itu (Amlodipine 10 mg 1x10).
-      if (!target.bare || !spRpTabCount(target.mg, nameSt[0])) target = null;
+      if (!target.bare || !spRpTabCount(target.mg, nameSt[0]) || (target.exactOnly && target.mg !== nameSt[0])) target = null;
     }
     if (!target && nameSt.length === 1 && !p.doseUnit && /^[\d\s\/]+$/.test(String(p.dosis || "")) &&
         !named.some((c) => formOk(c) && strOk(c))) {
@@ -2749,7 +2751,7 @@
     }
     if (target) {
       const solid = named.filter((c) => c.st.length === 1 && (!c.form || c.form === "padat") && !spIsLiquid(c.name))
-        .map((c) => ({ c, k: spRpTabCount(target.mg, c.st[0]) })).filter((x) => x.k);
+        .map((c) => ({ c, k: spRpTabCount(target.mg, c.st[0]) })).filter((x) => x.k && (!target.exactOnly || x.k === 1));
       if (solid.length) {
         // Paling sedikit pecahan: 1 tab > 2 > 3 > 4 > 1½ > ½; lalu tersering.
         const rank = (k) => [1, 2, 3, 4, 1.5, 0.5].indexOf(k);
@@ -17442,7 +17444,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.170.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.171.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
