@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.169.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.170.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.169.0
-// @description  v3.169.0 (laporan dokter 20 Nov 2026: film rontgen dari Orthanc sering terlalu gelap / pucat-buram): foto Ro di PAKET KONSUL IGD/RANAP, AUTO SCREENSHOT & 🧠 Tanya AI kini ditampilkan seperti viewer radiologi — piksel asli 16-bit dibaca dari Orthanc lalu diberi window WindowCenter/WindowWidth dari DICOM (LINEAR/SIGMOID, Rescale), MONOCHROME1 dibalik searah tampilan Orthanc, dan bila tag window tidak ada/tidak masuk akal dipakai window otomatis (persentil 1–99,5%, latar kolimasi & piksel jenuh diabaikan). Resolusi penuh (maks 2048 px). Bila gagal: /rendered lalu /preview seperti dulu. CT 7x4 tidak berubah.
+// @version      3.170.0
+// @description  v3.170.0 (permintaan dokter 21 Nov 2026): RESEP PULANG 📋 tempel daftar obat — obat langsung dipilih bila nama jelas (beberapa kekuatan/sediaan/merek -> yang tersering & sesuai dosis, ditandai ⚠ dipilih otomatis — cek; dokter tetap bisa mengganti). Dosis tanpa satuan ≥5 pada obat tablet dibaca mg: "Amlodipin 1x10" = 10 mg -> AMLODIPINE 10 MG 1 tab, jumlah 7 (dulu 70); "1x10 mg", "Metformin 2x1000" (2 tab 500), "Amlodipine 2,5 mg 1x1" (½ tab 5 mg) juga dihitung jadi jumlah tablet. Sirup/injeksi & angka 1–4 tetap jumlah tablet/ml seperti ditulis.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -67,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.169.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.169.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.170.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.170.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -2666,9 +2666,49 @@
     if (words[1] && words[1].length >= 4) terms.push(words[1].slice(0, 6));
     return terms;
   }
-  // Pilih obat master untuk satu baris. cands = [{ name, jenis }]. Hasil: { status, pick, options[], note }
-  // status: "ok" (cocok), "pilih" (beberapa kekuatan/sediaan — dokter memilih), "beda" (kekuatan tidak ada), "none".
-  // Tidak pernah memilih obat dengan kekuatan atau sediaan berbeda dari yang ditulis.
+  // v3.170.0 (permintaan dokter 21 Nov 2026): dosis dalam mg -> jumlah tablet per kali minum.
+  // "Amlodipin 1x10" (angka ≥5 tanpa satuan, bukan sediaan cair) dibaca 10 mg, bukan 10 tablet; "1x10 mg" juga.
+  // "Amlodipine 2,5 mg 1x1" bila 2,5 mg tidak ada -> ½ tab 5 mg. Hasil: { mg, bare } atau null.
+  const SP_RP_LIQ_UNIT = /^(ml|cc|c|cth|sdt|sdm|sendok.*|tetes|gtt)$/i;
+  function spRpTargetMg(p) {
+    const u = String(p.doseUnit || "").trim();
+    const ds = String(p.dosis || "").trim();
+    if (/^mg$/i.test(u)) { const n = Number(ds.replace(",", ".").replace(/[^\d.]/g, "")); return n > 0 ? { mg: n, bare: false } : null; }
+    if (!u && /^\d+(?:[.,]\d+)?$/.test(ds) && p.form !== "cair" && p.form !== "suntik" && p.form !== "luar" && p.form !== "mata" && p.form !== "inhal") {
+      const n = Number(ds.replace(",", "."));
+      if (n >= 5) return { mg: n, bare: true };
+    }
+    return null;
+  }
+  // Tablet/kapsul per kali dari mg & kekuatan sediaan: ½, 1, 1½, 2, 3, 4 tablet saja (selain itu null).
+  function spRpTabCount(mg, st) {
+    if (!(mg > 0) || !(st > 0)) return null;
+    const k = mg / st;
+    for (const ok of [0.5, 1, 1.5, 2, 3, 4]) if (Math.abs(k - ok) < 1e-6) return ok;
+    return null;
+  }
+  function spRpCountText(k) {
+    const w = Math.floor(k), h = k - w > 0.25;
+    return h ? (w ? `${w} 1/2` : "1/2") : String(w);
+  }
+  // Dosis (tablet) untuk obat master terpilih bila dosis baris ditulis dalam mg; null bila tidak bisa dihitung.
+  function spRpDoseFor(t, name) {
+    if (!t || !name) return null;
+    const form = spRpForm(name);
+    if (form && form !== "padat") return null;
+    if (spIsLiquid(name)) return null;
+    const st = spRpStrengths(name);
+    if (st.length !== 1) return null;
+    const k = spRpTabCount(t.mg, st[0]);
+    return k ? spRpCountText(k) : null;
+  }
+
+  // Pilih obat master untuk satu baris. cands = [{ name, jenis }]. Hasil: { status, pick, options[], note, dosis? }
+  // status: "ok" (cocok), "cek" (dipilih otomatis, mohon dicek), "pilih" (dokter memilih), "beda" (kekuatan tidak ada), "none".
+  // v3.170.0 (permintaan dokter 21 Nov 2026: "langsung pilih obatnya saja, jika salah nanti saya perbaiki"): bila nama obat
+  // cocok tetapi ada beberapa kekuatan/sediaan, obat tersering di riwayat resep (oral, sediaan sesuai dosis) langsung dipilih
+  // dan ditandai ⚠ cek. Dosis mg dihitung menjadi jumlah tablet (dosis = jumlah tablet per kali, kolom dosis diisi angka itu).
+  // Tetap tidak pernah memilih kekuatan yang membuat dosis mg berubah.
   function spRpMatch(p, cands, usage) {
     const words = spRpNameWords(p.name);
     if (!words.length) return { status: "none", pick: "", options: [], note: "nama obat tidak terbaca" };
@@ -2681,13 +2721,51 @@
       return words.every((w) => cw.some((x) => spRpWordMatch(w, x)));
     }).map((c) => ({ ...c, st: spRpStrengths(c.name), form: spRpForm(c.name), oral: /oral/i.test(c.jenis || "") }));
     if (!named.length) return { status: "none", pick: "", options: [], note: "tidak ditemukan di master obat — cari manual" };
+    const nameSt = p.strengthFromDose ? [] : (p.strength || []);
+    // Bentuk yang diharapkan dari dosis: ml/C/sdt -> cair; angka tablet -> padat.
+    const u = String(p.doseUnit || "").trim();
+    const wantForm = p.form || (SP_RP_LIQ_UNIT.test(u) ? "cair" : (!u || SP_RP_COUNT_UNIT.test(u)) && /^[\d\s\/]+$/.test(String(p.dosis || "")) ? "padat" : "");
     const formOk = (c) => !p.form || !c.form || c.form === p.form;
     const strOk = (c) => !p.strength.length || p.strength.every((n) => c.st.includes(n));
     const use = (c) => (usage ? usage(c.name) : 0) || 0;
-    const sortFn = (a, b) => use(b) - use(a) || (b.oral - a.oral) || a.name.length - b.name.length;
-    // Varian kemasan obat yang sama (nama inti + kekuatan + sediaan sama) boleh dipilih otomatis; selain itu dokter memilih.
+    const formPref = (c) => (wantForm && c.form && c.form !== wantForm ? -1 : 0);
+    const sortFn = (a, b) => formPref(b) - formPref(a) || use(b) - use(a) || (b.oral - a.oral) || a.name.length - b.name.length;
+    // Varian kemasan obat yang sama (nama inti + kekuatan + sediaan sama) boleh dipilih otomatis.
     const sig = (c) => `${spRpNameWords(c.name).join(" ")}|${c.st.join("/")}`;
     const oneProduct = (list) => list.every((c) => sig(c) === sig(list[0])) && new Set(list.map((c) => c.form).filter(Boolean)).size <= 1;
+    const optionsOf = (good) => [...good, ...named.filter((c) => !good.includes(c)).sort(sortFn)].map((c) => c.name);
+
+    // 1) Dosis dalam mg ("1x10", "1x10 mg", "2,5 mg 1x1" tanpa sediaan 2,5) -> sediaan padat yang kekuatannya pas.
+    let target = spRpTargetMg(p);
+    if (target && nameSt.length === 1) {
+      // Kekuatan sudah di nama: "1x10" hanya dibaca mg bila pas dengan kekuatan itu (Amlodipine 10 mg 1x10).
+      if (!target.bare || !spRpTabCount(target.mg, nameSt[0])) target = null;
+    }
+    if (!target && nameSt.length === 1 && !p.doseUnit && /^[\d\s\/]+$/.test(String(p.dosis || "")) &&
+        !named.some((c) => formOk(c) && strOk(c))) {
+      const d = String(p.dosis).trim(), mix = d.match(/^(\d+)\s+(\d+)\/(\d+)$/), fr = d.match(/^(\d+)\/(\d+)$/);
+      const cnt = mix ? +mix[1] + mix[2] / mix[3] : fr ? fr[1] / fr[2] : Number(d) || 1;
+      target = { mg: nameSt[0] * cnt, bare: false, fromName: true };
+    }
+    if (target) {
+      const solid = named.filter((c) => c.st.length === 1 && (!c.form || c.form === "padat") && !spIsLiquid(c.name))
+        .map((c) => ({ c, k: spRpTabCount(target.mg, c.st[0]) })).filter((x) => x.k);
+      if (solid.length) {
+        // Paling sedikit pecahan: 1 tab > 2 > 3 > 4 > 1½ > ½; lalu tersering.
+        const rank = (k) => [1, 2, 3, 4, 1.5, 0.5].indexOf(k);
+        solid.sort((a, b) => rank(a.k) - rank(b.k) || sortFn(a.c, b.c));
+        const best = solid[0];
+        const good = solid.filter((x) => x.k === best.k).map((x) => x.c);
+        const dosis = spRpCountText(best.k);
+        const mgTxt = String(target.mg).replace(".", ",");
+        const how = `${target.bare ? `"${p.dosis}" dibaca ${mgTxt} mg` : `${mgTxt} mg`} = ${dosis} tab ${best.c.st[0]} mg`;
+        const others = new Set(solid.map((x) => `${x.c.st[0]}`)).size > 1 || new Set(named.map((c) => c.st.join("/"))).size > 1;
+        const sure = !target.bare && !target.fromName && best.k === 1 && oneProduct(good);
+        return { status: sure ? "ok" : "cek", pick: best.c.name, options: optionsOf(good), dosis, targetMg: target,
+          note: `${how}${others ? " · ada kekuatan lain" : ""} — cek`, info: how };
+      }
+    }
+
     let good = named.filter((c) => formOk(c) && strOk(c)).sort(sortFn);
     let note = "";
     // Master tanpa kekuatan di nama (mis. "EPERISONE TAB*", "ASPILET CHEWABLE") dan tidak ada varian berkekuatan lain -> dipilih,
@@ -2696,7 +2774,7 @@
       good = named.filter(formOk).sort(sortFn);
       note = `⚠ kekuatan ${p.strength.join("/")} tidak tertulis di master — cek`;
     }
-    const options = [...good, ...named.filter((c) => !good.includes(c)).sort(sortFn)].map((c) => c.name);
+    const options = optionsOf(good);
     if (!good.length) {
       if (p.strengthFromDose) return { status: "pilih", pick: "", options, note: "pilih sediaan (kekuatan tidak tertulis di nama)" };
       const have = [...new Set(named.map((c) => c.st.join("/")).filter(Boolean))].join(", ");
@@ -2706,7 +2784,9 @@
       return { status: note ? "cek" : "ok", pick: good[0].name, options,
         note: note || (good.length > 1 ? `cocok · ${good.length} varian kemasan, cek pilihan` : "cocok") };
     }
-    return { status: "pilih", pick: "", options, note: `${good.length} pilihan kekuatan/sediaan — pilih sendiri` };
+    // v3.170.0: beberapa kekuatan/sediaan/merek -> langsung pilih yang tersering (dokter memperbaiki bila salah).
+    return { status: "cek", pick: good[0].name, options,
+      note: `dipilih otomatis (tersering${wantForm ? `, sediaan ${wantForm}` : ""}) dari ${good.length} pilihan — cek` };
   }
 
   // Kata kunci keluhan di Assesment GADAR (keluhan utama, RPS, diagnosis, masalah). Kata yang dinegasikan
@@ -16755,6 +16835,10 @@
             b2 = spRpMatch(row2, all2, spRpUsage);
             if (b2.status !== "none") break;
           }
+          // v3.170.0: generik dengan kekuatan yang sama langsung dipilih (ditandai cek); kekuatan tidak ada -> dokter memilih.
+          if (b2 && b2.pick) {
+            return { ...b2, status: "cek", note: `merek ${g.merek} tidak ada di master — dipilih generiknya ${g.generik}${b2.info ? ` (${b2.info})` : ""} — cek` };
+          }
           if (b2 && b2.status !== "none") {
             return { status: "pilih", pick: "", options: b2.options, note: `merek ${g.merek} tidak ada di master — generiknya ${g.generik}: pilih sendiri` };
           }
@@ -16770,6 +16854,12 @@
     }
     function spRppChoose(row, name) {
       row.obat = name || "";
+      // v3.170.0: dosis mg -> jumlah tablet sesuai kekuatan obat yang dipilih (dokter mengganti obat -> dihitung ulang).
+      if (row.targetMg && !row.doseEdited) {
+        const d = row.obat ? spRpDoseFor(row.targetMg, row.obat) : null;
+        row.dosis = d || row.dosisRaw;
+        row.doseInfo = d ? `${String(row.targetMg.mg).replace(".", ",")} mg = ${d} tab` : "";
+      }
       if (!row.qtyGiven) row.jumlah = spRppQty(row);
       // Waktu tidak ditulis -> pola tersering obat itu di riwayat resep (ditandai "bawaan").
       if (!row.waktuGiven) { const st = row.obat ? spRpStat(row.obat) : null; row.waktu = st ? st[2] : ""; }
@@ -16811,7 +16901,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
         : r.match.status === "error" ? ["⚠ pencarian gagal", "st-bad"]
         : r.obat && r.picked ? ["✓ dipilih dokter", "st-ok"]
         : r.match.status === "ok" ? ["✓ cocok", "st-ok"]
-        : r.match.status === "cek" ? ["⚠ cek", "st-warn"]
+        : r.match.status === "cek" ? [r.obat ? "⚠ dipilih otomatis — cek" : "⚠ cek", "st-warn"]
         : r.match.status === "pilih" ? ["⚠ pilih obat", "st-warn"]
         : r.match.status === "beda" ? ["⚠ kekuatan/sediaan tidak ada", "st-bad"]
         : ["✗ tidak ditemukan", "st-bad"];
@@ -16819,6 +16909,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
         const [bt, bc] = badge(r);
         const opts = [...new Set([...(r.obat ? [r.obat] : []), ...((r.match && r.match.options) || []), ...(r.extra || [])])];
         const notes = [...(r.match && r.match.note && r.match.status !== "ok" && !r.picked ? [r.match.note] : []), ...r.warn,
+          ...(r.doseInfo && (r.picked || (r.match && r.match.status === "ok")) ? [`dosis ${r.doseInfo}`] : []),
           ...(!r.waktuGiven && r.waktu ? ["waktu = pola tersering (tidak ditulis)"] : []),
           ...(r.obat && !r.qtyGiven && /\b(mg|mcg|g|gr)\b/i.test(r.dosis) && !spIsLiquid(r.obat) ? ["jumlah dihitung 1 tablet per dosis — cek"] : [])];
         return `<div class="sp-rpp-row ${r.include ? bc : "st-off"}" data-i="${i}">
@@ -16869,6 +16960,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
           try { m = await spRpMatchRow(r); } catch (err) { m = { status: "error", pick: "", options: [], note: `pencarian gagal: ${err.message || err}` }; }
           if (gen !== st.gen || spRp.paste !== st) return;
           r.match = m;
+          if (m.targetMg) r.targetMg = m.targetMg;
           spRppChoose(r, m.pick);
           if (box.isConnected) renderRow(i);
         }
@@ -16876,7 +16968,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       const read = () => {
         st.text = ta.value;
         const { rows, ignored } = spRpParseList(st.text);
-        st.rows = rows.map((p) => ({ ...p, include: true, match: null, obat: "", picked: false, extra: [], qtyGiven: !!p.jumlah, waktuGiven: !!p.waktu }));
+        st.rows = rows.map((p) => ({ ...p, dosisRaw: p.dosis, include: true, match: null, obat: "", picked: false, extra: [], qtyGiven: !!p.jumlah, waktuGiven: !!p.waktu }));
         st.ignored = ignored;
         renderRows();
         matchAll();
@@ -16907,6 +16999,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
           e.target.classList.toggle("sp-rp-empty", !e.target.value.trim() && f !== "waktu" && f !== "keterangan");
           if (f === "jumlah") r.qtyGiven = true;
           if (f === "waktu") r.waktuGiven = true;
+          if (f === "dosis") { r.doseEdited = true; r.doseInfo = ""; }
           if ((f === "dosis" || f === "frekuensi") && !r.qtyGiven && r.obat) { r.jumlah = spRppQty(r); const q = rowEl.querySelector('[data-f="jumlah"]'); if (q) q.value = r.jumlah; }
           renderSum();
           return;
@@ -17349,7 +17442,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.169.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.170.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
