@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.179.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.180.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.179.0
-// @description  v3.179.0 (contoh pesan dokter 21 Nov 2026): 📣 LAPOR PASIEN KE DPJP — teks WA mengikuti contoh dokter: pembuka "Assalamualaikum izin lapor dok, beberapa pasien yang belum dapat kamar, dan masih di igd, mohon izin bantuannya jika ada waktu untuk visit di igd ya dok", baris pasien NAMA / No.Reg / RM, Status tanpa lama jam, S pendek (keluhan + "masih": lemas masih, demam masih), O dengan tekanan darah (diambil juga dari pemeriksaan fisik bila kolom TD kosong), A diagnosis, penutup "Mohon bantuannya terimakasih sebelumnya dok". Semua pasien tetap dikelompokkan per DPJP.
+// @version      3.180.0
+// @description  v3.180.0 (laporan dokter 21 Nov 2026): 📣 LAPOR PASIEN KE DPJP — baris pasien dipersingkat jadi "NAMA / umur / di IGD sejak dd/mm jj.mm" (tanpa No.Reg, No.RM, dan baris Status; umur dibaca dari halaman pasien); nama tidak lagi bercampur No.RM/No.Reg dari daftar IGD; S tidak lagi berisi nama pasien dan garis miring dari keluhan triase; GCS 0 tidak ditulis.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -67,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.179.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.179.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.180.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.180.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -10181,13 +10181,21 @@
     if (/^\s*(?:[-•*·>]+|\d+[.)])?\s*(?:boleh\s+)?(?:pulang|rawat\s*jalan|blpl|aps|rujuk|dirujuk)\b/im.test(ren)) return "pulang";
     return "";
   }
+  // v3.180.0 (laporan dokter 21 Nov 2026): keluhan triase pasien baru diawali nama pasien ("BUDI, Tn / GEA INJ ///") ->
+  // nama & garis miring dibuang (fungsi murni).
+  function spLtBuangNama(t, nama) {
+    let x = String(t || "").replace(/^[^/\n]{0,60},\s*(?:tn|ny|nn|an|by|sdr|sdri)\.?\s*\/\s*/i, "");
+    const n = spLtNamaPendek(nama);
+    if (n.length >= 3 && x.toLowerCase().startsWith(n.toLowerCase())) x = x.slice(n.length).replace(/^[\s,/:-]+/, "");
+    return x.replace(/(?:\s*\/)+\s*$/, "").replace(/\s*\/+\s*/g, ", ").replace(/\s*,(?:\s*,)+/g, ",").replace(/\s+,/g, ",").replace(/^[\s,]+|[\s,]+$/g, "");
+  }
   // SOA ringkas dari GADAR (fungsi murni): { s, o, a }.
-  function spLtSoa(g) {
+  function spLtSoa(g, nama) {
     g = g || {};
     const one = (v) => spCleanGadarText(v).replace(/\s*\n+\s*/g, ". ").replace(/\s+/g, " ").replace(/\.\s*\./g, ".").trim();
     const clip = (x, n) => (x.length > n ? x.slice(0, n).replace(/\s+\S*$/, "") + "…" : x);
     const norm = (x) => String(x || "").toLowerCase().replace(/[^a-z0-9 ]+/g, " ");
-    const ku = one(spRpsOnly(spCleanGadarText(g.kel_utama))), rps = one(spRpsOnly(spCleanGadarText(g.riwayat_sakit_now)));
+    const ku = spLtBuangNama(one(spRpsOnly(spCleanGadarText(g.kel_utama))), nama), rps = spLtBuangNama(one(spRpsOnly(spCleanGadarText(g.riwayat_sakit_now))), nama);
     const kuWord = norm(ku).split(/\s+/).find((w) => w.length >= 4) || "";
     let s = ku && rps && !(kuWord && norm(rps).includes(kuWord)) ? `${ku}. ${rps}` : rps || ku;
     // v3.179.0 (contoh dokter 21 Nov 2026): S pendek = keluhan + "masih" ("lemas masih, demam masih, batuk masih").
@@ -10202,7 +10210,7 @@
     // TD kadang tidak di kolom td -> cari "TD 150/90" di pemeriksaan fisik / RPS / penunjang.
     const tdM = (`${g.cek_fisik || ""}\n${g.riwayat_sakit_now || ""}\n${g.penunjang || ""}`).match(/\b(?:td|tekanan\s*darah|bp)\s*:?\s*(\d{2,3}\s*\/\s*\d{2,3})/i);
     const tdTxt = v("td") || (tdM ? tdM[1].replace(/\s+/g, "") : "");
-    const o = [kes, gcs && !/^(?:15|e4v5m6|456)$/i.test(gcs) ? "GCS " + gcs : "", tdTxt && "TD " + tdTxt, v("nadi") && "N " + v("nadi"),
+    const o = [kes, gcs && !/^(?:15|e4v5m6|456)$/i.test(gcs) && !(/^\d+$/.test(gcs) && +gcs < 3) ? "GCS " + gcs : "", tdTxt && "TD " + tdTxt, v("nadi") && "N " + v("nadi"),
       v("nafas") && "RR " + v("nafas"), v("suhu") && "S " + v("suhu"), spo2 && +spo2 <= 100 ? `SpO2 ${spo2}%` : ""].filter(Boolean).join(", ");
     const dx = spCleanGadarText(g.diagnosa_banding || g.masalah_kesehatan).split(/\n+/).map((x) => x.replace(/^\s*(?:[-•*·]+|\d+[.)])\s*/, "").trim()).filter(Boolean);
     return { s, o, a: clip(dx.join("; "), 160) };
@@ -10211,6 +10219,27 @@
   function spLtNama(n) {
     const m = String(n || "").replace(/\s+/g, " ").trim().match(/^(.*?),\s*(tn|ny|nn|an|by|sdr|sdri)\.?$/i);
     return m ? `${m[2].charAt(0).toUpperCase()}${m[2].slice(1).toLowerCase()}. ${m[1]}` : String(n || "").trim();
+  }
+  // v3.180.0: sel nama daftar IGD berisi "NAMA 123456 / REG..." -> hanya nama (fungsi murni).
+  function spLtNamaBersih(n, norm, noreg) {
+    let x = String(n || "").replace(/\s+/g, " ");
+    [noreg, norm].filter(Boolean).forEach((v) => { x = x.split(String(v)).join(" "); });
+    x = x.replace(/\s*\/.*$/, "").replace(/(?:\s+\S*\d{4,}\S*)+\s*$/, "").replace(/\s+/g, " ").trim();
+    return x.replace(/^[\s,/-]+|[\s,/-]+$/g, "");
+  }
+  // Nama untuk pesan WA: tanpa sapaan, seperti contoh dokter.
+  function spLtNamaPendek(n, norm, noreg) {
+    return spLtNamaBersih(n, norm, noreg).replace(/,\s*(?:tn|ny|nn|an|by|sdr|sdri)\.?$/i, "").trim();
+  }
+  // v3.180.0: umur dari halaman pasien Smartplus: "( 37 thn 2 bln 0 hr )" / "Umur : 37 Thn" -> "37 th"; bayi -> "5 bln" / "12 hr".
+  function spLtUmurDariTeks(t) {
+    t = String(t || "").replace(/\s+/g, " ");
+    const m = t.match(/(\d{1,3})\s*(?:thn|th|tahun)\.?\s*,?\s*(\d{1,2})\s*(?:bln|bulan)\.?(?:\s*,?\s*(\d{1,2})\s*(?:hr|hari))?/i) ||
+      t.match(/\b(?:umur|usia)\s*:?\s*(\d{1,3})\s*(?:thn|th|tahun)?(?:\s*,?\s*(\d{1,2})\s*(?:bln|bulan))?(?:\s*,?\s*(\d{1,2})\s*(?:hr|hari))?/i);
+    if (!m) return "";
+    const y = +m[1], mo = +(m[2] || 0), d = +(m[3] || 0);
+    if (y > 130) return "";
+    return y ? `${y} th` : mo ? `${mo} bln` : d ? `${d} hr` : "";
   }
   function spLtJamText(ms) {
     if (!ms) return "";
@@ -10226,13 +10255,11 @@
     const list = (items || []).filter(Boolean);
     if (!list.length) return "";
     const dp = (x) => String(x.dpjp || "").trim();
+    // v3.180.0 (contoh dokter 21 Nov 2026: "NAMA/ umur/ di IGD sejak 21/11 18.01"): satu baris ringkas, tanpa No.Reg/RM.
     const line = (x, i) => {
-      const rm = String(x.norm || "").trim(), rmD = rm.replace(/\D/g, "");
-      // Nama di daftar IGD kadang sudah diakhiri No.RM -> tidak ditulis dua kali.
-      let nama = spLtNama(x.nama);
-      if (rmD && nama.endsWith(rmD)) nama = nama.slice(0, -rmD.length).trim();
-      const out = [`${i + 1}. ${[nama, x.noreg, rm ? "RM " + rm : ""].filter(Boolean).join(" / ")}`];
-      out.push(`Status: ${x.kamar ? "sudah dapat kamar " + x.kamar : "belum dapat kamar (transit IGD)"}${x.ts ? `, di IGD sejak ${spLtJamText(x.ts)}` : ""}`);
+      const head = [spLtNamaPendek(x.nama, x.norm, x.noreg) || "-", x.umur || "", x.kamar ? "sudah dapat kamar " + x.kamar : "",
+        x.ts ? "di IGD sejak " + spLtJamText(x.ts) : ""].filter(Boolean).join(" / ");
+      const out = [`${i + 1}. ${head}`];
       if (x.soa) {
         out.push(`S: ${x.soa.s || "-"}`);
         out.push(`O: ${x.soa.o || "-"}`);
@@ -10298,7 +10325,7 @@
   }
   function spLtPilihSet(rows) {
     const old = spLtPilihGet(), m = {};
-    rows.forEach((r) => { m[r.noreg] = { ts: (old[r.noreg] && old[r.noreg].ts) || Date.now(), p: { noreg: r.noreg, norm: r.norm || "", nama: r.nama || "", reg: r.reg || "", ts: r.ts || 0, dok: r.dok || "", st: r.st || "" } }; });
+    rows.forEach((r) => { m[r.noreg] = { ts: (old[r.noreg] && old[r.noreg].ts) || Date.now(), p: { noreg: r.noreg, norm: r.norm || "", nama: r.nama || "", umur: r.umur || "", reg: r.reg || "", ts: r.ts || 0, dok: r.dok || "", st: r.st || "" } }; });
     try { localStorage.setItem(SP_LT_PILIH_KEY, JSON.stringify(m)); } catch (_) {}
   }
 
@@ -10314,7 +10341,7 @@
     return [...t.rows].slice(1).map((r) => {
       const c = [...r.cells].map((x) => x.textContent.replace(/\s+/g, " ").trim());
       const m = (r.querySelector('a[href*="pasien_detail"]')?.getAttribute("href") || "").match(/pasien_detail\/([^/]+)\/([^/]+)/);
-      return m ? { noreg: m[1], norm: m[2], nama: c[1] || "", reg: c[3] || "", ts: tsOf(c[3]), dok: c[5] || "", st: c[8] || "" } : null;
+      return m ? { noreg: m[1], norm: m[2], nama: spLtNamaBersih(c[1], m[2], m[1]), reg: c[3] || "", ts: tsOf(c[3]), dok: c[5] || "", st: c[8] || "" } : null;
     }).filter(Boolean);
   }
   // Form pencarian daftar IGD: { action, method, field, extra:[[k,v]] } atau null (fungsi murni atas dokumen).
@@ -10438,7 +10465,7 @@
       fSel.value = [...fSel.options].some((o) => o.value === cur) ? cur : "";
       const f = fSel.value;
       const chosen = f === "-" ? sel.filter((p) => !dpjpOf(p)) : f ? sel.filter((p) => dpjpOf(p) === f) : sel;
-      ta.value = spLtWaText(chosen.map((p) => ({ nama: p.nama, norm: p.norm, noreg: p.noreg, dpjp: dpjpOf(p), dpjpSrc: srcOf(p), kamar: p.kamar, ts: p.ts, soa: p.soa })),
+      ta.value = spLtWaText(chosen.map((p) => ({ nama: p.nama, norm: p.norm, noreg: p.noreg, umur: p.umur, dpjp: dpjpOf(p), dpjpSrc: srcOf(p), kamar: p.kamar, ts: p.ts, soa: p.soa })),
         { dpjp: f && f !== "-" ? f : "", group: true });
     };
     const card = (p) => {
@@ -10446,7 +10473,7 @@
       d.className = "sp-lt-card";
       d.dataset.noreg = p.noreg;
       const top = el("div", "display:flex;gap:6px;align-items:flex-start;font-weight:700");
-      const nm = el("span", "flex:1", `${p.loading ? "⏳ " : p.err ? "⚠️ " : ""}${spLtNama(p.nama)}${p.norm ? " / RM " + p.norm : ""}`);
+      const nm = el("span", "flex:1", `${p.loading ? "⏳ " : p.err ? "⚠️ " : ""}${spLtNama(spLtNamaBersih(p.nama, p.norm, p.noreg))}${p.umur ? " / " + p.umur : ""}${p.norm ? " / RM " + p.norm : ""}`);
       const x = btn("✕", "#eee", "#b71c1c", "padding:2px 8px");
       x.className = "sp-lt-del";
       x.title = "Hapus dari laporan";
@@ -10495,10 +10522,14 @@
     };
     const readOne = async (p) => {
       try {
+        // v3.180.0: umur dari halaman pasien (satu GET, bersamaan dengan GADAR; gagal = tanpa umur).
+        const umurP = spFetch(`${base}/soap_igd/pasien_detail/${encodeURIComponent(p.noreg)}/${encodeURIComponent(p.norm)}/0`, { credentials: "same-origin" })
+          .then((r) => r.text()).then((h) => spLtUmurDariTeks(new DOMParser().parseFromString(h, "text/html").body?.textContent || "")).catch(() => "");
         const g = await spAdvisLatestGadar(base, p);
+        p.umur = (g && g.gadar && (g.gadar.umur || g.gadar.usia) && spLtUmurDariTeks(`umur ${g.gadar.umur || g.gadar.usia}`)) || await umurP;
         if (!g) { p.err = "Belum ada Assesment GADAR di kunjungan ini — SOA diisi sendiri di teks."; }
         else {
-          p.soa = spLtSoa(g.gadar);
+          p.soa = spLtSoa(g.gadar, p.nama);
           p.tindak = spLtTindak(g.gadar, p.st);
           if (!p.dpjpAuto) { const d = spLtDpjpFromRencana(spNl(g.gadar.rencana_tindakan || "")); if (d) { p.dpjpAuto = d.nama; p.dpjpAutoSrc = d.src; } }
         }
@@ -10575,7 +10606,7 @@
       const b = btn("", rows.some((r) => r.noreg === p.noreg) ? "#e0e0e0" : "#e0f2f1", "#004d40", "display:block;width:100%;text-align:left;margin:3px 0;font-weight:400;border:1px solid #80cbc4");
       b.className = "sp-lt-hit";
       const r = ranapBy.reg.get(p.noreg) || ranapBy.rm.get(spRmKey(p.norm));
-      b.append(el("b", "", `${spLtNama(p.nama)}${p.norm ? " / RM " + p.norm : ""}`),
+      b.append(el("b", "", `${spLtNama(spLtNamaBersih(p.nama, p.norm, p.noreg))}${p.norm ? " / RM " + p.norm : ""}`),
         el("div", "font-size:11px;color:#555", `${r ? "🛏 " + [r.kamar, r.noKamar].filter(Boolean).join(" ") + (r.dokter ? " · " + r.dokter : "") : "🚑 IGD, belum dapat kamar"} · ${p.reg || ""}${rows.some((x) => x.noreg === p.noreg) ? " · sudah dipilih" : ""}`));
       b.onclick = () => { addP(p); q.value = ""; showRes(); q.focus(); };
       return b;
@@ -18344,7 +18375,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.179.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.180.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
