@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.181.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.182.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.181.0
-// @description  v3.181.0 (permintaan dokter 21 Nov 2026): 📣 LAPOR PASIEN KE DPJP — label "O:" diganti "TTV:" dan "A:" diganti "Diagnosis sementara:" di teks WA dan kartu pasien.
+// @version      3.182.0
+// @description  v3.182.0 (koreksi dokter 21 Nov 2026): 📣 LAPOR PASIEN KE DPJP — label kembali "O:" dan "A:". O berisi TTV yang diketahui dari GADAR, yang kosong diisi nilai normal sesuai umur (dewasa TD 120/80, N 86, RR 20, S 36,6; anak tanpa TD). A berisi diagnosis sementara; bila kolom diagnosis GADAR kosong diambil dari keluhan triase (mis. "GEA INJ" -> GEA). Kata "INJ" tidak ikut ke S/A.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -67,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.181.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.181.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.182.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.182.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -10187,10 +10187,19 @@
     let x = String(t || "").replace(/^[^/\n]{0,60},\s*(?:tn|ny|nn|an|by|sdr|sdri)\.?\s*\/\s*/i, "");
     const n = spLtNamaPendek(nama);
     if (n.length >= 3 && x.toLowerCase().startsWith(n.toLowerCase())) x = x.slice(n.length).replace(/^[\s,/:-]+/, "");
-    return x.replace(/(?:\s*\/)+\s*$/, "").replace(/\s*\/+\s*/g, ", ").replace(/\s*,(?:\s*,)+/g, ",").replace(/\s+,/g, ",").replace(/^[\s,]+|[\s,]+$/g, "");
+    return x.replace(/\b(?:inj|injeksi)\b\.?/gi, " ").replace(/(?:\s*\/)+\s*$/, "").replace(/\s*\/+\s*/g, ", ").replace(/\s*,(?:\s*,)+/g, ",").replace(/\s+,/g, ",").replace(/^[\s,]+|[\s,]+$/g, "");
   }
   // SOA ringkas dari GADAR (fungsi murni): { s, o, a }.
-  function spLtSoa(g, nama) {
+  // v3.182.0 (dokter 21 Nov 2026: "O isinya TTV yang diketahui atau dibuat normal juga boleh"): TTV yang kosong diisi nilai
+  // normal sesuai umur (rentang sama dengan CPPT_VITAL_BY_AGE, nilai tengah); umur tidak diketahui = dewasa. Fungsi murni.
+  function spLtTtvNormal(umur) {
+    const m = String(umur || "").match(/(\d+)\s*(th|bln|hr)/i);
+    const mo = !m ? Infinity : /th/i.test(m[2]) ? +m[1] * 12 : /bln/i.test(m[2]) ? +m[1] : 0;
+    const G = [[1, 135, 45], [12, 125, 35], [36, 115, 27], [72, 100, 24], [144, 90, 20], [216, 84, 18], [Infinity, 86, 20]];
+    const g = G.find((x) => mo < x[0]) || G[G.length - 1];
+    return { td: mo >= 216 ? "120/80" : "", nadi: String(g[1]), nafas: String(g[2]), suhu: "36,6" };
+  }
+  function spLtSoa(g, nama, umur) {
     g = g || {};
     const one = (v) => spCleanGadarText(v).replace(/\s*\n+\s*/g, ". ").replace(/\s+/g, " ").replace(/\.\s*\./g, ".").trim();
     const clip = (x, n) => (x.length > n ? x.slice(0, n).replace(/\s+\S*$/, "") + "…" : x);
@@ -10210,9 +10219,13 @@
     // TD kadang tidak di kolom td -> cari "TD 150/90" di pemeriksaan fisik / RPS / penunjang.
     const tdM = (`${g.cek_fisik || ""}\n${g.riwayat_sakit_now || ""}\n${g.penunjang || ""}`).match(/\b(?:td|tekanan\s*darah|bp)\s*:?\s*(\d{2,3}\s*\/\s*\d{2,3})/i);
     const tdTxt = v("td") || (tdM ? tdM[1].replace(/\s+/g, "") : "");
-    const o = [kes, gcs && !/^(?:15|e4v5m6|456)$/i.test(gcs) && !(/^\d+$/.test(gcs) && +gcs < 3) ? "GCS " + gcs : "", tdTxt && "TD " + tdTxt, v("nadi") && "N " + v("nadi"),
-      v("nafas") && "RR " + v("nafas"), v("suhu") && "S " + v("suhu"), spo2 && +spo2 <= 100 ? `SpO2 ${spo2}%` : ""].filter(Boolean).join(", ");
+    const nv = spLtTtvNormal(umur);
+    const vv = (k) => v(k) || nv[k];
+    const o = [kes || "CM", gcs && !/^(?:15|e4v5m6|456)$/i.test(gcs) && !(/^\d+$/.test(gcs) && +gcs < 3) ? "GCS " + gcs : "", (tdTxt || nv.td) && "TD " + (tdTxt || nv.td), "N " + vv("nadi"),
+      "RR " + vv("nafas"), "S " + vv("suhu"), spo2 && +spo2 <= 100 ? `SpO2 ${spo2}%` : ""].filter(Boolean).join(", ");
     const dx = spCleanGadarText(g.diagnosa_banding || g.masalah_kesehatan).split(/\n+/).map((x) => x.replace(/^\s*(?:[-•*·]+|\d+[.)])\s*/, "").trim()).filter(Boolean);
+    // v3.182.0: A = diagnosis sementara; bila kolom diagnosis kosong (pasien baru), diambil dari keluhan triase ("GEA INJ" -> GEA).
+    if (!dx.length && ku) dx.push(ku);
     return { s, o, a: clip(dx.join("; "), 160) };
   }
   // "BUDI SANTOSO, TN" -> "Tn. BUDI SANTOSO" (fungsi murni).
@@ -10262,8 +10275,8 @@
       const out = [`${i + 1}. ${head}`];
       if (x.soa) {
         out.push(`S: ${x.soa.s || "-"}`);
-        out.push(`TTV: ${x.soa.o || "-"}`);
-        out.push(`Diagnosis sementara: ${x.soa.a || "-"}`);
+        out.push(`O: ${x.soa.o || "-"}`);
+        out.push(`A: ${x.soa.a || "-"}`);
       }
       return out.join("\n");
     };
@@ -10496,7 +10509,7 @@
       d.append(dRow);
       if (p.soa) {
         const pre = el("pre", "white-space:pre-wrap;margin:4px 0 0;padding:6px;background:#fafafa;border:1px solid #eee;border-radius:6px;font:12px/1.4 Arial,sans-serif",
-          `S: ${p.soa.s || "-"}\nTTV: ${p.soa.o || "-"}\nDiagnosis sementara: ${p.soa.a || "-"}`);
+          `S: ${p.soa.s || "-"}\nO: ${p.soa.o || "-"}\nA: ${p.soa.a || "-"}`);
         pre.className = "sp-lt-soa";
         d.append(pre);
       }
@@ -10529,7 +10542,7 @@
         p.umur = (g && g.gadar && (g.gadar.umur || g.gadar.usia) && spLtUmurDariTeks(`umur ${g.gadar.umur || g.gadar.usia}`)) || await umurP;
         if (!g) { p.err = "Belum ada Assesment GADAR di kunjungan ini — SOA diisi sendiri di teks."; }
         else {
-          p.soa = spLtSoa(g.gadar, p.nama);
+          p.soa = spLtSoa(g.gadar, p.nama, p.umur);
           p.tindak = spLtTindak(g.gadar, p.st);
           if (!p.dpjpAuto) { const d = spLtDpjpFromRencana(spNl(g.gadar.rencana_tindakan || "")); if (d) { p.dpjpAuto = d.nama; p.dpjpAutoSrc = d.src; } }
         }
@@ -18375,7 +18388,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.181.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.182.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
