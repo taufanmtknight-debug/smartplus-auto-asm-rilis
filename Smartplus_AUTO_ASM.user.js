@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.173.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.174.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.173.0
-// @description  v3.173.0 (laporan & permintaan dokter 21 Nov 2026: "halaman orthanc terbuka sampai 3 kali, dan kadang terlalu lama"): film Ro/CT dari Orthanc (PAKET KONSUL IGD/RANAP, AUTO SCREENSHOT, 🧠 Tanya AI) kini diambil LANGSUNG dari tab Smartplus lewat REST Orthanc tanpa membuka jendela/halaman Orthanc; jendela PACS lama hanya dipakai bila jalur langsung gagal (mis. Orthanc minta login). Pasien IGD: film dicari di Orthanc per No.RM walau radiologi belum diinput di Smartplus — juga tanpa Alamat PACS luar RS (server PACS RS diingat dari tombol FILM sebelumnya, hanya di browser ini) dan juga di AUTO SCREENSHOT biasa.
+// @version      3.174.0
+// @description  v3.174.0 (permintaan dokter 21 Nov 2026): AUTO IGD & RAWAT INAP — 📄 LEMBAR EDUKASI KELUARGA: pilih pasien IGD 24 jam atau rawat inap, diagnosis dibaca otomatis (Assesment GADAR terakhir / daftar e-Ranap) dan disusun kalimat edukasi dokter ("Menjelaskan kepada keluarga tentang kondisi pasien sakit …, kondisi pasien dapat mengalami penurunan kondisi hingga henti nafas henti jantung …"); diagnosis & teks bisa diedit, lalu 📋 Salin atau 🖨 Cetak dengan tata letak Formulir Pemberian Edukasi / Informasi (identitas, Diagnosis, DPJP, tabel materi & tanda tangan). Hanya membaca, tidak menyimpan ke Smartplus.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -67,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.173.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.173.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.174.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.174.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -10459,6 +10459,243 @@
     });
     await load();
   }
+
+  // =========================
+  // v3.174.0 (permintaan dokter 21 Nov 2026): 📄 LEMBAR EDUKASI KELUARGA — pasien IGD (24 jam) & rawat inap.
+  // Diagnosis dibaca otomatis (IGD: "Diagnosis Kerja dan Diagnosa Banding" Assesment GADAR terakhir; rawat inap: kolom
+  // diagnosis daftar e-Ranap), lalu disusun kalimat edukasi dari dokter:
+  //   "Menjelaskan kepada keluarga tentang kondisi pasien sakit <diagnosis>, kondisi pasien dapat mengalami penurunan
+  //    kondisi hingga henti nafas henti jantung bergantung juga dari daya tahan tubuh pasien menghadapi penyakitnya,
+  //    pasien akan dilakukan pemantauan dan terapi maksimal selanjutnya."
+  // Diagnosis & teks bisa diedit, lalu 📋 Salin atau 🖨 Cetak (lembar dengan identitas + kolom tanda tangan).
+  // Hanya membaca (GET); tidak menulis / menyimpan apa pun ke Smartplus.
+  // =========================
+  function spEduDx(text) {
+    const t = spCleanGadarText(text)
+      .split("\n")
+      .map((l) => l.replace(/^\s*(?:dx|diagnos[ia]s?(?:\s+kerja)?)\s*[:.]\s*/i, "").replace(/^\s*(?:[-•*·>]+|\d+[.)])\s*/, "").trim())
+      .filter(Boolean)
+      .join(", ");
+    return t.replace(/\s+/g, " ").replace(/\s*,(\s*,)+/g, ",").replace(/[\s,.;:]+$/, "").trim();
+  }
+  function spEduText(dx) {
+    const d = String(dx || "").trim() || "......";
+    return `Menjelaskan kepada keluarga tentang kondisi pasien sakit ${d}, kondisi pasien dapat mengalami penurunan kondisi hingga henti nafas henti jantung bergantung juga dari daya tahan tubuh pasien menghadapi penyakitnya, pasien akan dilakukan pemantauan dan terapi maksimal selanjutnya.`;
+  }
+  function spEduNow() {
+    const d = new Date(), p = (n) => String(n).padStart(2, "0");
+    return `${p(d.getDate())}-${p(d.getMonth() + 1)}-${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+  const spEduEsc = (v) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  // items = [{ nama, tglLahir, norm, nik, dpjp, dx, text }] -> satu halaman per pasien, tata letak mengikuti
+  // "FORMULIR PEMBERIAN EDUKASI / INFORMASI" contoh dokter (21 Nov 2026): kotak identitas kanan atas, Diagnosis & DPJP,
+  // tabel Tanggal/Jam | Materi Edukasi ("Menjelaskan kepada pasien/keluarga: • Lain-lain: …") | Kode Dokumen | TTD.
+  // Logo/nama RS tidak ditulis di script (repo publik) — kolom kiri atas dibiarkan kosong.
+  function spEduPrintHtml(items) {
+    const [tgl, jam] = spEduNow().split(" ");
+    const page = (x) => `<section class="pg">
+      <div class="top"><div class="logo"></div><table class="idb">
+        <tr><td>Nama</td><td>: ${spEduEsc(x.nama)}</td></tr><tr><td>Tgl Lahir</td><td>: ${spEduEsc(x.tglLahir || "")}</td></tr>
+        <tr><td>No. RM</td><td>: ${spEduEsc(x.norm)}</td></tr><tr><td>NIK</td><td>: ${spEduEsc(x.nik || "")}</td></tr></table></div>
+      <h1>FORMULIR PEMBERIAN EDUKASI / INFORMASI</h1>
+      <table class="dx"><tr><td>Diagnosis</td><td>: ${spEduEsc(x.dx || "")}</td></tr><tr><td>DPJP</td><td>: ${spEduEsc(x.dpjp || "")}</td></tr></table>
+      <table class="tb"><thead><tr><th rowspan="2" style="width:11%">Tanggal / Jam</th><th rowspan="2">Materi Edukasi / Informasi</th>
+        <th rowspan="2" style="width:9%">Kode Dokumen</th><th colspan="2" style="width:21%">Tanda Tangan</th></tr>
+        <tr><th>Pasien / Keluarga</th><th>Staf RS</th></tr></thead>
+        <tbody><tr><td class="c">${tgl}<br>${jam}</td><td class="m">Menjelaskan kepada pasien/keluarga:<ul><li><b>Lain-lain:</b> ${spEduEsc(x.text).replace(/\n/g, "<br>")}</li></ul>
+          <i>Saya sebagai pasien/keluarga pasien* telah mengerti penjelasan dokter/tenaga medis di atas.</i></td><td></td><td></td><td></td></tr></tbody></table>
+      <div class="ft">MKE 1 EP 2 dan EP 3 / ARK 2 EP 4 dan 5 / Akreditasi SNARS edisi 1.1</div>
+    </section>`;
+    return `<!doctype html><html><head><meta charset="utf-8"><title>Edukasi</title><style>
+      body{font:12px/1.5 Arial,sans-serif;color:#000;margin:0}
+      .pg{padding:12mm 14mm;page-break-after:always;position:relative;height:270mm;box-sizing:border-box}.pg:last-child{page-break-after:auto}
+      .top{display:flex;justify-content:space-between;align-items:flex-start}.logo{width:45%;height:22mm}
+      .idb{border:1px solid #000;width:46%;border-collapse:collapse}.idb td{padding:1px 6px}.idb td:first-child{width:28%;font-weight:600}
+      h1{font-size:13px;margin:8px 0}table{border-collapse:collapse}
+      .dx td{padding:2px 0}.dx td:first-child{width:22mm;font-weight:600}
+      .tb{width:100%;margin-top:8px}.tb th,.tb td{border:1px solid #000;padding:5px}.tb th{background:#eee;font-weight:normal;text-align:center}
+      .tb tbody td{height:160mm;vertical-align:top}.c{text-align:center}.m{text-align:left}.m ul{margin:6px 0 10px;padding-left:18px}
+      .ft{position:absolute;bottom:10mm;left:14mm;font-size:9px;font-style:italic}
+      @page{size:A4;margin:0}</style></head><body>${items.map(page).join("")}</body></html>`;
+  }
+  function spEduPrint(items) {
+    const f = document.createElement("iframe");
+    f.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;";
+    document.documentElement.appendChild(f);
+    const doc = f.contentWindow.document;
+    doc.open(); doc.write(spEduPrintHtml(items)); doc.close();
+    setTimeout(() => {
+      try { f.contentWindow.focus(); f.contentWindow.print(); } catch (e) { toast(`⚠ Gagal mencetak: ${e.message || e}`); }
+      setTimeout(() => f.remove(), 60000);
+    }, 300);
+  }
+
+  // Tgl lahir & NIK untuk kotak identitas (halaman pasien IGD / e-Ranap, "Tgl Lahir / Umur : dd-mm-yyyy / .. Thn"). Best-effort.
+  function spEduParseIdentitas(text) {
+    const t = String(text || "").replace(/\s+/g, " ");
+    const lahir = (t.match(/lahir[^:]{0,20}:\s*(\d{1,2}[-/.]\d{1,2}[-/.]\d{4})/i) || t.match(/(\d{1,2}[-/.]\d{1,2}[-/.]\d{4})\s*\/\s*\d+\s*(?:Thn|Tahun)/i) || [])[1] || "";
+    const nik = (t.match(/\bNIK\b\s*[:.]?\s*(\d{16})\b/i) || [])[1] || "";
+    return { tglLahir: lahir, nik };
+  }
+  async function spEduFetchIdentitas(base, p) {
+    const url = p.src === "igd" ? `${base}/soap_igd/pasien_detail/${encodeURIComponent(p.noreg)}/${encodeURIComponent(p.norm)}/0` : `${base}/erm_ranap/main_content/${encodeURIComponent(p.noreg)}`;
+    const html = await spFetch(url, { credentials: "same-origin" }).then((r) => r.text());
+    return spEduParseIdentitas(new DOMParser().parseFromString(html, "text/html").body.textContent);
+  }
+
+  let spEduState = null;
+  async function runLembarEdukasi(mode) {
+    const PANEL_ID = "sp-edu-panel";
+    document.getElementById(PANEL_ID)?.remove();
+    const base = smartplusBaseUrl();
+    spEduState = { mode: mode === "ranap" ? "ranap" : "igd", lists: {}, sel: new Map() };
+    const S = spEduState;
+    const panel = document.createElement("div");
+    panel.id = PANEL_ID;
+    panel.style.cssText = "position:fixed;left:16px;top:6vh;z-index:2147483646;background:#fff;border:2px solid #00695c;border-radius:12px;padding:12px;width:min(94vw,560px);max-height:88vh;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,.35);font:13px/1.45 Arial,sans-serif;color:#222;";
+    const head = document.createElement("div");
+    head.className = "sp-panel-head";
+    head.style.cssText = "padding:4px 0 8px;border-bottom:1px solid #eee;margin-bottom:8px;";
+    head.innerHTML = `<b style="font-size:15px;line-height:28px"><span style="color:#999">⠿</span> 📄 LEMBAR EDUKASI KELUARGA</b>`;
+    spStyleHandle(head);
+    const btn = "padding:6px 12px;font:600 12px Arial,sans-serif;border:1px solid #00695c;border-radius:14px;cursor:pointer";
+    const body = document.createElement("div");
+    body.innerHTML = `
+      <div class="sp-edu-mode" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+        <button type="button" data-edu-mode="igd" style="${btn}">🚑 IGD 24 jam</button>
+        <button type="button" data-edu-mode="ranap" style="${btn}">🛏 Rawat inap</button></div>
+      <div class="sp-edu-info" style="color:#777;font-size:11px;margin-bottom:6px"></div>
+      <input class="sp-edu-q" type="search" autocomplete="off" placeholder="🔍 Ketik nama pasien, No. RM, kamar, diagnosis…" style="width:100%;box-sizing:border-box;padding:7px;border:1px solid #bbb;border-radius:6px;font:13px Arial,sans-serif">
+      <div class="sp-edu-list" style="max-height:30vh;overflow:auto;margin:6px 0;border:1px solid #eee;border-radius:6px"></div>
+      <div style="font-weight:600;margin-top:6px">Lembar edukasi (<span class="sp-edu-n">0</span> pasien) — cek & edit dulu:</div>
+      <div class="sp-edu-cards"></div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button type="button" class="sp-edu-printall" style="flex:1;padding:9px;font:600 13px Arial,sans-serif;background:#00695c;color:#fff;border:0;border-radius:6px;cursor:pointer">🖨 Cetak semua</button>
+        <button type="button" class="sp-edu-copyall" style="flex:1;padding:9px;font:600 13px Arial,sans-serif;background:#fff;color:#00695c;border:1px solid #00695c;border-radius:6px;cursor:pointer">📋 Salin semua</button></div>
+      <div style="color:#777;font-size:11px;margin-top:6px">Hanya membaca data pasien — tidak ada yang disimpan ke Smartplus.</div>`;
+    panel.append(head, body);
+    document.documentElement.appendChild(panel);
+    spMakeDraggable(panel, PANEL_ID, (t) => !!t.closest(".sp-panel-head"));
+    spPanelFit(panel, PANEL_ID);
+    spWindowControls(panel, PANEL_ID, ".sp-panel-head", head, () => panel.remove());
+    const $ = (s) => body.querySelector(s);
+    const q = $(".sp-edu-q"), list = $(".sp-edu-list"), cards = $(".sp-edu-cards"), info = $(".sp-edu-info");
+
+    const loadRanap = () => S.lists.ranapP || (S.lists.ranapP = spFetchRanapPatients(base).catch((e) => { S.lists.ranapErr = e; return []; }));
+    const loadIgd = () => S.lists.igdP || (S.lists.igdP = Promise.all([spAdvisLoadPatients(base, null, 24), loadRanap()]).then(([igd, ranap]) => {
+      const byReg = new Map(ranap.map((r) => [r.noreg, r]));
+      return igd.map((x) => {
+        const r = byReg.get(x.noreg);
+        return { key: "igd:" + x.noreg, src: "igd", noreg: x.noreg, norm: x.norm || "", nama: x.nama || "",
+          unit: r ? `IGD → ${[r.kamar, [r.noKamar, r.bed].filter(Boolean).join("/")].filter(Boolean).join(" ")}` : "IGD",
+          dpjp: r ? r.dokter : "", dx: "", reg: x.reg || "", hay: `${x.nama} ${x.norm} ${x.noreg} ${x.dok} ${r ? r.kamar + " " + r.dokter : ""}` };
+      });
+    }));
+    const ranapItems = () => loadRanap().then((ranap) => ranap.map((r) => ({ key: "ranap:" + r.noreg, src: "ranap", noreg: r.noreg, norm: r.normRm || "", nama: r.name || "",
+      unit: [r.kamar, [r.noKamar, r.bed].filter(Boolean).join("/")].filter(Boolean).join(" "), dpjp: r.dokter || "", dx: spEduDx(r.dx), reg: "",
+      hay: `${r.name} ${r.normRm} ${r.noreg} ${r.kamar} ${r.noKamar} ${r.dx} ${r.dokter}` })));
+
+    const paintMode = () => body.querySelectorAll("[data-edu-mode]").forEach((b) => {
+      const on = b.dataset.eduMode === S.mode;
+      b.style.background = on ? "#00695c" : "#fff"; b.style.color = on ? "#fff" : "#00695c";
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+    const renderList = () => {
+      const items = S.items || [];
+      const words = norm(q.value).split(" ").filter(Boolean);
+      const shown = words.length ? items.filter((p) => { const h = norm(p.hay + " " + p.dx); return words.every((w) => h.includes(w)); }) : items;
+      list.innerHTML = shown.length ? shown.slice(0, 60).map((p) => `<button type="button" data-edu-pick="${spEduEsc(p.key)}" style="display:block;width:100%;text-align:left;padding:6px 8px;border:0;border-bottom:1px solid #f0f0f0;background:${S.sel.has(p.key) ? "#e0f2f1" : "#fff"};cursor:pointer;font:12px/1.35 Arial,sans-serif">
+          <b>${S.sel.has(p.key) ? "✓ " : ""}${spEduEsc(p.nama)}</b><br><span style="color:#666">${spEduEsc(p.unit)} · RM ${spEduEsc(p.norm)}${p.dpjp ? " · " + spEduEsc(p.dpjp) : ""}${p.dx ? " · " + spEduEsc(p.dx) : p.reg ? " · masuk " + spEduEsc(p.reg) : ""}</span></button>`).join("")
+          + (shown.length > 60 ? `<div style="padding:6px;color:#777">… ${shown.length - 60} lainnya, perjelas pencarian.</div>` : "")
+        : `<div style="padding:8px;color:#777">${S.items ? "Tidak ada pasien yang cocok." : "⏳ Memuat daftar pasien…"}</div>`;
+    };
+    const cardText = (c) => c.querySelector(".sp-edu-text").value;
+    const renderCards = () => {
+      $(".sp-edu-n").textContent = String(S.sel.size);
+      [...cards.children].forEach((c) => { if (!S.sel.has(c.dataset.key)) c.remove(); });
+      for (const p of S.sel.values()) {
+        if (cards.querySelector(`[data-key="${CSS.escape(p.key)}"]`)) continue;
+        const c = document.createElement("div");
+        c.dataset.key = p.key;
+        c.style.cssText = "border:1px solid #b2dfdb;border-radius:8px;padding:8px;margin:6px 0;background:#fafffe";
+        c.innerHTML = `<div style="display:flex;gap:6px;align-items:start"><div style="flex:1"><b class="n"></b><div class="i" style="color:#666;font-size:11px"></div></div>
+            <button type="button" class="sp-edu-x" title="Batal" style="border:0;background:none;font-size:16px;cursor:pointer">×</button></div>
+          <label style="display:block;margin-top:4px;font-weight:600">Diagnosis</label>
+          <input class="sp-edu-dx" style="width:100%;box-sizing:border-box;padding:5px;border:1px solid #bbb;border-radius:5px;font:12px Arial,sans-serif">
+          <label style="display:block;margin-top:4px;font-weight:600">DPJP</label>
+          <input class="sp-edu-dpjp" placeholder="ketik nama DPJP (boleh kosong)" style="width:100%;box-sizing:border-box;padding:5px;border:1px solid #bbb;border-radius:5px;font:12px Arial,sans-serif">
+          <label style="display:block;margin-top:4px;font-weight:600">Edukasi</label>
+          <textarea class="sp-edu-text" rows="5" style="width:100%;box-sizing:border-box;padding:5px;border:1px solid #bbb;border-radius:5px;font:12px/1.4 Arial,sans-serif"></textarea>
+          <div style="display:flex;gap:6px;margin-top:4px"><button type="button" class="sp-edu-copy" style="${btn};background:#fff;color:#00695c">📋 Salin</button>
+            <button type="button" class="sp-edu-print1" style="${btn};background:#fff;color:#00695c">🖨 Cetak</button><span class="sp-edu-st" style="color:#777;font-size:11px;align-self:center"></span></div>`;
+        c.querySelector(".n").textContent = p.nama;
+        c.querySelector(".i").textContent = `${p.unit} · RM ${p.norm}`;
+        const dxEl = c.querySelector(".sp-edu-dx"), tx = c.querySelector(".sp-edu-text"), st = c.querySelector(".sp-edu-st");
+        let edited = false;
+        const fill = () => { if (!edited) tx.value = spEduText(dxEl.value); };
+        dxEl.value = p.dx; fill();
+        const dpEl = c.querySelector(".sp-edu-dpjp");
+        dpEl.value = p.dpjp || "";
+        dpEl.addEventListener("input", () => { p.dpjp = dpEl.value; });
+        dxEl.addEventListener("input", () => { p.dx = dxEl.value; if (dxEl.value.trim()) st.textContent = ""; fill(); });
+        tx.addEventListener("input", () => { edited = tx.value !== spEduText(dxEl.value); });
+        cards.appendChild(c);
+        if (!p.idRead) { p.idRead = true; spEduFetchIdentitas(base, p).then((x) => { p.tglLahir = x.tglLahir; p.nik = x.nik; }).catch(() => {}); }
+        if (p.src === "igd" && !p.dxRead) {
+          p.dxRead = true;
+          st.textContent = "⏳ Membaca diagnosis dari Assesment GADAR…"; dxEl.placeholder = "⏳ membaca…";
+          spAdvisLatestGadar(base, p).then((g) => {
+            const dx = g ? spEduDx(g.gadar.diagnosa_banding || g.gadar.masalah_kesehatan) : "";
+            if (dx && !dxEl.value.trim()) { dxEl.value = p.dx = dx; fill(); }
+            st.textContent = dx ? "" : "⚠ Diagnosis belum ada di Assesment GADAR — ketik manual.";
+            dxEl.placeholder = "ketik diagnosis";
+          }).catch((e) => { st.textContent = `⚠ Gagal membaca GADAR (${e.message || e}) — ketik diagnosis manual.`; dxEl.placeholder = "ketik diagnosis"; });
+        } else if (!p.dx) st.textContent = "⚠ Diagnosis belum terbaca — ketik manual.";
+      }
+    };
+    const item = (c) => { const p = S.sel.get(c.dataset.key); return { nama: p.nama, norm: p.norm, unit: p.unit, dpjp: c.querySelector(".sp-edu-dpjp").value.trim(), tglLahir: p.tglLahir || "", nik: p.nik || "", dx: c.querySelector(".sp-edu-dx").value.trim(), text: cardText(c) }; };
+    const copyTo = async (text, el) => { const ok = await copySoapText(text); toast(ok ? "📋 Teks edukasi disalin." : "⚠ Gagal menyalin — blok teks lalu salin manual."); return ok; };
+
+    const setMode = async (m) => {
+      S.mode = m; S.items = null; paintMode(); renderList();
+      info.textContent = m === "igd" ? "Pasien IGD 24 jam terakhir — diagnosis dari Assesment GADAR terakhir." : "Pasien yang sedang dirawat (e-Ranap) — diagnosis dari daftar rawat inap.";
+      try {
+        const items = await (m === "igd" ? loadIgd() : ranapItems());
+        if (S.mode !== m || !panel.isConnected) return;
+        S.items = items;
+        if (m === "ranap" && S.lists.ranapErr) info.textContent = `⚠ Daftar rawat inap gagal dimuat: ${S.lists.ranapErr.message || S.lists.ranapErr}`;
+        else info.textContent += ` ${items.length} pasien.`;
+        renderList(); q.focus();
+      } catch (e) {
+        if (S.mode === m) { S.items = []; info.textContent = `⚠ Daftar pasien gagal dimuat: ${e.message || e}`; renderList(); }
+      }
+    };
+    body.addEventListener("click", async (e) => {
+      const t = e.target.closest("button");
+      if (!t || !body.contains(t)) return;
+      if (t.dataset.eduMode) { if (t.dataset.eduMode !== S.mode) { q.value = ""; setMode(t.dataset.eduMode); } return; }
+      if (t.dataset.eduPick) {
+        const p = (S.items || []).find((x) => x.key === t.dataset.eduPick);
+        if (!p) return;
+        if (S.sel.has(p.key)) S.sel.delete(p.key); else S.sel.set(p.key, p);
+        q.value = ""; renderList(); renderCards(); q.focus();
+        return;
+      }
+      const c = t.closest("[data-key]");
+      if (t.classList.contains("sp-edu-x") && c) { S.sel.delete(c.dataset.key); renderList(); renderCards(); return; }
+      if (t.classList.contains("sp-edu-copy") && c) { await copyTo(cardText(c)); return; }
+      if (t.classList.contains("sp-edu-print1") && c) { spEduPrint([item(c)]); return; }
+      const all = [...cards.children];
+      if (t.classList.contains("sp-edu-printall")) { if (!all.length) toast("Pilih pasien dulu."); else spEduPrint(all.map(item)); return; }
+      if (t.classList.contains("sp-edu-copyall")) {
+        if (!all.length) { toast("Pilih pasien dulu."); return; }
+        await copyTo(all.map((x) => { const it = item(x); return `${it.nama} (RM ${it.norm}, ${it.unit})\n${it.text}`; }).join("\n\n"));
+      }
+    });
+    q.addEventListener("input", renderList);
+    renderCards();
+    setMode(S.mode);
+  }
   // =========================
   // AUTO RO THORAX (v3.6.0)
   // =========================
@@ -17641,6 +17878,10 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
           📨 PAKET KONSUL RANAP
         </button>
 
+        <button type="button" data-edukasi="ranap">
+          📄 LEMBAR EDUKASI KELUARGA
+        </button>
+
         <button type="button" class="sp-back" data-back="main">
           ← Kembali ke menu utama
         </button>
@@ -17888,6 +18129,11 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
           📋 MULTIPLE CPPT
         </button>
 
+        <!-- v3.174.0 (permintaan dokter 21 Nov 2026): lembar edukasi keluarga dari diagnosis (cetak / salin, tidak menyimpan). -->
+        <button type="button" data-edukasi="igd">
+          📄 LEMBAR EDUKASI KELUARGA
+        </button>
+
         <button type="button" class="sp-back" data-back="main">← Kembali</button>
       `;
     }
@@ -17895,7 +18141,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.173.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.174.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -18596,6 +18842,12 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       if (target.dataset?.advis === "1") {
         closeMenu();
         await runAdvisSpesialis();
+        return;
+      }
+
+      if (target.dataset?.edukasi) {
+        closeMenu();
+        await runLembarEdukasi(target.dataset.edukasi);
         return;
       }
 
