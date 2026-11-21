@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.172.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.173.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.172.0
-// @description  v3.172.0 (permintaan dokter 21 Nov 2026): AUTO IGD -> 📣 LAPOR PASIEN TRANSIT KE DPJP (WA) — daftar pasien IGD 12/24/48 jam yang belum dapat kamar di e-Ranap (atau sudah dapat kamar tetapi DPJP kosong) dengan SOA ringkas dari GADAR (S keluhan, O kesadaran + TTV, A diagnosis). DPJP diambil dari e-Ranap / advis di Rencana / konsul (ditandai belum pasti); bila belum ada, dokter mengetik nama DPJP (diingat 3 hari). Pasien pulang/rujuk menurut GADAR dipisah. Teks WA bisa per DPJP, diedit, 📋 Salin atau 📲 Kirim WA (tidak pernah terkirim otomatis). Tidak menyimpan apa pun.
+// @version      3.173.0
+// @description  v3.173.0 (laporan & permintaan dokter 21 Nov 2026: "halaman orthanc terbuka sampai 3 kali, dan kadang terlalu lama"): film Ro/CT dari Orthanc (PAKET KONSUL IGD/RANAP, AUTO SCREENSHOT, 🧠 Tanya AI) kini diambil LANGSUNG dari tab Smartplus lewat REST Orthanc tanpa membuka jendela/halaman Orthanc; jendela PACS lama hanya dipakai bila jalur langsung gagal (mis. Orthanc minta login). Pasien IGD: film dicari di Orthanc per No.RM walau radiologi belum diinput di Smartplus — juga tanpa Alamat PACS luar RS (server PACS RS diingat dari tombol FILM sebelumnya, hanya di browser ini) dan juga di AUTO SCREENSHOT biasa.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -67,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.172.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.172.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.173.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.173.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -10979,6 +10979,7 @@
       const films = [...tr.querySelectorAll("[onclick*='window.open']")]
         .map((b) => ((b.getAttribute("onclick") || "").match(/window\.open\('([^']+)'/) || [])[1])
         .filter(Boolean);
+      films.forEach(spPacsNoteRs); // v3.173.0: server PACS RS diingat untuk cari film per No.RM
       return {
         noreg: det ? det[1] : "",
         idTrx: det ? det[2] : "",
@@ -11215,6 +11216,9 @@
   // v3.130.0: bila alamat PACS luar RS diisi, alamat yang terakhir menjawab dicoba dulu; bila jendela tidak menjawab,
   // dicoba alamat yang lain (RS <-> luar RS), lalu yang menjawab diingat.
   async function spCaptureFilm(url, index, timeoutMs = SP_FILM_TIMEOUT_MS, mode = "") {
+    // v3.173.0: film diambil langsung lewat REST Orthanc dari tab ini (tanpa jendela); jendela PACS hanya cadangan.
+    const rest = await spFilmRest(url, mode).catch(() => null);
+    if (rest) return rest;
     const luar = spPacsLuar();
     let asal = "";
     try { asal = new URL(url, location.href).origin; } catch (_) {}
@@ -11309,15 +11313,110 @@
     });
   }
 
-  // v3.130.0: cari study pasien langsung di Orthanc per No.RM (jendela viewer di alamat PACS luar RS; No.RM lewat
-  // window.name, tidak di alamat). Hasil: { studies:[{id,date,time,desc,mods}] } atau { studies:null, error }.
+  // v3.173.0 (laporan dokter 21 Nov 2026: "halaman orthanc terbuka sampai 3 kali, dan kadang terlalu lama"): film &
+  // daftar study per No.RM kini diambil LANGSUNG dari tab Smartplus lewat GM_xmlhttpRequest ke REST Orthanc (tanpa
+  // membuka jendela PACS: 1 jendela daftar No.RM + 1 jendela per film dulu). Server yang menjawab diingat 10 menit.
+  // Bila REST langsung tidak bisa (mis. Orthanc minta login yang belum tersimpan di browser), jalur jendela lama dipakai.
+  // Server PACS jaringan RS yang terlihat di tombol FILM Smartplus diingat (localStorage browser ini saja, tidak di
+  // script) supaya film pasien IGD bisa dicari per No.RM di Orthanc walau radiologinya belum diinput di Smartplus.
+  const SP_PACS_RS_KEY = "sp-auto-asm-pacs-rs";
+  function spPacsRs() { try { return spPacsNormOrigin(localStorage.getItem(SP_PACS_RS_KEY) || ""); } catch (_) { return ""; } }
+  function spPacsNoteRs(url) {
+    try {
+      const u = new URL(url, location.href);
+      if (!/^https?:$/.test(u.protocol) || !u.searchParams.get("study") || u.origin === location.origin || u.origin === spPacsLuar()) return;
+      if (spPacsRs() !== u.origin) localStorage.setItem(SP_PACS_RS_KEY, u.origin);
+    } catch (_) {}
+  }
+  function spPacsAny() { return spPacsLuar() || spPacsRs(); }
+  // Urutan server PACS yang dicoba (fungsi murni-ish, diuji): alamat film itu sendiri, alamat luar RS, alamat RS
+  // yang diingat; yang terakhir menjawab (luar/rs) didahulukan.
+  function spPacsOrigins(first = []) {
+    const luar = spPacsLuar(), rs = spPacsRs();
+    const list = [...new Set([...first, luar, rs].filter(Boolean))];
+    return spPacsPakai() === "luar" && luar ? [luar, ...list.filter((o) => o !== luar)] : list;
+  }
+  function spPacsRestCan() { return typeof GM_xmlhttpRequest === "function" && typeof Response === "function"; }
+  // get(path, opt) untuk spOrthancJob lewat GM_xmlhttpRequest (cookie/login browser ikut). Gagal jaringan -> err.net.
+  function spPacsGmGet(origin, timeout = 30000) {
+    return (path, opt = {}) => new Promise((resolve, reject) => {
+      const fail = (msg, net) => reject(Object.assign(new Error(msg), { net }));
+      try {
+        GM_xmlhttpRequest({
+          method: opt.method || "GET", url: origin + path, data: opt.body, timeout, responseType: "blob",
+          headers: opt.body ? { "Content-Type": "application/json" } : undefined,
+          onload: (r) => {
+            if (r.status >= 200 && r.status < 300) resolve(new Response(r.response == null ? "" : r.response, { status: 200 }));
+            else fail(`PACS ${r.status} (${path.split("/")[1]})`, !r.status || r.status === 401 || r.status === 403);
+          },
+          onerror: () => fail("PACS tidak terjangkau", true),
+          ontimeout: () => fail("PACS tidak menjawab", true)
+        });
+      } catch (e) { fail(String(e && e.message || e), true); }
+    });
+  }
+  const spPacsRestMemo = new Map(); // origin -> { ok, at }
+  // Server pertama yang REST-nya menjawab (/system, maks 5 detik per server) atau "" bila tidak ada.
+  async function spPacsRestOrigin(origins) {
+    if (!spPacsRestCan()) return "";
+    const now = Date.now();
+    for (const o of origins) {
+      const m = spPacsRestMemo.get(o);
+      if (m && now - m.at < (m.ok ? 600000 : 120000)) { if (m.ok) return o; continue; }
+      const ok = await spPacsGmGet(o, 5000)("/system").then((r) => r.json()).then((j) => !!j && typeof j === "object", () => false).catch(() => false);
+      spPacsRestMemo.set(o, { ok, at: Date.now() });
+      if (ok) { spPacsSetPakai(o === spPacsLuar() ? "luar" : "rs"); return o; }
+    }
+    return "";
+  }
+  // Jalankan spOrthancJob langsung dari tab ini. Hasil berbentuk sama dengan spCaptureFilmOnce (+ rest:true);
+  // net:true = server tidak terjangkau / butuh login -> pakai jalur jendela.
+  async function spOrthancRest(origin, job) {
+    const got = [];
+    let label = "", done = null;
+    const send = (p) => { if (p.label) label = p.label; if (p.part === "image") got[p.k] = p.image; else if (p.part === "done") done = p; };
+    try { await spOrthancJob(spPacsGmGet(origin), job, send); }
+    catch (err) {
+      if (err && err.net && !got.some(Boolean)) { spPacsRestMemo.delete(origin); return { net: true, error: String(err.message || err) }; }
+      done = { ok: false, error: String(err && err.message || err) };
+    }
+    const images = got.filter(Boolean);
+    done = done || { ok: false, error: "film tidak terambil" };
+    if (Array.isArray(done.studies)) return { ok: true, studies: done.studies, rest: true, origin };
+    return { label, ok: done.ok !== false && (!!images.length || !!done.skipped), skipped: done.skipped, error: done.error, images, rest: true, origin };
+  }
+  async function spFilmRest(url, mode) {
+    if (!spPacsRestCan()) return null;
+    let u;
+    try { u = new URL(url, location.href); } catch (_) { return null; }
+    const study = u.searchParams.get("study");
+    if (!study || !/^https?:$/.test(u.protocol)) return null;
+    spPacsNoteRs(u.href);
+    const origin = await spPacsRestOrigin(spPacsOrigins([u.origin]));
+    if (!origin) return null;
+    const res = await spOrthancRest(origin, { mode, study });
+    return res.net ? null : res;
+  }
+
+  // v3.130.0: cari study pasien langsung di Orthanc per No.RM. Hasil: { studies:[{id,date,time,desc,mods}], origin }
+  // atau { studies:null, error }. v3.173.0: lewat REST langsung dulu (tanpa jendela), juga di alamat PACS RS yang
+  // diingat; jendela viewer (No.RM lewat window.name, tidak di alamat) hanya cadangan.
   async function spPacsStudiesByRm(rm, timeoutMs = 15000) {
-    const luar = spPacsLuar();
-    if (!luar || !rm) return { studies: null };
-    const res = await spCaptureFilmOnce(`${luar}/osimis-viewer/app/index.html`, "rm", timeoutMs, "rmlist", encodeURIComponent(rm));
-    if (Array.isArray(res.studies)) return { studies: res.studies };
+    const win = spPacsLuar() || spPacsRs();
+    if (!win || !rm) return { studies: null };
+    const origin = await spPacsRestOrigin(spPacsOrigins());
+    if (origin) {
+      const r = await spOrthancRest(origin, { mode: "rmlist", rm });
+      if (Array.isArray(r.studies)) return { studies: r.studies, origin };
+      if (!r.net) return { studies: null, error: r.error || "pencarian No.RM di PACS gagal" };
+    }
+    // Server RS yang diingat hanya lewat REST: jalur jendela (lambat, 1 jendela tambahan) hanya untuk alamat luar RS
+    // yang diisi dokter, seperti sebelum v3.173.0.
+    if (win !== spPacsLuar()) return { studies: null };
+    const res = await spCaptureFilmOnce(`${win}/osimis-viewer/app/index.html`, "rm", timeoutMs, "rmlist", encodeURIComponent(rm));
+    if (Array.isArray(res.studies)) return { studies: res.studies, origin: win };
     if (res.blocked) return { studies: null, blocked: true };
-    return { studies: null, noReply: !!res.noReply, error: res.noReply ? "alamat PACS luar RS tidak menjawab (sudah login Orthanc di Chrome?)" : res.error || "pencarian No.RM di PACS gagal" };
+    return { studies: null, noReply: !!res.noReply, error: res.noReply ? "PACS tidak menjawab (sudah login Orthanc di browser ini / tersambung jaringan RS?)" : res.error || "pencarian No.RM di PACS gagal" };
   }
 
   function spShowPenunjangPanel(items, notes, opts = {}) {
@@ -11687,15 +11786,19 @@
     // AUTO SCREENSHOT biasa tetap seperti dulu (CT cukup ekspertise).
     const filmTimeout = opts.konsulFilm ? 30000 : SP_FILM_TIMEOUT_MS;
     const filmExamOk = (exam) => (opts.konsulFilm ? !spIsUsgExam(exam) : !spNoFilmExam(exam));
-    const rmNo = opts.konsulFilm ? opts.normRm || (/\/soap_igd\//i.test(location.pathname) ? getCurrentIgdNorm() : "") : "";
+    // v3.173.0 (permintaan dokter 21 Nov 2026): pasien IGD — film dicari di Orthanc per No.RM juga di AUTO SCREENSHOT
+    // biasa dan walau radiologinya belum diinput di Smartplus (film paling cepat ada di Orthanc).
+    const rmNo = opts.normRm || (/\/soap_igd\//i.test(location.pathname) ? getCurrentIgdNorm() : "");
     // Film per No.RM dari Orthanc: null = tidak dipakai/gagal (pakai tombol FILM Smartplus), [] = tidak ada film.
     const rmFilmsOf = async (latestIfNone) => {
-      if (!rmNo || !spPacsLuar()) return null;
+      if (!rmNo || !spPacsAny()) return null;
       status = "⏳ Mencari film pasien di PACS (per No.RM)...";
       render();
       const r = await spPacsStudiesByRm(rmNo);
       if (!r.studies) { if (r.error || r.blocked) notes.push({ text: `Cari film per No.RM: ${r.blocked ? "jendela PACS diblokir browser" : r.error} — dipakai tombol FILM Smartplus.` }); return null; }
-      return spPacsRmFilmList(r.studies, spPacsLuar(), spCutoffKey(SP_RAD_WINDOW), latestIfNone)
+      // AUTO SCREENSHOT biasa: study CT/MRI/USG saja dilewati (cukup ekspertise), seperti tombol FILM.
+      const studies = opts.konsulFilm ? r.studies : r.studies.filter((x) => !(x.mods || []).length || !x.mods.every((m) => /^(CT|MR|US|SR|PR|KO|DOC)$/i.test(m)));
+      return spPacsRmFilmList(studies, r.origin, spCutoffKey(SP_RAD_WINDOW), latestIfNone)
         .map((f, i) => ({ url: f.url, caption: `${newMark}🩻 ${f.caption}`, base: `Film_${spSafeName(f.caption)}_${i + 1}` }))
         .filter((f) => !seenFilm.has(f.url));
     };
@@ -12040,12 +12143,11 @@
 
   // Dijalankan DI JENDELA VIEWER PACS (Orthanc/Osimis) yang dibuka oleh AUTO SCREENSHOT.
   // v3.13.0: tiap gambar dikirim begitu siap (bukan menunggu semua), karena Smartplus hanya menunggu 6 detik.
+  // v3.173.0: isi pekerjaannya dipindah ke spOrthancJob (dipakai juga jalur REST langsung tanpa jendela).
   async function runOrthancCapture() {
     const parts = String(window.name || "").split("|");
     const targetOrigin = decodeURIComponent(parts[1] || "");
     const nonce = parts[2] || "";
-    const aiMode = parts[3] === "ai"; // v3.121.0: dibuka 🧠 TANYA AI -> CT/MRI ikut diambil
-    const konsulMode = parts[3] === "konsul"; // v3.131.0: PAKET KONSUL -> CT/MRI = satu gambar 7x4 (scout + 27 irisan)
     // v3.132.0 (uji HP dokter 12 Nov 2026, Quetta): film tampil di jendela PACS lalu jendela tertutup, tapi gambar tidak
     // sampai ke Smartplus (window.opener / postMessage tidak andal di tab HP). Hasil juga dititipkan lewat penyimpanan
     // Violentmonkey (GM_setValue, satu kunci per nonce, berisi keadaan lengkap) yang didengar tab Smartplus.
@@ -12062,123 +12164,129 @@
       } catch (_) {}
     };
     send({ part: "meta" }); // tanda jendela film hidup (Smartplus menunggu lebih lama bila jendela menjawab)
-    const blobToDataUrl = (blob) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(blob); });
-    const byInstanceNumber = (a, b) => (Number(a.MainDicomTags?.InstanceNumber) || 0) - (Number(b.MainDicomTags?.InstanceNumber) || 0);
+    const get = async (path, opt) => {
+      const r = await fetch(location.origin + path, { credentials: "include", ...(opt || {}) });
+      if (!r.ok) throw new Error(`PACS ${r.status} (${path.split("/")[1]})`);
+      return r;
+    };
     try {
-      const get = async (path, opt) => {
-        const r = await fetch(location.origin + path, { credentials: "include", ...(opt || {}) });
-        if (!r.ok) throw new Error(`PACS ${r.status} (${path.split("/")[1]})`);
-        return r;
-      };
-      // v3.130.0: mode "rmlist" -> daftar study pasien per No.RM (PatientID; cepat, tidak memakai pencarian per tanggal
-      // yang berat bagi server). Modality tiap study diambil dari daftar serinya.
-      if (parts[3] === "rmlist") {
-        const rm = decodeURIComponent(parts[4] || "").trim();
-        if (!rm) throw new Error("No.RM kosong.");
-        let found = [];
-        for (const pid of spPacsRmVariants(rm)) {
-          const r = await (await get("/tools/find", { method: "POST", body: JSON.stringify({ Level: "Study", Query: { PatientID: pid }, Expand: true, Limit: 100 }) })).json();
-          found = (r || []).filter((st) => !pid.startsWith("*") || spPacsRmSame(st.PatientMainDicomTags?.PatientID, rm));
-          if (found.length) break;
-        }
-        const studies = await Promise.all((found || []).slice(0, 60).map(async (st) => {
-          const ser = await get(`/studies/${st.ID}/series`).then((r) => r.json()).catch(() => []);
-          const t = st.MainDicomTags || {};
-          return { id: st.ID, date: t.StudyDate || "", time: t.StudyTime || "", desc: String(t.StudyDescription || "").trim(), mods: [...new Set((ser || []).map((x) => String(x.MainDicomTags?.Modality || "").toUpperCase()).filter(Boolean))] };
-        }));
-        send({ part: "done", ok: true, studies });
-        setTimeout(() => { try { window.close(); } catch (_) {} }, 1200); // v3.132.0: beri waktu GM_setValue tersimpan
-        return;
-      }
-      const study = new URLSearchParams(location.search).get("study");
-      if (!study) throw new Error("ID study tidak ada di alamat viewer.");
-      const studyInfoP = get(`/studies/${study}`).then((r) => r.json()).catch(() => null);
-      const series = await (await get(`/studies/${study}/series`)).json();
-      const isImg = (s) => !/^(SR|PR|KO|DOC|REG|SEG)$/i.test(s.MainDicomTags?.Modality || "");
-      // v3.12.0: film USG tidak diambil (USG cukup ekspertise). v3.24.0: CT/MRI juga tidak (cukup ekspertise).
-      const isUs = (s) => (aiMode || konsulMode ? /^US$/i : /^(US|CT|MR)$/i).test(s.MainDicomTags?.Modality || "");
-      if (series.some(isImg) && series.filter(isImg).every(isUs)) {
-        const m = series.filter(isImg).map((x) => String(x.MainDicomTags?.Modality || "").toUpperCase());
-        send({ part: "done", ok: true, skipped: m.includes("CT") ? "CT" : m.includes("MR") ? "MRI" : "USG" });
-        setTimeout(() => { try { window.close(); } catch (_) {} }, 1200); // v3.132.0: beri waktu GM_setValue tersimpan
-        return;
-      }
-      const st = await studyInfoP;
-      const mods = [...new Set(series.filter(isImg).filter((s) => !isUs(s)).map((s) => s.MainDicomTags?.Modality).filter(Boolean))].join("/");
-      const label = [mods, st?.MainDicomTags?.StudyDescription].filter(Boolean).join(" ").trim();
-      if (label) send({ part: "meta", label });
-      const ident = aiMode ? [] : spFilmIdentLines(st, mods); // v3.134.0: Tanya AI tanpa identitas (nama disamarkan)
-      const usable = series
-        .filter((s) => isImg(s) && !isUs(s))
-        .map((s) => ({ id: s.ID, n: (s.Instances || []).length, num: Number(s.MainDicomTags?.SeriesNumber) || 9999, mod: String(s.MainDicomTags?.Modality || "").toUpperCase(),
-          desc: String(s.MainDicomTags?.SeriesDescription || ""), mid: (s.Instances || [])[Math.floor((s.Instances || []).length / 2)] }))
-        .filter((s) => s.n > 0)
-        .sort((a, b) => a.num - b.num);
-      // v3.142.0: WindowWidth irisan tengah tiap seri CT/MRI (>=10 gambar) untuk mengenali bone window tanpa label "bone".
-      if (aiMode || konsulMode) {
-        await Promise.all(usable.filter((s) => (s.mod === "CT" || s.mod === "MR") && s.n >= 10 && s.mid).map(async (s) => {
-          try { const tg = await get(`/instances/${s.mid}/simplified-tags`).then((r) => r.json()); s.ww = parseFloat(String(tg.WindowWidth || "").split("\\")[0]) || 0; } catch (_) {}
-        }));
-      }
-      // v3.121.0 (TANYA AI): CT/MRI -> 12 irisan merata dari seri aksial utama (10–80 gambar, nomor seri terkecil;
-      // bukan scout/localizer yang hanya 1–3 gambar), dirender dengan windowing DICOM bila server mendukung.
-      const cross = aiMode || konsulMode ? spPickCrossSeries(usable.filter((s) => s.mod === "CT" || s.mod === "MR")) : null;
-      // Film/rontgen: seri kecil (<=12 gambar) diambil semua. CT/MRI tanpa seri film:
-      // ambil maks 9 irisan merata dari seri terkecil.
-      const small = usable.filter((s) => s.n <= 12);
-      const targets = [];
-      if (cross && !konsulMode) {
-        const inst = (await (await get(`/series/${cross.id}/instances`)).json()).sort(byInstanceNumber);
-        spEvenSlices(inst.length, 12).forEach((i) => targets.push(inst[i].ID));
-      } else if (small.length && !cross) {
-        const lists = await Promise.all(small.map((s) => get(`/series/${s.id}/instances`).then((r) => r.json())));
-        for (const inst of lists) targets.push(...inst.sort(byInstanceNumber).map((i) => i.ID));
-      } else if (usable.length && !cross) {
-        const s = usable.reduce((a, b) => (a.n <= b.n ? a : b));
-        const inst = (await (await get(`/series/${s.id}/instances`)).json()).sort(byInstanceNumber);
-        const k = Math.min(9, inst.length);
-        for (let i = 0; i < k; i++) targets.push(inst[Math.floor(((i + 0.5) * inst.length) / k)].ID);
-      }
-      // v3.131.0 (permintaan dokter 12 Nov 2026): PAKET KONSUL — CT/MRI dikirim sebagai SATU gambar 7x4 seperti lembar film:
-      // kotak pertama scout/localizer (seri 1–3 gambar), lalu 27 irisan aksial merata dari bawah ke atas.
-      if (cross && konsulMode) {
-        const crossAll = usable.filter((s) => s.mod === "CT" || s.mod === "MR");
-        const scoutSer = crossAll.filter((s) => s.id !== cross.id && s.n <= 3).sort((a, b) => a.num - b.num)[0];
-        const scoutInst = scoutSer ? (await (await get(`/series/${scoutSer.id}/instances`)).json()).sort(byInstanceNumber) : [];
-        const axInst = (await (await get(`/series/${cross.id}/instances`)).json()).sort(byInstanceNumber);
-        const ids = spCtMontagePick(scoutInst.map((i) => i.ID), axInst.map((i) => i.ID));
-        const blobs = await Promise.all(ids.map((id) => get(`/instances/${id}/rendered`).then((r) => r.blob())
-          .catch(() => get(`/instances/${id}/preview`).then((r) => r.blob())).catch(() => null)));
-        if (!blobs.some(Boolean)) throw new Error("Gambar CT gagal dimuat.");
-        send({ part: "image", k: 0, image: await spCtMontageDraw(blobs, 7, 4, 256, ident), label });
-        send({ part: "done", ok: true, label });
-        setTimeout(() => { try { window.close(); } catch (_) {} }, 1200); // v3.132.0: beri waktu GM_setValue tersimpan
-        return;
-      }
-      if (!targets.length) throw new Error("Tidak ada gambar di study ini.");
-      let sent = 0;
-      await Promise.all(targets.slice(0, 16).map(async (id, k) => {
-        try {
-          let blob = null;
-          if (cross) blob = await get(`/instances/${id}/rendered`).then((r) => r.blob()).catch(() => null);
-          // v3.169.0: rontgen -> window DICOM / otomatis seperti viewer radiologi; gagal -> /rendered -> /preview.
-          else {
-            blob = await spXrayRender(get, id).catch(() => null);
-            if (!blob) blob = await get(`/instances/${id}/rendered`).then((r) => r.blob()).catch(() => null);
-          }
-          if (!blob) blob = await (await get(`/instances/${id}/preview`)).blob();
-          const image = ident.length ? await spFilmStamp(blob, ident).catch(() => blobToDataUrl(blob)) : await blobToDataUrl(blob);
-          send({ part: "image", k, image, label });
-          sent++;
-        } catch (_) {}
-      }));
-      send(sent ? { part: "done", ok: true, label } : { part: "done", ok: false, error: "Gambar film gagal dimuat." });
+      await spOrthancJob(get, { mode: parts[3] || "", rm: decodeURIComponent(parts[4] || ""), study: new URLSearchParams(location.search).get("study") }, send);
     } catch (err) {
       send({ part: "done", ok: false, error: String(err && err.message || err) });
     }
     setTimeout(() => { try { window.close(); } catch (_) {} }, 1200); // v3.132.0: beri waktu GM_setValue tersimpan
   }
 
+  // Pekerjaan film Orthanc lewat REST: get(path, opt) -> Response (fetch same-origin di jendela PACS, atau
+  // GM_xmlhttpRequest langsung dari tab Smartplus sejak v3.173.0). job = { mode: ""|"ai"|"konsul"|"rmlist", study, rm }.
+  // Hasil dikirim lewat send({part:"meta"|"image"|"done", ...}). Hanya membaca, tidak mengubah apa pun di PACS.
+  // Jangan memakai konstanta modul di sini (dipanggil dari jendela PACS sebelum konstanta dibuat).
+  async function spOrthancJob(get, job, send) {
+    const aiMode = job.mode === "ai"; // v3.121.0: dibuka 🧠 TANYA AI -> CT/MRI ikut diambil
+    const konsulMode = job.mode === "konsul"; // v3.131.0: PAKET KONSUL -> CT/MRI = satu gambar 7x4 (scout + 27 irisan)
+    const blobToDataUrl = (blob) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(blob); });
+    const byInstanceNumber = (a, b) => (Number(a.MainDicomTags?.InstanceNumber) || 0) - (Number(b.MainDicomTags?.InstanceNumber) || 0);
+    // v3.130.0: mode "rmlist" -> daftar study pasien per No.RM (PatientID; cepat, tidak memakai pencarian per tanggal
+    // yang berat bagi server). Modality tiap study diambil dari daftar serinya.
+    if (job.mode === "rmlist") {
+      const rm = String(job.rm || "").trim();
+      if (!rm) throw new Error("No.RM kosong.");
+      let found = [];
+      for (const pid of spPacsRmVariants(rm)) {
+        const r = await (await get("/tools/find", { method: "POST", body: JSON.stringify({ Level: "Study", Query: { PatientID: pid }, Expand: true, Limit: 100 }) })).json();
+        found = (r || []).filter((st) => !pid.startsWith("*") || spPacsRmSame(st.PatientMainDicomTags?.PatientID, rm));
+        if (found.length) break;
+      }
+      const studies = await Promise.all((found || []).slice(0, 60).map(async (st) => {
+        const ser = await get(`/studies/${st.ID}/series`).then((r) => r.json()).catch(() => []);
+        const t = st.MainDicomTags || {};
+        return { id: st.ID, date: t.StudyDate || "", time: t.StudyTime || "", desc: String(t.StudyDescription || "").trim(), mods: [...new Set((ser || []).map((x) => String(x.MainDicomTags?.Modality || "").toUpperCase()).filter(Boolean))] };
+      }));
+      send({ part: "done", ok: true, studies });
+      return;
+    }
+    const study = job.study;
+    if (!study) throw new Error("ID study tidak ada di alamat viewer.");
+    const studyInfoP = get(`/studies/${study}`).then((r) => r.json()).catch(() => null);
+    const series = await (await get(`/studies/${study}/series`)).json();
+    const isImg = (s) => !/^(SR|PR|KO|DOC|REG|SEG)$/i.test(s.MainDicomTags?.Modality || "");
+    // v3.12.0: film USG tidak diambil (USG cukup ekspertise). v3.24.0: CT/MRI juga tidak (cukup ekspertise).
+    const isUs = (s) => (aiMode || konsulMode ? /^US$/i : /^(US|CT|MR)$/i).test(s.MainDicomTags?.Modality || "");
+    if (series.some(isImg) && series.filter(isImg).every(isUs)) {
+      const m = series.filter(isImg).map((x) => String(x.MainDicomTags?.Modality || "").toUpperCase());
+      send({ part: "done", ok: true, skipped: m.includes("CT") ? "CT" : m.includes("MR") ? "MRI" : "USG" });
+      return;
+    }
+    const st = await studyInfoP;
+    const mods = [...new Set(series.filter(isImg).filter((s) => !isUs(s)).map((s) => s.MainDicomTags?.Modality).filter(Boolean))].join("/");
+    const label = [mods, st?.MainDicomTags?.StudyDescription].filter(Boolean).join(" ").trim();
+    if (label) send({ part: "meta", label });
+    const ident = aiMode ? [] : spFilmIdentLines(st, mods); // v3.134.0: Tanya AI tanpa identitas (nama disamarkan)
+    const usable = series
+      .filter((s) => isImg(s) && !isUs(s))
+      .map((s) => ({ id: s.ID, n: (s.Instances || []).length, num: Number(s.MainDicomTags?.SeriesNumber) || 9999, mod: String(s.MainDicomTags?.Modality || "").toUpperCase(),
+        desc: String(s.MainDicomTags?.SeriesDescription || ""), mid: (s.Instances || [])[Math.floor((s.Instances || []).length / 2)] }))
+      .filter((s) => s.n > 0)
+      .sort((a, b) => a.num - b.num);
+    // v3.142.0: WindowWidth irisan tengah tiap seri CT/MRI (>=10 gambar) untuk mengenali bone window tanpa label "bone".
+    if (aiMode || konsulMode) {
+      await Promise.all(usable.filter((s) => (s.mod === "CT" || s.mod === "MR") && s.n >= 10 && s.mid).map(async (s) => {
+        try { const tg = await get(`/instances/${s.mid}/simplified-tags`).then((r) => r.json()); s.ww = parseFloat(String(tg.WindowWidth || "").split("\\")[0]) || 0; } catch (_) {}
+      }));
+    }
+    // v3.121.0 (TANYA AI): CT/MRI -> 12 irisan merata dari seri aksial utama (10–80 gambar, nomor seri terkecil;
+    // bukan scout/localizer yang hanya 1–3 gambar), dirender dengan windowing DICOM bila server mendukung.
+    const cross = aiMode || konsulMode ? spPickCrossSeries(usable.filter((s) => s.mod === "CT" || s.mod === "MR")) : null;
+    // Film/rontgen: seri kecil (<=12 gambar) diambil semua. CT/MRI tanpa seri film:
+    // ambil maks 9 irisan merata dari seri terkecil.
+    const small = usable.filter((s) => s.n <= 12);
+    const targets = [];
+    if (cross && !konsulMode) {
+      const inst = (await (await get(`/series/${cross.id}/instances`)).json()).sort(byInstanceNumber);
+      spEvenSlices(inst.length, 12).forEach((i) => targets.push(inst[i].ID));
+    } else if (small.length && !cross) {
+      const lists = await Promise.all(small.map((s) => get(`/series/${s.id}/instances`).then((r) => r.json())));
+      for (const inst of lists) targets.push(...inst.sort(byInstanceNumber).map((i) => i.ID));
+    } else if (usable.length && !cross) {
+      const s = usable.reduce((a, b) => (a.n <= b.n ? a : b));
+      const inst = (await (await get(`/series/${s.id}/instances`)).json()).sort(byInstanceNumber);
+      const k = Math.min(9, inst.length);
+      for (let i = 0; i < k; i++) targets.push(inst[Math.floor(((i + 0.5) * inst.length) / k)].ID);
+    }
+    // v3.131.0 (permintaan dokter 12 Nov 2026): PAKET KONSUL — CT/MRI dikirim sebagai SATU gambar 7x4 seperti lembar film:
+    // kotak pertama scout/localizer (seri 1–3 gambar), lalu 27 irisan aksial merata dari bawah ke atas.
+    if (cross && konsulMode) {
+      const crossAll = usable.filter((s) => s.mod === "CT" || s.mod === "MR");
+      const scoutSer = crossAll.filter((s) => s.id !== cross.id && s.n <= 3).sort((a, b) => a.num - b.num)[0];
+      const scoutInst = scoutSer ? (await (await get(`/series/${scoutSer.id}/instances`)).json()).sort(byInstanceNumber) : [];
+      const axInst = (await (await get(`/series/${cross.id}/instances`)).json()).sort(byInstanceNumber);
+      const ids = spCtMontagePick(scoutInst.map((i) => i.ID), axInst.map((i) => i.ID));
+      const blobs = await Promise.all(ids.map((id) => get(`/instances/${id}/rendered`).then((r) => r.blob())
+        .catch(() => get(`/instances/${id}/preview`).then((r) => r.blob())).catch(() => null)));
+      if (!blobs.some(Boolean)) throw new Error("Gambar CT gagal dimuat.");
+      send({ part: "image", k: 0, image: await spCtMontageDraw(blobs, 7, 4, 256, ident), label });
+      send({ part: "done", ok: true, label });
+      return;
+    }
+    if (!targets.length) throw new Error("Tidak ada gambar di study ini.");
+    let sent = 0;
+    await Promise.all(targets.slice(0, 16).map(async (id, k) => {
+      try {
+        let blob = null;
+        if (cross) blob = await get(`/instances/${id}/rendered`).then((r) => r.blob()).catch(() => null);
+        // v3.169.0: rontgen -> window DICOM / otomatis seperti viewer radiologi; gagal -> /rendered -> /preview.
+        else {
+          blob = await spXrayRender(get, id).catch(() => null);
+          if (!blob) blob = await get(`/instances/${id}/rendered`).then((r) => r.blob()).catch(() => null);
+        }
+        if (!blob) blob = await (await get(`/instances/${id}/preview`)).blob();
+        const image = ident.length ? await spFilmStamp(blob, ident).catch(() => blobToDataUrl(blob)) : await blobToDataUrl(blob);
+        send({ part: "image", k, image, label });
+        sent++;
+      } catch (_) {}
+    }));
+    send(sent ? { part: "done", ok: true, label } : { part: "done", ok: false, error: "Gambar film gagal dimuat." });
+  }
   function clickVisibleText(phrases) {
     const wanted = (Array.isArray(phrases) ? phrases : [phrases]).map(norm);
 
@@ -17787,7 +17895,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.172.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.173.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -21986,11 +22094,11 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
         // tombol FILM di Smartplus). Gagal / tidak ketemu -> daftar FILM dari riwayat radiologi Smartplus seperti dulu.
         const pre = [];
         const rm = spAiPageKind() === "igd" ? getCurrentIgdNorm() : "";
-        if (spPacsLuar() && rm) {
+        if (spPacsAny() && rm) {
           setWait("Mencari film pasien di PACS (per No.RM)…");
           const r = await spPacsStudiesByRm(rm);
           if (r.studies) {
-            const rmList = spPacsRmFilmList(r.studies, spPacsLuar(), spCutoffKey(SP_RAD_WINDOW));
+            const rmList = spPacsRmFilmList(r.studies, r.origin, spCutoffKey(SP_RAD_WINDOW));
             if (rmList.length) return spAiCaptureFilms(rmList, setWait);
             pre.push("Tidak ada film rontgen/CT di PACS untuk No.RM ini — dicoba dari riwayat radiologi Smartplus.");
           } else if (r.blocked) pre.push("Jendela PACS diblokir browser: izinkan pop-up untuk situs Smartplus.");
