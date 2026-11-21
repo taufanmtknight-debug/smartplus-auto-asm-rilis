@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.178.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.179.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.178.0
-// @description  v3.178.0 (permintaan dokter 21 Nov 2026): 📄 LEMBAR EDUKASI — huruf kini benar-benar Arial Narrow seperti PDF contoh dokter (bila Arial Narrow tidak terpasang di HP/laptop, dipakai Liberation Sans Narrow yang disematkan di script: ukuran huruf identik, jalan tanpa internet); ukuran huruf isi 10,2 pt, footer 8,5 pt, kolom "Kode Dokume/n" dipatah seperti PDF. Pencarian pasien tidak lagi memuat semua nama pasien: nama yang diketik langsung dicari lewat kolom Keyword/CARI daftar IGD Smartplus dan daftar rawat inap, sehingga cepat. Tidak menyimpan ke Smartplus.
+// @version      3.179.0
+// @description  v3.179.0 (contoh pesan dokter 21 Nov 2026): 📣 LAPOR PASIEN KE DPJP — teks WA mengikuti contoh dokter: pembuka "Assalamualaikum izin lapor dok, beberapa pasien yang belum dapat kamar, dan masih di igd, mohon izin bantuannya jika ada waktu untuk visit di igd ya dok", baris pasien NAMA / No.Reg / RM, Status tanpa lama jam, S pendek (keluhan + "masih": lemas masih, demam masih), O dengan tekanan darah (diambil juga dari pemeriksaan fisik bila kolom TD kosong), A diagnosis, penutup "Mohon bantuannya terimakasih sebelumnya dok". Semua pasien tetap dikelompokkan per DPJP.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -67,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.178.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.178.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.179.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.179.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -10190,14 +10190,19 @@
     const ku = one(spRpsOnly(spCleanGadarText(g.kel_utama))), rps = one(spRpsOnly(spCleanGadarText(g.riwayat_sakit_now)));
     const kuWord = norm(ku).split(/\s+/).find((w) => w.length >= 4) || "";
     let s = ku && rps && !(kuWord && norm(rps).includes(kuWord)) ? `${ku}. ${rps}` : rps || ku;
-    s = clip(s.replace(/^keluhan\s*(?:utama)?\s*:?\s*/i, ""), 160);
+    // v3.179.0 (contoh dokter 21 Nov 2026): S pendek = keluhan + "masih" ("lemas masih, demam masih, batuk masih").
+    const kel = typeof spShortKeluhan === "function" ? spShortKeluhan(`${ku}\n${rps}`, true, true) : "";
+    s = kel ? kel.split(/\s*,\s*/).filter(Boolean).map((x) => `${x.toLowerCase()} masih`).join(", ") : clip(s.replace(/^keluhan\s*(?:utama)?\s*:?\s*/i, ""), 80);
     const KES = { 1: "CM", 2: "Apatis", 3: "Somnolen", 4: "Sopor", 5: "Koma" };
     const kesRaw = String(g.kesadaran == null ? "" : g.kesadaran).trim();
     const kes = KES[kesRaw] || (/^(cm|compos\s*mentis)$/i.test(kesRaw) ? "CM" : /^\d+$/.test(kesRaw) ? "" : spCleanGadarText(kesRaw));
     const gcs = spCleanGadarText(g.glosgow_coma).replace(/\s+/g, "");
     const spo2 = (String(g.cek_fisik || "").match(/\b(?:spo2|saturasi|sat)\s*:?\s*(\d{2,3})\s*%/i) || [])[1] || "";
     const v = (k) => spCpptFieldValue(k, g[k]);
-    const o = [kes, gcs && !/^(?:15|e4v5m6|456)$/i.test(gcs) ? "GCS " + gcs : "", v("td") && "TD " + v("td"), v("nadi") && "N " + v("nadi"),
+    // TD kadang tidak di kolom td -> cari "TD 150/90" di pemeriksaan fisik / RPS / penunjang.
+    const tdM = (`${g.cek_fisik || ""}\n${g.riwayat_sakit_now || ""}\n${g.penunjang || ""}`).match(/\b(?:td|tekanan\s*darah|bp)\s*:?\s*(\d{2,3}\s*\/\s*\d{2,3})/i);
+    const tdTxt = v("td") || (tdM ? tdM[1].replace(/\s+/g, "") : "");
+    const o = [kes, gcs && !/^(?:15|e4v5m6|456)$/i.test(gcs) ? "GCS " + gcs : "", tdTxt && "TD " + tdTxt, v("nadi") && "N " + v("nadi"),
       v("nafas") && "RR " + v("nafas"), v("suhu") && "S " + v("suhu"), spo2 && +spo2 <= 100 ? `SpO2 ${spo2}%` : ""].filter(Boolean).join(", ");
     const dx = spCleanGadarText(g.diagnosa_banding || g.masalah_kesehatan).split(/\n+/).map((x) => x.replace(/^\s*(?:[-•*·]+|\d+[.)])\s*/, "").trim()).filter(Boolean);
     return { s, o, a: clip(dx.join("; "), 160) };
@@ -10213,16 +10218,21 @@
     return `${p(d.getDate())}/${p(d.getMonth() + 1)} ${p(d.getHours())}.${p(d.getMinutes())}`;
   }
   // Teks WA (fungsi murni). items = [{ nama, norm, dpjp, dpjpSrc, kamar, ts, soa:{s,o,a} }]; opt = { now, dpjp (filter, "" = semua), group }.
+  // v3.179.0 (contoh dokter 21 Nov 2026): format pesan seperti contoh dokter — salam & permohonan visit di IGD, baris pasien
+  // "NAMA / No.Reg / RM", status tanpa lama jam, S/O/A ringkas, penutup "Mohon bantuannya ...". Semua pasien: dikelompokkan per DPJP.
+  const SP_LT_HEAD = "Assalamualaikum izin lapor dok, beberapa pasien yang belum dapat kamar, dan masih di igd, mohon izin bantuannya jika ada waktu untuk visit di igd ya dok";
+  const SP_LT_FOOT = "Mohon bantuannya terimakasih sebelumnya dok";
   function spLtWaText(items, opt = {}) {
-    const now = opt.now || Date.now();
     const list = (items || []).filter(Boolean);
     if (!list.length) return "";
     const dp = (x) => String(x.dpjp || "").trim();
     const line = (x, i) => {
-      const lama = x.ts ? Math.max(0, Math.round((now - x.ts) / 3600000)) : null;
-      const out = [`${i + 1}. ${spLtNama(x.nama)}${x.norm ? " / RM " + x.norm : ""}`];
-      if (!opt.dpjp) out.push(`DPJP: ${dp(x) ? dp(x) + (x.dpjpSrc === "konsul" ? " (konsul)" : "") : "belum ada"}`);
-      out.push(`Status: ${x.kamar ? "sudah dapat kamar " + x.kamar : "belum dapat kamar (transit IGD)"}${x.ts ? `, di IGD sejak ${spLtJamText(x.ts)}${lama != null ? ` (±${lama} jam)` : ""}` : ""}`);
+      const rm = String(x.norm || "").trim(), rmD = rm.replace(/\D/g, "");
+      // Nama di daftar IGD kadang sudah diakhiri No.RM -> tidak ditulis dua kali.
+      let nama = spLtNama(x.nama);
+      if (rmD && nama.endsWith(rmD)) nama = nama.slice(0, -rmD.length).trim();
+      const out = [`${i + 1}. ${[nama, x.noreg, rm ? "RM " + rm : ""].filter(Boolean).join(" / ")}`];
+      out.push(`Status: ${x.kamar ? "sudah dapat kamar " + x.kamar : "belum dapat kamar (transit IGD)"}${x.ts ? `, di IGD sejak ${spLtJamText(x.ts)}` : ""}`);
       if (x.soa) {
         out.push(`S: ${x.soa.s || "-"}`);
         out.push(`O: ${x.soa.o || "-"}`);
@@ -10230,17 +10240,13 @@
       }
       return out.join("\n");
     };
-    const head = opt.dpjp
-      ? `Izin lapor ${opt.dpjp}, pasien dokter yang masih menunggu di IGD per ${spLtJamText(now)}:`
-      : `Izin lapor dok, pasien IGD / rawat inap per ${spLtJamText(now)}:`;
-    const foot = "Mohon advis selanjutnya dok, terima kasih 🙏";
-    if (!opt.group || opt.dpjp) return [head, list.map(line).join("\n\n"), foot].join("\n\n");
+    if (!opt.group || opt.dpjp) return [SP_LT_HEAD, list.map(line).join("\n\n"), SP_LT_FOOT].join("\n\n");
     const groups = new Map();
     list.forEach((x) => { const k = dp(x) || "Belum ada DPJP"; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(x); });
     const keys = [...groups.keys()].sort((a, b) => (a === "Belum ada DPJP") - (b === "Belum ada DPJP"));
     let n = 0;
-    const body = keys.map((k) => `*${k}*\n` + groups.get(k).map((x) => line({ ...x, dpjp: "" }, n++).replace(/\nDPJP: belum ada/, "")).join("\n\n")).join("\n\n");
-    return [head, body, foot].join("\n\n");
+    const body = keys.map((k) => `*${k}*\n` + groups.get(k).map((x) => line(x, n++)).join("\n\n")).join("\n\n");
+    return [SP_LT_HEAD, body, SP_LT_FOOT].join("\n\n");
   }
   // Cari pasien (fungsi murni). list = [{noreg, norm, nama, ts}], q = sebagian nama / No.RM -> pasien cocok (terbaik & terbaru dulu).
   function spLtNz(x) { return String(x || "").toLowerCase().replace(/,\s*(tn|ny|nn|an|by|sdr|sdri)\.?\s*$/i, "").replace(/[^a-z0-9]+/g, " ").trim(); }
@@ -10432,7 +10438,7 @@
       fSel.value = [...fSel.options].some((o) => o.value === cur) ? cur : "";
       const f = fSel.value;
       const chosen = f === "-" ? sel.filter((p) => !dpjpOf(p)) : f ? sel.filter((p) => dpjpOf(p) === f) : sel;
-      ta.value = spLtWaText(chosen.map((p) => ({ nama: p.nama, norm: p.norm, dpjp: dpjpOf(p), dpjpSrc: srcOf(p), kamar: p.kamar, ts: p.ts, soa: p.soa })),
+      ta.value = spLtWaText(chosen.map((p) => ({ nama: p.nama, norm: p.norm, noreg: p.noreg, dpjp: dpjpOf(p), dpjpSrc: srcOf(p), kamar: p.kamar, ts: p.ts, soa: p.soa })),
         { dpjp: f && f !== "-" ? f : "", group: true });
     };
     const card = (p) => {
@@ -18338,7 +18344,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.178.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.179.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
