@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.174.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.175.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.174.0
-// @description  v3.174.0 (permintaan dokter 21 Nov 2026): AUTO IGD & RAWAT INAP — 📄 LEMBAR EDUKASI KELUARGA: pilih pasien IGD 24 jam atau rawat inap, diagnosis dibaca otomatis (Assesment GADAR terakhir / daftar e-Ranap) dan disusun kalimat edukasi dokter ("Menjelaskan kepada keluarga tentang kondisi pasien sakit …, kondisi pasien dapat mengalami penurunan kondisi hingga henti nafas henti jantung …"); diagnosis & teks bisa diedit, lalu 📋 Salin atau 🖨 Cetak dengan tata letak Formulir Pemberian Edukasi / Informasi (identitas, Diagnosis, DPJP, tabel materi & tanda tangan). Hanya membaca, tidak menyimpan ke Smartplus.
+// @version      3.175.0
+// @description  v3.175.0 (permintaan dokter 21 Nov 2026: "buat seperti kolom pencarian saja ... kelompokkan sesuai DPJP-nya"): AUTO IGD -> 📣 LAPOR PASIEN KE DPJP (WA) kini berupa KOLOM CARI — ketik nama pasien (beberapa nama dipisah koma / baris baru, atau No.RM) lalu Enter; dicari dari pasien IGD 48 jam & pasien dirawat. Nama yang cocok satu langsung masuk, yang cocok lebih dari satu dipilih dari daftar. Kartu & teks WA dikelompokkan per DPJP (DPJP dari e-Ranap / advis / konsul, atau diketik dokter), SOA ringkas dari GADAR, ✕ hapus pasien, pilihan diingat 12 jam. 📋 Salin / 📲 Kirim WA, tidak pernah terkirim otomatis & tidak menyimpan.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -67,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.174.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.174.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.175.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.175.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -10122,17 +10122,16 @@
     });
   }
   // =========================
-  // v3.172.0 (permintaan dokter 21 Nov 2026): 📣 LAPOR PASIEN TRANSIT KE DPJP (AUTO IGD).
-  // Pasien IGD 12/24/48 jam terakhir yang BELUM dapat kamar (No.Reg / No.RM tidak ada di daftar dirawat e-Ranap) atau yang sudah
-  // dapat kamar tetapi DPJP di e-Ranap masih kosong -> GADAR terakhir dibaca (GET saja) -> SOA ringkas (S keluhan, O kesadaran
-  // + tanda vital, A diagnosis) + DPJP. DPJP diambil dari e-Ranap, baris advis/ACC/rawat inap dr di Rencana, atau konsul/lapor dr
-  // (ditandai "?"); bila belum ada, dokter mengetik nama DPJP (diingat per pasien di browser ini 3 hari).
-  // Pasien yang menurut GADAR pulang/rujuk/APS/meninggal dipisah (tidak dicentang); yang belum jelas mondok tampil tidak dicentang.
-  // Teks WA disusun (bisa per DPJP), bisa diedit, lalu 📋 Salin atau 📲 Kirim WA (panel kontak KIRIM KONSUL; TIDAK PERNAH terkirim
-  // otomatis — dokter menekan Kirim di WhatsApp). Panel ini tidak pernah menyimpan apa pun ke Smartplus.
+  // v3.172.0 (permintaan dokter 21 Nov 2026): 📣 LAPOR PASIEN KE DPJP (AUTO IGD). GADAR terakhir dibaca (GET saja) -> SOA ringkas
+  // (S keluhan, O kesadaran + tanda vital, A diagnosis) + DPJP. DPJP diambil dari e-Ranap, baris advis/ACC/rawat inap dr di
+  // Rencana, atau konsul/lapor dr (ditandai "(konsul)"); bila belum ada, dokter mengetik nama DPJP (diingat per pasien 3 hari).
+  // v3.175.0 (dokter 21 Nov 2026: "buat seperti kolom pencarian saja, saya tinggal menuliskan nama-nama pasien ... kelompokkan
+  // sesuai DPJP-nya"): daftar otomatis 12/24/48 jam diganti KOLOM CARI — dokter mengetik nama (atau beberapa nama dipisah koma /
+  // baris baru) dari pasien IGD 48 jam + pasien dirawat e-Ranap; yang cocok satu langsung masuk, yang cocok banyak dipilih.
+  // Pasien terpilih diingat 12 jam. Teks WA selalu dikelompokkan per DPJP (atau untuk satu DPJP saja), bisa diedit, lalu
+  // 📋 Salin / 📲 Kirim WA (panel kontak KIRIM KONSUL; TIDAK PERNAH terkirim otomatis). Tidak pernah menyimpan ke Smartplus.
   // =========================
-  const SP_LT_JAM = [12, 24, 48];
-  const SP_LT_JAM_KEY = "sp-lapor-transit-jam", SP_LT_DPJP_KEY = "sp-lapor-transit-dpjp";
+  const SP_LT_DPJP_KEY = "sp-lapor-transit-dpjp", SP_LT_PILIH_KEY = "sp-lapor-transit-pilih";
   const SP_LT_STOP = /^(?:rawat|inap|ranap|acc|untuk|utk|ok|lanjut|terapi|advis|advice|konsul|via|jam|pukul|igd|dan|di|ke|pro|mrs|bangsal|icu|hcu|ruang|kamar|tlp|telp|telepon|wa|dpjp|pasien|ps|pt|sudah|sdh|belum|blm|mohon|izin|ijin|lapor|kirim|cito|besok|hari|ini|pagi|siang|sore|malam|jaga|umum|spesialis|sp|obsgyn|anak|dalam|bedah|saraf|igd)$/i;
 
   // "dr budi sp.pd" / "DR. ANI SP. A" / "dr Fikry,SpN" -> "dr. Budi Sp.PD" / "dr. Ani Sp.A" / "dr. Fikry Sp.N" (fungsi murni).
@@ -10233,7 +10232,7 @@
     };
     const head = opt.dpjp
       ? `Izin lapor ${opt.dpjp}, pasien dokter yang masih menunggu di IGD per ${spLtJamText(now)}:`
-      : `Izin lapor dok, pasien IGD yang masih menunggu (transit / belum ada DPJP) per ${spLtJamText(now)}:`;
+      : `Izin lapor dok, pasien IGD / rawat inap per ${spLtJamText(now)}:`;
     const foot = "Mohon advis selanjutnya dok, terima kasih 🙏";
     if (!opt.group || opt.dpjp) return [head, list.map(line).join("\n\n"), foot].join("\n\n");
     const groups = new Map();
@@ -10243,10 +10242,31 @@
     const body = keys.map((k) => `*${k}*\n` + groups.get(k).map((x) => line({ ...x, dpjp: "" }, n++).replace(/\nDPJP: belum ada/, "")).join("\n\n")).join("\n\n");
     return [head, body, foot].join("\n\n");
   }
-  function spLtJam() {
-    let v = 24;
-    try { v = Number(localStorage.getItem(SP_LT_JAM_KEY)) || 24; } catch (_) {}
-    return SP_LT_JAM.includes(v) ? v : 24;
+  // Cari pasien (fungsi murni). list = [{noreg, norm, nama, ts}], q = sebagian nama / No.RM -> pasien cocok (terbaik & terbaru dulu).
+  function spLtNz(x) { return String(x || "").toLowerCase().replace(/,\s*(tn|ny|nn|an|by|sdr|sdri)\.?\s*$/i, "").replace(/[^a-z0-9]+/g, " ").trim(); }
+  function spLtCari(list, q) {
+    const w = spLtNz(q).split(" ").filter(Boolean);
+    if (!w.length) return [];
+    return (list || []).map((p) => {
+      const nw = spLtNz(p.nama).split(" ").filter(Boolean), rm = String(p.norm || "").replace(/\D/g, "");
+      let sc = 0;
+      for (const x of w) {
+        if (/^\d+$/.test(x)) { if (x.length >= 3 && rm.includes(x)) { sc += 3; continue; } return null; }
+        if (nw.includes(x)) sc += 2; else if (nw.some((y) => y.startsWith(x))) sc += 1; else return null;
+      }
+      if (nw.join(" ") === w.join(" ")) sc += 5;
+      return { p, sc };
+    }).filter(Boolean).sort((a, b) => b.sc - a.sc || (b.p.ts || 0) - (a.p.ts || 0)).map((x) => x.p);
+  }
+  // Beberapa nama sekaligus ("budi, siti rahma\nRM 123") -> [{ q, hits }] (fungsi murni). Nama lengkap yang persis sama
+  // dengan satu pasien dianggap pasti walau ada nama lain yang lebih panjang.
+  function spLtCariBanyak(list, text) {
+    return String(text || "").split(/[,;\n]+/).map((q) => q.replace(/^\s*\d+[.)]\s+/, "").replace(/\b(?:no\.?\s*)?rm\b\.?:?/gi, " ").replace(/\s+/g, " ").trim()).filter((q) => q.length >= 2).map((q) => {
+      let hits = spLtCari(list, q);
+      const exact = hits.filter((p) => spLtNz(p.nama) === spLtNz(q));
+      if (exact.length === 1) hits = exact;
+      return { q, hits };
+    });
   }
   // DPJP ketikan dokter: { noreg: { nama, ts } }, dibuang setelah 3 hari.
   function spLtDpjpStore() {
@@ -10262,6 +10282,20 @@
     try { localStorage.setItem(SP_LT_DPJP_KEY, JSON.stringify(m)); } catch (_) {}
   }
 
+  // Pasien terpilih: { noreg: ts }, dibuang setelah 12 jam.
+  function spLtPilihGet() {
+    let m = {};
+    try { m = JSON.parse(localStorage.getItem(SP_LT_PILIH_KEY) || "{}") || {}; } catch (_) {}
+    const now = Date.now();
+    Object.keys(m).forEach((k) => { if (!(now - (m[k] || 0) < 12 * 3600000)) delete m[k]; });
+    return m;
+  }
+  function spLtPilihSet(noregs) {
+    const old = spLtPilihGet(), m = {};
+    noregs.forEach((r) => { m[r] = old[r] || Date.now(); });
+    try { localStorage.setItem(SP_LT_PILIH_KEY, JSON.stringify(m)); } catch (_) {}
+  }
+
   async function runLaporTransitWa() {
     const PANEL_ID = "sp-lapor-transit-panel";
     document.getElementById(PANEL_ID)?.remove();
@@ -10269,37 +10303,34 @@
     const btn = (txt, bg, fg, extra = "") => { const b = el("button", `padding:7px 12px;font:600 13px Arial,sans-serif;background:${bg};color:${fg};border:0;border-radius:6px;cursor:pointer;${extra}`, txt); b.type = "button"; return b; };
     const panel = el("div", "position:fixed;left:16px;top:6vh;z-index:2147483646;background:#fff;border:2px solid #00796b;border-radius:12px;padding:12px;width:min(94vw,580px);max-height:88vh;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,.35);font:13px/1.45 Arial,sans-serif;color:#222;");
     panel.id = PANEL_ID;
-    const head = el("div", "padding:4px 0 8px;border-bottom:1px solid #eee;margin-bottom:8px;font-weight:700;font-size:15px;line-height:28px;", "⠿ 📣 LAPOR PASIEN TRANSIT KE DPJP");
+    const head = el("div", "padding:4px 0 8px;border-bottom:1px solid #eee;margin-bottom:8px;font-weight:700;font-size:15px;line-height:28px;", "⠿ 📣 LAPOR PASIEN KE DPJP");
     head.className = "sp-panel-head";
     spStyleHandle(head);
-    const jamBox = el("div", "display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px");
-    jamBox.className = "sp-lt-jam";
-    jamBox.append(el("span", "font-weight:600", "Rentang:"));
-    SP_LT_JAM.forEach((h) => { const b = btn(`${h} jam`, "#fff", "#00796b", "padding:5px 12px;font-size:12px;border:1px solid #00796b;border-radius:14px;"); b.dataset.jam = h; jamBox.append(b); });
     const info = el("div", "color:#777;font-size:11px;margin-bottom:6px",
-      "Pasien IGD yang belum dapat kamar di e-Ranap, atau sudah dapat kamar tapi DPJP masih kosong. Hanya membaca GADAR; pesan WA tidak terkirim otomatis.");
+      "Ketik nama pasien (beberapa nama pisahkan dengan koma atau baris baru) lalu Enter / ➕. Dicari dari pasien IGD 48 jam & pasien dirawat. Laporan dikelompokkan per DPJP; pesan WA tidak terkirim otomatis.");
+    const qRow = el("div", "display:flex;gap:6px;align-items:stretch");
+    const q = el("textarea", "flex:1;min-height:34px;height:34px;resize:vertical;box-sizing:border-box;padding:7px;font:14px Arial,sans-serif;border:1px solid #00796b;border-radius:6px");
+    q.className = "sp-lt-q";
+    q.placeholder = "Cari nama pasien, mis. budi, siti, 123456";
+    q.rows = 1;
+    const qAdd = btn("➕", "#00796b", "#fff", "font-size:15px");
+    qAdd.className = "sp-lt-add";
+    qAdd.title = "Masukkan semua nama yang diketik";
+    qRow.append(q, qAdd);
+    const res = el("div", "margin:4px 0");
+    res.className = "sp-lt-res";
     const msg = el("div", "margin:4px 0;color:#555");
     msg.className = "sp-lt-msg";
     const list = el("div");
     list.className = "sp-lt-list";
-    const other = el("details", "display:none;margin-top:6px");
-    other.className = "sp-lt-other";
-    const otherSum = el("summary", "cursor:pointer;color:#555;font-weight:600");
-    const otherList = el("div");
-    other.append(otherSum, otherList);
     const dl = el("datalist");
     dl.id = "sp-lt-dpjp-list";
-    // Susun pesan.
     const out = el("div", "display:none;margin-top:10px;padding:8px;border:1px solid #80cbc4;background:#e0f2f1;border-radius:8px");
     out.className = "sp-lt-out";
     const optRow = el("div", "display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px");
     const fSel = el("select", "padding:5px;font:13px Arial,sans-serif;max-width:100%");
     fSel.className = "sp-lt-filter";
-    const gLab = el("label", "font-size:12px;display:flex;gap:4px;align-items:center;cursor:pointer");
-    const gChk = el("input");
-    gChk.type = "checkbox"; gChk.className = "sp-lt-group"; gChk.checked = true;
-    gLab.append(gChk, document.createTextNode("Kelompokkan per DPJP"));
-    optRow.append(el("span", "font-weight:600", "Untuk:"), fSel, gLab);
+    optRow.append(el("span", "font-weight:600", "Untuk:"), fSel);
     const ta = el("textarea", "width:100%;box-sizing:border-box;min-height:200px;padding:6px;font:12px/1.4 Arial,sans-serif;border:1px solid #bbb;border-radius:6px");
     ta.className = "sp-lt-text";
     const actRow = el("div", "display:flex;gap:6px;flex-wrap:wrap;margin-top:6px");
@@ -10308,56 +10339,52 @@
     const bWa = btn("📲 Kirim WA", "#25d366", "#fff", "flex:1");
     bWa.className = "sp-lt-wa";
     bWa.title = "Buka chat WhatsApp DPJP dengan teks laporan terisi (dokter menekan Kirim sendiri)";
-    actRow.append(bCopy, bWa);
-    const outNote = el("div", "font-size:11px;color:#555;margin-top:4px", "Teks boleh diedit sebelum dikirim. Mengubah centang / DPJP / pilihan di atas menyusun ulang teks.");
+    const bClear = btn("🗑 Kosongkan", "#eee", "#b71c1c");
+    bClear.className = "sp-lt-clear";
+    actRow.append(bCopy, bWa, bClear);
+    const outNote = el("div", "font-size:11px;color:#555;margin-top:4px", "Teks boleh diedit sebelum dikirim. Menambah/menghapus pasien atau mengubah DPJP menyusun ulang teks.");
     out.append(optRow, ta, actRow, outNote);
-    const reload = btn("🔄 Cek ulang", "#00796b", "#fff", "margin-top:10px;width:100%;padding:8px");
-    reload.className = "sp-lt-reload";
-    panel.append(head, jamBox, info, msg, list, other, dl, out, reload);
+    panel.append(head, info, qRow, res, msg, list, dl, out);
     document.documentElement.appendChild(panel);
     spMakeDraggable(panel, PANEL_ID, (t) => !!t.closest(".sp-panel-head"));
     spPanelFit(panel, PANEL_ID);
     spWindowControls(panel, PANEL_ID, ".sp-panel-head", head, () => panel.remove());
 
     const base = smartplusBaseUrl();
-    let jam = spLtJam(), seq = 0, rows = [], knownDpjp = [];
-    const paintJam = () => jamBox.querySelectorAll("[data-jam]").forEach((b) => {
-      const on = Number(b.dataset.jam) === jam;
-      b.style.background = on ? "#00796b" : "#fff"; b.style.color = on ? "#fff" : "#00796b";
-      b.setAttribute("aria-pressed", on ? "true" : "false");
-    });
+    let all = [], ranapBy = { reg: new Map(), rm: new Map() }, rows = [], knownDpjp = [], ready = false;
     const dpjpOf = (p) => p.dpjpManual || p.dpjpAuto || "";
     const srcOf = (p) => (p.dpjpManual ? "manual" : p.dpjpAutoSrc || "");
-    const picked = () => rows.filter((p) => p.pick && !p.loading);
+    const done = () => rows.filter((p) => !p.loading);
     const compose = () => {
-      const sel = picked();
-      out.style.display = sel.length ? "" : "none";
+      const sel = done();
+      out.style.display = rows.length ? "" : "none";
       const names = [...new Set(sel.map(dpjpOf).filter(Boolean))].sort();
       const cur = fSel.value;
       fSel.textContent = "";
       const add = (v, t) => { const o = el("option", "", t); o.value = v; fSel.append(o); };
-      add("", `Semua (${sel.length} pasien)`);
+      add("", `Semua, per DPJP (${sel.length} pasien)`);
       names.forEach((n) => add(n, `${n} (${sel.filter((p) => dpjpOf(p) === n).length})`));
       if (sel.some((p) => !dpjpOf(p))) add("-", `Belum ada DPJP (${sel.filter((p) => !dpjpOf(p)).length})`);
       fSel.value = [...fSel.options].some((o) => o.value === cur) ? cur : "";
       const f = fSel.value;
       const chosen = f === "-" ? sel.filter((p) => !dpjpOf(p)) : f ? sel.filter((p) => dpjpOf(p) === f) : sel;
-      gLab.style.display = f ? "none" : "flex";
       ta.value = spLtWaText(chosen.map((p) => ({ nama: p.nama, norm: p.norm, dpjp: dpjpOf(p), dpjpSrc: srcOf(p), kamar: p.kamar, ts: p.ts, soa: p.soa })),
-        { dpjp: f && f !== "-" ? f : "", group: gChk.checked });
+        { dpjp: f && f !== "-" ? f : "", group: true });
     };
     const card = (p) => {
-      const d = el("div", `border:1px solid ${p.pick ? "#80cbc4" : "#ddd"};background:${p.pick ? "#fff" : "#fafafa"};border-radius:8px;padding:8px;margin:6px 0`);
+      const d = el("div", "border:1px solid #80cbc4;background:#fff;border-radius:8px;padding:8px;margin:6px 0");
       d.className = "sp-lt-card";
       d.dataset.noreg = p.noreg;
-      const top = el("label", "display:flex;gap:6px;align-items:flex-start;cursor:pointer;font-weight:700");
-      const c = el("input");
-      c.type = "checkbox"; c.className = "sp-lt-pick"; c.checked = !!p.pick; c.disabled = !!p.loading;
-      c.onchange = () => { p.pick = c.checked; render(); };
-      top.append(c, el("span", "", `${p.loading ? "⏳ " : p.err ? "⚠️ " : ""}${spLtNama(p.nama)}${p.norm ? " / RM " + p.norm : ""}`));
+      const top = el("div", "display:flex;gap:6px;align-items:flex-start;font-weight:700");
+      const nm = el("span", "flex:1", `${p.loading ? "⏳ " : p.err ? "⚠️ " : ""}${spLtNama(p.nama)}${p.norm ? " / RM " + p.norm : ""}`);
+      const x = btn("✕", "#eee", "#b71c1c", "padding:2px 8px");
+      x.className = "sp-lt-del";
+      x.title = "Hapus dari laporan";
+      x.onclick = () => { rows = rows.filter((r) => r !== p); spLtPilihSet(rows.map((r) => r.noreg)); render(); };
+      top.append(nm, x);
       d.append(top);
-      d.append(el("div", "color:#666;font-size:11px", `🛏 ${p.kamar ? "kamar " + p.kamar + " — DPJP e-Ranap kosong" : "belum dapat kamar"} · masuk IGD ${p.reg || "-"}${p.dok ? " · " + p.dok : ""}` +
-        (p.tindak === "pulang" ? " · GADAR: pulang/rujuk" : p.tindak === "" && !p.loading && !p.err ? " · tindak lanjut belum jelas" : "")));
+      d.append(el("div", "color:#666;font-size:11px", `🛏 ${p.kamar ? "kamar " + p.kamar : "belum dapat kamar"} · ${p.ts ? "masuk IGD " + (p.reg || "-") : p.reg || ""}${p.dok ? " · " + p.dok : ""}` +
+        (p.tindak === "pulang" ? " · ⚠ GADAR: pulang/rujuk" : "")));
       if (p.loading) { d.append(el("div", "color:#777", "⏳ Membaca GADAR...")); return d; }
       if (p.err) d.append(el("div", "color:#b45309;font-size:12px", p.err));
       const dRow = el("div", "display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px");
@@ -10366,15 +10393,8 @@
       inp.setAttribute("list", dl.id);
       inp.placeholder = p.dpjpAuto ? p.dpjpAuto : "Belum ada DPJP — ketik nama, mis. dr. Budi Sp.PD";
       inp.value = p.dpjpManual || "";
-      const commit = () => {
-        const v = inp.value.replace(/\s+/g, " ").trim();
-        p.dpjpManual = v; spLtDpjpSave(p.noreg, v);
-        if (v && !p.pick) p.pick = true;
-        render();
-      };
-      inp.addEventListener("change", commit);
-      const lab = el("span", "font-weight:600", "DPJP:");
-      dRow.append(lab, inp);
+      inp.addEventListener("change", () => { const v = inp.value.replace(/\s+/g, " ").trim(); p.dpjpManual = v; spLtDpjpSave(p.noreg, v); render(); });
+      dRow.append(el("span", "font-weight:600", "DPJP:"), inp);
       if (p.dpjpAuto && !p.dpjpManual) dRow.append(el("span", "font-size:11px;color:#555", p.dpjpAutoSrc === "konsul" ? "(dari konsul di Rencana — belum pasti)" : p.dpjpAutoSrc === "eranap" ? "(e-Ranap)" : "(dari advis di Rencana)"));
       d.append(dRow);
       if (p.soa) {
@@ -10386,78 +10406,107 @@
       return d;
     };
     const render = () => {
-      // Fokus input DPJP dipertahankan saat kartu digambar ulang.
       const act = document.activeElement, actReg = act && act.classList && act.classList.contains("sp-lt-dpjp") ? act.closest(".sp-lt-card")?.dataset.noreg : null;
-      list.textContent = ""; otherList.textContent = "";
-      const main = rows.filter((p) => p.tindak !== "pulang" || p.pick), rest = rows.filter((p) => p.tindak === "pulang" && !p.pick);
-      main.forEach((p) => list.append(card(p)));
-      rest.forEach((p) => otherList.append(card(p)));
-      other.style.display = rest.length ? "" : "none";
-      otherSum.textContent = `🏠 Menurut GADAR pulang / rujuk / meninggal: ${rest.length} pasien (centang bila tetap dilaporkan)`;
+      list.textContent = "";
+      // Kartu dikelompokkan per DPJP (urut seperti teks WA: belum ada DPJP paling akhir).
+      const groups = new Map();
+      rows.forEach((p) => { const k = p.loading ? "⏳" : dpjpOf(p) || "Belum ada DPJP"; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(p); });
+      [...groups.keys()].sort((a, b) => (a === "Belum ada DPJP") - (b === "Belum ada DPJP")).forEach((k) => {
+        if (k !== "⏳") list.append(el("div", "margin-top:8px;font-weight:700;color:#00695c", `👨‍⚕️ ${k} (${groups.get(k).length})`));
+        groups.get(k).forEach((p) => list.append(card(p)));
+      });
       dl.textContent = "";
       [...new Set(knownDpjp.concat(rows.map(dpjpOf)).filter(Boolean))].sort().forEach((n) => { const o = el("option"); o.value = n; dl.append(o); });
-      const pending = rows.filter((p) => p.loading).length, sel = picked();
-      msg.textContent = !rows.length ? `Tidak ada pasien IGD ${jam} jam terakhir yang masih transit / belum ada DPJP.` :
-        `${main.length} pasien IGD ${jam} jam belum dapat kamar / DPJP kosong · dicentang: ${sel.length} · belum ada DPJP: ${sel.filter((p) => !dpjpOf(p)).length}` +
-        (pending ? ` · ⏳ membaca ${pending}...` : "");
-      if (actReg) { const i = list.querySelector(`.sp-lt-card[data-noreg="${CSS.escape(actReg)}"] .sp-lt-dpjp`) || otherList.querySelector(`.sp-lt-card[data-noreg="${CSS.escape(actReg)}"] .sp-lt-dpjp`); if (i) i.focus(); }
+      const pending = rows.filter((p) => p.loading).length;
+      msg.textContent = !ready ? "⏳ Memuat daftar pasien IGD 48 jam & rawat inap..." : !rows.length ? `${all.length} pasien bisa dicari. Belum ada pasien dipilih.` :
+        `${rows.length} pasien dipilih · belum ada DPJP: ${done().filter((p) => !dpjpOf(p)).length}${pending ? ` · ⏳ membaca ${pending}...` : ""}`;
+      if (actReg) { const i = list.querySelector(`.sp-lt-card[data-noreg="${CSS.escape(actReg)}"] .sp-lt-dpjp`); if (i) i.focus(); }
       compose();
     };
     const readOne = async (p) => {
       try {
         const g = await spAdvisLatestGadar(base, p);
-        if (!g) { p.err = "Belum ada Assesment GADAR di kunjungan ini — SOA diisi sendiri di teks."; p.tindak = ""; }
+        if (!g) { p.err = "Belum ada Assesment GADAR di kunjungan ini — SOA diisi sendiri di teks."; }
         else {
-          const ren = spNl(g.gadar.rencana_tindakan || "");
           p.soa = spLtSoa(g.gadar);
           p.tindak = spLtTindak(g.gadar, p.st);
-          if (!p.dpjpAuto) { const d = spLtDpjpFromRencana(ren); if (d) { p.dpjpAuto = d.nama; p.dpjpAutoSrc = d.src; } }
+          if (!p.dpjpAuto) { const d = spLtDpjpFromRencana(spNl(g.gadar.rencana_tindakan || "")); if (d) { p.dpjpAuto = d.nama; p.dpjpAutoSrc = d.src; } }
         }
-      } catch (e) { p.err = "Gagal membaca GADAR: " + ((e && e.message) || e); p.tindak = ""; }
-      if (/rawat\s*inap|ranap|\bmrs\b|opname/i.test(p.st || "") && p.tindak !== "pulang") p.tindak = "ranap";
-      p.pick = p.tindak === "ranap" || !!p.dpjpManual || !!p.kamar;
+      } catch (e) { p.err = "Gagal membaca GADAR: " + ((e && e.message) || e); }
       p.loading = false;
     };
-    const load = async () => {
-      const my = ++seq;
-      reload.disabled = true;
-      jamBox.querySelectorAll("button").forEach((b) => { b.disabled = true; });
-      paintJam();
-      rows = []; list.textContent = ""; out.style.display = "none"; other.style.display = "none";
-      msg.textContent = `⏳ Membaca daftar pasien IGD ${jam} jam & daftar rawat inap...`;
-      try {
-        const [igd, ranap] = await Promise.all([spAdvisLoadPatients(base, null, jam), spFetchRanapPatients(base, true)]);
-        if (my !== seq) return;
-        knownDpjp = [...new Set(ranap.map((r) => spLtDokterRapi(r.dokter) || String(r.dokter || "").trim()).filter(Boolean))];
-        const byReg = new Map(), byRm = new Map();
-        ranap.forEach((r) => { if (r.noreg) byReg.set(r.noreg, r); const k = spRmKey(r.normRm); if (k) byRm.set(k, r); });
-        const saved = spLtDpjpStore();
-        rows = igd.map((p) => {
-          const r = byReg.get(p.noreg) || byRm.get(spRmKey(p.norm)) || null;
-          if (r && String(r.dokter || "").replace(/[-\s]/g, "")) return null; // sudah dapat kamar & ada DPJP
-          return { ...p, loading: true, kamar: r ? [r.kamar, [r.noKamar, r.bed].filter(Boolean).join("/")].filter(Boolean).join(" ") || "?" : "",
-            dpjpManual: (saved[p.noreg] && saved[p.noreg].nama) || "", dpjpAuto: "", dpjpAutoSrc: "" };
-        }).filter(Boolean);
-        render();
-        let i = 0;
-        await Promise.all([0, 1, 2, 3].map(async () => {
-          while (i < rows.length && my === seq) { const p = rows[i++]; await readOne(p); if (my === seq) render(); }
-        }));
-      } catch (e) {
-        if (my === seq) msg.textContent = "❌ Gagal membaca daftar pasien: " + ((e && e.message) || e) + " (sesi login habis?)";
-      } finally {
-        if (my === seq) { reload.disabled = false; jamBox.querySelectorAll("button").forEach((b) => { b.disabled = false; }); }
-      }
+    const saved = spLtDpjpStore();
+    const addP = (p) => {
+      if (!p || rows.some((r) => r.noreg === p.noreg)) return false;
+      const r = ranapBy.reg.get(p.noreg) || ranapBy.rm.get(spRmKey(p.norm)) || null;
+      const dok = r ? spLtDokterRapi(r.dokter) || String(r.dokter || "").replace(/^[-\s]+$/, "").trim() : "";
+      const row = { ...p, loading: true, kamar: r ? [r.kamar, [r.noKamar, r.bed].filter(Boolean).join("/")].filter(Boolean).join(" ") || "?" : "",
+        dpjpManual: (saved[p.noreg] && saved[p.noreg].nama) || "", dpjpAuto: dok, dpjpAutoSrc: dok ? "eranap" : "" };
+      rows.push(row);
+      spLtPilihSet(rows.map((x) => x.noreg));
+      render();
+      readOne(row).then(render);
+      return true;
     };
+    const showRes = () => {
+      res.textContent = "";
+      if (!ready) return;
+      const parts = spLtCariBanyak(all, q.value);
+      if (parts.length === 1 && !/[,;\n]/.test(q.value)) {
+        // Satu nama: daftar cocok untuk diklik (maks 8).
+        const hits = parts[0].hits.slice(0, 8);
+        if (!hits.length) { res.append(el("div", "color:#999;font-size:12px", "Tidak ditemukan di pasien IGD 48 jam / rawat inap.")); return; }
+        hits.forEach((p) => res.append(hitBtn(p)));
+        return;
+      }
+      parts.filter((x) => x.hits.length !== 1).forEach((x) => {
+        res.append(el("div", "font-size:12px;color:#555;margin-top:4px", x.hits.length ? `"${x.q}" cocok ${x.hits.length} pasien — pilih:` : `"${x.q}" tidak ditemukan.`));
+        x.hits.slice(0, 6).forEach((p) => res.append(hitBtn(p)));
+      });
+      const sure = parts.filter((x) => x.hits.length === 1);
+      if (sure.length) res.append(el("div", "font-size:12px;color:#00695c;margin-top:4px", `✔ ${sure.length} nama cocok pasti — tekan Enter / ➕ untuk memasukkan.`));
+    };
+    const hitBtn = (p) => {
+      const b = btn("", rows.some((r) => r.noreg === p.noreg) ? "#e0e0e0" : "#e0f2f1", "#004d40", "display:block;width:100%;text-align:left;margin:3px 0;font-weight:400;border:1px solid #80cbc4");
+      b.className = "sp-lt-hit";
+      const r = ranapBy.reg.get(p.noreg) || ranapBy.rm.get(spRmKey(p.norm));
+      b.append(el("b", "", `${spLtNama(p.nama)}${p.norm ? " / RM " + p.norm : ""}`),
+        el("div", "font-size:11px;color:#555", `${r ? "🛏 " + [r.kamar, r.noKamar].filter(Boolean).join(" ") + (r.dokter ? " · " + r.dokter : "") : "🚑 IGD, belum dapat kamar"} · ${p.reg || ""}${rows.some((x) => x.noreg === p.noreg) ? " · sudah dipilih" : ""}`));
+      b.onclick = () => { addP(p); q.value = ""; showRes(); q.focus(); };
+      return b;
+    };
+    const addTyped = () => {
+      if (!ready) return;
+      const parts = spLtCariBanyak(all, q.value);
+      const sure = parts.filter((x) => x.hits.length === 1);
+      sure.forEach((x) => addP(x.hits[0]));
+      // Yang cocok pasti dikeluarkan dari kotak; yang belum jelas tetap ditulis supaya bisa dipilih.
+      q.value = parts.filter((x) => x.hits.length !== 1).map((x) => x.q).join(", ");
+      showRes();
+      if (sure.length) toast(`📣 ${sure.length} pasien dimasukkan.`);
+    };
+    q.addEventListener("input", showRes);
+    q.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); addTyped(); } });
+    qAdd.onclick = addTyped;
     fSel.onchange = compose;
-    gChk.onchange = compose;
-    bCopy.onclick = () => { const t = ta.value.trim(); if (!t) return; copySoapText(t); toast("📋 Laporan pasien transit tersalin — tempel di WhatsApp DPJP."); };
-    bWa.onclick = () => { if (!ta.value.trim()) { toast("Belum ada pasien dicentang."); return; } spShowKirimKonsulWa(() => ta.value); };
-    reload.onclick = load;
-    jamBox.querySelectorAll("[data-jam]").forEach((b) => {
-      b.onclick = () => { const h = Number(b.dataset.jam); jam = h; try { localStorage.setItem(SP_LT_JAM_KEY, String(h)); } catch (_) {} load(); };
-    });
-    await load();
+    bCopy.onclick = () => { const t = ta.value.trim(); if (!t) return; copySoapText(t); toast("📋 Laporan pasien tersalin — tempel di WhatsApp DPJP."); };
+    bWa.onclick = () => { if (!ta.value.trim()) { toast("Belum ada pasien dipilih."); return; } spShowKirimKonsulWa(() => ta.value); };
+    bClear.onclick = () => { rows = []; spLtPilihSet([]); render(); };
+    render();
+    try {
+      const [igd, ranap] = await Promise.all([spAdvisLoadPatients(base, null, 48), spFetchRanapPatients(base, true)]);
+      ranap.forEach((r) => { if (r.noreg) ranapBy.reg.set(r.noreg, r); const k = spRmKey(r.normRm); if (k) ranapBy.rm.set(k, r); });
+      knownDpjp = [...new Set(ranap.map((r) => spLtDokterRapi(r.dokter) || String(r.dokter || "").trim()).filter(Boolean))];
+      all = spAdvisAddRanap(igd, ranap);
+      ready = true;
+      const keep = spLtPilihGet();
+      all.filter((p) => keep[p.noreg]).forEach(addP);
+      render();
+      showRes();
+    } catch (e) {
+      msg.textContent = "❌ Gagal membaca daftar pasien: " + ((e && e.message) || e) + " (sesi login habis?)";
+    }
+    q.focus();
   }
 
   // =========================
@@ -18120,7 +18169,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
 
         <!-- v3.172.0 (permintaan dokter 21 Nov 2026): laporan WA pasien IGD yang masih transit / belum ada DPJP. -->
         <button type="button" data-lapor-transit="1">
-          📣 LAPOR PASIEN TRANSIT KE DPJP (WA)
+          📣 LAPOR PASIEN KE DPJP (WA)
         </button>
 
         <!-- v3.161.0 (permintaan dokter 16 Nov 2026): CEK & SARAN ASGADAR dan REFERENSI KLINIS dihapus dari menu ini
@@ -18141,7 +18190,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.174.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.175.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
