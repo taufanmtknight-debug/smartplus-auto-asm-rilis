@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.176.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.177.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.176.0
-// @description  v3.176.0 (permintaan dokter 21 Nov 2026): 📄 LEMBAR EDUKASI (AUTO IGD & RAWAT INAP) kini cukup kolom pencarian nama pasien; setelah nama diklik terbuka TAB BARU berisi Formulir Pemberian Edukasi / Informasi yang sama dengan PDF contoh dokter (kertas Letter, posisi & margin diukur dari PDF, huruf Arial Narrow, logo, spasi & enter), langsung bisa diedit di lembar lalu 🖨 Print / Simpan PDF. Isi: "Menjelaskan kepada keluarga tentang kondisi pasien sakit <diagnosis>" ⏎ "kondisi pasien merupakan sakit berat, dan dapat mengalami penurunan kondisi, pasien akan dilakukan pemantauan dan terapi maksimal selanjutnya" + pernyataan "Saya sebagai pasien/keluarga pasien* telah mengerti …". Logo dipasang sekali lewat 🖼 Logo (disimpan di browser). Tidak menyimpan ke Smartplus.
+// @version      3.177.0
+// @description  v3.177.0 (permintaan dokter 21 Nov 2026: "tidak perlu memuat semua nama pasien, cari saja nama pasien yang saya input, supaya cepat dan tidak loading"): 📣 LAPOR PASIEN KE DPJP tidak lagi memuat seluruh daftar IGD 48 jam saat dibuka — panel langsung siap; nama yang diketik dicari saat itu juga lewat kolom Keyword daftar IGD Smartplus (bila tidak tersedia: daftar dibaca bertahap dan berhenti begitu nama ditemukan) + daftar rawat inap. Pasien pilihan sebelumnya (12 jam) langsung tampil tanpa memuat daftar.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -67,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.176.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.176.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.177.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.177.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -10282,18 +10282,80 @@
     try { localStorage.setItem(SP_LT_DPJP_KEY, JSON.stringify(m)); } catch (_) {}
   }
 
-  // Pasien terpilih: { noreg: ts }, dibuang setelah 12 jam.
+  // Pasien terpilih: { noreg: { ts, p } } (p = data pasien ringkas, supaya tidak perlu memuat daftar lagi), dibuang setelah 12 jam.
   function spLtPilihGet() {
     let m = {};
     try { m = JSON.parse(localStorage.getItem(SP_LT_PILIH_KEY) || "{}") || {}; } catch (_) {}
     const now = Date.now();
-    Object.keys(m).forEach((k) => { if (!(now - (m[k] || 0) < 12 * 3600000)) delete m[k]; });
+    Object.keys(m).forEach((k) => { if (!m[k] || !m[k].p || !(now - (m[k].ts || 0) < 12 * 3600000)) delete m[k]; });
     return m;
   }
-  function spLtPilihSet(noregs) {
+  function spLtPilihSet(rows) {
     const old = spLtPilihGet(), m = {};
-    noregs.forEach((r) => { m[r] = old[r] || Date.now(); });
+    rows.forEach((r) => { m[r.noreg] = { ts: (old[r.noreg] && old[r.noreg].ts) || Date.now(), p: { noreg: r.noreg, norm: r.norm || "", nama: r.nama || "", reg: r.reg || "", ts: r.ts || 0, dok: r.dok || "", st: r.st || "" } }; });
     try { localStorage.setItem(SP_LT_PILIH_KEY, JSON.stringify(m)); } catch (_) {}
+  }
+
+  // v3.177.0 (dokter 21 Nov 2026: "tidak perlu memuat semua nama pasien, cari saja nama pasien yang saya input, supaya cepat"):
+  // pencarian per nama, tidak memuat seluruh daftar. Pasien IGD dicari dengan kolom "Keyword / CARI" milik halaman daftar IGD
+  // Smartplus (form dibaca dari halaman, hanya bila tujuan form bukan simpan/hapus); bila form tidak ada, daftar IGD dibaca per
+  // 6 halaman (terbaru dulu) dan BERHENTI begitu nama ditemukan (maks 48 jam). Pasien dirawat dari satu halaman e-Ranap.
+  function spLtParseIgdList(html) {
+    const d = typeof html === "string" ? new DOMParser().parseFromString(html, "text/html") : html;
+    const t = [...d.querySelectorAll("table")].find((x) => /Regdate/i.test(x.textContent));
+    if (!t) return [];
+    const tsOf = (s) => { const m = String(s || "").match(/(\d{2})-(\d{2})-(\d{4})\s+(\d{2}):(\d{2})/); return m ? new Date(`${m[3]}-${m[2]}-${m[1]}T${m[4]}:${m[5]}:00`).getTime() : 0; };
+    return [...t.rows].slice(1).map((r) => {
+      const c = [...r.cells].map((x) => x.textContent.replace(/\s+/g, " ").trim());
+      const m = (r.querySelector('a[href*="pasien_detail"]')?.getAttribute("href") || "").match(/pasien_detail\/([^/]+)\/([^/]+)/);
+      return m ? { noreg: m[1], norm: m[2], nama: c[1] || "", reg: c[3] || "", ts: tsOf(c[3]), dok: c[5] || "", st: c[8] || "" } : null;
+    }).filter(Boolean);
+  }
+  // Form pencarian daftar IGD: { action, method, field, extra:[[k,v]] } atau null (fungsi murni atas dokumen).
+  function spLtIgdForm(doc, pageUrl) {
+    const inp = [...doc.querySelectorAll("input")].find((i) => !/^(hidden|submit|button|checkbox|radio)$/i.test(i.type || "") && i.name &&
+      /keyword|cari|search|nama/i.test(`${i.name} ${i.placeholder || ""} ${i.id || ""}`));
+    const f = inp && inp.closest("form");
+    if (!f) return null;
+    let action = "";
+    try { action = new URL(f.getAttribute("action") || "", pageUrl).href; } catch (_) { return null; }
+    if (/simpan|save|insert|update|hapus|delete|_act\b|act_|edit/i.test(action)) return null;
+    const extra = [...f.querySelectorAll("input[type=hidden][name]")].map((h) => [h.name, h.value || ""]);
+    return { action, method: /post/i.test(f.getAttribute("method") || "") ? "POST" : "GET", field: inp.name, extra };
+  }
+  async function spLtSearchIgd(base, q, hours = 48) {
+    const kw = String(q || "").split(/\s+/).filter((w) => w.length >= 2).sort((a, b) => b.length - a.length)[0] || String(q || "").trim();
+    const listUrl = `${base}/soap_igd/pasien_igd_list`;
+    if (spLtSearchIgd.form === undefined) {
+      let f = /\/soap_igd\/pasien_igd_list/.test(location.pathname) ? spLtIgdForm(document, location.href) : null;
+      if (!f) { try { f = spLtIgdForm(new DOMParser().parseFromString(await spFetch(listUrl, { credentials: "same-origin" }).then((r) => r.text()), "text/html"), listUrl); } catch (_) { f = null; } }
+      spLtSearchIgd.form = f;
+    }
+    const f = spLtSearchIgd.form;
+    if (f) {
+      try {
+        const params = new URLSearchParams(f.extra);
+        params.set(f.field, kw);
+        const html = f.method === "POST"
+          ? await spFetch(f.action, { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: params.toString() }).then((r) => r.text())
+          : await spFetch(f.action + (f.action.includes("?") ? "&" : "?") + params.toString(), { credentials: "same-origin" }).then((r) => r.text());
+        const rows = spLtParseIgdList(html);
+        if (rows.length) return rows;
+      } catch (_) {}
+    }
+    // Cadangan: baca daftar per gelombang 6 halaman, berhenti begitu ada yang cocok.
+    const out = new Map();
+    let latest = 0;
+    for (let off = 0; off <= 1200; off += 90) {
+      const pages = await Promise.all([0, 15, 30, 45, 60, 75].map((x) => off + x).map((o) => spFetch(`${listUrl}${o ? "/" + o : ""}`, { credentials: "same-origin" }).then((r) => r.text()).then(spLtParseIgdList).catch(() => [])));
+      const flat = pages.flat();
+      if (!flat.length) break;
+      if (!latest) latest = Math.max(...flat.map((x) => x.ts));
+      flat.forEach((x) => { if (!out.has(x.noreg)) out.set(x.noreg, x); });
+      const inWin = [...out.values()].filter((x) => x.ts >= latest - hours * 3600000);
+      if (spLtCari(inWin, q).length || pages.some((pg) => !pg.length) || Math.min(...flat.map((x) => x.ts)) < latest - hours * 3600000) return inWin;
+    }
+    return [...out.values()];
   }
 
   async function runLaporTransitWa() {
@@ -10351,7 +10413,9 @@
     spWindowControls(panel, PANEL_ID, ".sp-panel-head", head, () => panel.remove());
 
     const base = smartplusBaseUrl();
-    let all = [], ranapBy = { reg: new Map(), rm: new Map() }, rows = [], knownDpjp = [], ready = false;
+    const pool = new Map(), ranapBy = { reg: new Map(), rm: new Map() };
+    let rows = [], knownDpjp = [], ranapReady = null, busy = 0;
+    const poolList = () => [...pool.values()];
     const dpjpOf = (p) => p.dpjpManual || p.dpjpAuto || "";
     const srcOf = (p) => (p.dpjpManual ? "manual" : p.dpjpAutoSrc || "");
     const done = () => rows.filter((p) => !p.loading);
@@ -10380,7 +10444,7 @@
       const x = btn("✕", "#eee", "#b71c1c", "padding:2px 8px");
       x.className = "sp-lt-del";
       x.title = "Hapus dari laporan";
-      x.onclick = () => { rows = rows.filter((r) => r !== p); spLtPilihSet(rows.map((r) => r.noreg)); render(); };
+      x.onclick = () => { rows = rows.filter((r) => r !== p); spLtPilihSet(rows); render(); };
       top.append(nm, x);
       d.append(top);
       d.append(el("div", "color:#666;font-size:11px", `🛏 ${p.kamar ? "kamar " + p.kamar : "belum dapat kamar"} · ${p.ts ? "masuk IGD " + (p.reg || "-") : p.reg || ""}${p.dok ? " · " + p.dok : ""}` +
@@ -10418,7 +10482,7 @@
       dl.textContent = "";
       [...new Set(knownDpjp.concat(rows.map(dpjpOf)).filter(Boolean))].sort().forEach((n) => { const o = el("option"); o.value = n; dl.append(o); });
       const pending = rows.filter((p) => p.loading).length;
-      msg.textContent = !ready ? "⏳ Memuat daftar pasien IGD 48 jam & rawat inap..." : !rows.length ? `${all.length} pasien bisa dicari. Belum ada pasien dipilih.` :
+      msg.textContent = busy ? "⏳ Mencari di Smartplus..." : !rows.length ? "Belum ada pasien dipilih. Ketik nama lalu Enter." :
         `${rows.length} pasien dipilih · belum ada DPJP: ${done().filter((p) => !dpjpOf(p)).length}${pending ? ` · ⏳ membaca ${pending}...` : ""}`;
       if (actReg) { const i = list.querySelector(`.sp-lt-card[data-noreg="${CSS.escape(actReg)}"] .sp-lt-dpjp`); if (i) i.focus(); }
       compose();
@@ -10443,28 +10507,63 @@
       const row = { ...p, loading: true, kamar: r ? [r.kamar, [r.noKamar, r.bed].filter(Boolean).join("/")].filter(Boolean).join(" ") || "?" : "",
         dpjpManual: (saved[p.noreg] && saved[p.noreg].nama) || "", dpjpAuto: dok, dpjpAutoSrc: dok ? "eranap" : "" };
       rows.push(row);
-      spLtPilihSet(rows.map((x) => x.noreg));
+      spLtPilihSet(rows);
       render();
       readOne(row).then(render);
       return true;
     };
+    // Daftar dirawat e-Ranap (satu halaman) untuk kamar & DPJP; dimuat sekali saat pencarian pertama.
+    const loadRanap = () => ranapReady || (ranapReady = spFetchRanapPatients(base).then((ranap) => {
+      ranap.forEach((r) => { if (r.noreg) ranapBy.reg.set(r.noreg, r); const k = spRmKey(r.normRm); if (k) ranapBy.rm.set(k, r); });
+      knownDpjp = [...new Set(ranap.map((r) => spLtDokterRapi(r.dokter) || String(r.dokter || "").trim()).filter(Boolean))];
+      return ranap;
+    }).catch(() => []));
+    const searched = new Map();
+    // Cari satu nama di Smartplus (IGD + dirawat) -> masuk pool. Hasil per kata kunci disimpan selama panel terbuka.
+    const searchOne = (term) => {
+      const k = spLtNz(term);
+      if (!k || k.length < 2) return Promise.resolve();
+      if (!searched.has(k)) {
+        searched.set(k, (async () => {
+          const [igd, ranap] = await Promise.all([spLtSearchIgd(base, term).catch(() => []), loadRanap()]);
+          // IGD: hanya kunjungan 48 jam terakhir, satu kunjungan (terbaru) per No.RM; lalu pasien dirawat yang cocok.
+          const lim = Date.now() - 48 * 3600000, byRm = new Map();
+          igd.filter((x) => !x.ts || x.ts >= lim).sort((a, b) => (b.ts || 0) - (a.ts || 0)).forEach((x) => { const r = spRmKey(x.norm) || x.noreg; if (!byRm.has(r)) byRm.set(r, x); });
+          spAdvisAddRanap([...byRm.values()], ranap.filter((r) => spLtCari([{ nama: r.name, norm: r.normRm }], term).length))
+            .forEach((p) => { if (!pool.has(p.noreg)) pool.set(p.noreg, p); });
+        })().catch(() => { searched.delete(k); }));
+      }
+      return searched.get(k);
+    };
+    const withBusy = async (fn) => { busy++; render(); try { return await fn(); } finally { busy--; render(); } };
+    let lastQ = "";
     const showRes = () => {
       res.textContent = "";
-      if (!ready) return;
-      const parts = spLtCariBanyak(all, q.value);
+      lastQ = q.value;
+      const parts = spLtCariBanyak(poolList(), q.value);
+      if (!parts.length) return;
       if (parts.length === 1 && !/[,;\n]/.test(q.value)) {
         // Satu nama: daftar cocok untuk diklik (maks 8).
         const hits = parts[0].hits.slice(0, 8);
-        if (!hits.length) { res.append(el("div", "color:#999;font-size:12px", "Tidak ditemukan di pasien IGD 48 jam / rawat inap.")); return; }
+        if (!hits.length) { res.append(el("div", "color:#999;font-size:12px", busy ? "⏳ Mencari..." : "Tidak ditemukan di pasien IGD 48 jam / rawat inap.")); return; }
         hits.forEach((p) => res.append(hitBtn(p)));
         return;
       }
       parts.filter((x) => x.hits.length !== 1).forEach((x) => {
-        res.append(el("div", "font-size:12px;color:#555;margin-top:4px", x.hits.length ? `"${x.q}" cocok ${x.hits.length} pasien — pilih:` : `"${x.q}" tidak ditemukan.`));
+        res.append(el("div", "font-size:12px;color:#555;margin-top:4px", x.hits.length ? `"${x.q}" cocok ${x.hits.length} pasien — pilih:` : `"${x.q}" ${busy ? "sedang dicari..." : "tidak ditemukan."}`));
         x.hits.slice(0, 6).forEach((p) => res.append(hitBtn(p)));
       });
       const sure = parts.filter((x) => x.hits.length === 1);
       if (sure.length) res.append(el("div", "font-size:12px;color:#00695c;margin-top:4px", `✔ ${sure.length} nama cocok pasti — tekan Enter / ➕ untuk memasukkan.`));
+    };
+    // Ketik satu nama (≥3 huruf) -> dicari otomatis setelah berhenti mengetik sebentar.
+    let tmr = 0;
+    const onInput = () => {
+      clearTimeout(tmr);
+      showRes();
+      const v = q.value;
+      if (/[,;\n]/.test(v) || spLtNz(v).replace(/\s/g, "").length < 3) return;
+      tmr = setTimeout(() => withBusy(() => searchOne(v)).then(() => { if (q.value === v) showRes(); }), 450);
     };
     const hitBtn = (p) => {
       const b = btn("", rows.some((r) => r.noreg === p.noreg) ? "#e0e0e0" : "#e0f2f1", "#004d40", "display:block;width:100%;text-align:left;margin:3px 0;font-weight:400;border:1px solid #80cbc4");
@@ -10475,9 +10574,13 @@
       b.onclick = () => { addP(p); q.value = ""; showRes(); q.focus(); };
       return b;
     };
-    const addTyped = () => {
-      if (!ready) return;
-      const parts = spLtCariBanyak(all, q.value);
+    const addTyped = async () => {
+      const text = q.value;
+      const terms = spLtCariBanyak([], text).map((x) => x.q);
+      if (!terms.length) return;
+      await withBusy(() => Promise.all(terms.map(searchOne)));
+      if (q.value !== text) return;
+      const parts = spLtCariBanyak(poolList(), text);
       const sure = parts.filter((x) => x.hits.length === 1);
       sure.forEach((x) => addP(x.hits[0]));
       // Yang cocok pasti dikeluarkan dari kotak; yang belum jelas tetap ditulis supaya bisa dipilih.
@@ -10485,7 +10588,7 @@
       showRes();
       if (sure.length) toast(`📣 ${sure.length} pasien dimasukkan.`);
     };
-    q.addEventListener("input", showRes);
+    q.addEventListener("input", onInput);
     q.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); addTyped(); } });
     qAdd.onclick = addTyped;
     fSel.onchange = compose;
@@ -10493,20 +10596,14 @@
     bWa.onclick = () => { if (!ta.value.trim()) { toast("Belum ada pasien dipilih."); return; } spShowKirimKonsulWa(() => ta.value); };
     bClear.onclick = () => { rows = []; spLtPilihSet([]); render(); };
     render();
-    try {
-      const [igd, ranap] = await Promise.all([spAdvisLoadPatients(base, null, 48), spFetchRanapPatients(base, true)]);
-      ranap.forEach((r) => { if (r.noreg) ranapBy.reg.set(r.noreg, r); const k = spRmKey(r.normRm); if (k) ranapBy.rm.set(k, r); });
-      knownDpjp = [...new Set(ranap.map((r) => spLtDokterRapi(r.dokter) || String(r.dokter || "").trim()).filter(Boolean))];
-      all = spAdvisAddRanap(igd, ranap);
-      ready = true;
-      const keep = spLtPilihGet();
-      all.filter((p) => keep[p.noreg]).forEach(addP);
-      render();
-      showRes();
-    } catch (e) {
-      msg.textContent = "❌ Gagal membaca daftar pasien: " + ((e && e.message) || e) + " (sesi login habis?)";
-    }
     q.focus();
+    // Pasien yang dipilih sebelumnya (12 jam) langsung tampil tanpa memuat daftar; kamar/DPJP e-Ranap menyusul.
+    const keep = Object.values(spLtPilihGet()).map((x) => x.p);
+    if (keep.length) {
+      keep.forEach((p) => pool.set(p.noreg, p));
+      await loadRanap();
+      keep.forEach(addP);
+    }
   }
 
   // =========================
@@ -18173,7 +18270,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.176.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.177.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
