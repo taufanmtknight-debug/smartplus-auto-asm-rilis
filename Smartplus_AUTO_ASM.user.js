@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.180.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.181.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.180.0
-// @description  v3.180.0 (laporan dokter 21 Nov 2026): 📣 LAPOR PASIEN KE DPJP — baris pasien dipersingkat jadi "NAMA / umur / di IGD sejak dd/mm jj.mm" (tanpa No.Reg, No.RM, dan baris Status; umur dibaca dari halaman pasien); nama tidak lagi bercampur No.RM/No.Reg dari daftar IGD; S tidak lagi berisi nama pasien dan garis miring dari keluhan triase; GCS 0 tidak ditulis.
+// @version      3.181.0
+// @description  v3.181.0 (permintaan dokter 21 Nov 2026): 📣 LAPOR PASIEN KE DPJP — label "O:" diganti "TTV:" dan "A:" diganti "Diagnosis sementara:" di teks WA dan kartu pasien.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -67,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.180.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.180.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.181.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.181.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -10262,8 +10262,8 @@
       const out = [`${i + 1}. ${head}`];
       if (x.soa) {
         out.push(`S: ${x.soa.s || "-"}`);
-        out.push(`O: ${x.soa.o || "-"}`);
-        out.push(`A: ${x.soa.a || "-"}`);
+        out.push(`TTV: ${x.soa.o || "-"}`);
+        out.push(`Diagnosis sementara: ${x.soa.a || "-"}`);
       }
       return out.join("\n");
     };
@@ -10496,7 +10496,7 @@
       d.append(dRow);
       if (p.soa) {
         const pre = el("pre", "white-space:pre-wrap;margin:4px 0 0;padding:6px;background:#fafafa;border:1px solid #eee;border-radius:6px;font:12px/1.4 Arial,sans-serif",
-          `S: ${p.soa.s || "-"}\nO: ${p.soa.o || "-"}\nA: ${p.soa.a || "-"}`);
+          `S: ${p.soa.s || "-"}\nTTV: ${p.soa.o || "-"}\nDiagnosis sementara: ${p.soa.a || "-"}`);
         pre.className = "sp-lt-soa";
         d.append(pre);
       }
@@ -18375,7 +18375,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.180.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.181.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
