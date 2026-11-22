@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.182.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.183.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.182.0
-// @description  v3.182.0 (koreksi dokter 21 Nov 2026): 📣 LAPOR PASIEN KE DPJP — label kembali "O:" dan "A:". O berisi TTV yang diketahui dari GADAR, yang kosong diisi nilai normal sesuai umur (dewasa TD 120/80, N 86, RR 20, S 36,6; anak tanpa TD). A berisi diagnosis sementara; bila kolom diagnosis GADAR kosong diambil dari keluhan triase (mis. "GEA INJ" -> GEA). Kata "INJ" tidak ikut ke S/A.
+// @version      3.183.0
+// @description  v3.183.0 (permintaan dokter 22 Nov 2026): 🛏 CEK ADVIS PASIEN DAPAT KAMAR juga membaca CPPT pasien (semua PPA). Advis yang sudah ada di CPPT (mis. "advis dr. X Sp.Y" dari 💾 Simpan Rencana + Tulis juga di CPPT) = sudah advis walau Rencana ASGADAR belum ada; advis WA yang isinya sudah ada di Rencana ATAU CPPT tidak dimasukkan lagi. Kartu menampilkan baris advis dari CPPT. Tetap hanya membaca (GET).
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -67,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.182.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.182.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.183.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.183.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -9512,6 +9512,25 @@
     // "Advcie dr. Bonnie,SpA", "advise dr" juga advis. "Lapor dr X" saja tetap belum advis.
     return lines.some((l) => SP_TX_HEADER.test(l) || /\b(?:adv|advs|advi[cs]e?|advise|advcie|adivs?|advsi)\.?\s*:?\s*(?:dari\s+)?(?:dr\b|dr\.|dokter|dpjp|sp\.?\s?[a-z])/i.test(l));
   }
+  // v3.183.0 (permintaan dokter 22 Nov 2026): CPPT kunjungan ini ikut dibaca. Teks CPPT (S, P, instruksi; semua PPA) ->
+  // satu teks untuk pencocokan advis. Advis yang ditulis lewat 💾 Simpan Rencana + "Tulis juga di CPPT" (v3.161.0) berbentuk
+  // S "advis dr. X Sp.Y" & P "advis dr. X Sp.Y\n- ...". Fungsi murni.
+  function spCpptAdvisText(rows) {
+    return (rows || []).filter((r) => r && r.type === "CPPT")
+      .map((r) => [r.keluhan, r.sText, r.pText, r.instruksi].filter(Boolean).join("\n")).filter((t) => t.trim()).join("\n\n");
+  }
+  // Baris advis di teks CPPT (blok mulai baris pembuka advis s.d. baris kosong / pembuka lain) -> teks pendek, "" bila tidak ada.
+  function spCpptAdvisLines(text) {
+    const out = [];
+    spNlPure(text).split(/\n\s*\n/).forEach((blk) => {
+      const ls = blk.split("\n").map((l) => l.trim()).filter(Boolean);
+      const i = ls.findIndex((l) => spRencanaHasAdvis(l));
+      if (i < 0) return;
+      const t = ls.slice(i, i + 8).join("\n");
+      if (!out.includes(t)) out.push(t);
+    });
+    return out.slice(0, 4).join("\n\n");
+  }
   function spRmKey(v) { return String(v || "").replace(/\D/g, "").replace(/^0+/, ""); }
   // igd = [{ noreg, norm, nama, st, ... }], ranap = [{ noreg, normRm, kamar, ... }] -> pasien IGD yang dapat kamar (+ data kamar).
   function spMatchDapatKamar(igd, ranap) {
@@ -9537,12 +9556,32 @@
       });
       // v3.121.2 (uji WA asli 24 Okt 2026): advis WA yang SEMUA bloknya sudah tertulis di Rencana (ditulis tanpa kata "advis")
       // dulu tetap masuk antrean "belum tersimpan" -> kini pasien dianggap sudah advis dan tidak diantrekan.
-      if (p.wa.length && typeof spWaMergeAdvis === "function" && p.rencana && !spWaMergeAdvis(p.rencana, p.wa.map((w) => w.text)).added) {
-        p.has = true; p.waSudah = true; return;
+      // v3.183.0: advis WA yang isinya sudah ada di CPPT juga tidak diantrekan lagi (Rencana ATAU CPPT).
+      const di = p.wa.length ? spCekAdvisSudahDi(p, p.wa.map((w) => w.text)) : "";
+      if (di) {
+        p.has = true; p.waSudah = true; p.waSudahDi = di;
+        return;
       }
       if (p.wa.length) groups.push({ patient: spCekAdvisPatient(p), texts: p.wa.map((w) => w.text) });
     });
     return groups;
+  }
+  // Semua blok advis WA (texts) sudah tertulis di Rencana ASGADAR atau di CPPT (tiap blok cukup ada di salah satunya)?
+  // -> "Rencana" / "CPPT" / "Rencana & CPPT" / "" (belum semua). Dicek terpisah supaya judul "Advis dr. X:" Rencana tidak
+  // "menempel" ke baris CPPT. Fungsi murni (memakai spWaAlreadyIn).
+  function spCekAdvisSudahDi(p, texts) {
+    if (typeof spWaAlreadyIn !== "function") return "";
+    const ren = String((p && p.rencana) || ""), cp = String((p && p.cppt) || "");
+    if (!ren.trim() && !cp.trim()) return "";
+    const blocks = (texts || []).flatMap((t) => spNlPure(t).split(/\n\s*\n(?=\s*advis\b)/i)).map((b) => b.replace(/\s+$/, "")).filter((b) => b.trim());
+    if (!blocks.length) return "";
+    const where = new Set();
+    for (const b of blocks) {
+      if (ren.trim() && spWaAlreadyIn(ren, b)) where.add("Rencana");
+      else if (cp.trim() && spWaAlreadyIn(cp, b)) where.add("CPPT");
+      else return "";
+    }
+    return [...where].join(" & ");
   }
   function spCekAdvisPatient(p) {
     const nama = String(p.nama || "").replace(/,.*$/, "").trim();
@@ -9631,10 +9670,22 @@
       d.querySelector(".n").textContent = `${p.loading ? "⏳" : p.has ? "✅" : p.err ? "⚠️" : "❌"} ${p.nama}`;
       d.querySelector(".i").textContent = `🛏 ${roomText(p)}${p.ranap && p.ranap.dokter ? " · DPJP " + p.ranap.dokter : ""} · masuk IGD ${p.reg}${p.dok ? " · " + p.dok : ""}`;
       d.querySelector(".r").textContent = p.loading ? "⏳ Membaca Rencana..." : p.err || String(p.rencana || "").trim() || "(Rencana kosong)";
+      // v3.183.0: advis ditemukan di CPPT (Rencana ASGADAR belum ada advis) -> baris advis CPPT ditampilkan.
+      if (!p.loading && p.cpptAdvis && !p.rencanaAdvis) {
+        const w = document.createElement("div");
+        w.className = "sp-ca-cppt";
+        w.style.cssText = "margin-top:4px;font-size:12px;color:#1b5e20";
+        w.textContent = "📋 Advis sudah ada di CPPT (Rencana ASGADAR belum):";
+        const pre = document.createElement("pre");
+        pre.style.cssText = "white-space:pre-wrap;margin:2px 0;padding:6px;background:#f1f8e9;border:1px solid #c8e6c9;border-radius:6px;max-height:120px;overflow:auto;font:12px/1.4 Arial,sans-serif";
+        pre.textContent = p.cpptAdvis;
+        w.append(pre);
+        d.append(w);
+      }
       if (p.waSudah) {
         const w = document.createElement("div");
         w.style.cssText = "margin-top:4px;font-size:12px;color:#1b5e20";
-        w.textContent = "📩 Advis di WhatsApp sudah tertulis di Rencana ini (tanpa kata \"advis\").";
+        w.textContent = p.waSudahDi && p.waSudahDi !== "Rencana" ? `📩 Advis di WhatsApp sudah tertulis di ${p.waSudahDi === "CPPT" ? "CPPT pasien ini" : "Rencana & CPPT"}.` : "📩 Advis di WhatsApp sudah tertulis di Rencana ini (tanpa kata \"advis\").";
         d.append(w);
       }
       if (!p.loading && !p.err && !p.has && p.wa && p.wa.length) {
@@ -9748,12 +9799,26 @@
         (todo.some((p) => p.err) ? ` · ⚠️ belum terbaca: ${todo.filter((p) => p.err).length}` : "") +
         ` · ✅ sudah: ${done.length}${pending ? ` · ⏳ membaca ${pending}...` : ""}`;
     };
+    // v3.183.0: CPPT kunjungan ini (cppt_viewer) dibaca bersama GADAR; gagal dibaca = diabaikan (hanya Rencana yang dipakai).
+    const readCppt = async (p) => {
+      try {
+        const html = await spFetch(`${base}/nurse_station/eranap/cppt_viewer/${encodeURIComponent(p.noreg)}`, { credentials: "same-origin" }).then((r) => r.text());
+        return spCpptAdvisText(spParseCpptViewer(html));
+      } catch (_) { return ""; }
+    };
     const readOne = async (p) => {
+      const cpptP = readCppt(p);
       try {
         const g = await spAdvisLatestGadar(base, p);
         if (!g) { p.err = "Belum ada Assesment GADAR di kunjungan ini."; p.has = false; }
-        else { p.gadar = g; p.err = ""; p.rencana = spNl(g.gadar.rencana_tindakan || ""); p.has = spRencanaHasAdvis(p.rencana); }
+        else { p.gadar = g; p.err = ""; p.rencana = spNl(g.gadar.rencana_tindakan || ""); }
       } catch (e) { p.err = "Gagal membaca GADAR: " + ((e && e.message) || e); p.has = false; }
+      p.cppt = await cpptP;
+      p.rencanaAdvis = !p.err && spRencanaHasAdvis(p.rencana);
+      p.cpptAdvis = spCpptAdvisLines(p.cppt);
+      // Sudah advis bila ada di Rencana ASGADAR ATAU di CPPT (permintaan dokter 22 Nov 2026).
+      p.has = p.rencanaAdvis || !!p.cpptAdvis;
+      if (p.has && p.err && p.cpptAdvis) p.err = "";
       p.loading = false;
     };
     const recheck = async (p) => { p.loading = true; await readOne(p); render(); };
@@ -9817,7 +9882,7 @@
         info.querySelector("div").textContent = det.join("\n");
         const head = v.err ? `⚠️ Pencarian berhenti (${v.err}). ` : v.stopped ? "⏹ Dihentikan. " : "✅ Selesai. ";
         waMsg.textContent = head + `${v.scanned || 0} dari ${v.chats || 0} chat ${v.hours || jam} jam dibaca · advis ditemukan untuk ${groups.length + sudah} dari ${targets.length} pasien` +
-          (sudah ? ` (${sudah} ternyata sudah tertulis di Rencana → ✅)` : "") + "." +
+          (sudah ? ` (${sudah} ternyata sudah tertulis di Rencana/CPPT → ✅)` : "") + "." +
           (groupsBelum.length ? ` Termasuk ${groupsBelum.length} pasien yang belum dapat kamar (Rencana belum ada advis).` : "") +
           (groups.length ? ` (🟢 ${nG} yakin · 🟡 ${nY} mohon dicek)` : "") +
           (unk.length ? ` · 🔴 ${unk.length} advis belum jelas pasiennya (pilih di bawah).` : "") +
@@ -18388,7 +18453,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.182.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.183.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
