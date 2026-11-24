@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.183.0
+// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.184.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.183.0
-// @description  v3.183.0 (permintaan dokter 22 Nov 2026): 🛏 CEK ADVIS PASIEN DAPAT KAMAR juga membaca CPPT pasien (semua PPA). Advis yang sudah ada di CPPT (mis. "advis dr. X Sp.Y" dari 💾 Simpan Rencana + Tulis juga di CPPT) = sudah advis walau Rencana ASGADAR belum ada; advis WA yang isinya sudah ada di Rencana ATAU CPPT tidak dimasukkan lagi. Kartu menampilkan baris advis dari CPPT. Tetap hanya membaca (GET).
+// @version      3.184.0
+// @description  v3.184.0 (uji live 24 Nov 2026): 🔎 Cari advis WA — WhatsApp Web versi baru tidak lagi menandai pesan kita (kelas message-out), sehingga pesan dokter sendiri terbaca sebagai advis spesialis; kini pesan kita dikenali dari label pengirim "Anda:"/"You:". Usulan pasien untuk advis yang pasiennya belum jelas tidak lagi memakai nama dokter pengirim. MULTIPLE CPPT IGD: keluhan diambil dari Riwayat Penyakit Sekarang bila Keluhan Utama GADAR kosong. LEMBAR EDUKASI: kolom Nama tidak lagi berisi No.RM/No.Reg.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -67,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.183.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.183.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.184.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.184.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -5514,7 +5514,9 @@
     if (drKel) { plan.keluhan = drKel.keluhan; plan.keluhanFrom = `${drKel.type} ${drKel.timeText} (${drKel.ppa})`; }
     else plan.keluhan = null;
     if (!plan.keluhan) {
-      const ku = gadar ? spCleanGadarText(gadar.data.kel_utama) : "";
+      // v3.184.0 (uji live 24 Nov 2026): GADAR yang hanya berisi Riwayat Penyakit Sekarang (Keluhan Utama kosong) dulu
+      // membuat MULTIPLE CPPT IGD "keluhan tidak ditemukan" -> RPS dipakai bila Keluhan Utama kosong.
+      const ku = gadar ? (spCleanGadarText(gadar.data.kel_utama) || spCleanGadarText(gadar.data.riwayat_sakit_now)) : "";
       const nurseAsm = rows.find((r) => r.type === "ASM AWAL" && r.keluhan);
       if (ku) { plan.keluhan = ku; plan.keluhanFrom = `Assesment GADAR IGD ${spCleanGadarText(gadar.data.gadar_date)}`; fromAdmission = true; }
       else if (nurseAsm) { plan.keluhan = nurseAsm.keluhan; plan.keluhanFrom = `ASM AWAL ${nurseAsm.timeText} (${nurseAsm.ppa})`; fromAdmission = true; }
@@ -7317,6 +7319,23 @@
   // fungsi (bukan const): dipakai juga di WhatsApp Web yang berjalan sebelum konstanta modul dibuat.
   // v3.164.0 (uji kode atas permintaan dokter 16 Nov 2026): "Ok rawat inap", "Oke acc ranap dok", "Baik lanjut terapi" dulu dianggap
   // ucapan "ok" biasa sehingga advisnya terlewat -> ucapan singkat yang memuat istilah terapi/tindakan = advis, bukan ucapan.
+  // v3.184.0 (uji live 24 Nov 2026): WA Web versi baru tidak lagi memberi kelas .message-out dan data-id pesan tidak lagi
+  // diawali "true_" -> pesan dokter sendiri (mis. "Sebentar ... cek dulu" di chat pribadi, atau konsul yang dikirim dokter)
+  // terbaca sebagai pesan MASUK/advis. Penanda baru: label pengirim <span aria-label="Anda:"> (Inggris "You:") yang menjadi anak
+  // langsung salah satu induk terdekat pesan (bukan label di dalam kutipan), atau ekor gelembung "tail-out".
+  function spWaIsOutMsg(n) {
+    try {
+      let e = n;
+      for (let i = 0; i < 5 && e; i++) {
+        e = e.parentElement;
+        if (!e) break;
+        const s = [...e.children].find((c) => c.tagName === "SPAN" && /:\s*$/.test(c.getAttribute("aria-label") || ""));
+        if (s) return /^(Anda|You)\s*:\s*$/i.test(s.getAttribute("aria-label"));
+      }
+      const row = n.closest('[role="row"]');
+      return !!(row && row.querySelector('[data-icon="tail-out"]'));
+    } catch (_) { return false; }
+  }
   function spWaIsAck(t) {
     const x = String(t || "").trim();
     return /^(ok(e|ey)?|siap|baik|iya|sip|noted|terima ?kasih|makasih|trims|thx|thanks)\b[\s\w,.!]{0,20}$/i.test(x) && !spWaAdvWordRe().test(x.replace(/^\S+/, ""));
@@ -7486,9 +7505,12 @@
     }
     return d + (a.length - i) + (b.length - j) <= 1;
   }
-  function spWaSuggestPatients(ctx, list, max = 3) {
+  // v3.184.0 (uji live 24 Nov 2026): ignore = nama pengirim advis (dokter spesialis). Dulu nama dokter di chat (mis. "dr Andi")
+  // ikut dicocokkan sehingga pasien bernama sama ("ANDI ...") diusulkan untuk advis yang pasiennya belum jelas.
+  function spWaSuggestPatients(ctx, list, max = 3, ignore = "") {
     const T = String(ctx || "").toUpperCase();
-    const words = [...new Set(T.replace(/[^A-Z0-9]+/g, " ").split(" ").filter((w) => w.length >= 3))];
+    const IGN = new Set(String(ignore || "").toUpperCase().replace(/[^A-Z]+/g, " ").split(" ").filter((w) => w.length >= 3));
+    const words = [...new Set(T.replace(/[^A-Z0-9]+/g, " ").split(" ").filter((w) => w.length >= 3 && !IGN.has(w)))];
     const wset = new Set(words);
     const digits = new Set((T.match(/\d{5,8}/g) || []).map((d) => d.replace(/^0+/, "")));
     const STOP = /^(TN|NY|NN|AN|BY|SDR|SDRI|NONA|BIN|BINTI|MUHAMMAD|MUHAMAD|MOHAMMAD|MOCH|MOH|MUH|SITI|NUR|NURUL|ABDUL|DAN|DENGAN|PASIEN|DOKTER)$/;
@@ -7643,7 +7665,7 @@
         it.why = [HOW[mt.how], SRC[a.src], a.multi ? "beberapa pasien dikonsulkan bersamaan" : "", altKeys.size ? "ada pasien lain yang juga cocok" : ""].filter(Boolean).join(" · ");
       } else {
         // pasien tidak terbaca / tidak cocok: pasien paling mirip dari potongan chat = usulan (dokter memilih)
-        spWaSuggestPatients([a.pt && a.pt.nama, a.pt && a.pt.rm, ctx, text].filter(Boolean).join("\n"), (targets || []).map((x) => ({ nama: x.nama, norm: x.rm, x }))).forEach((s) => addAlt(s.x));
+        spWaSuggestPatients([a.pt && a.pt.nama, a.pt && a.pt.rm, ctx, text].filter(Boolean).join("\n"), (targets || []).map((x) => ({ nama: x.nama, norm: x.rm, x })), 3, it.sender).forEach((s) => addAlt(s.x));
         it.why = a.pt ? `di WA ditulis untuk ${a.pt.label} — tidak cocok dengan pasien yang dicari` : "pasien tidak tertulis di chat (tanpa kutipan / konsul)";
       }
       it.alts = [...altKeys].filter((x) => x !== it.key);
@@ -7934,7 +7956,8 @@
       document.querySelectorAll("#main [data-pre-plain-text]").forEach((n) => {
         // v3.98.0 (laporan dokter, WA Web di HP): pesan panjang dipotong "Read more" / "Baca selengkapnya" -> dibuka otomatis
         // (hanya membentangkan pesan, tidak mengirim apa pun) supaya semua baris advis / baris pasien konsul terbaca.
-        (n.closest(".message-in, .message-out") || n).querySelectorAll('[role="button"], .read-more-button').forEach((b) => {
+        // v3.184.0: WA Web baru tidak lagi memakai kelas .message-in/.message-out -> baris pesan [role=row] / [data-id].
+        (n.closest(".message-in, .message-out") || n.closest('[role="row"]') || n.closest("[data-id]") || n).querySelectorAll('[role="button"], .read-more-button').forEach((b) => {
           if (b.childElementCount <= 1 && /^\s*(read more|baca selengkapnya|selengkapnya|lihat selengkapnya)\s*$/i.test(b.textContent || "") && !b.dataset.spRm) {
             b.dataset.spRm = "1";
             try { b.click(); snapshot.expanded = true; } catch (_) {}
@@ -7946,7 +7969,7 @@
         const box = n.closest(".message-in, .message-out");
         // v3.78.0 (laporan dokter): pesan kita terbaca sebagai pesan masuk -> juga dari data-id baris WA ("true_..." = pesan kita).
         const did = n.closest("[data-id]")?.getAttribute("data-id") || "";
-        const out = !!(box && box.classList.contains("message-out")) || /^true_/.test(did);
+        const out = !!(box && box.classList.contains("message-out")) || /^true_/.test(did) || spWaIsOutMsg(n);
         const r = n.getBoundingClientRect();
         const key = did || pre + "|" + text.slice(0, 80);
         const old = cache.get(key);
@@ -10952,7 +10975,9 @@
     return [...t.rows].slice(1).map((r) => {
       const c = [...r.cells].map((x) => x.textContent.replace(/\s+/g, " ").trim());
       const m = (r.querySelector('a[href*="pasien_detail"]')?.getAttribute("href") || "").match(/pasien_detail\/([^/]+)\/([^/]+)/);
-      return m ? { noreg: m[1], norm: m[2], nama: c[1] || "", reg: c[3] || "", dok: c[5] || "", st: c[8] || "" } : null;
+      // v3.184.0 (uji live 24 Nov 2026): sel Pasien = "NAMA" + baris "No.RM / No.Reg" -> dulu kolom Nama lembar edukasi berisi
+      // "NAMA <No.RM> / <No.Reg>" (terpotong). Nomor di belakang nama dibuang.
+      return m ? { noreg: m[1], norm: m[2], nama: (c[1] || "").replace(/\s*\d{5,}\s*\/\s*\S+\s*$/, ""), reg: c[3] || "", dok: c[5] || "", st: c[8] || "" } : null;
     }).filter(Boolean);
   }
   // Form Keyword/CARI di daftar pasien IGD: { action, method, field, extra: [[nama, nilai]] } atau null. Disimpan sekali.
@@ -18453,7 +18478,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.183.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.184.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
