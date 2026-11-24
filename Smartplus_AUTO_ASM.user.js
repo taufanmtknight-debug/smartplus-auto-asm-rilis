@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Firefox Violentmonkey Compatible v3.184.0
+// @name         Smartplus ASM GADAR - Chrome + Edge + Firefox Violentmonkey Compatible v3.185.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.184.0
-// @description  v3.184.0 (uji live 24 Nov 2026): 🔎 Cari advis WA — WhatsApp Web versi baru tidak lagi menandai pesan kita (kelas message-out), sehingga pesan dokter sendiri terbaca sebagai advis spesialis; kini pesan kita dikenali dari label pengirim "Anda:"/"You:". Usulan pasien untuk advis yang pasiennya belum jelas tidak lagi memakai nama dokter pengirim. MULTIPLE CPPT IGD: keluhan diambil dari Riwayat Penyakit Sekarang bila Keluhan Utama GADAR kosong. LEMBAR EDUKASI: kolom Nama tidak lagi berisi No.RM/No.Reg.
+// @version      3.185.0
+// @description  v3.185.0 (permintaan dokter 24 Nov 2026): AUTO ASM resmi untuk Microsoft Edge (Windows) selain Chrome & Firefox — Edge memakai mesin Chromium yang sama, jadi semua fitur (AUTO IGD/RANAP, 🎙 Asisten suara & 🎤 Dengar, 🧠 Tanya AI, film Orthanc, Advis WA) berjalan sama. Pesan bantuan tidak lagi menyebut "Chrome" saja: alamat pengaturan mikrofon http otomatis edge://flags di Edge (chrome://flags di Chrome); bisa dipasang lewat Violentmonkey atau Tampermonkey dari Edge Add-ons.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -67,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.184.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.184.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.185.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.185.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -8209,7 +8209,7 @@
         setTimeout(() => {
           if (done) return;
           msg.style.color = "#c62828";
-          msg.textContent = "⚠️ Belum ada tab Smartplus yang menerima. Pastikan Smartplus terbuka di Chrome yang sama (sudah login, AUTO ASM terbaru), lalu Kirim lagi.";
+          msg.textContent = "⚠️ Belum ada tab Smartplus yang menerima. Pastikan Smartplus terbuka di browser yang sama (Chrome/Edge yang sama dengan WhatsApp Web ini) (sudah login, AUTO ASM terbaru), lalu Kirim lagi.";
         }, 6000);
       };
     }
@@ -11808,7 +11808,7 @@
     if (!res.noReply || res.blocked) { if (!res.blocked) spPacsSetPakai(tag(order[0])); return res; }
     res = await spCaptureFilmOnce(order[1], index, timeoutMs, mode);
     if (!res.noReply) { if (!res.blocked) spPacsSetPakai(tag(order[1])); return res; }
-    res.error = "jendela film tidak menjawab di alamat PACS RS maupun alamat luar RS — buka alamat PACS luar RS sekali di Chrome & login, atau sambung ke jaringan RS";
+    res.error = "jendela film tidak menjawab di alamat PACS RS maupun alamat luar RS — buka alamat PACS luar RS sekali di browser ini (Chrome/Edge) & login, atau sambung ke jaringan RS";
     return res;
   }
   function spCaptureFilmOnce(url, index, timeoutMs = SP_FILM_TIMEOUT_MS, mode = "", extra = "") {
@@ -18478,7 +18478,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.184.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.185.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
@@ -19927,6 +19927,13 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     return ok && act !== "skip";
   }
 
+  // v3.185.0 (permintaan dokter 24 Nov 2026: AUTO ASM di Microsoft Edge): Edge = mesin Chromium yang sama dengan Chrome,
+  // jadi semua fitur berjalan sama. Hanya alamat halaman pengaturannya berbeda (edge:// vs chrome://).
+  function spIsEdge(ua) { return /\bEdg(A|iOS)?\//.test(ua == null ? (navigator.userAgent || "") : String(ua)); }
+  function spBrowserFlagUrl(ua) {
+    return (spIsEdge(ua) ? "edge" : "chrome") + "://flags/#unsafely-treat-insecure-origin-as-secure";
+  }
+
   function spVoiceStart() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
@@ -19985,7 +19992,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
         "not-allowed": window.isSecureContext
           ? "izin mikrofon ditolak. Klik ikon gembok/mikrofon di bilah alamat -> Izinkan mikrofon."
           : "browser menolak mikrofon karena Smartplus memakai http (tidak aman). Minta IT menambahkan alamat Smartplus di " +
-            "chrome://flags/#unsafely-treat-insecure-origin-as-secure (Edge: edge://flags), atau pakai Win + H. Di HP: ketuk 🎤 di keyboard.",
+            spBrowserFlagUrl() + ", atau pakai Win + H. Di HP: ketuk 🎤 di keyboard.",
         "service-not-allowed": "layanan pengenalan suara browser tidak diizinkan. Pakai Win + H (dikte Windows).",
         "audio-capture": "mikrofon tidak ditemukan. Cek headset/mikrofon PC.",
         "network": "layanan pengenalan suara butuh internet dan sedang tidak terjangkau. Pakai Win + H.",
@@ -22538,7 +22545,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     <div class="ak-ai-set-row"><input type="password" class="ak-ai-key" data-prov="openai" placeholder="sk-..." autocomplete="off" spellcheck="false"><button type="button" data-act="savekey" data-prov="openai">Simpan</button></div>
     <div class="ak-ai-set-row ak-ai-key-status" data-prov="openai"></div>
     <div class="ak-ai-set-title">Alamat PACS luar RS (Orthanc)</div>
-    <div class="ak-ai-set-note">Untuk 🩻 Film Ro/CT & AUTO SCREENSHOT dari luar jaringan RS, dan mencari film pasien langsung di PACS per No.RM. Tempel alamat Orthanc dari kolom alamat Chrome (cukup server & port). Disimpan di browser ini saja, tidak masuk script. Buka alamat itu sekali di Chrome dan login dulu.</div>
+    <div class="ak-ai-set-note">Untuk 🩻 Film Ro/CT & AUTO SCREENSHOT dari luar jaringan RS, dan mencari film pasien langsung di PACS per No.RM. Tempel alamat Orthanc dari kolom alamat browser (Chrome/Edge; cukup server & port). Disimpan di browser ini saja, tidak masuk script. Buka alamat itu sekali di browser ini dan login dulu.</div>
     <div class="ak-ai-set-row"><input type="text" class="ak-ai-pacs" placeholder="http://alamat-pacs:8042" autocomplete="off" spellcheck="false"><button type="button" data-act="savepacs">Simpan</button></div>
     <div class="ak-ai-set-row ak-ai-pacs-status"></div>
     <div class="ak-ai-set-title">Model (ganti model = percakapan baru)</div>
@@ -22776,7 +22783,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
       if (act === "delkey") { spAiSetKey("", t.dataset.prov || "claude"); refreshKey(); return; }
       if (act === "savepacs") {
         const inp = $(".ak-ai-pacs"), o = spPacsNormOrigin(inp.value);
-        if (!o) { toast("Alamat PACS tidak terbaca — tempel alamat dari kolom alamat Chrome, mis. http://alamat-pacs:8042"); return; }
+        if (!o) { toast("Alamat PACS tidak terbaca — tempel alamat dari kolom alamat browser, mis. http://alamat-pacs:8042"); return; }
         spPacsSetLuar(o); inp.value = ""; refreshKey(); spAiChat.filmFor = "";
         toast("Alamat PACS luar RS tersimpan di browser ini."); return;
       }
