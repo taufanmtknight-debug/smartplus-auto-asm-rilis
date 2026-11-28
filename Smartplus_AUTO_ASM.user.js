@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Edge + Firefox Violentmonkey Compatible v3.188.0
+// @name         Smartplus ASM GADAR - Chrome + Edge + Firefox Violentmonkey Compatible v3.189.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.188.0
-// @description  v3.188.0 (uji ulang PAKET KONSUL RANAP 53 pasien 28 Nov 2026): diagnosis ICD berhuruf kapital dengan tambahan dalam kurung kini juga dirapikan ("URINARY TRACT INFECTION, SITE NOT SPECIFIED (suspected)" -> "Urinary tract infection (suspected)").
+// @version      3.189.0
+// @description  v3.189.0 (uji live 🛏 CEK ADVIS PASIEN DAPAT KAMAR 28 Nov 2026): 🔎 Cari advis WA tidak lagi menganggap pesan rekan dokter jaga (kontak "IGD dr ...") sebagai advis spesialis (kecuali meneruskan "Advis dr X"), dan baris yang hanya berisi nama pasien ("- Yunaianah") tidak ikut ditulis di advis.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -67,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.188.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.188.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.189.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.189.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -7388,6 +7388,9 @@
       const w = who(m);
       if (!w) continue;
       if (spWaIsKonsul(m.text)) igd.add(w);
+      // v3.189.0 (uji live 28 Nov 2026): kontak yang disimpan "IGD dr X" = rekan dokter jaga IGD, bukan spesialis
+      // ("Lab luar Keenan", "tolong dikasih terapi sementara" dulu muncul sebagai advis 🔴).
+      else if (/^IGD\b/i.test(w) && !/\bSp\.?\s?[A-Z]/.test(w)) igd.add(w);
       if (/\bSp\.?\s?[A-Z]/.test(w)) sp.add(w);
     }
     sp.forEach((w) => igd.delete(w));
@@ -7492,7 +7495,8 @@
     let lastIdx = -2;
     for (let i = 0; i <= end; i++) {
       const m = msgs[i];
-      if (m.out || spWaIsAck(m.text) || spWaIsKonsul(m.text) || roles.igd.has(who(m))) continue;
+      // v3.189.0: rekan IGD yang MENERUSKAN advis ("Advis dr Bonnie: ...") tetap dibaca.
+      if (m.out || spWaIsAck(m.text) || spWaIsKonsul(m.text) || (roles.igd.has(who(m)) && !/\badvi[cs]e?\b[^\n]{0,15}\b(?:dr|dokter|dpjp)\b/i.test(m.text))) continue;
       const t = spWaTime(m.pre);
       if (isFinite(tA) && isFinite(t) ? (t < tA - mins || t > tA + (byNow ? 10 : 0)) : !byNow && i < anchor - 30) continue;
       const c = cards[cards.length - 1];
@@ -7614,6 +7618,21 @@
       return r;
     });
   }
+  // v3.189.0 (uji live 28 Nov 2026): baris advis yang HANYA nama pasien ("- Yunaianah") dibuang, nama sudah ada di judul pasien.
+  // Hanya baris tanpa angka, maks 3 kata, dan semua katanya sama / beda 1 huruf dengan kata nama pasien. Fungsi murni.
+  function spWaDropNameLine(text, nama) {
+    const nm = spWaNm(nama).split(" ").filter((w) => w.length >= 3);
+    if (!nm.length) return text;
+    const isName = (l) => {
+      const x = l.replace(/^\s*-\s*/, "").replace(/^(?:tn|ny|nn|an|by|sdr|bp|ibu|pak)\.?\s+/i, "").trim();
+      if (!x || /\d/.test(x)) return false;
+      const ws = spWaNm(x).split(" ").filter(Boolean);
+      return ws.length >= 1 && ws.length <= 3 && ws.every((w) => w.length >= 3 && nm.some((v) => w === v || (w.length >= 4 && v.length >= 4 && spWaLev1(w, v))));
+    };
+    const ls = String(text || "").split("\n");
+    const out = ls.filter((l, i) => i === 0 || !/^\s*-\s/.test(l) || !isName(l));
+    return out.length > 1 ? out.join("\n") : text;
+  }
   // Pasien WA -> pasien yang dicari (targets [{key,nama,rm}]); others = pasien Smartplus lain (sudah advis / rawat inap lama).
   // -> { t, how: "rm"|"nama"|"awal"|"mirip", alts: [target lain yang juga cocok] } | { other: true } | null.
   function spWaMatchTarget(pt, targets, others) {
@@ -7681,6 +7700,7 @@
         it.why = `di WA ditulis untuk ${a.pt.label} (pasien lain) — mungkin juga pasien lain di konsul yang sama`;
       } else if (mt && mt.t) {
         it.key = mt.t.key;
+        it.text = spWaDropNameLine(it.text, mt.t.nama);
         (mt.alts || []).forEach(addAlt);
         (a.alts || []).forEach((p) => { const m = spWaMatchTarget(p, targets, others); if (m && m.t && m.t.key !== it.key) addAlt(m.t); });
         const sure = (mt.how === "rm" || mt.how === "nama") && (a.src === "kutipan" || a.src === "pesan") && !a.multi && !altKeys.size;
@@ -18522,7 +18542,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.188.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.189.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
