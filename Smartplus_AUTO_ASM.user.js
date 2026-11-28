@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Edge + Firefox Violentmonkey Compatible v3.186.0
+// @name         Smartplus ASM GADAR - Chrome + Edge + Firefox Violentmonkey Compatible v3.187.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.186.0
-// @description  v3.186.0 (uji live 28 Nov 2026): 🛏 CEK ADVIS PASIEN DAPAT KAMAR — advis yang ditulis di Rencana hanya dengan nama spesialis di satu baris lalu instruksinya (mis. "dr X Sp.B" lalu "Terapi lanjut, tetap puasa"), tanpa kata "advis", kini terbaca SUDAH advis. "Konsul dr X Sp.A" atau nama dokter di bawah "Konsul:" tetap belum advis. Advis dari WhatsApp: judul tidak lagi "Advis dr. RSSA dr X" (awalan nama kontak dibuang) dan salam balasan/"T ksh" tidak ikut jadi baris instruksi. Pesan WA "Belum ada tab Smartplus yang menerima" dirapikan.
+// @version      3.187.0
+// @description  v3.187.0 (uji PAKET KONSUL RANAP 50 pasien 28 Nov 2026, disetujui dokter): menutup panel paket konsul/AUTO SCREENSHOT kini menghentikan pengambilan gambar, jadi pasien berikutnya langsung bisa dibuat (dulu tertolak "masih berjalan" sampai ±1 menit). Cari film per No.RM di PACS menyerah setelah 12 detik (di luar jaringan RS dulu menggantung) lalu memakai tombol FILM Smartplus. A tanpa kode ICD ("J18.0 | BRONCHOPNEUMONIA, UNSPECIFIED" -> "Bronchopneumonia"). Plester infus (Dermafix/Opsite) tidak lagi tertulis sebagai obat.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -67,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.186.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.186.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.187.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.187.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -5552,7 +5552,23 @@
   //      yang berjalan saat ini (bukan "terapi lanjut", bukan daftar resep) + advis spesialis lain.
   // Nama penulis CPPT (dokter/nakes) tidak ditulis. Penunjang tidak ditulis di teks (cukup gambar AUTO SCREENSHOT).
   // =========================
-  const SP_BHP_RE = /spuit|syringe|infus(ion)? set|blood set|abocath|iv ?cath|vasofix|wing needle|\bneedle|\bkas+a\b|gauze|plester|hypafix|tegaderm|handsc|sarung tangan|glove|masker|kanul|canul|cannula|spalk|splint|bidai|gown|disposable|surgical|three ?way|stopcock|urine ?bag|kateter|catheter|\bngt\b|feeding tube|alcohol swab|alkohol swab|\bswab\b|kapas|elektroda|electrode|underpad|pampers|diapers|extension tube|micropore|leukoplast|perban|verband|bandage|gelang|plastik|pastik|kantong|\bpot\b/i;
+  const SP_BHP_RE = /spuit|syringe|infus(ion)? set|blood set|abocath|iv ?cath|vasofix|wing needle|\bneedle|\bkas+a\b|gauze|plester|hypafix|tegaderm|handsc|sarung tangan|glove|masker|kanul|canul|cannula|spalk|splint|bidai|gown|disposable|surgical|three ?way|stopcock|urine ?bag|kateter|catheter|\bngt\b|feeding tube|alcohol swab|alkohol swab|\bswab\b|kapas|elektroda|electrode|underpad|pampers|diapers|extension tube|micropore|leukoplast|perban|verband|bandage|gelang|plastik|pastik|kantong|\bpot\b|dermafix|opsite|iv\s*dressing|transparent dressing/i;
+  // v3.187.0 (uji 50 pasien 28 Nov 2026): BHP di atas juga plester infus (Dermafix/Opsite) — dulu ikut tertulis sebagai
+  // "obat yang berjalan" bila daftar diambil dari e-resep. NS 100 ml tetap obat (uji v3.50).
+
+  // v3.187.0 (uji 50 pasien 28 Nov 2026): diagnosis dari picker ICD Smartplus ("J18.0 | BRONCHOPNEUMONIA, UNSPECIFIED") ->
+  // "Bronchopneumonia" (kode ICD & "unspecified" dibuang, HURUF BESAR semua -> huruf biasa; singkatan <= 5 huruf tetap).
+  // Fungsi murni (tests/uji_v3_187.js).
+  function spKrDxClean(dx) {
+    return String(dx || "").split(/\s*;\s*/).map((part) => {
+      let t = part.replace(/^\s*[A-Z]\d{2}(?:\.\d{1,2})?\s*[|:-]\s*/, "").replace(/,?\s*\bunspecified\b\.?/gi, "").replace(/\s+/g, " ").trim();
+      if (t.length > 5 && /[A-Z]{3}/.test(t) && !/[a-z]/.test(t)) {
+        t = t.toLowerCase().replace(/\b(dm|hhd|chf|ckd|aki|ards|copd|ppok|gea|dhf|dss|tb|hiv|uti|isk|acs|stemi|nstemi|ht|af|rvr|pjk|cad|svt|vt|bph|sc|kpd|ppi|hpp|peb|bblr|g\d+p\d+a\d+)\b/gi, (m) => m.toUpperCase());
+        t = t.charAt(0).toUpperCase() + t.slice(1);
+      }
+      return t;
+    }).filter(Boolean).join("; ");
+  }
 
   // ---- Terapi: baca instruksi bebas dokter baris per baris (fungsi murni, diuji di node: tests/uji_v3_50.js) ----
   // Kunci obat: nama generik/merek yang sering dipakai di RS disamakan supaya perubahan dosis/merek terbaca "diubah".
@@ -6020,8 +6036,8 @@
 
     // A: diagnosis DPJP terakhir.
     const dxRow = byPref((r) => r.diagnosis && r.diagnosis.replace(/[;\s]/g, ""));
-    const dx = String(dxRow ? dxRow.diagnosis : (pt.dx || spCleanGadarText(g.diagnosa_banding)))
-      .replace(/\s*,\s*;/g, ";").replace(/;\s*;/g, ";").replace(/^[;,\s]+|[;,\s]+$/g, "");
+    const dx = spKrDxClean(String(dxRow ? dxRow.diagnosis : (pt.dx || spCleanGadarText(g.diagnosa_banding)))
+      .replace(/\s*,\s*;/g, ";").replace(/;\s*;/g, ";").replace(/^[;,\s]+|[;,\s]+$/g, ""));
 
     // v3.56.0: kesimpulan pemeriksaan fisik = gabungan pemeriksaan dokter terbaru (DPJP diutamakan, s.d. 3 CPPT dokter) +
     // pemeriksaan fisik GADAR IGD, memakai mesin yang sama dengan CPPT VISIT (template normal, tanda positif/negatif yang
@@ -11983,6 +11999,7 @@
   // v3.130.0: cari study pasien langsung di Orthanc per No.RM. Hasil: { studies:[{id,date,time,desc,mods}], origin }
   // atau { studies:null, error }. v3.173.0: lewat REST langsung dulu (tanpa jendela), juga di alamat PACS RS yang
   // diingat; jendela viewer (No.RM lewat window.name, tidak di alamat) hanya cadangan.
+  const SP_PACS_RM_MAX_MS = 12000; // v3.187.0: batas total cari film per No.RM di AUTO SCREENSHOT/PAKET KONSUL
   async function spPacsStudiesByRm(rm, timeoutMs = 15000) {
     const win = spPacsLuar() || spPacsRs();
     if (!win || !rm) return { studies: null };
@@ -12325,6 +12342,11 @@
     let blockedFilms = [];
     let status = "";
     let closedByUser = false;
+    // v3.187.0 (uji 50 pasien 28 Nov 2026): panel ditutup -> pengambilan gambar berhenti, supaya PAKET KONSUL pasien
+    // berikutnya tidak tertolak "masih berjalan" sampai ±1 menit. closedP selesai saat dokter menutup panel.
+    let closeNow = () => {};
+    let closedP = new Promise((r) => { closeNow = r; });
+    const SP_CLOSED = {};
     let newMark = "";
     let update = null;
     toast("AUTO SCREENSHOT: mengambil hasil lab 1 minggu...");
@@ -12339,7 +12361,7 @@
         text: `Browser memblokir jendela film (${blockedFilms.length}). Tekan tombol ini; agar otomatis berikutnya, izinkan pop-up untuk situs Smartplus (ikon 🚫 di kolom alamat → Selalu izinkan).`,
         button: "🩻 Ambil film",
         onClick: async () => { closedByUser = false; const again = blockedFilms; blockedFilms = []; await addFilms(again); status = ""; render(); }
-      }] : notes, { status, soapText: opts.soapText, soapCopied: opts.soapCopied, onUpdate: update, onClose: () => { closedByUser = true; },
+      }] : notes, { status, soapText: opts.soapText, soapCopied: opts.soapCopied, onUpdate: update, onClose: () => { closedByUser = true; closeNow(SP_CLOSED); },
         noreg, title: opts.title, soapEditable: !!opts.soapEditable,
         onSoapEdit: (v) => { opts.soapText = v; opts.soapCopied = false; } });
     };
@@ -12376,7 +12398,12 @@
       if (!rmNo || !spPacsAny()) return null;
       status = "⏳ Mencari film pasien di PACS (per No.RM)...";
       render();
-      const r = await spPacsStudiesByRm(rmNo);
+      // v3.187.0 (uji 50 pasien: 45 menggantung di luar jaringan RS): maks 12 detik, lalu tombol FILM Smartplus.
+      let tm = 0;
+      const r = await Promise.race([spPacsStudiesByRm(rmNo), closedP,
+        new Promise((res) => { tm = setTimeout(() => res({ studies: null, error: "PACS tidak menjawab dalam 12 detik (di luar jaringan RS?)" }), SP_PACS_RM_MAX_MS); })]);
+      clearTimeout(tm);
+      if (r === SP_CLOSED) return null;
       if (!r.studies) { if (r.error || r.blocked) notes.push({ text: `Cari film per No.RM: ${r.blocked ? "jendela PACS diblokir browser" : r.error} — dipakai tombol FILM Smartplus.` }); return null; }
       // AUTO SCREENSHOT biasa: study CT/MRI/USG saja dilewati (cukup ekspertise), seperti tombol FILM.
       const studies = opts.konsulFilm ? r.studies : r.studies.filter((x) => !(x.mods || []).length || !x.mods.every((m) => /^(CT|MR|US|SR|PR|KO|DOC)$/i.test(m)));
@@ -12394,6 +12421,7 @@
     };
     const addFilms = async (films) => {
       for (let i = 0; i < films.length; i++) {
+        if (closedByUser) return; // v3.187.0: panel ditutup -> berhenti
         const f = films[i];
         seenFilm.add(f.url);
         status = `⏳ Mengambil film ${i + 1}/${films.length} (${f.caption}), maks ${filmTimeout / 1000} detik...`;
@@ -12448,6 +12476,7 @@
       console.warn("[AUTO SCREENSHOT] lab", err);
       notes.push({ text: "Gagal mengambil hasil lab: " + (err.message || err) });
     }
+    if (closedByUser) return; // v3.187.0: panel ditutup -> berhenti
     status = "⏳ Mengambil radiologi...";
     render();
 
@@ -12459,7 +12488,9 @@
       const { recent, latestOlder } = spPickRecentEntries(radList.list, SP_RAD_WINDOW);
       const filmRows = recent.filter((r) => filmExamOk(r.exam));
       await addExpertise(recent);
+      if (closedByUser) return;
       let rmFilms = await rmFilmsOf(false);
+      if (closedByUser) return;
       // v3.132.0: per No.RM tidak ada film 1 bulan tapi Smartplus punya baris radiologi -> pakai tombol FILM Smartplus.
       if (rmFilms && !rmFilms.length && filmRows.length) { notes.push({ text: "Film per No.RM tidak ketemu di PACS — dipakai tombol FILM Smartplus." }); rmFilms = null; }
       const films = rmFilms || filmsOf(filmRows);
@@ -12485,6 +12516,7 @@
       if (busy) return;
       busy = true;
       closedByUser = false;
+      closedP = new Promise((r) => { closeNow = r; });
       try {
         let soapNote = "";
         if (opts.refreshSoap) {
@@ -12508,7 +12540,8 @@
       }
     };
 
-    await collect(radListP);
+    await Promise.race([collect(radListP), closedP]);
+    if (closedByUser) return;
 
     status = "";
     render();
@@ -18486,7 +18519,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.186.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.187.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
