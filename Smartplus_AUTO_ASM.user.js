@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Edge + Firefox Violentmonkey Compatible v3.187.0
+// @name         Smartplus ASM GADAR - Chrome + Edge + Firefox Violentmonkey Compatible v3.188.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.187.0
-// @description  v3.187.0 (uji PAKET KONSUL RANAP 50 pasien 28 Nov 2026, disetujui dokter): menutup panel paket konsul/AUTO SCREENSHOT kini menghentikan pengambilan gambar, jadi pasien berikutnya langsung bisa dibuat (dulu tertolak "masih berjalan" sampai ±1 menit). Cari film per No.RM di PACS menyerah setelah 12 detik (di luar jaringan RS dulu menggantung) lalu memakai tombol FILM Smartplus. A tanpa kode ICD ("J18.0 | BRONCHOPNEUMONIA, UNSPECIFIED" -> "Bronchopneumonia"). Plester infus (Dermafix/Opsite) tidak lagi tertulis sebagai obat.
+// @version      3.188.0
+// @description  v3.188.0 (uji ulang PAKET KONSUL RANAP 53 pasien 28 Nov 2026): diagnosis ICD berhuruf kapital dengan tambahan dalam kurung kini juga dirapikan ("URINARY TRACT INFECTION, SITE NOT SPECIFIED (suspected)" -> "Urinary tract infection (suspected)").
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -67,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.187.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.187.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.188.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.188.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -5561,8 +5561,11 @@
   // Fungsi murni (tests/uji_v3_187.js).
   function spKrDxClean(dx) {
     return String(dx || "").split(/\s*;\s*/).map((part) => {
-      let t = part.replace(/^\s*[A-Z]\d{2}(?:\.\d{1,2})?\s*[|:-]\s*/, "").replace(/,?\s*\bunspecified\b\.?/gi, "").replace(/\s+/g, " ").trim();
-      if (t.length > 5 && /[A-Z]{3}/.test(t) && !/[a-z]/.test(t)) {
+      // v3.188.0 (uji 52 pasien 28 Nov 2026): ", site not specified" ikut dibuang; tambahan huruf kecil dalam kurung
+      // ("URINARY TRACT INFECTION (suspected)") tidak menghalangi perapian huruf kapital.
+      let t = part.replace(/^\s*[A-Z]\d{2}(?:\.\d{1,2})?\s*[|:-]\s*/, "").replace(/,?\s*\b(?:unspecified|site not specified)\b\.?/gi, "").replace(/\s+/g, " ").trim();
+      const bare = t.replace(/\([^()]*\)/g, "");
+      if (bare.trim().length > 5 && /[A-Z]{3}/.test(bare) && !/[a-z]/.test(bare)) {
         t = t.toLowerCase().replace(/\b(dm|hhd|chf|ckd|aki|ards|copd|ppok|gea|dhf|dss|tb|hiv|uti|isk|acs|stemi|nstemi|ht|af|rvr|pjk|cad|svt|vt|bph|sc|kpd|ppi|hpp|peb|bblr|g\d+p\d+a\d+)\b/gi, (m) => m.toUpperCase());
         t = t.charAt(0).toUpperCase() + t.slice(1);
       }
@@ -18519,7 +18522,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.187.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.188.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
