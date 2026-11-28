@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smartplus ASM GADAR - Chrome + Edge + Firefox Violentmonkey Compatible v3.185.0
+// @name         Smartplus ASM GADAR - Chrome + Edge + Firefox Violentmonkey Compatible v3.186.0
 // @namespace    smartplus-auto-asm-v221
-// @version      3.185.0
-// @description  v3.185.0 (permintaan dokter 24 Nov 2026): AUTO ASM resmi untuk Microsoft Edge (Windows) selain Chrome & Firefox — Edge memakai mesin Chromium yang sama, jadi semua fitur (AUTO IGD/RANAP, 🎙 Asisten suara & 🎤 Dengar, 🧠 Tanya AI, film Orthanc, Advis WA) berjalan sama. Pesan bantuan tidak lagi menyebut "Chrome" saja: alamat pengaturan mikrofon http otomatis edge://flags di Edge (chrome://flags di Chrome); bisa dipasang lewat Violentmonkey atau Tampermonkey dari Edge Add-ons.
+// @version      3.186.0
+// @description  v3.186.0 (uji live 28 Nov 2026): 🛏 CEK ADVIS PASIEN DAPAT KAMAR — advis yang ditulis di Rencana hanya dengan nama spesialis di satu baris lalu instruksinya (mis. "dr X Sp.B" lalu "Terapi lanjut, tetap puasa"), tanpa kata "advis", kini terbaca SUDAH advis. "Konsul dr X Sp.A" atau nama dokter di bawah "Konsul:" tetap belum advis. Advis dari WhatsApp: judul tidak lagi "Advis dr. RSSA dr X" (awalan nama kontak dibuang) dan salam balasan/"T ksh" tidak ikut jadi baris instruksi. Pesan WA "Belum ada tab Smartplus yang menerima" dirapikan.
 
 // @author       dr. Muhamad Taufan Kurniawan
 // @include      /^https?:\/\/[^\/]+\/(?:[^?#]*\/)?smartplus(?:[\/?#]|$)/
@@ -67,8 +67,8 @@
     console.warn("[AUTO ASM] script sudah berjalan di halaman ini (versi " + spLoadedVer + "); salinan kedua dihentikan.");
     return;
   }
-  window.__SP_AUTO_ASM_LOADED__ = "3.185.0";
-  document.documentElement.setAttribute("data-sp-auto-asm", "3.185.0");
+  window.__SP_AUTO_ASM_LOADED__ = "3.186.0";
+  document.documentElement.setAttribute("data-sp-auto-asm", "3.186.0");
 
   // v3.46.0 (audit): semua permintaan ke Smartplus diberi batas waktu. Dulu fetch tanpa batas -> bila server lambat/
   // tidak menjawab, fitur macet selamanya dan penanda "sedang berjalan" tidak pernah lepas sampai halaman dimuat ulang.
@@ -7216,13 +7216,17 @@
     // Pengirim advis = nama yang memuat gelar spesialis, atau pengirim pertama.
     const sender = senders.find((s) => /\bsp\.?\s?[a-z]/i.test(s)) || senders[0] || "";
     const picked = sender ? msgs.filter((m) => m.sender === sender) : msgs;
-    const ack = /^(ok(e|ey)?|oke+ dok|siap|baik|iya|ya|y|sip|noted|terima ?kasih|makasih|trims|thx|thanks)[\s,.!dok]*$/i;
+    // v3.186.0 (uji live 28 Nov 2026): salam balasan ("Waalaikumussalam.") & "T ksh"/"tks"/"trmksh" juga bukan instruksi.
+    const ack = /^(ok(e|ey)?|oke+ dok|siap|baik|iya|ya|y|sip|noted|terima ?kasih|makasih|trims|thx|thanks|t\.?\s?ksh|tks|tq|trm\s?ksh|w[a']{0,3}\s?alaikum\w*(?:\s+(?:salam|wr\.?\s?wb\.?|warahmatullahi\w*(?:\s+wabarakatuh)?))*)[\s,.!dok]*$/i;
     const lines = picked.flatMap((m) => m.text).map((l) => l.trim()).filter((l) => l && !ack.test(l) && !/^<(media|pesan ini).*>$/i.test(l))
       .map((l) => (/^([-•*]|\d+[.)])\s*/.test(l) ? l.replace(/^[•*]\s*/, "- ") : "- " + l));
     return { sender, time: picked.find((m) => m.time)?.time || "", lines };
   }
   function spFormatAdvis(name, time, lines) {
     let n = String(name || "").trim();
+    // v3.186.0 (uji live 28 Nov 2026): nama kontak berawalan singkatan ("RSSA dr Tri ... SpPD") -> "dr. Tri ... SpPD"
+    // (dulu "Advis dr. RSSA dr Tri ..."). Hanya awalan pendek 1–2 kata sebelum "dr".
+    n = n.replace(/^(?:[A-Za-z]{2,8}\.?\s+){1,2}(?=dr\.?\s)/i, (m) => (/^dr\.?\s/i.test(m) ? m : ""));
     if (n && !/^dr\.?\s/i.test(n)) n = "dr. " + n;
     n = n.replace(/^dr\.?\s+/i, "dr. ");
     return `Advis ${n || "dr. Sp."}${time ? ` (${time})` : ""}:\n${lines.join("\n")}`;
@@ -8209,7 +8213,7 @@
         setTimeout(() => {
           if (done) return;
           msg.style.color = "#c62828";
-          msg.textContent = "⚠️ Belum ada tab Smartplus yang menerima. Pastikan Smartplus terbuka di browser yang sama (Chrome/Edge yang sama dengan WhatsApp Web ini) (sudah login, AUTO ASM terbaru), lalu Kirim lagi.";
+          msg.textContent = "⚠️ Belum ada tab Smartplus yang menerima. Pastikan Smartplus terbuka di browser yang sama dengan WhatsApp Web ini (Chrome/Edge; sudah login, AUTO ASM terbaru), lalu Kirim lagi.";
         }, 6000);
       };
     }
@@ -9533,8 +9537,12 @@
     const lines = spNlPure(text).split("\n").map((l) => l.replace(/^\s*(?:[-•*·>]+|\d+[.)])\s*/, "").trim()).filter(Boolean);
     // v3.119.1 (uji Smartplus asli: 5 dari 20 pasien "belum advis" ternyata sudah): singkatan & salah ketik "adv dr bonnie sp.a:",
     // "Advcie dr. Bonnie,SpA", "advise dr" juga advis. "Lapor dr X" saja tetap belum advis.
-    return lines.some((l) => SP_TX_HEADER.test(l) || /\b(?:adv|advs|advi[cs]e?|advise|advcie|adivs?|advsi)\.?\s*:?\s*(?:dari\s+)?(?:dr\b|dr\.|dokter|dpjp|sp\.?\s?[a-z])/i.test(l));
+    return lines.some((l, i) => SP_TX_HEADER.test(l) || /\b(?:adv|advs|advi[cs]e?|advise|advcie|adivs?|advsi)\.?\s*:?\s*(?:dari\s+)?(?:dr\b|dr\.|dokter|dpjp|sp\.?\s?[a-z])/i.test(l) ||
+      // v3.186.0 (uji live 28 Nov 2026): baris yang HANYA nama spesialis ("dr Winarno SP B", "dr. Ani, Sp.A:") diikuti instruksi
+      // ("Terapi lanjut. Post usg tetap puasa") = advis. Tidak berlaku bila baris sebelumnya "Konsul"/"Lapor" (itu tujuan konsul).
+      (SP_DR_SP_LINE.test(l) && i + 1 < lines.length && !/\b(?:konsul|lapor|rujuk)\w*\s*:?\s*$/i.test(lines[i - 1] || "")));
   }
+  const SP_DR_SP_LINE = /^(?:dr\.?|dokter)\s*[a-z][a-z .'-]{0,40}?,?\s*sp\.?\s?[a-z]{1,5}\b\.?(?:\s*[,.]?\s*[a-z]{1,8}\.?){0,2}\s*(?:\(?\d{1,2}[.:]\d{2}\)?)?\s*:?$/i;
   // v3.183.0 (permintaan dokter 22 Nov 2026): CPPT kunjungan ini ikut dibaca. Teks CPPT (S, P, instruksi; semua PPA) ->
   // satu teks untuk pencocokan advis. Advis yang ditulis lewat 💾 Simpan Rencana + "Tulis juga di CPPT" (v3.161.0) berbentuk
   // S "advis dr. X Sp.Y" & P "advis dr. X Sp.Y\n- ...". Fungsi murni.
@@ -18478,7 +18486,7 @@ Cefixime 200 mg No. X S 2 dd I pc">${spMvEsc(st.text)}</textarea>
     function renderMain() {
       menu.classList.remove("sp-package-modal", "sp-kombi");
       menu.innerHTML = `
-        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.185.0</span></div>
+        <div class="sp-title sp-title-main">SMARTPLUS AUTO ASM <span class="sp-ver">v3.186.0</span></div>
         <!-- v3.63.0 (instruksi dokter 11 Okt 2026): urutan menu utama ASGADAR -> AUTO PENUNJANG -> KOMBINASI RESEP
              -> AUTO IGD (PAKET KONSUL IGD, ADVIS SPESIALIS, REVIEW GADAR 24 JAM) -> RAWAT INAP. -->
 
